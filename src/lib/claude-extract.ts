@@ -36,6 +36,23 @@ const RECIPE_PROMPT = `Extract the recipe from this image. Return ONLY valid JSO
 
 If no recipe is found in the image, return: {"error": "no_recipe"}`;
 
+async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      const isRetryable = message.includes("429") || message.includes("rate") || message.includes("Resource has been exhausted");
+      if (isRetryable && i < retries - 1) {
+        await new Promise((r) => setTimeout(r, (i + 1) * 2000));
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw new Error("Max retries exceeded");
+}
+
 export async function extractRecipeFromImage(
   base64Image: string,
   mediaType: "image/jpeg" | "image/png" | "image/webp"
@@ -46,22 +63,22 @@ export async function extractRecipeFromImage(
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   try {
-    const result = await model.generateContent([
-      RECIPE_PROMPT,
-      {
-        inlineData: {
-          mimeType: mediaType,
-          data: base64Image,
+    const result = await withRetry(() =>
+      model.generateContent([
+        RECIPE_PROMPT,
+        {
+          inlineData: {
+            mimeType: mediaType,
+            data: base64Image,
+          },
         },
-      },
-    ]);
+      ])
+    );
 
     let text = result.response.text();
-
-    // Strip markdown code fences if present
     text = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 
     const parsed = JSON.parse(text);
@@ -74,6 +91,9 @@ export async function extractRecipeFromImage(
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     console.error("Gemini API error:", message);
+    if (message.includes("429") || message.includes("rate") || message.includes("Resource has been exhausted")) {
+      return { error: "Google API is temporarily busy. Please wait a moment and try again." };
+    }
     if (message.includes("JSON")) {
       return { error: "Could not parse recipe from image. Try a clearer photo." };
     }

@@ -27,6 +27,23 @@ If no recipe is found, return: {"error": "no_recipe"}
 Text to extract from:
 `;
 
+async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      const isRetryable = message.includes("429") || message.includes("rate") || message.includes("Resource has been exhausted");
+      if (isRetryable && i < retries - 1) {
+        await new Promise((r) => setTimeout(r, (i + 1) * 2000));
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw new Error("Max retries exceeded");
+}
+
 export async function extractRecipeFromText(
   text: string
 ): Promise<{ data?: ExtractedRecipe; error?: string }> {
@@ -36,14 +53,14 @@ export async function extractRecipeFromText(
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   try {
-    const result = await model.generateContent(TEXT_PROMPT + text);
+    const result = await withRetry(() =>
+      model.generateContent(TEXT_PROMPT + text)
+    );
 
     let responseText = result.response.text();
-
-    // Strip markdown code fences if present
     responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 
     const parsed = JSON.parse(responseText);
@@ -56,6 +73,9 @@ export async function extractRecipeFromText(
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     console.error("Gemini API error:", message);
+    if (message.includes("429") || message.includes("rate") || message.includes("Resource has been exhausted")) {
+      return { error: "Google API is temporarily busy. Please wait a moment and try again." };
+    }
     if (message.includes("JSON")) {
       return { error: "Could not parse recipe from text. Try pasting more of the caption." };
     }
