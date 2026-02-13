@@ -20,6 +20,6 @@
 
 ## 5. Verification
 
-- [ ] 5.1 Test with a real recipe URL (e.g., a Serious Eats or AllRecipes page) — verify extraction, review, and save
-- [ ] 5.2 Test with a non-recipe URL — verify error message
+- [x] 5.1 Test with a real recipe URL (e.g., a Serious Eats or AllRecipes page) — verify extraction, review, and save
+- [x] 5.2 Test with a non-recipe URL — verify error message
 - [x] 5.3 Verify `npm run build` succeeds with zero errors
