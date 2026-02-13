@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { ExtractedRecipe } from "./claude-extract";
 
 const TEXT_PROMPT = `Extract the recipe from the following text. The text is from an Instagram post caption. Ignore any non-recipe content (hashtags, personal stories, engagement prompts, emojis used as decoration).
@@ -27,23 +26,6 @@ If no recipe is found, return: {"error": "no_recipe"}
 Text to extract from:
 `;
 
-async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await fn();
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "";
-      const isRetryable = message.includes("429") || message.includes("rate") || message.includes("Resource has been exhausted");
-      if (isRetryable && i < retries - 1) {
-        await new Promise((r) => setTimeout(r, (i + 1) * 2000));
-        continue;
-      }
-      throw e;
-    }
-  }
-  throw new Error("Max retries exceeded");
-}
-
 export async function extractRecipeFromText(
   text: string
 ): Promise<{ data?: ExtractedRecipe; error?: string }> {
@@ -52,17 +34,32 @@ export async function extractRecipeFromText(
     return { error: "GEMINI_API_KEY is not configured" };
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
   try {
-    const result = await withRetry(() =>
-      model.generateContent(TEXT_PROMPT + text)
-    );
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: TEXT_PROMPT + text }] }],
+      }),
+    });
 
-    let responseText = result.response.text();
+    if (!res.ok) {
+      const errorBody = await res.text();
+      console.error("Gemini API HTTP error:", res.status, errorBody);
+      throw new Error(`Gemini API error ${res.status}: ${errorBody}`);
+    }
+
+    const data = await res.json();
+    let responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!responseText) {
+      console.error("Gemini API empty response:", JSON.stringify(data));
+      throw new Error("Empty response from Gemini");
+    }
+
     responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-
     const parsed = JSON.parse(responseText);
 
     if (parsed.error === "no_recipe") {
@@ -72,10 +69,6 @@ export async function extractRecipeFromText(
     return { data: parsed as ExtractedRecipe };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
-    console.error("Gemini API error:", message);
-    if (message.includes("429") || message.includes("rate") || message.includes("Resource has been exhausted")) {
-      return { error: "Google API is temporarily busy. Please wait a moment and try again." };
-    }
     if (message.includes("JSON")) {
       return { error: "Could not parse recipe from text. Try pasting more of the caption." };
     }

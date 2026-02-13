@@ -1,5 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
 export interface ExtractedRecipe {
   title: string;
   description: string;
@@ -36,21 +34,36 @@ const RECIPE_PROMPT = `Extract the recipe from this image. Return ONLY valid JSO
 
 If no recipe is found in the image, return: {"error": "no_recipe"}`;
 
-async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await fn();
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "";
-      const isRetryable = message.includes("429") || message.includes("rate") || message.includes("Resource has been exhausted");
-      if (isRetryable && i < retries - 1) {
-        await new Promise((r) => setTimeout(r, (i + 1) * 2000));
-        continue;
-      }
-      throw e;
-    }
+async function callGemini(
+  apiKey: string,
+  parts: unknown[]
+): Promise<string> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+  const body = {
+    contents: [{ parts }],
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const errorBody = await res.text();
+    console.error("Gemini API HTTP error:", res.status, errorBody);
+    throw new Error(`Gemini API error ${res.status}: ${errorBody}`);
   }
-  throw new Error("Max retries exceeded");
+
+  const data = await res.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) {
+    console.error("Gemini API empty response:", JSON.stringify(data));
+    throw new Error("Empty response from Gemini");
+  }
+
+  return text;
 }
 
 export async function extractRecipeFromImage(
@@ -62,25 +75,13 @@ export async function extractRecipeFromImage(
     return { error: "GEMINI_API_KEY is not configured" };
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
   try {
-    const result = await withRetry(() =>
-      model.generateContent([
-        RECIPE_PROMPT,
-        {
-          inlineData: {
-            mimeType: mediaType,
-            data: base64Image,
-          },
-        },
-      ])
-    );
+    let text = await callGemini(apiKey, [
+      { text: RECIPE_PROMPT },
+      { inline_data: { mime_type: mediaType, data: base64Image } },
+    ]);
 
-    let text = result.response.text();
     text = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-
     const parsed = JSON.parse(text);
 
     if (parsed.error === "no_recipe") {
@@ -90,10 +91,6 @@ export async function extractRecipeFromImage(
     return { data: parsed as ExtractedRecipe };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
-    console.error("Gemini API error:", message);
-    if (message.includes("429") || message.includes("rate") || message.includes("Resource has been exhausted")) {
-      return { error: "Google API is temporarily busy. Please wait a moment and try again." };
-    }
     if (message.includes("JSON")) {
       return { error: "Could not parse recipe from image. Try a clearer photo." };
     }
