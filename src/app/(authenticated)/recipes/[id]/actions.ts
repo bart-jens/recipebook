@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export async function updateRecipe(recipeId: string, formData: FormData) {
@@ -58,4 +59,79 @@ export async function deleteRecipe(recipeId: string) {
   const { error } = await supabase.from("recipes").delete().eq("id", recipeId);
   if (error) return { error: error.message };
   redirect("/recipes");
+}
+
+export async function addTag(recipeId: string, tag: string) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("recipe_tags")
+    .insert({ recipe_id: recipeId, tag });
+  if (error && !error.message.includes("duplicate")) {
+    return { error: error.message };
+  }
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/recipes");
+}
+
+export async function removeTag(tagId: string) {
+  const supabase = createClient();
+  const { data: tag } = await supabase
+    .from("recipe_tags")
+    .select("recipe_id")
+    .eq("id", tagId)
+    .single();
+  const { error } = await supabase.from("recipe_tags").delete().eq("id", tagId);
+  if (error) return { error: error.message };
+  if (tag) {
+    revalidatePath(`/recipes/${tag.recipe_id}`);
+    revalidatePath("/recipes");
+  }
+}
+
+export async function toggleFavorite(recipeId: string, isFavorite: boolean) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("recipes")
+    .update({ is_favorite: isFavorite })
+    .eq("id", recipeId);
+  if (error) return { error: error.message };
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/recipes");
+}
+
+export async function addRating(
+  recipeId: string,
+  rating: number,
+  notes: string | null,
+  cookedDate: string | null
+) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase.from("recipe_ratings").insert({
+    recipe_id: recipeId,
+    user_id: user.id,
+    rating,
+    notes,
+    cooked_date: cookedDate,
+  });
+  if (error) return { error: error.message };
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/recipes");
+}
+
+export async function deleteRating(ratingId: string) {
+  const supabase = createClient();
+  const { data: rating } = await supabase
+    .from("recipe_ratings")
+    .select("recipe_id")
+    .eq("id", ratingId)
+    .single();
+  const { error } = await supabase.from("recipe_ratings").delete().eq("id", ratingId);
+  if (error) return { error: error.message };
+  if (rating) {
+    revalidatePath(`/recipes/${rating.recipe_id}`);
+    revalidatePath("/recipes");
+  }
 }

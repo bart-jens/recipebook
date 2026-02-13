@@ -156,6 +156,7 @@ export type Database = {
           description: string | null
           id: string
           instructions: string | null
+          is_favorite: boolean
           prep_time_minutes: number | null
           servings: number | null
           source_image_path: string | null
@@ -171,6 +172,7 @@ export type Database = {
           description?: string | null
           id?: string
           instructions?: string | null
+          is_favorite?: boolean
           prep_time_minutes?: number | null
           servings?: number | null
           source_image_path?: string | null
@@ -186,6 +188,7 @@ export type Database = {
           description?: string | null
           id?: string
           instructions?: string | null
+          is_favorite?: boolean
           prep_time_minutes?: number | null
           servings?: number | null
           source_image_path?: string | null

@@ -4,6 +4,9 @@ import Link from "next/link";
 import { DeleteButton } from "./delete-button";
 import { UnitToggle, useUnitSystem } from "./unit-toggle";
 import { convertIngredient, formatQuantity } from "@/lib/unit-conversion";
+import { TagEditor } from "./tag-editor";
+import { FavoriteButton } from "./favorite-button";
+import { CookingLog } from "./cooking-log";
 
 interface Ingredient {
   id: string;
@@ -23,6 +26,20 @@ interface Recipe {
   servings: number | null;
   source_url: string | null;
   source_type: string;
+  is_favorite: boolean;
+}
+
+interface Tag {
+  id: string;
+  tag: string;
+}
+
+interface RatingEntry {
+  id: string;
+  rating: number;
+  notes: string | null;
+  cooked_date: string | null;
+  created_at: string;
 }
 
 function formatInstructions(text: string): string[] {
@@ -34,9 +51,13 @@ function formatInstructions(text: string): string[] {
 export function RecipeDetail({
   recipe,
   ingredients,
+  tags,
+  ratings,
 }: {
   recipe: Recipe;
   ingredients: Ingredient[];
+  tags: Tag[];
+  ratings: RatingEntry[];
 }) {
   const [unitSystem, setUnitSystem] = useUnitSystem();
 
@@ -53,6 +74,7 @@ export function RecipeDetail({
       <div className="mb-3 flex items-start justify-between">
         <h1 className="font-serif text-3xl font-semibold leading-tight">{recipe.title}</h1>
         <div className="flex gap-2 pt-1">
+          <FavoriteButton recipeId={recipe.id} isFavorite={recipe.is_favorite} />
           <Link
             href={`/recipes/${recipe.id}/edit`}
             className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
@@ -61,6 +83,10 @@ export function RecipeDetail({
           </Link>
           <DeleteButton recipeId={recipe.id} />
         </div>
+      </div>
+
+      <div className="mb-4">
+        <TagEditor recipeId={recipe.id} tags={tags} />
       </div>
 
       {recipe.source_url && (
@@ -149,6 +175,10 @@ export function RecipeDetail({
           )}
         </div>
       )}
+
+      <div className="mb-10">
+        <CookingLog recipeId={recipe.id} ratings={ratings} />
+      </div>
     </div>
   );
 }

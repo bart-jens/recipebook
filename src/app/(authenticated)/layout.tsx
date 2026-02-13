@@ -36,6 +36,11 @@ export default async function AuthenticatedLayout({
         </div>
       </header>
       <main className="mx-auto max-w-3xl px-6 py-8">{children}</main>
+      <footer className="border-t border-warm-divider px-6 py-6">
+        <div className="mx-auto max-w-3xl text-center text-xs text-warm-gray/40">
+          EefEats &mdash; made with love
+        </div>
+      </footer>
     </div>
   );
 }

@@ -3,7 +3,7 @@ create table public.recipes (
   title text not null,
   description text,
   source_url text,
-  source_type text not null default 'manual' check (source_type in ('manual', 'url', 'photo', 'telegram')),
+  source_type text not null default 'manual' check (source_type in ('manual', 'url', 'photo', 'telegram', 'instagram')),
   source_image_path text,
   instructions text,
   prep_time_minutes integer,
@@ -11,6 +11,7 @@ create table public.recipes (
   servings integer,
   created_by uuid not null references auth.users(id),
   created_at timestamptz not null default now(),
+  is_favorite boolean not null default false,
   updated_at timestamptz not null default now()
 );
 
