@@ -25,7 +25,8 @@ export async function createRecipe(formData: FormData) {
       prep_time_minutes: prepTime ? parseInt(prepTime) : null,
       cook_time_minutes: cookTime ? parseInt(cookTime) : null,
       servings: servings ? parseInt(servings) : null,
-      source_type: "manual",
+      source_type: (formData.get("source_type") as string) || "manual",
+      source_url: (formData.get("source_url") as string) || null,
       created_by: user.id,
     })
     .select("id")
