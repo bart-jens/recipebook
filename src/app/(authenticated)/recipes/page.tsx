@@ -10,26 +10,34 @@ export default async function RecipesPage() {
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="font-serif text-2xl font-semibold">Recipes</h1>
-        <div className="flex gap-2">
-          <Link
-            href="/recipes/import-url"
-            className="rounded-md border border-warm-border px-4 py-2 text-sm font-medium text-warm-gray hover:bg-warm-tag"
-          >
-            Import URL
-          </Link>
-          <Link
-            href="/recipes/import-instagram"
-            className="rounded-md border border-warm-border px-4 py-2 text-sm font-medium text-warm-gray hover:bg-warm-tag"
-          >
-            Import Instagram
-          </Link>
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <h1 className="font-serif text-2xl font-semibold">Recipes</h1>
           <Link
             href="/recipes/new"
             className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             + New recipe
+          </Link>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link
+            href="/recipes/import-url"
+            className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
+          >
+            Import URL
+          </Link>
+          <Link
+            href="/recipes/import-instagram"
+            className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
+          >
+            Import Instagram
+          </Link>
+          <Link
+            href="/recipes/import-photo"
+            className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
+          >
+            Import Photo
           </Link>
         </div>
       </div>

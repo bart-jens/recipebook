@@ -4,10 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { RecipeForm, type RecipeFormData } from "../components/recipe-form";
 import { createRecipe } from "../actions";
-import { extractFromInstagramUrl } from "./actions";
+import { extractFromPhoto } from "./actions";
 
-export default function ImportInstagramPage() {
-  const [url, setUrl] = useState("");
+export default function ImportPhotoPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [importedData, setImportedData] = useState<RecipeFormData | null>(null);
@@ -17,7 +16,10 @@ export default function ImportInstagramPage() {
     setLoading(true);
     setError(null);
 
-    const result = await extractFromInstagramUrl(url);
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+
+    const result = await extractFromPhoto(formData);
     if (result.error) {
       setError(result.error);
       setLoading(false);
@@ -44,8 +46,7 @@ export default function ImportInstagramPage() {
   }
 
   async function handleSave(formData: FormData) {
-    formData.set("source_type", "instagram");
-    formData.set("source_url", url);
+    formData.set("source_type", "photo");
     return createRecipe(formData);
   }
 
@@ -57,7 +58,7 @@ export default function ImportInstagramPage() {
             &larr; Back to recipes
           </Link>
           <h1 className="mt-2 font-serif text-2xl font-semibold">Review Imported Recipe</h1>
-          <p className="mt-1 text-sm text-warm-gray">Extracted from Instagram. Review and edit before saving.</p>
+          <p className="mt-1 text-sm text-warm-gray">Extracted from photo. Review and edit before saving.</p>
         </div>
         <RecipeForm
           initialData={importedData}
@@ -68,7 +69,7 @@ export default function ImportInstagramPage() {
           onClick={() => { setImportedData(null); setError(null); }}
           className="mt-4 text-sm text-warm-gray underline hover:text-accent"
         >
-          Try a different URL
+          Try a different photo
         </button>
       </div>
     );
@@ -80,23 +81,23 @@ export default function ImportInstagramPage() {
         <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
           &larr; Back to recipes
         </Link>
-        <h1 className="mt-2 font-serif text-2xl font-semibold">Import from Instagram</h1>
-        <p className="mt-1 text-sm text-warm-gray">Paste an Instagram post link to extract the recipe.</p>
+        <h1 className="mt-2 font-serif text-2xl font-semibold">Import from Photo</h1>
+        <p className="mt-1 text-sm text-warm-gray">Upload a photo of a recipe card or cookbook page.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-4">
         <div>
-          <label htmlFor="url" className="block text-sm font-medium text-warm-gray">
-            Instagram Post URL
+          <label htmlFor="image" className="block text-sm font-medium text-warm-gray">
+            Recipe Photo
           </label>
           <input
-            id="url"
-            type="url"
+            id="image"
+            name="image"
+            type="file"
             required
-            placeholder="https://www.instagram.com/p/..."
-            value={url}
-            onChange={(e) => { setUrl(e.target.value); setError(null); }}
-            className="mt-1 block w-full rounded-md border border-warm-border bg-white px-3 py-3 text-base focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={() => setError(null)}
+            className="mt-1 block w-full text-sm text-warm-gray file:mr-4 file:rounded-md file:border file:border-warm-border file:bg-warm-tag file:px-4 file:py-2 file:text-sm file:font-medium file:text-warm-gray hover:file:bg-warm-divider"
           />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -105,7 +106,7 @@ export default function ImportInstagramPage() {
           disabled={loading}
           className="rounded-md bg-accent px-4 py-3 text-base font-medium text-white hover:bg-accent-hover disabled:opacity-50"
         >
-          {loading ? "Fetching recipe..." : "Fetch Recipe"}
+          {loading ? "Extracting recipe..." : "Extract Recipe"}
         </button>
       </form>
     </div>
