@@ -34,7 +34,7 @@ export async function extractRecipeFromText(
     return { error: "GEMINI_API_KEY is not configured" };
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
   try {
     const res = await fetch(url, {
