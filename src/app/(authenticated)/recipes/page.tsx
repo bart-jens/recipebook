@@ -10,18 +10,18 @@ export default async function RecipesPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Recipes</h1>
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="font-serif text-2xl font-semibold">Recipes</h1>
         <div className="flex gap-2">
           <Link
             href="/recipes/import-url"
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50"
+            className="rounded-md border border-warm-border px-4 py-2 text-sm font-medium text-warm-gray hover:bg-warm-tag"
           >
             Import from URL
           </Link>
           <Link
             href="/recipes/new"
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+            className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             + New recipe
           </Link>
@@ -29,19 +29,19 @@ export default async function RecipesPage() {
       </div>
 
       {!recipes || recipes.length === 0 ? (
-        <div className="rounded-md border border-dashed border-gray-300 p-8 text-center">
-          <p className="text-gray-500">No recipes yet.</p>
+        <div className="rounded-md border border-dashed border-warm-border p-8 text-center">
+          <p className="text-warm-gray">No recipes yet.</p>
           <div className="mt-2 flex gap-3 justify-center">
             <Link
               href="/recipes/new"
-              className="text-sm font-medium text-gray-900 underline"
+              className="text-sm font-medium text-accent underline"
             >
               Create your first recipe
             </Link>
-            <span className="text-gray-300">or</span>
+            <span className="text-warm-border">or</span>
             <Link
               href="/recipes/import-url"
-              className="text-sm font-medium text-gray-900 underline"
+              className="text-sm font-medium text-accent underline"
             >
               Import from URL
             </Link>
@@ -61,16 +61,16 @@ export default async function RecipesPage() {
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="block rounded-md border border-gray-200 p-4 hover:bg-gray-50"
+                className="block rounded-md border border-warm-border bg-white p-4 transition-shadow hover:shadow-md"
               >
-                <h2 className="font-medium">{recipe.title}</h2>
+                <h2 className="font-serif text-lg font-medium">{recipe.title}</h2>
                 {recipe.description && (
-                  <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                  <p className="mt-1 text-sm text-warm-gray line-clamp-2">
                     {recipe.description}
                   </p>
                 )}
                 {timeInfo && (
-                  <p className="mt-1 text-xs text-gray-400">{timeInfo}</p>
+                  <p className="mt-2 text-xs text-warm-gray">{timeInfo}</p>
                 )}
               </Link>
             );

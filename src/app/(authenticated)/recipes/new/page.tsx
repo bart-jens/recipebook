@@ -5,11 +5,11 @@ import Link from "next/link";
 export default function NewRecipePage() {
   return (
     <div>
-      <div className="mb-6 flex items-center gap-4">
-        <Link href="/recipes" className="text-gray-500 hover:text-gray-700">
-          &larr; Back
+      <div className="mb-8">
+        <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
+          &larr; Back to recipes
         </Link>
-        <h1 className="text-xl font-semibold">New Recipe</h1>
+        <h1 className="mt-2 font-serif text-2xl font-semibold">New Recipe</h1>
       </div>
       <RecipeForm action={createRecipe} submitLabel="Create Recipe" />
     </div>

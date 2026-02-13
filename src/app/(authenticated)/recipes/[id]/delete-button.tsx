@@ -11,7 +11,7 @@ export function DeleteButton({ recipeId }: { recipeId: string }) {
   return (
     <button
       onClick={handleDelete}
-      className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+      className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-500 hover:bg-red-50"
     >
       Delete
     </button>

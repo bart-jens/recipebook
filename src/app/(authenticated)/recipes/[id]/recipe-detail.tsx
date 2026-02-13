@@ -26,13 +26,8 @@ interface Recipe {
 }
 
 function formatInstructions(text: string): string[] {
-  // Split on numbered steps (e.g., "1.", "2.") or double newlines
   const lines = text.split(/\n/).map((l) => l.trim()).filter(Boolean);
-
-  // If lines are already numbered, return as-is
   if (lines.length > 1) return lines;
-
-  // Single block of text — split on sentence boundaries for readability
   return [text];
 }
 
@@ -49,18 +44,18 @@ export function RecipeDetail({
 
   return (
     <div className="max-w-2xl">
-      <div className="mb-6 flex items-center gap-4">
-        <Link href="/recipes" className="text-gray-500 hover:text-gray-700">
-          &larr; Back
+      <div className="mb-8">
+        <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
+          &larr; Back to recipes
         </Link>
       </div>
 
-      <div className="mb-2 flex items-start justify-between">
-        <h1 className="text-2xl font-semibold">{recipe.title}</h1>
-        <div className="flex gap-2">
+      <div className="mb-3 flex items-start justify-between">
+        <h1 className="font-serif text-3xl font-semibold leading-tight">{recipe.title}</h1>
+        <div className="flex gap-2 pt-1">
           <Link
             href={`/recipes/${recipe.id}/edit`}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+            className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
           >
             Edit
           </Link>
@@ -73,58 +68,57 @@ export function RecipeDetail({
           href={recipe.source_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mb-4 inline-block text-sm text-blue-600 hover:underline"
+          className="mb-6 inline-block text-sm text-accent hover:underline"
         >
           View original source &rarr;
         </a>
       )}
 
       {recipe.description && (
-        <div className="mb-6 mt-4">
-          <h2 className="mb-2 text-lg font-medium">About</h2>
-          <p className="leading-relaxed text-gray-600 whitespace-pre-line">{recipe.description}</p>
+        <div className="mb-8 mt-4">
+          <p className="text-warm-gray leading-relaxed whitespace-pre-line">{recipe.description}</p>
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap gap-3">
+      <div className="mb-8 flex flex-wrap gap-3">
         {recipe.prep_time_minutes && (
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
+          <span className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
             Prep: {recipe.prep_time_minutes} min
           </span>
         )}
         {recipe.cook_time_minutes && (
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
+          <span className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
             Cook: {recipe.cook_time_minutes} min
           </span>
         )}
         {recipe.servings && (
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
+          <span className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
             Servings: {recipe.servings}
           </span>
         )}
         {recipe.prep_time_minutes && recipe.cook_time_minutes && (
-          <span className="rounded-full bg-gray-900 px-3 py-1 text-sm text-white">
+          <span className="rounded-full bg-accent px-3 py-1 text-sm text-white">
             Total: {recipe.prep_time_minutes + recipe.cook_time_minutes} min
           </span>
         )}
       </div>
 
       {ingredients.length > 0 && (
-        <div className="mb-8">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-medium">Ingredients</h2>
+        <div className="mb-10">
+          <div className="mb-4 flex items-center justify-between border-b border-warm-divider pb-2">
+            <h2 className="font-serif text-xs font-medium uppercase tracking-widest text-warm-gray">Ingredients</h2>
             <UnitToggle system={unitSystem} onChange={setUnitSystem} />
           </div>
           <ul className="space-y-2">
             {ingredients.map((ing) => {
               const converted = convertIngredient(ing.quantity, ing.unit || "", unitSystem);
               return (
-                <li key={ing.id} className="flex items-baseline gap-2 border-b border-gray-100 pb-2">
-                  <span className="min-w-[4rem] text-right font-medium text-gray-900">
+                <li key={ing.id} className="flex items-baseline gap-2 border-b border-warm-divider pb-2">
+                  <span className="min-w-[4rem] text-right font-medium">
                     {formatQuantity(converted.quantity)} {converted.unit}
                   </span>
-                  <span className="text-gray-700">{ing.ingredient_name}</span>
-                  {ing.notes && <span className="text-sm text-gray-400">({ing.notes})</span>}
+                  <span className="text-warm-gray">{ing.ingredient_name}</span>
+                  {ing.notes && <span className="text-sm text-warm-gray/60">({ing.notes})</span>}
                 </li>
               );
             })}
@@ -133,20 +127,22 @@ export function RecipeDetail({
       )}
 
       {instructions.length > 0 && (
-        <div className="mb-8">
-          <h2 className="mb-3 text-lg font-medium">Instructions</h2>
+        <div className="mb-10">
+          <div className="mb-4 border-b border-warm-divider pb-2">
+            <h2 className="font-serif text-xs font-medium uppercase tracking-widest text-warm-gray">Preparation</h2>
+          </div>
           {instructions.length === 1 ? (
-            <div className="leading-relaxed text-gray-700 whitespace-pre-line">
+            <div className="leading-relaxed text-warm-gray whitespace-pre-line">
               {instructions[0]}
             </div>
           ) : (
-            <ol className="space-y-4">
+            <ol className="space-y-5">
               {instructions.map((step, i) => (
-                <li key={i} className="flex gap-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-medium text-gray-600">
+                <li key={i} className="flex gap-4">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-medium text-white">
                     {i + 1}
                   </span>
-                  <p className="leading-relaxed text-gray-700 pt-0.5">{step}</p>
+                  <p className="leading-relaxed text-warm-gray pt-0.5">{step}</p>
                 </li>
               ))}
             </ol>

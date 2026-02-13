@@ -54,17 +54,17 @@ export default function ImportUrlPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center gap-4">
-        <Link href="/recipes" className="text-gray-500 hover:text-gray-700">
-          &larr; Back
+      <div className="mb-8">
+        <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
+          &larr; Back to recipes
         </Link>
-        <h1 className="text-xl font-semibold">Import from URL</h1>
+        <h1 className="mt-2 font-serif text-2xl font-semibold">Import from URL</h1>
       </div>
 
       {!importedData ? (
         <form onSubmit={handleFetch} className="max-w-2xl space-y-4">
           <div>
-            <label htmlFor="url" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="url" className="block text-sm font-medium text-warm-gray">
               Recipe URL
             </label>
             <input
@@ -74,21 +74,21 @@ export default function ImportUrlPage() {
               placeholder="https://www.example.com/recipe/..."
               value={url}
               onChange={(e) => { setUrl(e.target.value); setError(null); }}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+              className="mt-1 block w-full rounded-md border border-warm-border bg-white px-3 py-3 text-base focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="rounded-md bg-gray-900 px-4 py-3 text-base font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-md bg-accent px-4 py-3 text-base font-medium text-white hover:bg-accent-hover disabled:opacity-50"
           >
             {loading ? "Fetching recipe..." : "Fetch Recipe"}
           </button>
         </form>
       ) : (
         <div>
-          <p className="mb-4 text-sm text-gray-500">
+          <p className="mb-4 text-sm text-warm-gray">
             Imported from: {importedData.source_url}
           </p>
           <RecipeForm
@@ -98,7 +98,7 @@ export default function ImportUrlPage() {
           />
           <button
             onClick={() => setImportedData(null)}
-            className="mt-4 text-sm text-gray-500 underline"
+            className="mt-4 text-sm text-warm-gray underline hover:text-accent"
           >
             Try a different URL
           </button>

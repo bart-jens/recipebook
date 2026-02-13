@@ -29,6 +29,9 @@ const emptyForm: RecipeFormData = {
   ingredients: [],
 };
 
+const inputClass =
+  "mt-1 block w-full rounded-md border border-warm-border bg-white px-3 py-3 text-base focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+
 export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps) {
   const [data, setData] = useState<RecipeFormData>(initialData ?? emptyForm);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +71,7 @@ export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="title" className="block text-sm font-medium text-warm-gray">
           Title *
         </label>
         <input
@@ -77,12 +80,12 @@ export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps
           required
           value={data.title}
           onChange={(e) => updateField("title", e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+          className={inputClass}
         />
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="description" className="block text-sm font-medium text-warm-gray">
           Description
         </label>
         <textarea
@@ -90,12 +93,12 @@ export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps
           rows={2}
           value={data.description}
           onChange={(e) => updateField("description", e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+          className={inputClass}
         />
       </div>
 
       <div>
-        <label htmlFor="instructions" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="instructions" className="block text-sm font-medium text-warm-gray">
           Instructions
         </label>
         <textarea
@@ -103,13 +106,13 @@ export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps
           rows={6}
           value={data.instructions}
           onChange={(e) => updateField("instructions", e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+          className={inputClass}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div>
-          <label htmlFor="prep_time" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="prep_time" className="block text-sm font-medium text-warm-gray">
             Prep time (min)
           </label>
           <input
@@ -118,11 +121,11 @@ export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps
             min="0"
             value={data.prep_time_minutes}
             onChange={(e) => updateField("prep_time_minutes", e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+            className={inputClass}
           />
         </div>
         <div>
-          <label htmlFor="cook_time" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="cook_time" className="block text-sm font-medium text-warm-gray">
             Cook time (min)
           </label>
           <input
@@ -131,11 +134,11 @@ export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps
             min="0"
             value={data.cook_time_minutes}
             onChange={(e) => updateField("cook_time_minutes", e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+            className={inputClass}
           />
         </div>
         <div>
-          <label htmlFor="servings" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="servings" className="block text-sm font-medium text-warm-gray">
             Servings
           </label>
           <input
@@ -144,7 +147,7 @@ export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps
             min="1"
             value={data.servings}
             onChange={(e) => updateField("servings", e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+            className={inputClass}
           />
         </div>
       </div>
@@ -158,7 +161,7 @@ export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-gray-900 px-4 py-3 text-base font-medium text-white hover:bg-gray-800 disabled:opacity-50 md:w-auto"
+        className="w-full rounded-md bg-accent px-4 py-3 text-base font-medium text-white hover:bg-accent-hover disabled:opacity-50 md:w-auto"
       >
         {loading ? "Saving..." : submitLabel}
       </button>

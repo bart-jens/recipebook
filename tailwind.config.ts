@@ -17,6 +17,26 @@ const config: Config = {
           "Roboto",
           "sans-serif",
         ],
+        serif: [
+          "Playfair Display",
+          "Georgia",
+          "Cambria",
+          "Times New Roman",
+          "serif",
+        ],
+      },
+      colors: {
+        cream: "#FFFBF5",
+        accent: {
+          DEFAULT: "#C8553D",
+          hover: "#A8432F",
+        },
+        warm: {
+          gray: "#6B6B6B",
+          border: "#E8E0D8",
+          divider: "#F0EBE4",
+          tag: "#F5F0EA",
+        },
       },
     },
   },

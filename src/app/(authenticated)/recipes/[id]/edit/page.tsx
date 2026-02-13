@@ -47,11 +47,11 @@ export default async function EditRecipePage({
 
   return (
     <div>
-      <div className="mb-6 flex items-center gap-4">
-        <Link href={`/recipes/${recipe.id}`} className="text-gray-500 hover:text-gray-700">
-          &larr; Back
+      <div className="mb-8">
+        <Link href={`/recipes/${recipe.id}`} className="text-sm text-warm-gray hover:text-accent">
+          &larr; Back to recipe
         </Link>
-        <h1 className="text-xl font-semibold">Edit Recipe</h1>
+        <h1 className="mt-2 font-serif text-2xl font-semibold">Edit Recipe</h1>
       </div>
       <RecipeForm initialData={initialData} action={action} submitLabel="Save Changes" />
     </div>

@@ -32,16 +32,16 @@ export function UnitToggle({
   onChange: (s: UnitSystem) => void;
 }) {
   return (
-    <div className="inline-flex rounded-md border border-gray-200 text-sm">
+    <div className="inline-flex rounded-md border border-warm-border text-sm">
       <button
         onClick={() => onChange("metric")}
-        className={`px-3 py-1 rounded-l-md ${system === "metric" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-50"}`}
+        className={`px-3 py-1 rounded-l-md ${system === "metric" ? "bg-accent text-white" : "text-warm-gray hover:bg-warm-tag"}`}
       >
         Metric
       </button>
       <button
         onClick={() => onChange("imperial")}
-        className={`px-3 py-1 rounded-r-md ${system === "imperial" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-50"}`}
+        className={`px-3 py-1 rounded-r-md ${system === "imperial" ? "bg-accent text-white" : "text-warm-gray hover:bg-warm-tag"}`}
       >
         Imperial
       </button>
