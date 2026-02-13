@@ -1,9 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { ExtractedRecipe } from "./claude-extract";
 
 const TEXT_PROMPT = `Extract the recipe from the following text. The text is from an Instagram post caption. Ignore any non-recipe content (hashtags, personal stories, engagement prompts, emojis used as decoration).
 
-Return ONLY valid JSON with this exact structure (no markdown, no explanation):
+Return ONLY valid JSON with this exact structure (no markdown, no code fences, no explanation):
 
 {
   "title": "Recipe title",
@@ -30,29 +30,21 @@ Text to extract from:
 export async function extractRecipeFromText(
   text: string
 ): Promise<{ data?: ExtractedRecipe; error?: string }> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return { error: "ANTHROPIC_API_KEY is not configured" };
+    return { error: "GEMINI_API_KEY is not configured" };
   }
 
-  const client = new Anthropic({ apiKey });
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   try {
-    const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 4096,
-      messages: [
-        {
-          role: "user",
-          content: TEXT_PROMPT + text,
-        },
-      ],
-    });
+    const result = await model.generateContent(TEXT_PROMPT + text);
 
-    const responseText = response.content
-      .filter((block): block is Anthropic.TextBlock => block.type === "text")
-      .map((block) => block.text)
-      .join("");
+    let responseText = result.response.text();
+
+    // Strip markdown code fences if present
+    responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 
     const parsed = JSON.parse(responseText);
 
@@ -63,6 +55,7 @@ export async function extractRecipeFromText(
     return { data: parsed as ExtractedRecipe };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
+    console.error("Gemini API error:", message);
     if (message.includes("JSON")) {
       return { error: "Could not parse recipe from text. Try pasting more of the caption." };
     }

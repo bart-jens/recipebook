@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface ExtractedRecipe {
   title: string;
@@ -15,7 +15,7 @@ export interface ExtractedRecipe {
   }[];
 }
 
-const RECIPE_PROMPT = `Extract the recipe from this image. Return ONLY valid JSON with this exact structure (no markdown, no explanation):
+const RECIPE_PROMPT = `Extract the recipe from this image. Return ONLY valid JSON with this exact structure (no markdown, no code fences, no explanation):
 
 {
   "title": "Recipe title",
@@ -40,35 +40,29 @@ export async function extractRecipeFromImage(
   base64Image: string,
   mediaType: "image/jpeg" | "image/png" | "image/webp"
 ): Promise<{ data?: ExtractedRecipe; error?: string }> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return { error: "ANTHROPIC_API_KEY is not configured" };
+    return { error: "GEMINI_API_KEY is not configured" };
   }
 
-  const client = new Anthropic({ apiKey });
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   try {
-    const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 4096,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: { type: "base64", media_type: mediaType, data: base64Image },
-            },
-            { type: "text", text: RECIPE_PROMPT },
-          ],
+    const result = await model.generateContent([
+      RECIPE_PROMPT,
+      {
+        inlineData: {
+          mimeType: mediaType,
+          data: base64Image,
         },
-      ],
-    });
+      },
+    ]);
 
-    const text = response.content
-      .filter((block): block is Anthropic.TextBlock => block.type === "text")
-      .map((block) => block.text)
-      .join("");
+    let text = result.response.text();
+
+    // Strip markdown code fences if present
+    text = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 
     const parsed = JSON.parse(text);
 
@@ -79,7 +73,7 @@ export async function extractRecipeFromImage(
     return { data: parsed as ExtractedRecipe };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
-    console.error("Claude Vision API error:", message);
+    console.error("Gemini API error:", message);
     if (message.includes("JSON")) {
       return { error: "Could not parse recipe from image. Try a clearer photo." };
     }
