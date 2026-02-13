@@ -49,8 +49,8 @@ export async function extractRecipeFromImage(
 
   try {
     const response = await client.messages.create({
-      model: "claude-sonnet-4-5-20250929",
-      max_tokens: 2048,
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 4096,
       messages: [
         {
           role: "user",
@@ -79,6 +79,7 @@ export async function extractRecipeFromImage(
     return { data: parsed as ExtractedRecipe };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
+    console.error("Claude Vision API error:", message);
     if (message.includes("JSON")) {
       return { error: "Could not parse recipe from image. Try a clearer photo." };
     }

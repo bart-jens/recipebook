@@ -66,7 +66,7 @@ export default function ImportPhotoPage() {
 
     try {
       // Resize client-side to stay under Vercel's 4.5MB limit
-      const { base64, mediaType } = await resizeImage(file, 1500);
+      const { base64, mediaType } = await resizeImage(file, 1200);
       const result = await extractFromPhotoBase64(base64, mediaType);
 
       if (result.error) {
