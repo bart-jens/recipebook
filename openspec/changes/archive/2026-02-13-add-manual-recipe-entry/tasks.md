@@ -31,5 +31,5 @@
 
 ## 7. Verification
 
-- [ ] 7.1 Verify full CRUD flow: create recipe with ingredients → view in list → view detail → edit → delete
+- [x] 7.1 Verify full CRUD flow: create recipe with ingredients → view in list → view detail → edit → delete
 - [x] 7.2 Verify `npm run build` succeeds with zero errors
