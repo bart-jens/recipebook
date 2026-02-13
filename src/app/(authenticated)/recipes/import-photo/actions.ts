@@ -3,22 +3,21 @@
 import { extractRecipeFromImage } from "@/lib/claude-extract";
 import type { ExtractedRecipe } from "@/lib/claude-extract";
 
-export async function extractFromPhoto(
-  formData: FormData
+export async function extractFromPhotoBase64(
+  base64: string,
+  mediaType: string
 ): Promise<{ data?: ExtractedRecipe; error?: string }> {
-  const file = formData.get("image") as File | null;
-  if (!file) {
-    return { error: "No file uploaded" };
+  if (!base64) {
+    return { error: "No image provided" };
   }
 
   const validTypes = ["image/jpeg", "image/png", "image/webp"];
-  if (!validTypes.includes(file.type)) {
+  if (!validTypes.includes(mediaType)) {
     return { error: "Please upload an image file (JPEG, PNG, or WebP)" };
   }
 
-  const bytes = await file.arrayBuffer();
-  const base64 = Buffer.from(bytes).toString("base64");
-  const mediaType = file.type as "image/jpeg" | "image/png" | "image/webp";
-
-  return extractRecipeFromImage(base64, mediaType);
+  return extractRecipeFromImage(
+    base64,
+    mediaType as "image/jpeg" | "image/png" | "image/webp"
+  );
 }
