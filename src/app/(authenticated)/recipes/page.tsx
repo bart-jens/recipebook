@@ -17,7 +17,13 @@ export default async function RecipesPage() {
             href="/recipes/import-url"
             className="rounded-md border border-warm-border px-4 py-2 text-sm font-medium text-warm-gray hover:bg-warm-tag"
           >
-            Import from URL
+            Import URL
+          </Link>
+          <Link
+            href="/recipes/import-instagram"
+            className="rounded-md border border-warm-border px-4 py-2 text-sm font-medium text-warm-gray hover:bg-warm-tag"
+          >
+            Import Instagram
           </Link>
           <Link
             href="/recipes/new"
