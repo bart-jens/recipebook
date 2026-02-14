@@ -7,6 +7,8 @@ import { convertIngredient, formatQuantity } from "@/lib/unit-conversion";
 import { TagEditor } from "./tag-editor";
 import { FavoriteButton } from "./favorite-button";
 import { CookingLog } from "./cooking-log";
+import { PublishButton } from "./publish-button";
+import { ForkButton } from "./fork-button";
 
 interface Ingredient {
   id: string;
@@ -27,6 +29,7 @@ interface Recipe {
   source_url: string | null;
   source_type: string;
   is_favorite: boolean;
+  visibility: string;
 }
 
 interface Tag {
@@ -42,6 +45,12 @@ interface RatingEntry {
   created_at: string;
 }
 
+interface ForkedFrom {
+  id: string;
+  title: string;
+  creator_name: string;
+}
+
 function formatInstructions(text: string): string[] {
   const lines = text.split(/\n/).map((l) => l.trim()).filter(Boolean);
   if (lines.length > 1) return lines;
@@ -53,11 +62,19 @@ export function RecipeDetail({
   ingredients,
   tags,
   ratings,
+  isOwner,
+  forkedFrom,
+  creatorName,
+  creatorId,
 }: {
   recipe: Recipe;
   ingredients: Ingredient[];
   tags: Tag[];
   ratings: RatingEntry[];
+  isOwner: boolean;
+  forkedFrom: ForkedFrom | null;
+  creatorName: string | null;
+  creatorId: string | null;
 }) {
   const [unitSystem, setUnitSystem] = useUnitSystem();
 
@@ -71,23 +88,71 @@ export function RecipeDetail({
         </Link>
       </div>
 
-      <div className="mb-3 flex items-start justify-between">
-        <h1 className="font-serif text-3xl font-semibold leading-tight">{recipe.title}</h1>
-        <div className="flex gap-2 pt-1">
-          <FavoriteButton recipeId={recipe.id} isFavorite={recipe.is_favorite} />
-          <Link
-            href={`/recipes/${recipe.id}/edit`}
-            className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
-          >
-            Edit
+      {forkedFrom && (
+        <div className="mb-3 text-sm text-warm-gray">
+          Forked from{" "}
+          <Link href={`/recipes/${forkedFrom.id}`} className="text-accent hover:underline">
+            {forkedFrom.title}
+          </Link>{" "}
+          by {forkedFrom.creator_name}
+        </div>
+      )}
+
+      {creatorName && creatorId && (
+        <div className="mb-3 text-sm text-warm-gray">
+          By{" "}
+          <Link href={`/profile/${creatorId}`} className="text-accent hover:underline">
+            {creatorName}
           </Link>
-          <DeleteButton recipeId={recipe.id} />
+        </div>
+      )}
+
+      <div className="mb-3 flex items-start justify-between">
+        <div className="flex-1">
+          <h1 className="font-serif text-3xl font-semibold leading-tight">{recipe.title}</h1>
+          {recipe.visibility === "public" && isOwner && (
+            <span className="mt-1 inline-block rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
+              Published
+            </span>
+          )}
+        </div>
+        <div className="flex gap-2 pt-1">
+          {isOwner ? (
+            <>
+              <FavoriteButton recipeId={recipe.id} isFavorite={recipe.is_favorite} />
+              <PublishButton recipeId={recipe.id} isPublic={recipe.visibility === "public"} />
+              <Link
+                href={`/recipes/${recipe.id}/edit`}
+                className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
+              >
+                Edit
+              </Link>
+              <DeleteButton recipeId={recipe.id} />
+            </>
+          ) : (
+            <ForkButton recipeId={recipe.id} />
+          )}
         </div>
       </div>
 
-      <div className="mb-4">
-        <TagEditor recipeId={recipe.id} tags={tags} />
-      </div>
+      {isOwner && (
+        <div className="mb-4">
+          <TagEditor recipeId={recipe.id} tags={tags} />
+        </div>
+      )}
+
+      {!isOwner && tags.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {tags.map((t) => (
+            <span
+              key={t.id}
+              className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray"
+            >
+              {t.tag}
+            </span>
+          ))}
+        </div>
+      )}
 
       {recipe.source_url && (
         <a
