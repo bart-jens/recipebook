@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,8 @@ interface Recipe {
   cook_time_minutes: number | null;
   is_favorite: boolean;
   visibility: string;
+  avgRating: number | null;
+  ratingCount: number;
 }
 
 export default function RecipesScreen() {
@@ -43,12 +45,40 @@ export default function RecipesScreen() {
     }
 
     const { data } = await query;
+    const recipeList = data || [];
+
+    // Batch fetch ratings for all recipes
+    let ratingMap = new Map<string, { total: number; count: number }>();
+    if (recipeList.length > 0) {
+      const { data: ratings } = await supabase
+        .from('recipe_ratings')
+        .select('recipe_id, rating')
+        .in('recipe_id', recipeList.map((r) => r.id));
+
+      for (const r of ratings || []) {
+        const existing = ratingMap.get(r.recipe_id) || { total: 0, count: 0 };
+        existing.total += r.rating;
+        existing.count += 1;
+        ratingMap.set(r.recipe_id, existing);
+      }
+    }
+
+    const enriched: Recipe[] = recipeList.map((r) => {
+      const ratingInfo = ratingMap.get(r.id);
+      return {
+        ...r,
+        avgRating: ratingInfo ? ratingInfo.total / ratingInfo.count : null,
+        ratingCount: ratingInfo?.count || 0,
+      };
+    });
+
     // Sort favorites first
-    const sorted = (data || []).sort((a, b) => {
+    enriched.sort((a, b) => {
       if (a.is_favorite !== b.is_favorite) return a.is_favorite ? -1 : 1;
       return 0;
     });
-    setRecipes(sorted);
+
+    setRecipes(enriched);
     setLoading(false);
   }, [user, search]);
 
@@ -69,6 +99,12 @@ export default function RecipesScreen() {
           onChangeText={setSearch}
           returnKeyType="search"
         />
+        {recipes.length > 0 && !loading && (
+          <Text style={styles.count}>
+            {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
+            {search ? ` for "${search}"` : ''}
+          </Text>
+        )}
       </View>
 
       {loading ? (
@@ -107,16 +143,26 @@ export default function RecipesScreen() {
                   {item.description}
                 </Text>
               )}
-              {(item.prep_time_minutes || item.cook_time_minutes) && (
-                <Text style={styles.cardMeta}>
-                  {[
-                    item.prep_time_minutes && `${item.prep_time_minutes} min prep`,
-                    item.cook_time_minutes && `${item.cook_time_minutes} min cook`,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </Text>
-              )}
+              <View style={styles.cardFooter}>
+                {item.avgRating !== null && (
+                  <View style={styles.ratingRow}>
+                    <Text style={styles.starFilled}>★</Text>
+                    <Text style={styles.ratingText}>
+                      {item.avgRating.toFixed(1)} ({item.ratingCount})
+                    </Text>
+                  </View>
+                )}
+                {(item.prep_time_minutes || item.cook_time_minutes) && (
+                  <Text style={styles.cardMeta}>
+                    {[
+                      item.prep_time_minutes && `${item.prep_time_minutes} min prep`,
+                      item.cook_time_minutes && `${item.cook_time_minutes} min cook`,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </Text>
+                )}
+              </View>
             </TouchableOpacity>
           )}
         />
@@ -138,6 +184,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1A1A1A',
   },
+  count: { fontSize: 13, color: '#6B6B6B', marginTop: 8 },
   empty: { alignItems: 'center', paddingTop: 60 },
   emptyTitle: { fontSize: 18, fontWeight: '600', color: '#1A1A1A', marginBottom: 8 },
   emptyText: { fontSize: 14, color: '#6B6B6B', textAlign: 'center', maxWidth: 260, lineHeight: 20 },
@@ -156,5 +203,9 @@ const styles = StyleSheet.create({
   publicBadge: { backgroundColor: '#F0FDF4', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 2 },
   publicText: { fontSize: 11, color: '#15803D', fontWeight: '500' },
   cardDesc: { marginTop: 4, fontSize: 14, color: '#6B6B6B', lineHeight: 20 },
-  cardMeta: { marginTop: 8, fontSize: 12, color: '#999' },
+  cardFooter: { marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  starFilled: { color: '#F59E0B', fontSize: 14 },
+  ratingText: { fontSize: 12, color: '#6B6B6B' },
+  cardMeta: { fontSize: 12, color: '#999' },
 });
