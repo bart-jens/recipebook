@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   ViewStyle,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { colors, spacing, typography, radii, shadows } from '@/lib/theme';
@@ -19,6 +20,7 @@ interface DiscoverRecipe {
   id: string;
   title: string;
   description: string | null;
+  image_url: string | null;
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   created_by: string;
@@ -37,7 +39,7 @@ export default function DiscoverScreen() {
 
     let query = supabase
       .from('recipes')
-      .select('id, title, description, prep_time_minutes, cook_time_minutes, created_by')
+      .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes, created_by')
       .eq('visibility', 'public')
       .order('published_at', { ascending: false })
       .limit(50);
@@ -135,6 +137,14 @@ export default function DiscoverScreen() {
               style={styles.card}
               onPress={() => router.push(`/recipe/${item.id}`)}
             >
+              {item.image_url && (
+                <Image
+                  source={{ uri: item.image_url }}
+                  style={styles.cardImage}
+                  contentFit="cover"
+                  transition={200}
+                />
+              )}
               <Text style={styles.cardTitle}>{item.title}</Text>
               <TouchableOpacity
                 activeOpacity={0.7}
@@ -218,8 +228,15 @@ const styles = StyleSheet.create({
     height: spacing.md,
   },
   card: {
-    // Card already provides padding, bg, border-radius, and shadow
+    overflow: 'hidden',
   } as ViewStyle,
+  cardImage: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+    borderRadius: radii.md,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.surface,
+  },
   cardTitle: {
     ...typography.h3,
     color: colors.text,

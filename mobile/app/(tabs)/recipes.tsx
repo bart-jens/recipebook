@@ -6,7 +6,9 @@ import {
   FlatList,
   TextInput,
   ActivityIndicator,
+  ViewStyle,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useFocusEffect, router } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
@@ -21,6 +23,7 @@ interface Recipe {
   id: string;
   title: string;
   description: string | null;
+  image_url: string | null;
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   is_favorite: boolean;
@@ -41,7 +44,7 @@ export default function RecipesScreen() {
 
     let query = supabase
       .from('recipes')
-      .select('id, title, description, prep_time_minutes, cook_time_minutes, is_favorite, visibility')
+      .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes, is_favorite, visibility')
       .eq('created_by', user.id)
       .order('updated_at', { ascending: false });
 
@@ -148,7 +151,15 @@ export default function RecipesScreen() {
           contentContainerStyle={{ padding: spacing.lg }}
           ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
           renderItem={({ item }) => (
-            <Card onPress={() => router.push(`/recipe/${item.id}`)}>
+            <Card onPress={() => router.push(`/recipe/${item.id}`)} style={styles.recipeCard}>
+              {item.image_url && (
+                <Image
+                  source={{ uri: item.image_url }}
+                  style={styles.cardImage}
+                  contentFit="cover"
+                  transition={200}
+                />
+              )}
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
                 <View style={styles.badges}>
@@ -226,6 +237,16 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     maxWidth: 260,
+  },
+  recipeCard: {
+    overflow: 'hidden',
+  } as ViewStyle,
+  cardImage: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+    borderRadius: radii.md,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.surface,
   },
   cardHeader: {
     flexDirection: 'row',

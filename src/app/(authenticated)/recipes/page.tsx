@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { RecipeListControls } from "./recipe-list-controls";
 
@@ -14,6 +15,7 @@ interface RecipeRow {
   id: string;
   title: string;
   description: string | null;
+  image_url: string | null;
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   is_favorite: boolean;
@@ -39,7 +41,7 @@ export default async function RecipesPage({
 
   let query = supabase
     .from("recipes")
-    .select("id, title, description, prep_time_minutes, cook_time_minutes, is_favorite, updated_at, recipe_tags(tag), recipe_ratings(rating)");
+    .select("id, title, description, image_url, prep_time_minutes, cook_time_minutes, is_favorite, updated_at, recipe_tags(tag), recipe_ratings(rating)");
 
   if (q) {
     query = query.ilike("title", `%${q}%`);
@@ -172,6 +174,19 @@ export default async function RecipesPage({
                 href={`/recipes/${recipe.id}`}
                 className="block rounded-md border border-warm-border bg-white p-4 transition-shadow hover:shadow-md"
               >
+                <div className="flex gap-4">
+                  {recipe.image_url && (
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md">
+                      <Image
+                        src={recipe.image_url}
+                        alt={recipe.title}
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1">
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="font-serif text-lg font-medium">{recipe.title}</h2>
                   <div className="flex items-center gap-2 shrink-0">
@@ -207,6 +222,8 @@ export default async function RecipesPage({
                   {timeInfo && (
                     <span className="text-xs text-warm-gray">{timeInfo}</span>
                   )}
+                </div>
+                  </div>
                 </div>
               </Link>
             );

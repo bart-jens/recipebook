@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   ViewStyle,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
@@ -19,6 +20,7 @@ interface RecentRecipe {
   id: string;
   title: string;
   updated_at: string;
+  image_url: string | null;
 }
 
 interface Stats {
@@ -47,7 +49,7 @@ export default function HomeScreen() {
             .single(),
           supabase
             .from('recipes')
-            .select('id, title, updated_at, is_favorite')
+            .select('id, title, updated_at, is_favorite, image_url')
             .eq('created_by', user!.id)
             .order('updated_at', { ascending: false })
             .limit(5),
@@ -129,10 +131,20 @@ export default function HomeScreen() {
               style={styles.recentCard}
               onPress={() => router.push(`/recipe/${recipe.id}`)}
             >
-              <Text style={styles.recentTitle}>{recipe.title}</Text>
-              <Text style={styles.recentDate}>
-                {new Date(recipe.updated_at).toLocaleDateString()}
-              </Text>
+              {recipe.image_url && (
+                <Image
+                  source={{ uri: recipe.image_url }}
+                  style={styles.recentThumb}
+                  contentFit="cover"
+                  transition={200}
+                />
+              )}
+              <View style={styles.recentTextWrap}>
+                <Text style={styles.recentTitle}>{recipe.title}</Text>
+                <Text style={styles.recentDate}>
+                  {new Date(recipe.updated_at).toLocaleDateString()}
+                </Text>
+              </View>
             </Card>
           ))
         )}
@@ -239,11 +251,23 @@ const styles = StyleSheet.create({
   // Recent recipes
   recentCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     borderRadius: radii.md,
     marginBottom: spacing.sm,
   } as ViewStyle,
+  recentThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: radii.md,
+    marginRight: spacing.md,
+    backgroundColor: colors.surface,
+  },
+  recentTextWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   recentTitle: {
     ...typography.body,
     fontWeight: '500',

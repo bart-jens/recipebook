@@ -6,6 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, Stack, useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -25,6 +26,7 @@ interface PublicRecipe {
   id: string;
   title: string;
   description: string | null;
+  image_url: string | null;
 }
 
 export default function PublicProfileScreen() {
@@ -56,7 +58,7 @@ export default function PublicProfileScreen() {
             .single(),
           supabase
             .from('recipes')
-            .select('id, title, description')
+            .select('id, title, description, image_url')
             .eq('created_by', id!)
             .eq('visibility', 'public')
             .order('published_at', { ascending: false }),
@@ -180,10 +182,22 @@ export default function PublicProfileScreen() {
                 style={styles.recipeCard}
                 onPress={() => router.push(`/recipe/${recipe.id}`)}
               >
-                <Text style={styles.recipeTitle}>{recipe.title}</Text>
-                {recipe.description && (
-                  <Text style={styles.recipeDesc} numberOfLines={2}>{recipe.description}</Text>
-                )}
+                <View style={styles.recipeRow}>
+                  {recipe.image_url && (
+                    <Image
+                      source={{ uri: recipe.image_url }}
+                      style={styles.recipeThumb}
+                      contentFit="cover"
+                      transition={200}
+                    />
+                  )}
+                  <View style={styles.recipeTextWrap}>
+                    <Text style={styles.recipeTitle}>{recipe.title}</Text>
+                    {recipe.description && (
+                      <Text style={styles.recipeDesc} numberOfLines={2}>{recipe.description}</Text>
+                    )}
+                  </View>
+                </View>
               </Card>
             ))
           )}
@@ -235,6 +249,20 @@ const styles = StyleSheet.create({
 
   recipeCard: {
     marginBottom: spacing.sm,
+  },
+  recipeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  recipeThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: radii.md,
+    marginRight: spacing.md,
+    backgroundColor: colors.surface,
+  },
+  recipeTextWrap: {
+    flex: 1,
   },
   recipeTitle: { fontSize: 16, fontWeight: '600', color: colors.text },
   recipeDesc: { ...typography.bodySmall, color: colors.textSecondary, marginTop: spacing.xs },

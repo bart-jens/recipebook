@@ -9,17 +9,23 @@ import {
   TextInput,
   Alert,
   ViewStyle,
+  Dimensions,
 } from 'react-native';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, Stack, useFocusEffect, router } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
+import { uploadRecipeImage } from '@/lib/upload-image';
 import { colors, spacing, typography, radii, shadows } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 import StarRating from '@/components/ui/StarRating';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Badge from '@/components/ui/Badge';
 import IconButton from '@/components/ui/IconButton';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 interface Recipe {
   id: string;
@@ -30,6 +36,7 @@ interface Recipe {
   cook_time_minutes: number | null;
   servings: number | null;
   source_url: string | null;
+  image_url: string | null;
   is_favorite: boolean;
   visibility: string;
   created_by: string;
@@ -73,6 +80,7 @@ export default function RecipeDetailScreen() {
   const [cookRating, setCookRating] = useState(0);
   const [cookNotes, setCookNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const fetchRecipe = useCallback(async () => {
     if (!id) return;
@@ -247,6 +255,28 @@ export default function RecipeDetailScreen() {
     ]);
   };
 
+  const pickAndUploadImage = async () => {
+    if (!recipe || !user) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+
+    setUploading(true);
+    try {
+      const publicUrl = await uploadRecipeImage(user.id, recipe.id, result.assets[0].uri);
+      setRecipe({ ...recipe, image_url: publicUrl });
+    } catch {
+      Alert.alert('Error', 'Could not upload image');
+    }
+    setUploading(false);
+  };
+
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
@@ -294,6 +324,43 @@ export default function RecipeDetailScreen() {
     <>
       <Stack.Screen options={{ headerTitle: recipe.title }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        {/* Hero image */}
+        {recipe.image_url ? (
+          <TouchableOpacity
+            activeOpacity={isOwner ? 0.8 : 1}
+            onPress={isOwner ? pickAndUploadImage : undefined}
+            disabled={!isOwner || uploading}
+          >
+            <Image
+              source={{ uri: recipe.image_url }}
+              style={styles.heroImage}
+              contentFit="cover"
+              transition={200}
+            />
+            {uploading && (
+              <View style={styles.uploadOverlay}>
+                <ActivityIndicator size="large" color={colors.white} />
+              </View>
+            )}
+          </TouchableOpacity>
+        ) : isOwner ? (
+          <TouchableOpacity
+            style={styles.addImageButton}
+            activeOpacity={0.7}
+            onPress={pickAndUploadImage}
+            disabled={uploading}
+          >
+            {uploading ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <>
+                <FontAwesome name="camera" size={24} color={colors.textMuted} />
+                <Text style={styles.addImageText}>Add a photo</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        ) : null}
+
         {/* Creator name for non-owned recipes */}
         {creatorName && recipe.created_by && (
           <TouchableOpacity
@@ -535,6 +602,39 @@ const styles = StyleSheet.create({
   centered: { justifyContent: 'center', alignItems: 'center' },
   content: { padding: spacing.xl },
   emptyText: { fontSize: 16, color: colors.textSecondary },
+
+  // Hero image
+  heroImage: {
+    width: SCREEN_WIDTH - spacing.xl * 2,
+    aspectRatio: 16 / 9,
+    borderRadius: radii.lg,
+    marginBottom: spacing.lg,
+    backgroundColor: colors.surface,
+  },
+  uploadOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: radii.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addImageButton: {
+    width: SCREEN_WIDTH - spacing.xl * 2,
+    aspectRatio: 16 / 9,
+    borderRadius: radii.lg,
+    borderWidth: 2,
+    borderColor: colors.borderLight,
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+    backgroundColor: colors.surface,
+  },
+  addImageText: {
+    ...typography.bodySmall,
+    color: colors.textMuted,
+    marginTop: spacing.sm,
+  },
 
   // Creator
   creatorLink: { ...typography.bodySmall, color: colors.primary, fontWeight: '500' },

@@ -22,6 +22,7 @@ export default function ImportUrlScreen() {
   const [url, setUrl] = useState('');
   const [extracting, setExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<RecipeFormData | null>(null);
+  const [extractedImageUrl, setExtractedImageUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const handleExtract = async () => {
@@ -69,6 +70,10 @@ export default function ImportUrlScreen() {
             }))
           : [{ ingredient_name: '', quantity: '', unit: '', notes: '' }],
       });
+      // Store extracted image URL for use at save time
+      if (data.imageUrl) {
+        setExtractedImageUrl(data.imageUrl);
+      }
     } catch {
       Alert.alert('Error', 'Could not connect to the server. Please check your connection.');
     }
@@ -91,6 +96,7 @@ export default function ImportUrlScreen() {
         servings: data.servings ? parseInt(data.servings) : null,
         source_type: 'url',
         source_url: url.trim(),
+        image_url: extractedImageUrl,
         created_by: user.id,
       })
       .select('id')

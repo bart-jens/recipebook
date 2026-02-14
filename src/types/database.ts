@@ -156,6 +156,7 @@ export type Database = {
           description: string | null
           forked_from_id: string | null
           id: string
+          image_url: string | null
           instructions: string | null
           is_favorite: boolean
           prep_time_minutes: number | null
@@ -177,6 +178,7 @@ export type Database = {
           description?: string | null
           forked_from_id?: string | null
           id?: string
+          image_url?: string | null
           instructions?: string | null
           is_favorite?: boolean
           prep_time_minutes?: number | null
@@ -198,6 +200,7 @@ export type Database = {
           description?: string | null
           forked_from_id?: string | null
           id?: string
+          image_url?: string | null
           instructions?: string | null
           is_favorite?: boolean
           prep_time_minutes?: number | null

@@ -11,12 +11,14 @@ export interface ParsedRecipe {
   servings: number | null;
   ingredients: ParsedIngredient[];
   source_url: string;
+  imageUrl: string | null;
 }
 
 interface SchemaRecipe {
   "@type"?: string | string[];
   name?: string;
   description?: string;
+  image?: unknown;
   recipeInstructions?: unknown;
   recipeIngredient?: string[];
   prepTime?: string;
@@ -83,6 +85,25 @@ function parseInstructions(raw: unknown): string {
   return "";
 }
 
+function parseImage(raw: unknown): string | null {
+  if (!raw) return null;
+  if (typeof raw === "string") return raw;
+  if (Array.isArray(raw)) {
+    // Array of strings or ImageObjects
+    for (const item of raw) {
+      const url = parseImage(item);
+      if (url) return url;
+    }
+    return null;
+  }
+  if (typeof raw === "object" && raw !== null) {
+    // ImageObject with url property
+    const obj = raw as Record<string, unknown>;
+    if (typeof obj.url === "string") return obj.url;
+  }
+  return null;
+}
+
 function parseServings(raw: unknown): number | null {
   if (typeof raw === "number") return raw;
   if (typeof raw === "string") {
@@ -138,5 +159,6 @@ export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
     servings: parseServings(r.recipeYield),
     ingredients,
     source_url: url,
+    imageUrl: parseImage(r.image),
   };
 }

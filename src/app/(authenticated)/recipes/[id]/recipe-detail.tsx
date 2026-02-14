@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { DeleteButton } from "./delete-button";
 import { UnitToggle, useUnitSystem } from "./unit-toggle";
 import { convertIngredient, formatQuantity } from "@/lib/unit-conversion";
@@ -23,6 +24,7 @@ interface Recipe {
   title: string;
   description: string | null;
   instructions: string | null;
+  image_url?: string | null;
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   servings: number | null;
@@ -87,6 +89,19 @@ export function RecipeDetail({
           &larr; Back to recipes
         </Link>
       </div>
+
+      {recipe.image_url && (
+        <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-lg">
+          <Image
+            src={recipe.image_url}
+            alt={recipe.title}
+            fill
+            sizes="(max-width: 672px) 100vw, 672px"
+            priority
+            className="object-cover"
+          />
+        </div>
+      )}
 
       {forkedFrom && (
         <div className="mb-3 text-sm text-warm-gray">
