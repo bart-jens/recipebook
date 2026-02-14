@@ -4,22 +4,20 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  ViewStyle,
 } from 'react-native';
-import { Image } from 'expo-image';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { router, useFocusEffect } from 'expo-router';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, radii, shadows } from '@/lib/theme';
-import Card from '@/components/ui/Card';
+import { colors, spacing, typography, fontFamily, animation } from '@/lib/theme';
+import AnimatedCard from '@/components/ui/AnimatedCard';
+import HorizontalCarousel from '@/components/ui/HorizontalCarousel';
+import EmptyState from '@/components/ui/EmptyState';
+import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
 
-interface RecentRecipe {
+interface CarouselRecipe {
   id: string;
   title: string;
-  updated_at: string;
   image_url: string | null;
 }
 
@@ -33,7 +31,8 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const [displayName, setDisplayName] = useState('');
   const [stats, setStats] = useState<Stats>({ totalRecipes: 0, favorites: 0, timeCooked: 0 });
-  const [recentRecipes, setRecentRecipes] = useState<RecentRecipe[]>([]);
+  const [recentRecipes, setRecentRecipes] = useState<CarouselRecipe[]>([]);
+  const [trendingRecipes, setTrendingRecipes] = useState<CarouselRecipe[]>([]);
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
@@ -41,7 +40,14 @@ export default function HomeScreen() {
       if (!user) return;
 
       async function load() {
-        const [{ data: profile }, { data: recipes }, { data: ratings }] = await Promise.all([
+        const [
+          { data: profile },
+          { data: recent },
+          { count: recipeCount },
+          { count: favoriteCount },
+          { count: cookedCount },
+          { data: trending },
+        ] = await Promise.all([
           supabase
             .from('user_profiles')
             .select('display_name')
@@ -49,24 +55,39 @@ export default function HomeScreen() {
             .single(),
           supabase
             .from('recipes')
-            .select('id, title, updated_at, is_favorite, image_url')
+            .select('id, title, image_url')
             .eq('created_by', user!.id)
             .order('updated_at', { ascending: false })
-            .limit(5),
+            .limit(10),
+          supabase
+            .from('recipes')
+            .select('*', { count: 'exact', head: true })
+            .eq('created_by', user!.id),
+          supabase
+            .from('recipes')
+            .select('*', { count: 'exact', head: true })
+            .eq('created_by', user!.id)
+            .eq('is_favorite', true),
           supabase
             .from('recipe_ratings')
-            .select('id')
+            .select('*', { count: 'exact', head: true })
             .eq('user_id', user!.id),
+          supabase
+            .from('recipes')
+            .select('id, title, image_url')
+            .eq('visibility', 'public')
+            .order('published_at', { ascending: false })
+            .limit(10),
         ]);
 
         setDisplayName(profile?.display_name || '');
-        const allRecipes = recipes || [];
+        setRecentRecipes(recent || []);
+        setTrendingRecipes(trending || []);
         setStats({
-          totalRecipes: allRecipes.length,
-          favorites: allRecipes.filter((r) => r.is_favorite).length,
-          timeCooked: (ratings || []).length,
+          totalRecipes: recipeCount || 0,
+          favorites: favoriteCount || 0,
+          timeCooked: cookedCount || 0,
         });
-        setRecentRecipes(allRecipes.slice(0, 5));
         setLoading(false);
       }
 
@@ -76,8 +97,8 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={styles.container}>
+        <HomeSkeleton />
       </View>
     );
   }
@@ -91,95 +112,59 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.greeting}>
+      <Animated.Text entering={FadeInDown.duration(400)} style={styles.greeting}>
         {greeting()}, {displayName || 'Chef'}
-      </Text>
+      </Animated.Text>
 
-      {/* Stats row */}
-      <View style={styles.statsRow}>
-        <Card style={styles.statCard}>
+      <Animated.View
+        entering={FadeInDown.delay(animation.staggerDelay).duration(400)}
+        style={styles.statsRow}
+      >
+        <AnimatedCard style={styles.statCard} onPress={() => router.push('/(tabs)/recipes')}>
           <Text style={styles.statNumber}>{stats.totalRecipes}</Text>
           <Text style={styles.statLabel}>recipes</Text>
-        </Card>
-        <Card style={styles.statCard}>
+        </AnimatedCard>
+        <AnimatedCard style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.favorites}</Text>
           <Text style={styles.statLabel}>favorites</Text>
-        </Card>
-        <Card style={styles.statCard}>
+        </AnimatedCard>
+        <AnimatedCard style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.timeCooked}</Text>
           <Text style={styles.statLabel}>times cooked</Text>
-        </Card>
-      </View>
+        </AnimatedCard>
+      </Animated.View>
 
-      {/* Recent recipes */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recently Updated</Text>
-          <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/(tabs)/recipes')}>
-            <Text style={styles.seeAll}>See all</Text>
-          </TouchableOpacity>
-        </View>
+      {recentRecipes.length > 0 ? (
+        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
+          <HorizontalCarousel
+            title="Recently Updated"
+            seeAllLabel="See all"
+            onSeeAll={() => router.push('/(tabs)/recipes')}
+            items={recentRecipes}
+            onItemPress={(id) => router.push(`/recipe/${id}`)}
+          />
+        </Animated.View>
+      ) : (
+        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
+          <EmptyState
+            icon="book"
+            title="No recipes yet"
+            subtitle="Import a recipe or create your first one!"
+          />
+        </Animated.View>
+      )}
 
-        {recentRecipes.length === 0 ? (
-          <View style={styles.emptySection}>
-            <Text style={styles.emptyText}>No recipes yet. Import one from the web app!</Text>
-          </View>
-        ) : (
-          recentRecipes.map((recipe) => (
-            <Card
-              key={recipe.id}
-              style={styles.recentCard}
-              onPress={() => router.push(`/recipe/${recipe.id}`)}
-            >
-              {recipe.image_url && (
-                <Image
-                  source={{ uri: recipe.image_url }}
-                  style={styles.recentThumb}
-                  contentFit="cover"
-                  transition={200}
-                />
-              )}
-              <View style={styles.recentTextWrap}>
-                <Text style={styles.recentTitle}>{recipe.title}</Text>
-                <Text style={styles.recentDate}>
-                  {new Date(recipe.updated_at).toLocaleDateString()}
-                </Text>
-              </View>
-            </Card>
-          ))
-        )}
-      </View>
-
-      {/* Quick actions */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            activeOpacity={0.7}
-            onPress={() => router.push('/(tabs)/discover')}
-          >
-            <FontAwesome name="search" size={22} color={colors.primary} style={styles.actionIcon} />
-            <Text style={styles.actionLabel}>Discover</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            activeOpacity={0.7}
-            onPress={() => router.push('/(tabs)/recipes')}
-          >
-            <FontAwesome name="book" size={22} color={colors.primary} style={styles.actionIcon} />
-            <Text style={styles.actionLabel}>My Recipes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            activeOpacity={0.7}
-            onPress={() => router.push('/(tabs)/profile')}
-          >
-            <FontAwesome name="user" size={22} color={colors.primary} style={styles.actionIcon} />
-            <Text style={styles.actionLabel}>Profile</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      {trendingRecipes.length > 0 && (
+        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}>
+          <HorizontalCarousel
+            title="Discover"
+            seeAllLabel="Browse"
+            onSeeAll={() => router.push('/(tabs)/discover')}
+            items={trendingRecipes}
+            onItemPress={(id) => router.push(`/recipe/${id}`)}
+          />
+        </Animated.View>
+      )}
     </ScrollView>
   );
 }
@@ -189,32 +174,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   content: {
-    padding: spacing.xl,
     paddingTop: spacing.sm,
+    paddingBottom: spacing.xxxl,
   },
   greeting: {
-    ...typography.h1,
+    fontFamily: fontFamily.serifSemiBold,
     fontSize: 24,
     color: colors.text,
     marginBottom: spacing.xl,
+    paddingHorizontal: spacing.xl,
   },
-
-  // Stats
   statsRow: {
     flexDirection: 'row',
     gap: spacing.md,
-    marginBottom: 28,
+    paddingHorizontal: spacing.xl,
+    marginBottom: spacing.xxl,
   },
   statCard: {
     flex: 1,
     alignItems: 'center',
-    borderRadius: radii.lg,
-  } as ViewStyle,
+  },
   statNumber: {
     fontSize: 24,
     fontWeight: '700',
@@ -224,91 +204,5 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
     marginTop: 2,
-  },
-
-  // Sections
-  section: {
-    marginBottom: 28,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  seeAll: {
-    ...typography.bodySmall,
-    color: colors.primary,
-    fontWeight: '500',
-  },
-
-  // Recent recipes
-  recentCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: radii.md,
-    marginBottom: spacing.sm,
-  } as ViewStyle,
-  recentThumb: {
-    width: 56,
-    height: 56,
-    borderRadius: radii.md,
-    marginRight: spacing.md,
-    backgroundColor: colors.surface,
-  },
-  recentTextWrap: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  recentTitle: {
-    ...typography.body,
-    fontWeight: '500',
-    color: colors.text,
-    flex: 1,
-  },
-  recentDate: {
-    ...typography.caption,
-    color: colors.textMuted,
-    marginLeft: spacing.sm,
-  },
-
-  emptySection: {
-    alignItems: 'center',
-    paddingVertical: spacing.xxl,
-  },
-  emptyText: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-
-  // Quick actions
-  actionsRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  actionButton: {
-    flex: 1,
-    backgroundColor: colors.card,
-    borderRadius: radii.lg,
-    padding: spacing.lg,
-    alignItems: 'center',
-    ...shadows,
-  } as ViewStyle,
-  actionIcon: {
-    marginBottom: spacing.sm - 2,
-  },
-  actionLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontWeight: '500',
   },
 });

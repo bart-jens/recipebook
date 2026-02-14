@@ -22,6 +22,14 @@ export const colors = {
   dangerBg: '#FEF2F2',
   dangerBorder: '#FECACA',
   white: '#FFFFFF',
+  // Gradient colors
+  gradientWarmStart: '#C8553D',
+  gradientWarmEnd: '#E8A87C',
+  gradientOverlayStart: 'transparent',
+  gradientOverlayEnd: 'rgba(0,0,0,0.65)',
+  // Skeleton shimmer
+  skeletonBase: '#F0EBE4',
+  skeletonHighlight: '#FAF6F0',
 } as const;
 
 export const spacing = {
@@ -32,6 +40,13 @@ export const spacing = {
   xl: 20,
   xxl: 24,
   xxxl: 32,
+} as const;
+
+export const fontFamily = {
+  serif: 'PlayfairDisplay_400Regular',
+  serifSemiBold: 'PlayfairDisplay_600SemiBold',
+  serifBold: 'PlayfairDisplay_700Bold',
+  system: Platform.OS === 'ios' ? 'System' : 'Roboto',
 } as const;
 
 export const typography: Record<string, TextStyle> = {
@@ -48,6 +63,9 @@ export const typography: Record<string, TextStyle> = {
     letterSpacing: 1.5,
     lineHeight: 16,
   },
+  // Serif display styles
+  display: { fontSize: 28, fontFamily: fontFamily.serifBold, lineHeight: 34 },
+  displaySmall: { fontSize: 22, fontFamily: fontFamily.serifSemiBold, lineHeight: 28 },
 } as const;
 
 export const radii = {
@@ -70,3 +88,11 @@ export const shadows = Platform.select({
   },
   default: {},
 }) as Record<string, unknown>;
+
+export const animation = {
+  springConfig: { damping: 15, stiffness: 150, mass: 0.8 },
+  pressScale: 0.97,
+  heartScale: 1.3,
+  staggerDelay: 50,
+  skeletonDuration: 1200,
+} as const;

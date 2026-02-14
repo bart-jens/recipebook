@@ -1,20 +1,16 @@
 import { useState, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   FlatList,
   TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  ViewStyle,
 } from 'react-native';
-import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import { colors, spacing, typography, radii, shadows } from '@/lib/theme';
-import Card from '@/components/ui/Card';
-import StarRating from '@/components/ui/StarRating';
+import { colors, spacing, typography, radii } from '@/lib/theme';
+import RecipeCard from '@/components/ui/RecipeCard';
+import EmptyState from '@/components/ui/EmptyState';
+import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 
 interface DiscoverRecipe {
   id: string;
@@ -98,8 +94,6 @@ export default function DiscoverScreen() {
     }, [fetchRecipes])
   );
 
-  const ItemSeparator = () => <View style={styles.separator} />;
-
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
@@ -114,68 +108,28 @@ export default function DiscoverScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator style={styles.loader} size="large" color={colors.primary} />
+        <RecipeListSkeleton />
       ) : recipes.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>
-            {search ? 'No results' : 'No published recipes yet'}
-          </Text>
-          <Text style={styles.emptyText}>
-            {search
+        <EmptyState
+          icon="search"
+          title={search ? 'No results' : 'No published recipes yet'}
+          subtitle={
+            search
               ? `No recipes match "${search}"`
-              : 'Be the first to publish a recipe!'}
-          </Text>
-        </View>
+              : 'Be the first to publish a recipe!'
+          }
+        />
       ) : (
         <FlatList
           data={recipes}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={ItemSeparator}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
           renderItem={({ item }) => (
-            <Card
-              style={styles.card}
+            <RecipeCard
+              recipe={item}
               onPress={() => router.push(`/recipe/${item.id}`)}
-            >
-              {item.image_url && (
-                <Image
-                  source={{ uri: item.image_url }}
-                  style={styles.cardImage}
-                  contentFit="cover"
-                  transition={200}
-                />
-              )}
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => router.push(`/profile/${item.created_by}`)}
-              >
-                <Text style={styles.creatorName}>by {item.creatorName}</Text>
-              </TouchableOpacity>
-              {item.description && (
-                <Text style={styles.cardDesc} numberOfLines={2}>
-                  {item.description}
-                </Text>
-              )}
-              <View style={styles.cardFooter}>
-                {item.avgRating !== null && (
-                  <View style={styles.ratingRow}>
-                    <StarRating rating={item.avgRating} size={14} />
-                    <Text style={styles.ratingCount}>({item.ratingCount})</Text>
-                  </View>
-                )}
-                {(item.prep_time_minutes || item.cook_time_minutes) && (
-                  <Text style={styles.cardMeta}>
-                    {[
-                      item.prep_time_minutes && `${item.prep_time_minutes} min prep`,
-                      item.cook_time_minutes && `${item.cook_time_minutes} min cook`,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </Text>
-                )}
-              </View>
-            </Card>
+            />
           )}
         />
       )}
@@ -202,72 +156,10 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text,
   },
-  loader: {
-    marginTop: 40,
-  },
-  empty: {
-    alignItems: 'center',
-    paddingTop: 60,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  emptyText: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    maxWidth: 260,
-  },
   listContent: {
     padding: spacing.lg,
   },
   separator: {
     height: spacing.md,
-  },
-  card: {
-    overflow: 'hidden',
-  } as ViewStyle,
-  cardImage: {
-    width: '100%',
-    aspectRatio: 16 / 9,
-    borderRadius: radii.md,
-    marginBottom: spacing.sm,
-    backgroundColor: colors.surface,
-  },
-  cardTitle: {
-    ...typography.h3,
-    color: colors.text,
-  },
-  creatorName: {
-    ...typography.label,
-    color: colors.primary,
-    marginTop: 2,
-  },
-  cardDesc: {
-    marginTop: spacing.sm - 2,
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-  },
-  cardFooter: {
-    marginTop: spacing.sm + 2,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  ratingCount: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  cardMeta: {
-    ...typography.caption,
-    color: colors.textMuted,
   },
 });

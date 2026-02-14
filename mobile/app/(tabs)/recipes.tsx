@@ -5,19 +5,15 @@ import {
   StyleSheet,
   FlatList,
   TextInput,
-  ActivityIndicator,
-  ViewStyle,
 } from 'react-native';
-import { Image } from 'expo-image';
 import { useFocusEffect, router } from 'expo-router';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, typography, radii } from '@/lib/theme';
-import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import StarRating from '@/components/ui/StarRating';
-import Badge from '@/components/ui/Badge';
+import RecipeCard from '@/components/ui/RecipeCard';
+import EmptyState from '@/components/ui/EmptyState';
+import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 
 interface Recipe {
   id: string;
@@ -132,18 +128,17 @@ export default function RecipesScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 40 }} size="large" color={colors.primary} />
+        <RecipeListSkeleton />
       ) : recipes.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>
-            {search ? 'No results' : 'No recipes yet'}
-          </Text>
-          <Text style={styles.emptyText}>
-            {search
+        <EmptyState
+          icon="book"
+          title={search ? 'No results' : 'No recipes yet'}
+          subtitle={
+            search
               ? `No recipes match "${search}"`
-              : 'Import a recipe from the web app to get started.'}
-          </Text>
-        </View>
+              : 'Import a recipe or create your first one!'
+          }
+        />
       ) : (
         <FlatList
           data={recipes}
@@ -151,52 +146,10 @@ export default function RecipesScreen() {
           contentContainerStyle={{ padding: spacing.lg }}
           ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
           renderItem={({ item }) => (
-            <Card onPress={() => router.push(`/recipe/${item.id}`)} style={styles.recipeCard}>
-              {item.image_url && (
-                <Image
-                  source={{ uri: item.image_url }}
-                  style={styles.cardImage}
-                  contentFit="cover"
-                  transition={200}
-                />
-              )}
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>{item.title}</Text>
-                <View style={styles.badges}>
-                  {item.is_favorite && (
-                    <FontAwesome name="heart" size={16} color={colors.dangerLight} />
-                  )}
-                  {item.visibility === 'public' && (
-                    <Badge label="Public" variant="success" />
-                  )}
-                </View>
-              </View>
-              {item.description && (
-                <Text style={styles.cardDesc} numberOfLines={2}>
-                  {item.description}
-                </Text>
-              )}
-              <View style={styles.cardFooter}>
-                {item.avgRating !== null && (
-                  <View style={styles.ratingRow}>
-                    <StarRating rating={item.avgRating} size={14} />
-                    <Text style={styles.ratingText}>
-                      {item.avgRating.toFixed(1)} ({item.ratingCount})
-                    </Text>
-                  </View>
-                )}
-                {(item.prep_time_minutes || item.cook_time_minutes) && (
-                  <Text style={styles.cardMeta}>
-                    {[
-                      item.prep_time_minutes && `${item.prep_time_minutes} min prep`,
-                      item.cook_time_minutes && `${item.cook_time_minutes} min cook`,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </Text>
-                )}
-              </View>
-            </Card>
+            <RecipeCard
+              recipe={item}
+              onPress={() => router.push(`/recipe/${item.id}`)}
+            />
           )}
         />
       )}
@@ -225,53 +178,4 @@ const styles = StyleSheet.create({
   },
   count: { ...typography.label, color: colors.textSecondary },
   actionButtons: { flexDirection: 'row', gap: spacing.sm },
-  empty: { alignItems: 'center', paddingTop: 60 },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  emptyText: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    maxWidth: 260,
-  },
-  recipeCard: {
-    overflow: 'hidden',
-  } as ViewStyle,
-  cardImage: {
-    width: '100%',
-    aspectRatio: 16 / 9,
-    borderRadius: radii.md,
-    marginBottom: spacing.sm,
-    backgroundColor: colors.surface,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  cardTitle: { ...typography.h3, color: colors.text, flex: 1 },
-  badges: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm - 2,
-    marginLeft: spacing.sm,
-  },
-  cardDesc: {
-    marginTop: spacing.xs,
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-  },
-  cardFooter: {
-    marginTop: spacing.sm,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-  ratingText: { ...typography.caption, color: colors.textSecondary },
-  cardMeta: { ...typography.caption, color: colors.textMuted },
 });
