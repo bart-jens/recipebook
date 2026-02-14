@@ -38,6 +38,9 @@ export default async function AuthenticatedLayout({
               <Link href="/discover" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag">
                 Discover
               </Link>
+              <Link href="/invites" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag">
+                Invites
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-3">

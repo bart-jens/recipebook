@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { login } from "./actions";
 
@@ -60,6 +61,12 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
+        <p className="text-center text-sm text-warm-gray">
+          Have an invite code?{" "}
+          <Link href="/signup" className="text-accent hover:underline">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );
