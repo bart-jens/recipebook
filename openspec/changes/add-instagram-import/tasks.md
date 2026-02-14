@@ -27,7 +27,7 @@
 
 ## 6. Build & Deploy
 
-- [ ] 6.1 Verify `npm run build` passes
-- [ ] 6.2 Commit and push to GitHub
+- [x] 6.1 Verify `npm run build` passes
+- [x] 6.2 Commit and push to GitHub
 - [ ] 6.3 Add `ANTHROPIC_API_KEY` to Vercel environment variables
 - [ ] 6.4 Test end-to-end: paste caption → review → save, upload image → review → save
