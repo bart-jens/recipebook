@@ -1,6 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
-import { Slot } from 'expo-router';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
@@ -30,7 +30,21 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <Slot />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen
+          name="recipe/[id]"
+          options={{
+            headerShown: true,
+            headerTitle: '',
+            headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: '#FFFBF5' },
+            headerTintColor: '#C8553D',
+            headerShadowVisible: false,
+          }}
+        />
+      </Stack>
     </AuthProvider>
   );
 }

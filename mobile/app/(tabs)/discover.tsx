@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
 interface Recipe {
@@ -77,7 +78,7 @@ export default function DiscoverScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 16 }}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card}>
+            <TouchableOpacity style={styles.card} onPress={() => router.push(`/recipe/${item.id}`)}>
               <Text style={styles.cardTitle}>{item.title}</Text>
               {item.description && (
                 <Text style={styles.cardDesc} numberOfLines={2}>
