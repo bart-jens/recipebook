@@ -1,79 +1,137 @@
 schema: spec-driven
 
 context: |
-  Project: Digital Recipe Book Web Application
-  Domain: Personal recipe management for couple
+  Project: EefEats — Goodreads for Recipes
+  Domain: Social recipe platform (started as personal recipe book for couple)
 
-  Tech Stack:
+  Origin Story:
+  - Started as a personal recipe book for Bart and his wife
+  - Evolving into a social recipe platform — "Goodreads for recipes"
+  - Invite-first, open later
+
+  Tech Stack (Web):
   - Framework: Next.js 14 with TypeScript (App Router)
   - Database: Supabase (PostgreSQL + Auth + Storage)
   - Deployment: Vercel
-  - OCR: Claude Vision API (photo → structured recipe JSON)
+  - Recipe extraction: Gemini Vision API (photo → structured recipe JSON)
   - URL parsing: schema.org Recipe markup parser
-  - Styling: TBD (Tailwind CSS recommended)
+  - Styling: Tailwind CSS (warm NYT Cooking-inspired palette)
+
+  Tech Stack (Mobile — planned):
+  - Framework: React Native with Expo (managed workflow)
+  - Navigation: Expo Router
+  - State: TanStack Query + React context
+  - Backend: Same Supabase instance as web
+  - Notifications: Expo Notifications (future)
 
   Users:
-  - 2 users only: owner and wife (email/password auth)
-  - No public registration
-  - Future: guest reviewers, Telegram bot
+  - Invite-first: users join via invite codes
+  - Roles: user (default), creator (extended profile + subscribers-only recipes), admin
+  - Plans: free, premium
+
+  Core Concepts:
+  - Canonical recipes: public, authoritative version with aggregate ratings
+  - Forked recipes: private copy of a canonical recipe, editable by owner
+  - Personal recipes: private by default, can be published to become canonical
+  - Creators: users who publish recipes and can charge for subscribers-only content
+  - Sponsored recipes: brand-promoted canonical recipes, native content not ads
 
   Recipe Input Methods:
   - Manual entry (structured form with ingredients table)
   - URL import (parse recipe websites via schema.org, strip all non-recipe slop)
   - Instagram import (extract from post caption or recipe card images)
-  - Photo OCR (upload cookbook photo → Claude Vision → structured recipe)
+  - Photo OCR (upload cookbook photo → Gemini Vision → structured recipe)
   - Future: Telegram message/photo → auto-import
 
   Recipe Extraction Rules:
   - ONLY extract recipe data - never life stories, SEO filler, ads, engagement bait
   - All sources must produce the same structured format
   - Ingredients must be parsed into: quantity (decimal), unit (standardized), name, notes
-  - Use /recipe-extract skill for consistent extraction across all sources
   - Always let user review extracted data before saving
 
-  Database Schema:
-  - recipes: title, description, source_url, source_type (manual/url/photo/telegram),
-    source_image_path, instructions, prep_time_minutes, cook_time_minutes,
-    servings, created_by, created_at, updated_at
-  - recipe_ingredients: recipe_id, ingredient_name, quantity (decimal),
-    unit, notes, order_index
+  Database Schema (current):
+  - recipes: title, description, source_url, source_type, source_image_path,
+    instructions, prep_time_minutes, cook_time_minutes, servings, is_favorite,
+    created_by, created_at, updated_at
+  - recipe_ingredients: recipe_id, ingredient_name, quantity, unit, notes, order_index
   - recipe_ratings: recipe_id, user_id, rating (1-5), notes, cooked_date
   - recipe_tags: recipe_id, tag
-  - recipe_images: recipe_id, storage_path, is_primary (for source photos)
+  - recipe_images: recipe_id, storage_path, is_primary
+
+  Database Schema (planned additions for social):
+  - recipes additions: visibility, forked_from_id, published_at, sponsored, sponsor_metadata
+  - user_profiles: display_name, avatar_url, bio, role, plan
+  - creator_profiles: tagline, website_url, social_links, is_verified, subscriber_count
+  - user_follows: follower_id, following_id
+  - creator_subscriptions: subscriber_id, creator_id, status, started_at, expires_at
+  - invites: invited_by, email, code, used_at
+  - recipe_analytics: recipe_id, event_type, user_id
+
+  Monetization:
+  - Creator subscriptions (subscribers-only recipes, platform takes 15%)
+  - Sponsored recipes (brands pay for featured canonical recipes)
+  - Premium user plan (expanded limits, advanced features)
+  - Affiliate ingredient links (future)
 
   Conventions:
   - Mobile-first design (used while cooking in kitchen)
   - Big tap targets, high contrast, readable fonts
   - All recipe inputs converge on same structured format
   - Simple, clean interface - no unnecessary features
+  - Always consider free vs premium split when designing features
 
-  Build Sequence:
-  1. setup-project-foundation (Next.js + Supabase + Auth + DB + Vercel)
-  2. add-manual-recipe-entry (form + list + detail page)
-  3. add-url-import (schema.org parser, strip all website slop)
-  4. add-instagram-import (extract from posts/captions/recipe cards)
-  5. add-photo-ocr-import (Claude Vision API for cookbook photos)
-  6. add-ratings-notes (stars + cooking notes)
-  7. add-search-filter (search + tags + sorting)
+  Build Sequence (completed):
+  1. setup-project-foundation (Next.js + Supabase + Auth + DB + Vercel) ✓
+  2. add-manual-recipe-entry (form + list + detail page) ✓
+  3. add-url-import (schema.org parser, strip all website slop) ✓
+  4. add-instagram-import (extract from posts/captions/recipe cards) ✓
+  5. add-photo-ocr-import (Gemini Vision API for cookbook photos) ✓
+  6. add-ratings-notes (stars + cooking log) ✓
+  7. add-search-filter (search + tags + favorites + sorting) ✓
+
+  Build Sequence (social platform):
+  8. social-data-model (profiles, visibility, forking, follows tables + RLS)
+  9. user-profiles (profile creation, editing, public profile pages)
+  10. recipe-publishing (publish personal → canonical, discovery page)
+  11. forking (fork canonical → private copy, attribution display)
+  12. social-graph (follow/unfollow, activity feed)
+  13. invite-system (invite codes, limits by plan)
+
+  Build Sequence (mobile app):
+  14. expo-project-setup (Expo init, Supabase client, auth, tab navigation)
+  15. my-recipes-tab (personal recipe list, detail screen, feature parity)
+  16. recipe-import-mobile (camera, photo library, URL, Instagram)
+  17. discover-tab (public recipes, search, tags, sort)
+  18. social-mobile (profiles, follow, fork, activity feed)
+  19. polish-mobile (cooking mode, offline caching, animations)
+
+  Build Sequence (monetization — future):
+  20. creator-system (creator profiles, subscribers-only recipes)
+  21. sponsored-recipes (sponsor metadata, placement logic, admin tools)
+  22. premium-plan (plan enforcement, upgrade flow)
+  23. analytics (recipe view/cook/fork tracking, creator dashboard)
 
 rules:
   proposal:
     - Consider mobile usability (used in kitchen with messy hands)
     - Keep scope tight - only what's needed for this change
     - Reference the build sequence above for context
+    - Always consider free vs premium implications
 
   specs:
-    - Only 2 users (owner + wife), no public access
+    - Consider the invite-first user model (trusted users, no moderation yet)
     - Consider edge cases for recipe parsing (different site formats)
-    - Include realistic test scenarios with actual recipe URLs
+    - Include realistic test scenarios
+    - Specify RLS policies for any new tables
 
   design:
     - Mobile-first responsive design
     - All recipe inputs must produce the same structured format
     - Use Supabase RLS for row-level security
-    - Plan for hundreds of recipes, not thousands
+    - Canonical recipes are the public unit — forks are private
+    - Creator profiles extend user profiles, don't replace them
 
   tasks:
     - Break into small, testable vertical slices
     - Each task should be independently verifiable
-    - Include testing with real recipe URLs/photos where applicable
+    - Web and mobile features can be built in parallel once mobile app exists

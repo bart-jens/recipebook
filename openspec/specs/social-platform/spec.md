@@ -1,0 +1,143 @@
+# Social Platform
+
+EefEats evolves from a personal recipe book into a Goodreads-for-recipes social platform. Users can discover, rate, and fork public recipes. Social connections let you follow friends and see their cooking activity.
+
+## Core Concepts
+
+### Canonical Recipes
+A canonical recipe is the public, authoritative version. It accumulates ratings from all users. It has a creator (the person who published it). It cannot be edited by anyone other than the creator.
+
+### Forked Recipes (Personal Copies)
+When a user wants to modify a canonical recipe, they fork it. A fork is a private copy linked to the original via `forked_from_id`. Forks are only visible to the owner. The link to the original is preserved for attribution.
+
+### Existing Personal Recipes
+Current recipes in the system are personal (private). When the social layer launches, existing recipes remain private by default. Users can choose to "publish" a personal recipe, which creates a canonical version.
+
+---
+
+## ADDED Requirements
+
+### Requirement: User profiles table
+The database SHALL have a `user_profiles` table with columns: `id` (uuid, PK, FK to auth.users), `display_name` (text, NOT NULL), `avatar_url` (text), `bio` (text), `role` (text, default 'user', CHECK in: user, creator, admin), `plan` (text, default 'free', CHECK in: free, premium), `created_at` (timestamptz), `updated_at` (timestamptz).
+
+#### Scenario: Profile created on signup
+- **WHEN** a new user signs up
+- **THEN** a `user_profiles` row SHALL be created with their email-derived display name and role 'user'
+
+#### Scenario: Profile update
+- **WHEN** a user updates their display name to "Chef Maria"
+- **THEN** the `display_name` SHALL be updated and `updated_at` refreshed
+
+### Requirement: Recipe visibility and publishing
+The `recipes` table SHALL be extended with: `visibility` (text, default 'private', CHECK in: private, public, subscribers), `forked_from_id` (uuid, nullable FK to recipes), `published_at` (timestamptz, nullable).
+
+#### Scenario: Publishing a personal recipe
+- **WHEN** a user sets a recipe's visibility to 'public'
+- **THEN** `published_at` SHALL be set to now() and the recipe SHALL appear in public discovery
+
+#### Scenario: Forking a canonical recipe
+- **WHEN** user A forks recipe X
+- **THEN** a new recipe SHALL be created with `forked_from_id` = X's id, `visibility` = 'private', and all content copied from X
+
+#### Scenario: Fork attribution
+- **WHEN** viewing a forked recipe
+- **THEN** the UI SHALL show "Forked from [original title] by [creator name]" with a link to the original
+
+#### Scenario: Private fork isolation
+- **WHEN** user A forks recipe X and edits it
+- **THEN** the changes SHALL NOT affect the original recipe X
+- **AND** the fork SHALL NOT be visible to other users
+
+### Requirement: Follows table
+The database SHALL have a `user_follows` table with columns: `id` (uuid, PK), `follower_id` (uuid, FK to auth.users), `following_id` (uuid, FK to auth.users), `created_at` (timestamptz). There SHALL be a unique constraint on (follower_id, following_id). A CHECK constraint SHALL prevent self-follows.
+
+#### Scenario: Following a user
+- **WHEN** user A follows user B
+- **THEN** a row SHALL be created with follower_id = A, following_id = B
+
+#### Scenario: Preventing duplicate follows
+- **WHEN** user A follows user B twice
+- **THEN** the second insert SHALL be rejected by the unique constraint
+
+#### Scenario: Self-follow prevention
+- **WHEN** user A tries to follow themselves
+- **THEN** the insert SHALL be rejected by the CHECK constraint
+
+### Requirement: Public ratings on canonical recipes
+The existing `recipe_ratings` table SHALL work for both personal and canonical recipes. When a recipe is public, all ratings from all users are visible. The recipe card and detail page SHALL show the aggregate average and count.
+
+#### Scenario: Aggregate rating display
+- **GIVEN** recipe X has ratings of 4, 5, 3 from three users
+- **THEN** the displayed average SHALL be 4.0 with count "3 ratings"
+
+#### Scenario: Rating a public recipe
+- **WHEN** user A rates public recipe X with 4 stars and a note
+- **THEN** the rating SHALL be visible to all users viewing recipe X
+
+### Requirement: Activity feed
+The system SHALL provide an activity feed showing recent actions by users you follow. Activities include: published a recipe, cooked a recipe (added a rating), forked a recipe. The feed SHALL be ordered by recency and paginated.
+
+#### Scenario: Feed shows followed user's activity
+- **WHEN** user A follows user B, and user B publishes a recipe
+- **THEN** user A's feed SHALL show "B published [recipe title]"
+
+#### Scenario: Feed excludes unfollowed users
+- **WHEN** user A does not follow user C
+- **THEN** user C's activity SHALL NOT appear in user A's feed
+
+### Requirement: Recipe discovery
+The system SHALL provide a public discovery page where users can browse canonical (public) recipes. Discovery SHALL support: search by title, filter by tags, sort by rating/recency/popularity (fork count). Discovery only shows public recipes, never private or subscribers-only.
+
+#### Scenario: Search public recipes
+- **WHEN** a user searches for "pasta" in discovery
+- **THEN** only public recipes with "pasta" in the title SHALL be returned
+
+#### Scenario: Private recipes excluded
+- **WHEN** a user browses discovery
+- **THEN** recipes with visibility 'private' SHALL NOT appear
+
+### Requirement: Updated Row Level Security
+RLS policies SHALL be updated for the social model:
+- Private recipes: only owner can read/write (unchanged)
+- Public recipes: anyone can read, only owner can write
+- Subscribers-only recipes: owner + subscribers of the creator can read, only owner can write
+- User profiles: anyone can read, only owner can write
+- Follows: anyone can read, follower can insert/delete their own
+- Ratings on public recipes: anyone can read, author of rating can insert/delete their own
+
+#### Scenario: Reading a public recipe
+- **WHEN** any authenticated user queries a public recipe
+- **THEN** the recipe SHALL be returned regardless of who created it
+
+#### Scenario: Cannot edit someone else's public recipe
+- **WHEN** user A tries to update user B's public recipe
+- **THEN** the update SHALL be rejected by RLS
+
+---
+
+## Migration Strategy
+
+### Phase 1: Data model (no behavior change)
+Add new columns and tables. All existing recipes stay `visibility = 'private'`. No public content yet. Existing app continues to work unchanged.
+
+### Phase 2: Profiles + publishing
+Users can create profiles and publish recipes. Public recipes appear in a discovery page. No follows or feed yet.
+
+### Phase 3: Social
+Follows, activity feed, forking. Full social loop.
+
+---
+
+## Free vs Premium Considerations
+
+| Feature | Free | Premium |
+|---|---|---|
+| Personal recipes | Unlimited | Unlimited |
+| Publish public recipes | Up to 10 | Unlimited |
+| Fork public recipes | Unlimited | Unlimited |
+| Follow users | Unlimited | Unlimited |
+| View subscribers-only recipes | No | Yes (per creator subscription) |
+| Cooking log | Yes | Yes |
+| Meal planning | No | Yes (future) |
+| Nutritional info | No | Yes (future) |
+| Advanced search filters | Basic | Full |
