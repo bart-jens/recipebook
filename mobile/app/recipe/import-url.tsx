@@ -13,6 +13,7 @@ import { Stack, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import RecipeForm, { RecipeFormData } from '@/components/RecipeForm';
+import { colors, spacing, typography, radii } from '@/lib/theme';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
 
@@ -151,7 +152,7 @@ export default function ImportUrlScreen() {
           value={url}
           onChangeText={setUrl}
           placeholder="https://www.example.com/recipe/..."
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.textMuted}
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="url"
@@ -161,10 +162,11 @@ export default function ImportUrlScreen() {
           style={[styles.button, (!url.trim() || extracting) && styles.buttonDisabled]}
           onPress={handleExtract}
           disabled={!url.trim() || extracting}
+          activeOpacity={0.7}
         >
           {extracting ? (
             <View style={styles.loadingRow}>
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={colors.white} />
               <Text style={styles.buttonText}>Extracting...</Text>
             </View>
           ) : (
@@ -183,36 +185,36 @@ export default function ImportUrlScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF5' },
-  content: { padding: 20 },
-  heading: { fontSize: 22, fontWeight: '700', color: '#1A1A1A', marginBottom: 8 },
-  subtitle: { fontSize: 15, color: '#6B6B6B', lineHeight: 22, marginBottom: 24 },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.xl },
+  heading: { ...typography.h2, color: colors.text, marginBottom: spacing.sm },
+  subtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.xxl },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 14,
-    fontSize: 15,
-    color: '#1A1A1A',
-    marginBottom: 16,
+    ...typography.body,
+    color: colors.text,
+    marginBottom: spacing.lg,
   },
   button: {
-    backgroundColor: '#C8553D',
-    borderRadius: 8,
-    paddingVertical: 16,
+    backgroundColor: colors.primary,
+    borderRadius: radii.md,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
   },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  buttonText: { color: colors.white, fontSize: 16, fontWeight: '600' },
+  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   tips: {
-    marginTop: 32,
-    backgroundColor: '#F5F0EA',
-    borderRadius: 8,
-    padding: 16,
+    marginTop: spacing.xxxl,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.lg,
   },
-  tipsTitle: { fontSize: 14, fontWeight: '600', color: '#1A1A1A', marginBottom: 8 },
-  tipText: { fontSize: 13, color: '#6B6B6B', lineHeight: 20, marginBottom: 4 },
+  tipsTitle: { ...typography.bodySmall, fontWeight: '600', color: colors.text, marginBottom: spacing.sm },
+  tipText: { ...typography.label, color: colors.textSecondary, marginBottom: spacing.xs },
 });

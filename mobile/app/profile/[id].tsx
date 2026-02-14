@@ -4,13 +4,16 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
-  FlatList,
 } from 'react-native';
 import { useLocalSearchParams, Stack, useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
+import { colors, spacing, typography, radii } from '@/lib/theme';
+import Avatar from '@/components/ui/Avatar';
+import SectionHeader from '@/components/ui/SectionHeader';
+import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
 
 interface Profile {
   id: string;
@@ -72,7 +75,6 @@ export default function PublicProfileScreen() {
         setFollowerCount((followers || []).length);
         setFollowingCount((following || []).length);
 
-        // Check if current user follows this profile
         if (user && user.id !== id) {
           const { data: followCheck } = await supabase
             .from('user_follows')
@@ -112,8 +114,8 @@ export default function PublicProfileScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#C8553D" />
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -122,8 +124,8 @@ export default function PublicProfileScreen() {
     return (
       <>
         <Stack.Screen options={{ headerTitle: 'Profile' }} />
-        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={{ color: '#6B6B6B' }}>User not found</Text>
+        <View style={[styles.container, styles.centered]}>
+          <Text style={styles.emptyText}>User not found</Text>
         </View>
       </>
     );
@@ -135,18 +137,12 @@ export default function PublicProfileScreen() {
     <>
       <Stack.Screen options={{ headerTitle: profile.display_name }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        {/* Avatar and name */}
         <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {profile.display_name[0].toUpperCase()}
-            </Text>
-          </View>
+          <Avatar name={profile.display_name} size="lg" />
           <Text style={styles.name}>{profile.display_name}</Text>
           {profile.bio && <Text style={styles.bio}>{profile.bio}</Text>}
         </View>
 
-        {/* Stats */}
         <View style={styles.statsRow}>
           <View style={styles.stat}>
             <Text style={styles.statNumber}>{recipes.length}</Text>
@@ -162,26 +158,24 @@ export default function PublicProfileScreen() {
           </View>
         </View>
 
-        {/* Follow button */}
         {!isOwnProfile && (
-          <TouchableOpacity
-            style={[styles.followButton, isFollowing && styles.followingButton]}
-            onPress={toggleFollow}
-          >
-            <Text style={[styles.followText, isFollowing && styles.followingText]}>
-              {isFollowing ? 'Following' : 'Follow'}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.followButtonContainer}>
+            <Button
+              title={isFollowing ? 'Following' : 'Follow'}
+              onPress={toggleFollow}
+              variant={isFollowing ? 'secondary' : 'primary'}
+              size="lg"
+            />
+          </View>
         )}
 
-        {/* Public recipes */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Public Recipes</Text>
+          <SectionHeader title="PUBLIC RECIPES" />
           {recipes.length === 0 ? (
-            <Text style={styles.emptyText}>No published recipes yet.</Text>
+            <Text style={styles.emptyRecipesText}>No published recipes yet.</Text>
           ) : (
             recipes.map((recipe) => (
-              <TouchableOpacity
+              <Card
                 key={recipe.id}
                 style={styles.recipeCard}
                 onPress={() => router.push(`/recipe/${recipe.id}`)}
@@ -190,7 +184,7 @@ export default function PublicProfileScreen() {
                 {recipe.description && (
                   <Text style={styles.recipeDesc} numberOfLines={2}>{recipe.description}</Text>
                 )}
-              </TouchableOpacity>
+              </Card>
             ))
           )}
         </View>
@@ -200,72 +194,48 @@ export default function PublicProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF5' },
-  content: { padding: 20 },
+  container: { flex: 1, backgroundColor: colors.background },
+  centered: { justifyContent: 'center', alignItems: 'center' },
+  content: { padding: spacing.xl },
 
-  header: { alignItems: 'center', marginBottom: 20 },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#F5F0EA',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
+  header: { alignItems: 'center', marginBottom: spacing.xl },
+  name: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: spacing.md,
   },
-  avatarText: { fontSize: 32, fontWeight: '600', color: '#6B6B6B' },
-  name: { fontSize: 24, fontWeight: '700', color: '#1A1A1A' },
-  bio: { fontSize: 14, color: '#6B6B6B', marginTop: 6, textAlign: 'center', lineHeight: 20 },
+  bio: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
 
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 16,
+    paddingVertical: spacing.lg,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#F0EBE4',
-    marginBottom: 20,
+    borderColor: colors.borderLight,
+    marginBottom: spacing.xl,
   },
   stat: { alignItems: 'center' },
-  statNumber: { fontSize: 20, fontWeight: '700', color: '#1A1A1A' },
-  statLabel: { fontSize: 12, color: '#6B6B6B', marginTop: 2 },
+  statNumber: { fontSize: 20, fontWeight: '700', color: colors.text },
+  statLabel: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
 
-  followButton: {
-    backgroundColor: '#C8553D',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginBottom: 24,
+  followButtonContainer: {
+    marginBottom: spacing.xxl,
   },
-  followingButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#E8E0D8',
-  },
-  followText: { fontSize: 15, fontWeight: '600', color: '#fff' },
-  followingText: { color: '#6B6B6B' },
 
-  section: { marginBottom: 20 },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.5,
-    color: '#6B6B6B',
-    marginBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0EBE4',
-    paddingBottom: 8,
-  },
-  emptyText: { fontSize: 14, color: '#999', fontStyle: 'italic' },
+  section: { marginBottom: spacing.xl },
+  emptyText: { ...typography.bodySmall, color: colors.textSecondary },
+  emptyRecipesText: { ...typography.bodySmall, color: colors.textMuted, fontStyle: 'italic' },
 
   recipeCard: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
-  recipeTitle: { fontSize: 16, fontWeight: '600', color: '#1A1A1A' },
-  recipeDesc: { fontSize: 14, color: '#6B6B6B', marginTop: 4, lineHeight: 20 },
+  recipeTitle: { fontSize: 16, fontWeight: '600', color: colors.text },
+  recipeDesc: { ...typography.bodySmall, color: colors.textSecondary, marginTop: spacing.xs },
 });

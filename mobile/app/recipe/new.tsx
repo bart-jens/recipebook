@@ -4,6 +4,7 @@ import { Stack, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import RecipeForm, { RecipeFormData } from '@/components/RecipeForm';
+import { colors } from '@/lib/theme';
 
 export default function NewRecipeScreen() {
   const { user } = useAuth();
@@ -59,8 +60,8 @@ export default function NewRecipeScreen() {
         options={{
           headerShown: true,
           headerTitle: 'New Recipe',
-          headerStyle: { backgroundColor: '#FFFBF5' },
-          headerTintColor: '#C8553D',
+          headerStyle: { backgroundColor: colors.background },
+          headerTintColor: colors.primary,
           headerShadowVisible: false,
         }}
       />

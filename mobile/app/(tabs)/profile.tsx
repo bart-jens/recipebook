@@ -3,12 +3,15 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
+import { colors, spacing, typography } from '@/lib/theme';
+import Avatar from '@/components/ui/Avatar';
+import Badge from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
 
 interface Profile {
   display_name: string;
@@ -57,8 +60,8 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#C8553D" />
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -66,10 +69,8 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {(profile?.display_name || '?')[0].toUpperCase()}
-          </Text>
+        <View style={styles.avatarWrap}>
+          <Avatar name={profile?.display_name || '?'} size="lg" />
         </View>
         <Text style={styles.name}>{profile?.display_name || 'Anonymous'}</Text>
         <Text style={styles.email}>{user?.email}</Text>
@@ -92,63 +93,62 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <View style={styles.planBadge}>
-          <Text style={styles.planText}>
-            {profile?.plan === 'premium' ? 'Premium' : 'Free'} plan
-          </Text>
-        </View>
+        <Badge
+          label={profile?.plan === 'premium' ? 'Premium plan' : 'Free plan'}
+          variant={profile?.plan === 'premium' ? 'premium' : 'default'}
+        />
       </View>
 
-      <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
-        <Text style={styles.signOutText}>Sign out</Text>
-      </TouchableOpacity>
+      <Button
+        title="Sign out"
+        variant="secondary"
+        size="lg"
+        onPress={signOut}
+      />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF5' },
-  content: { padding: 20 },
-  header: { alignItems: 'center', marginBottom: 24 },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#F5F0EA',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
+  container: { flex: 1, backgroundColor: colors.background },
+  centered: { justifyContent: 'center', alignItems: 'center' },
+  content: { padding: spacing.xl },
+  header: { alignItems: 'center', marginBottom: spacing.xxl },
+  avatarWrap: { marginBottom: spacing.md },
+  name: {
+    ...typography.h2,
+    color: colors.text,
   },
-  avatarText: { fontSize: 28, fontWeight: '600', color: '#6B6B6B' },
-  name: { fontSize: 22, fontWeight: '600', color: '#1A1A1A' },
-  email: { fontSize: 14, color: '#6B6B6B', marginTop: 4 },
-  bio: { fontSize: 14, color: '#6B6B6B', marginTop: 8, textAlign: 'center', lineHeight: 20 },
+  email: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  bio: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 20,
+    paddingVertical: spacing.xl,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#F0EBE4',
-    marginBottom: 24,
+    borderColor: colors.borderLight,
+    marginBottom: spacing.xxl,
   },
   stat: { alignItems: 'center' },
-  statNumber: { fontSize: 20, fontWeight: '600', color: '#1A1A1A' },
-  statLabel: { fontSize: 12, color: '#6B6B6B', marginTop: 2 },
-  section: { alignItems: 'center', marginBottom: 32 },
-  planBadge: {
-    backgroundColor: '#F5F0EA',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+  statNumber: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.text,
   },
-  planText: { fontSize: 13, color: '#6B6B6B', fontWeight: '500' },
-  signOutButton: {
-    borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
+  statLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
-  signOutText: { fontSize: 15, color: '#6B6B6B' },
+  section: { alignItems: 'center', marginBottom: spacing.xxxl },
 });

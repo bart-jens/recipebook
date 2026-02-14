@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,18 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  ViewStyle,
 } from 'react-native';
 import { useLocalSearchParams, Stack, useFocusEffect, router } from 'expo-router';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
+import { colors, spacing, typography, radii, shadows } from '@/lib/theme';
+import Button from '@/components/ui/Button';
+import StarRating from '@/components/ui/StarRating';
+import SectionHeader from '@/components/ui/SectionHeader';
+import Badge from '@/components/ui/Badge';
+import IconButton from '@/components/ui/IconButton';
 
 interface Recipe {
   id: string;
@@ -241,15 +249,15 @@ export default function RecipeDetailScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#C8553D" />
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   if (!recipe) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[styles.container, styles.centered]}>
         <Text style={styles.emptyText}>Recipe not found</Text>
       </View>
     );
@@ -282,25 +290,6 @@ export default function RecipeDetailScreen() {
     return qty.toFixed(1);
   };
 
-  const renderStars = (count: number, interactive = false, onSelect?: (n: number) => void) => {
-    return (
-      <View style={styles.starsRow}>
-        {[1, 2, 3, 4, 5].map((n) => (
-          <TouchableOpacity
-            key={n}
-            disabled={!interactive}
-            onPress={() => onSelect?.(n)}
-            style={styles.starTouch}
-          >
-            <Text style={[styles.star, n <= count ? styles.starFilled : styles.starEmpty]}>
-              ★
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
-  };
-
   return (
     <>
       <Stack.Screen options={{ headerTitle: recipe.title }} />
@@ -308,8 +297,9 @@ export default function RecipeDetailScreen() {
         {/* Creator name for non-owned recipes */}
         {creatorName && recipe.created_by && (
           <TouchableOpacity
+            activeOpacity={0.7}
             onPress={() => router.push(`/profile/${recipe.created_by}`)}
-            style={{ marginBottom: 4 }}
+            style={{ marginBottom: spacing.xs }}
           >
             <Text style={styles.creatorLink}>by {creatorName}</Text>
           </TouchableOpacity>
@@ -319,10 +309,16 @@ export default function RecipeDetailScreen() {
         <View style={styles.titleRow}>
           <Text style={styles.title}>{recipe.title}</Text>
           {isOwner && (
-            <TouchableOpacity onPress={toggleFavorite} style={styles.heartButton}>
-              <Text style={[styles.heart, recipe.is_favorite && styles.heartActive]}>
-                {recipe.is_favorite ? '♥' : '♡'}
-              </Text>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={toggleFavorite}
+              style={styles.heartButton}
+            >
+              <FontAwesome
+                name={recipe.is_favorite ? 'heart' : 'heart-o'}
+                size={24}
+                color={recipe.is_favorite ? colors.dangerLight : colors.starEmpty}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -330,32 +326,46 @@ export default function RecipeDetailScreen() {
         {/* Owner actions */}
         {isOwner && (
           <View style={styles.ownerActions}>
-            <TouchableOpacity
-              style={styles.editButton}
+            <Button
+              title="Edit"
+              variant="secondary"
+              size="sm"
               onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
-            >
-              <Text style={styles.editButtonText}>Edit</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.editButton, recipe.visibility === 'public' && styles.publishedButton]}
-              onPress={togglePublish}
-            >
-              <Text style={[styles.editButtonText, recipe.visibility === 'public' && styles.publishedText]}>
-                {recipe.visibility === 'public' ? 'Published' : 'Publish'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteButton} onPress={deleteRecipe}>
-              <Text style={styles.deleteButtonText}>Delete</Text>
-            </TouchableOpacity>
+            />
+            {recipe.visibility === 'public' ? (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.publishedButton}
+                onPress={togglePublish}
+              >
+                <Text style={styles.publishedText}>Published</Text>
+              </TouchableOpacity>
+            ) : (
+              <Button
+                title="Publish"
+                variant="secondary"
+                size="sm"
+                onPress={togglePublish}
+              />
+            )}
+            <Button
+              title="Delete"
+              variant="danger"
+              size="sm"
+              onPress={deleteRecipe}
+            />
           </View>
         )}
 
         {/* Non-owner: fork button */}
         {!isOwner && recipe.visibility === 'public' && (
           <View style={styles.ownerActions}>
-            <TouchableOpacity style={styles.forkButton} onPress={forkRecipe}>
-              <Text style={styles.forkButtonText}>Save to My Recipes</Text>
-            </TouchableOpacity>
+            <Button
+              title="Save to My Recipes"
+              variant="primary"
+              size="md"
+              onPress={forkRecipe}
+            />
           </View>
         )}
 
@@ -363,9 +373,7 @@ export default function RecipeDetailScreen() {
         {tags.length > 0 && (
           <View style={styles.tagsRow}>
             {tags.map((t) => (
-              <View key={t.id} style={styles.tagPill}>
-                <Text style={styles.tagText}>{t.tag}</Text>
-              </View>
+              <Badge key={t.id} label={t.tag} />
             ))}
           </View>
         )}
@@ -402,7 +410,7 @@ export default function RecipeDetailScreen() {
         {/* Ingredients */}
         {ingredients.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>INGREDIENTS</Text>
+            <SectionHeader title="INGREDIENTS" />
             {ingredients.map((ing) => (
               <View key={ing.id} style={styles.ingredientRow}>
                 <Text style={styles.ingredientQty}>
@@ -420,7 +428,7 @@ export default function RecipeDetailScreen() {
         {/* Instructions */}
         {instructions.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>PREPARATION</Text>
+            <SectionHeader title="PREPARATION" />
             {instructions.length === 1 ? (
               <Text style={styles.instructionText}>{instructions[0]}</Text>
             ) : (
@@ -439,47 +447,53 @@ export default function RecipeDetailScreen() {
         {/* Cooking Log */}
         {isOwner && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>COOKING LOG</Text>
+            <SectionHeader title="COOKING LOG" />
 
             {!showCookForm ? (
-              <TouchableOpacity
-                style={styles.cookButton}
-                onPress={() => setShowCookForm(true)}
-              >
-                <Text style={styles.cookButtonText}>I cooked this!</Text>
-              </TouchableOpacity>
+              <View style={{ marginBottom: spacing.lg }}>
+                <Button
+                  title="I cooked this!"
+                  variant="primary"
+                  size="lg"
+                  onPress={() => setShowCookForm(true)}
+                />
+              </View>
             ) : (
               <View style={styles.cookForm}>
                 <Text style={styles.cookFormLabel}>How was it?</Text>
-                {renderStars(cookRating, true, setCookRating)}
+                <StarRating
+                  rating={cookRating}
+                  size={20}
+                  interactive
+                  onRate={setCookRating}
+                />
                 <TextInput
                   style={styles.cookNotesInput}
                   placeholder="Notes (optional)"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.textMuted}
                   value={cookNotes}
                   onChangeText={setCookNotes}
                   multiline
                 />
                 <View style={styles.cookFormButtons}>
-                  <TouchableOpacity
-                    style={styles.cookCancelButton}
+                  <Button
+                    title="Cancel"
+                    variant="ghost"
+                    size="sm"
                     onPress={() => {
                       setShowCookForm(false);
                       setCookRating(0);
                       setCookNotes('');
                     }}
-                  >
-                    <Text style={styles.cookCancelText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.cookSaveButton, cookRating === 0 && styles.cookSaveDisabled]}
+                  />
+                  <Button
+                    title={submitting ? 'Saving...' : 'Save'}
+                    variant="primary"
+                    size="sm"
                     onPress={submitCookingLog}
                     disabled={cookRating === 0 || submitting}
-                  >
-                    <Text style={styles.cookSaveText}>
-                      {submitting ? 'Saving...' : 'Save'}
-                    </Text>
-                  </TouchableOpacity>
+                    loading={submitting}
+                  />
                 </View>
               </View>
             )}
@@ -496,10 +510,13 @@ export default function RecipeDetailScreen() {
                       ? new Date(entry.cooked_date + 'T00:00:00').toLocaleDateString()
                       : 'No date'}
                   </Text>
-                  {renderStars(entry.rating)}
-                  <TouchableOpacity onPress={() => deleteCookingEntry(entry.id)}>
-                    <Text style={styles.logDelete}>×</Text>
-                  </TouchableOpacity>
+                  <StarRating rating={entry.rating} size={14} />
+                  <IconButton
+                    name="times"
+                    onPress={() => deleteCookingEntry(entry.id)}
+                    color={colors.starEmpty}
+                    size={16}
+                  />
                 </View>
                 {entry.notes && <Text style={styles.logNotes}>{entry.notes}</Text>}
               </View>
@@ -507,168 +524,156 @@ export default function RecipeDetailScreen() {
           </View>
         )}
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: spacing.xxxl + spacing.sm }} />
       </ScrollView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF5' },
-  content: { padding: 20 },
-  emptyText: { fontSize: 16, color: '#6B6B6B' },
+  container: { flex: 1, backgroundColor: colors.background },
+  centered: { justifyContent: 'center', alignItems: 'center' },
+  content: { padding: spacing.xl },
+  emptyText: { fontSize: 16, color: colors.textSecondary },
 
   // Creator
-  creatorLink: { fontSize: 14, color: '#C8553D', fontWeight: '500' },
+  creatorLink: { ...typography.bodySmall, color: colors.primary, fontWeight: '500' },
 
   // Title
-  titleRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 },
-  title: { fontSize: 26, fontWeight: '700', color: '#1A1A1A', flex: 1, lineHeight: 32 },
-  heartButton: { padding: 4, marginLeft: 12 },
-  heart: { fontSize: 28, color: '#D1C8BC' },
-  heartActive: { color: '#EF4444' },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+  },
+  title: { ...typography.h1, color: colors.text, flex: 1 },
+  heartButton: { padding: spacing.xs, marginLeft: spacing.md },
 
   // Owner actions
-  ownerActions: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  editButton: {
+  ownerActions: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
+  publishedButton: {
+    backgroundColor: colors.successBg,
     borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    borderColor: colors.successBorder,
+    borderRadius: radii.md,
+    paddingVertical: spacing.sm - 1,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
-  editButtonText: { fontSize: 14, color: '#6B6B6B' },
-  publishedButton: { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' },
-  publishedText: { color: '#15803D' },
-  deleteButton: {
-    borderWidth: 1,
-    borderColor: '#FECACA',
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#FEF2F2',
+  publishedText: {
+    ...typography.label,
+    color: colors.success,
+    fontWeight: '600',
   },
-  deleteButtonText: { fontSize: 14, color: '#DC2626' },
-  forkButton: {
-    backgroundColor: '#C8553D',
-    borderRadius: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  forkButtonText: { fontSize: 14, fontWeight: '600', color: '#fff' },
 
   // Tags
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
-  tagPill: { backgroundColor: '#F5F0EA', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
-  tagText: { fontSize: 12, color: '#6B6B6B' },
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm - 2, marginBottom: spacing.md },
 
   // Description
-  description: { fontSize: 15, color: '#6B6B6B', lineHeight: 22, marginBottom: 16 },
+  description: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },
 
   // Meta
-  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 },
-  metaPill: { backgroundColor: '#F5F0EA', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6 },
-  metaText: { fontSize: 13, color: '#6B6B6B' },
-  totalPill: { backgroundColor: '#C8553D' },
-  totalText: { color: '#fff' },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.xxl },
+  metaPill: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.xl,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm - 2,
+  },
+  metaText: { ...typography.label, color: colors.textSecondary },
+  totalPill: { backgroundColor: colors.primary },
+  totalText: { color: colors.white },
 
   // Sections
-  section: { marginBottom: 28 },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.5,
-    color: '#6B6B6B',
-    marginBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0EBE4',
-    paddingBottom: 8,
-  },
+  section: { marginBottom: spacing.xxxl - 4 },
 
   // Ingredients
   ingredientRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F0EA',
-    paddingVertical: 8,
+    borderBottomColor: colors.surface,
+    paddingVertical: spacing.sm,
   },
-  ingredientQty: { width: 80, textAlign: 'right', fontSize: 15, fontWeight: '500', color: '#1A1A1A', marginRight: 12 },
+  ingredientQty: {
+    width: 80,
+    textAlign: 'right',
+    ...typography.body,
+    fontWeight: '500',
+    color: colors.text,
+    marginRight: spacing.md,
+  },
   ingredientNameWrap: { flex: 1 },
-  ingredientName: { fontSize: 15, color: '#6B6B6B' },
-  ingredientNotes: { fontSize: 13, color: '#999', marginTop: 2 },
+  ingredientName: { ...typography.body, color: colors.textSecondary },
+  ingredientNotes: { ...typography.label, color: colors.textMuted, marginTop: 2 },
 
   // Instructions
-  instructionText: { fontSize: 15, color: '#6B6B6B', lineHeight: 24 },
-  stepRow: { flexDirection: 'row', marginBottom: 16, gap: 12 },
+  instructionText: { ...typography.body, color: colors.textSecondary, lineHeight: 24 },
+  stepRow: { flexDirection: 'row', marginBottom: spacing.lg, gap: spacing.md },
   stepNumber: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#C8553D',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 2,
   },
-  stepNumberText: { color: '#fff', fontSize: 13, fontWeight: '600' },
-  stepText: { flex: 1, fontSize: 15, color: '#6B6B6B', lineHeight: 24 },
+  stepNumberText: { color: colors.white, ...typography.label, fontWeight: '600' },
+  stepText: { flex: 1, ...typography.body, color: colors.textSecondary, lineHeight: 24 },
 
   // Cooking log
-  cookButton: {
-    backgroundColor: '#C8553D',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  cookButtonText: { color: '#fff', fontSize: 15, fontWeight: '600' },
-
   cookForm: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    ...shadows,
+  } as ViewStyle,
+  cookFormLabel: {
+    ...typography.body,
+    fontWeight: '500',
+    color: colors.text,
+    marginBottom: spacing.sm,
   },
-  cookFormLabel: { fontSize: 15, fontWeight: '500', color: '#1A1A1A', marginBottom: 8 },
   cookNotesInput: {
     borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 6,
-    padding: 12,
-    fontSize: 14,
-    color: '#1A1A1A',
+    borderColor: colors.border,
+    borderRadius: radii.sm,
+    padding: spacing.md,
+    ...typography.bodySmall,
+    color: colors.text,
     minHeight: 60,
     textAlignVertical: 'top',
-    marginTop: 12,
+    marginTop: spacing.md,
   },
-  cookFormButtons: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 12 },
-  cookCancelButton: { paddingVertical: 10, paddingHorizontal: 16 },
-  cookCancelText: { fontSize: 14, color: '#6B6B6B' },
-  cookSaveButton: { backgroundColor: '#C8553D', borderRadius: 6, paddingVertical: 10, paddingHorizontal: 20 },
-  cookSaveDisabled: { opacity: 0.4 },
-  cookSaveText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  cookFormButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: spacing.md,
+    marginTop: spacing.md,
+  },
 
-  emptyLog: { fontSize: 14, color: '#999', fontStyle: 'italic', marginTop: 4 },
+  emptyLog: {
+    ...typography.bodySmall,
+    color: colors.textMuted,
+    fontStyle: 'italic',
+    marginTop: spacing.xs,
+  },
 
   logEntry: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#F0EBE4',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
-  },
-  logEntryHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  logDate: { fontSize: 13, fontWeight: '500', color: '#1A1A1A' },
-  logDelete: { fontSize: 22, color: '#D1C8BC', paddingHorizontal: 4 },
-  logNotes: { fontSize: 13, color: '#6B6B6B', marginTop: 6, lineHeight: 18 },
-
-  // Stars
-  starsRow: { flexDirection: 'row', alignItems: 'center' },
-  starTouch: { padding: 2 },
-  star: { fontSize: 20 },
-  starFilled: { color: '#F59E0B' },
-  starEmpty: { color: '#D1C8BC' },
+    borderColor: colors.borderLight,
+    borderRadius: radii.md,
+    padding: spacing.md,
+    marginTop: spacing.sm,
+    ...shadows,
+  } as ViewStyle,
+  logEntryHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  logDate: { ...typography.label, color: colors.text },
+  logNotes: { ...typography.label, color: colors.textSecondary, marginTop: spacing.sm - 2, lineHeight: 18 },
 });

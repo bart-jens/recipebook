@@ -6,10 +6,14 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  ViewStyle,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
+import { colors, spacing, typography, radii, shadows } from '@/lib/theme';
+import Card from '@/components/ui/Card';
 
 interface RecentRecipe {
   id: string;
@@ -70,8 +74,8 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#C8553D" />
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -91,25 +95,25 @@ export default function HomeScreen() {
 
       {/* Stats row */}
       <View style={styles.statsRow}>
-        <View style={styles.statCard}>
+        <Card style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.totalRecipes}</Text>
           <Text style={styles.statLabel}>recipes</Text>
-        </View>
-        <View style={styles.statCard}>
+        </Card>
+        <Card style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.favorites}</Text>
           <Text style={styles.statLabel}>favorites</Text>
-        </View>
-        <View style={styles.statCard}>
+        </Card>
+        <Card style={styles.statCard}>
           <Text style={styles.statNumber}>{stats.timeCooked}</Text>
           <Text style={styles.statLabel}>times cooked</Text>
-        </View>
+        </Card>
       </View>
 
       {/* Recent recipes */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recently Updated</Text>
-          <TouchableOpacity onPress={() => router.push('/(tabs)/recipes')}>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/(tabs)/recipes')}>
             <Text style={styles.seeAll}>See all</Text>
           </TouchableOpacity>
         </View>
@@ -120,7 +124,7 @@ export default function HomeScreen() {
           </View>
         ) : (
           recentRecipes.map((recipe) => (
-            <TouchableOpacity
+            <Card
               key={recipe.id}
               style={styles.recentCard}
               onPress={() => router.push(`/recipe/${recipe.id}`)}
@@ -129,7 +133,7 @@ export default function HomeScreen() {
               <Text style={styles.recentDate}>
                 {new Date(recipe.updated_at).toLocaleDateString()}
               </Text>
-            </TouchableOpacity>
+            </Card>
           ))
         )}
       </View>
@@ -140,23 +144,26 @@ export default function HomeScreen() {
         <View style={styles.actionsRow}>
           <TouchableOpacity
             style={styles.actionButton}
+            activeOpacity={0.7}
             onPress={() => router.push('/(tabs)/discover')}
           >
-            <Text style={styles.actionIcon}>🔍</Text>
+            <FontAwesome name="search" size={22} color={colors.primary} style={styles.actionIcon} />
             <Text style={styles.actionLabel}>Discover</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
+            activeOpacity={0.7}
             onPress={() => router.push('/(tabs)/recipes')}
           >
-            <Text style={styles.actionIcon}>📖</Text>
+            <FontAwesome name="book" size={22} color={colors.primary} style={styles.actionIcon} />
             <Text style={styles.actionLabel}>My Recipes</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
+            activeOpacity={0.7}
             onPress={() => router.push('/(tabs)/profile')}
           >
-            <Text style={styles.actionIcon}>👤</Text>
+            <FontAwesome name="user" size={22} color={colors.primary} style={styles.actionIcon} />
             <Text style={styles.actionLabel}>Profile</Text>
           </TouchableOpacity>
         </View>
@@ -166,59 +173,118 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF5' },
-  content: { padding: 20, paddingTop: 8 },
-  greeting: { fontSize: 24, fontWeight: '700', color: '#1A1A1A', marginBottom: 20 },
-
-  // Stats
-  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 28 },
-  statCard: {
+  container: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colors.background,
+  },
+  centered: {
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  statNumber: { fontSize: 24, fontWeight: '700', color: '#C8553D' },
-  statLabel: { fontSize: 12, color: '#6B6B6B', marginTop: 2 },
+  content: {
+    padding: spacing.xl,
+    paddingTop: spacing.sm,
+  },
+  greeting: {
+    ...typography.h1,
+    fontSize: 24,
+    color: colors.text,
+    marginBottom: spacing.xl,
+  },
+
+  // Stats
+  statsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: 28,
+  },
+  statCard: {
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: radii.lg,
+  } as ViewStyle,
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  statLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
 
   // Sections
-  section: { marginBottom: 28 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 16, fontWeight: '600', color: '#1A1A1A', marginBottom: 12 },
-  seeAll: { fontSize: 14, color: '#C8553D', fontWeight: '500' },
+  section: {
+    marginBottom: 28,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  seeAll: {
+    ...typography.bodySmall,
+    color: colors.primary,
+    fontWeight: '500',
+  },
 
   // Recent recipes
   recentCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#F0EBE4',
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 8,
+    borderRadius: radii.md,
+    marginBottom: spacing.sm,
+  } as ViewStyle,
+  recentTitle: {
+    ...typography.body,
+    fontWeight: '500',
+    color: colors.text,
+    flex: 1,
   },
-  recentTitle: { fontSize: 15, fontWeight: '500', color: '#1A1A1A', flex: 1 },
-  recentDate: { fontSize: 12, color: '#999', marginLeft: 8 },
+  recentDate: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginLeft: spacing.sm,
+  },
 
-  emptySection: { alignItems: 'center', paddingVertical: 24 },
-  emptyText: { fontSize: 14, color: '#6B6B6B', textAlign: 'center' },
+  emptySection: {
+    alignItems: 'center',
+    paddingVertical: spacing.xxl,
+  },
+  emptyText: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
 
   // Quick actions
-  actionsRow: { flexDirection: 'row', gap: 12 },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
   actionButton: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colors.card,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
     alignItems: 'center',
+    ...shadows,
+  } as ViewStyle,
+  actionIcon: {
+    marginBottom: spacing.sm - 2,
   },
-  actionIcon: { fontSize: 24, marginBottom: 6 },
-  actionLabel: { fontSize: 12, color: '#6B6B6B', fontWeight: '500' },
+  actionLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
 });

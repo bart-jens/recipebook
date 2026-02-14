@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 import { AuthProvider } from '@/contexts/auth';
+import { colors } from '@/lib/theme';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -29,8 +30,8 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   const headerDefaults = {
-    headerStyle: { backgroundColor: '#FFFBF5' as const },
-    headerTintColor: '#C8553D',
+    headerStyle: { backgroundColor: colors.background },
+    headerTintColor: colors.primary,
     headerShadowVisible: false,
     headerBackTitle: 'Back',
   };

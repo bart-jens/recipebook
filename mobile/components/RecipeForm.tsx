@@ -10,6 +10,9 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { colors, spacing, typography, radii } from '@/lib/theme';
+import Button from '@/components/ui/Button';
+import IconButton from '@/components/ui/IconButton';
 
 export interface IngredientField {
   ingredient_name: string;
@@ -111,29 +114,26 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Title */}
         <Text style={styles.label}>Title *</Text>
         <TextInput
           style={styles.input}
           value={form.title}
           onChangeText={(v) => updateField('title', v)}
           placeholder="Recipe name"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.textMuted}
         />
 
-        {/* Description */}
         <Text style={styles.label}>Description</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
           value={form.description}
           onChangeText={(v) => updateField('description', v)}
           placeholder="A short description..."
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.textMuted}
           multiline
           numberOfLines={3}
         />
 
-        {/* Time and Servings Row */}
         <View style={styles.row}>
           <View style={styles.rowItem}>
             <Text style={styles.label}>Prep (min)</Text>
@@ -142,7 +142,7 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
               value={form.prep_time_minutes}
               onChangeText={(v) => updateField('prep_time_minutes', v)}
               placeholder="15"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               keyboardType="numeric"
             />
           </View>
@@ -153,7 +153,7 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
               value={form.cook_time_minutes}
               onChangeText={(v) => updateField('cook_time_minutes', v)}
               placeholder="30"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               keyboardType="numeric"
             />
           </View>
@@ -164,16 +164,21 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
               value={form.servings}
               onChangeText={(v) => updateField('servings', v)}
               placeholder="4"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               keyboardType="numeric"
             />
           </View>
         </View>
 
-        {/* Ingredients */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>INGREDIENTS</Text>
-          <TouchableOpacity onPress={addIngredient} style={styles.addButton}>
+          <View style={styles.sectionTitleContainer}>
+            <Text style={styles.sectionTitle}>INGREDIENTS</Text>
+          </View>
+          <TouchableOpacity
+            onPress={addIngredient}
+            style={styles.addButton}
+            activeOpacity={0.7}
+          >
             <Text style={styles.addButtonText}>+ Add</Text>
           </TouchableOpacity>
         </View>
@@ -187,31 +192,29 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
                   value={ing.ingredient_name}
                   onChangeText={(v) => updateIngredient(i, 'ingredient_name', v)}
                   placeholder="Ingredient name"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.textMuted}
                 />
               </View>
               <View style={styles.ingredientActions}>
-                <TouchableOpacity
+                <IconButton
+                  name="chevron-up"
                   onPress={() => moveIngredient(i, -1)}
                   disabled={i === 0}
-                  style={styles.iconButton}
-                >
-                  <Text style={[styles.iconText, i === 0 && styles.iconDisabled]}>▲</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                  size={12}
+                />
+                <IconButton
+                  name="chevron-down"
                   onPress={() => moveIngredient(i, 1)}
                   disabled={i === form.ingredients.length - 1}
-                  style={styles.iconButton}
-                >
-                  <Text style={[styles.iconText, i === form.ingredients.length - 1 && styles.iconDisabled]}>▼</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                  size={12}
+                />
+                <IconButton
+                  name="times"
                   onPress={() => removeIngredient(i)}
                   disabled={form.ingredients.length <= 1}
-                  style={styles.iconButton}
-                >
-                  <Text style={[styles.deleteIcon, form.ingredients.length <= 1 && styles.iconDisabled]}>×</Text>
-                </TouchableOpacity>
+                  color={colors.primary}
+                  size={16}
+                />
               </View>
             </View>
             <View style={styles.ingredientBottomRow}>
@@ -220,7 +223,7 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
                 value={ing.quantity}
                 onChangeText={(v) => updateIngredient(i, 'quantity', v)}
                 placeholder="Qty"
-                placeholderTextColor="#999"
+                placeholderTextColor={colors.textMuted}
                 keyboardType="decimal-pad"
               />
               <TextInput
@@ -228,42 +231,43 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
                 value={ing.unit}
                 onChangeText={(v) => updateIngredient(i, 'unit', v)}
                 placeholder="Unit (cups, g...)"
-                placeholderTextColor="#999"
+                placeholderTextColor={colors.textMuted}
               />
               <TextInput
                 style={[styles.ingredientInput, { flex: 2 }]}
                 value={ing.notes}
                 onChangeText={(v) => updateIngredient(i, 'notes', v)}
                 placeholder="Notes"
-                placeholderTextColor="#999"
+                placeholderTextColor={colors.textMuted}
               />
             </View>
           </View>
         ))}
 
-        {/* Instructions */}
-        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>PREPARATION</Text>
+        <View style={styles.preparationHeader}>
+          <Text style={styles.sectionTitle}>PREPARATION</Text>
+        </View>
         <TextInput
           style={[styles.input, styles.instructionsArea]}
           value={form.instructions}
           onChangeText={(v) => updateField('instructions', v)}
           placeholder="Enter each step on a new line..."
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.textMuted}
           multiline
           numberOfLines={8}
           textAlignVertical="top"
         />
 
-        {/* Submit */}
-        <TouchableOpacity
-          style={[styles.submitButton, loading && styles.submitDisabled]}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          <Text style={styles.submitText}>
-            {loading ? 'Saving...' : submitLabel}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.submitContainer}>
+          <Button
+            title={loading ? 'Saving...' : submitLabel}
+            onPress={handleSubmit}
+            variant="primary"
+            size="lg"
+            loading={loading}
+            disabled={loading}
+          />
+        </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -272,19 +276,24 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF5' },
-  content: { padding: 20 },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.xl },
 
-  label: { fontSize: 13, fontWeight: '500', color: '#6B6B6B', marginBottom: 6, marginTop: 16 },
+  label: {
+    ...typography.label,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+    marginTop: spacing.lg,
+  },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 8,
+    borderColor: colors.border,
+    borderRadius: radii.md,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: '#1A1A1A',
+    paddingVertical: spacing.md,
+    ...typography.body,
+    color: colors.text,
   },
   textArea: { minHeight: 70, textAlignVertical: 'top' },
   instructionsArea: { minHeight: 160, textAlignVertical: 'top' },
@@ -292,62 +301,62 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 10 },
   rowItem: { flex: 1 },
 
-  // Section headers
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 24 },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.5,
-    color: '#6B6B6B',
-    marginBottom: 12,
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.xxl,
+  },
+  sectionTitleContainer: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F0EBE4',
-    paddingBottom: 8,
+    borderBottomColor: colors.borderLight,
+    paddingBottom: spacing.sm,
+    marginBottom: spacing.md,
+    flex: 1,
+  },
+  sectionTitle: {
+    ...typography.sectionTitle,
+    color: colors.textSecondary,
+  },
+  preparationHeader: {
+    marginTop: spacing.xxl,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+    paddingBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   addButton: {
-    backgroundColor: '#F5F0EA',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginBottom: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.md,
   },
-  addButtonText: { fontSize: 13, color: '#C8553D', fontWeight: '600' },
+  addButtonText: { ...typography.label, color: colors.primary, fontWeight: '600' },
 
-  // Ingredients
   ingredientCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: '#F0EBE4',
-    borderRadius: 8,
+    borderColor: colors.borderLight,
+    borderRadius: radii.md,
     padding: 10,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
-  ingredientTopRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  ingredientBottomRow: { flexDirection: 'row', gap: 6, marginTop: 6 },
+  ingredientTopRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  ingredientBottomRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
   ingredientInput: {
-    backgroundColor: '#FAFAF8',
+    backgroundColor: colors.surfaceAlt,
     borderWidth: 1,
-    borderColor: '#F0EBE4',
-    borderRadius: 6,
+    borderColor: colors.borderLight,
+    borderRadius: radii.sm,
     paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 14,
-    color: '#1A1A1A',
+    paddingVertical: spacing.sm,
+    ...typography.bodySmall,
+    color: colors.text,
   },
   ingredientActions: { flexDirection: 'row', gap: 2 },
-  iconButton: { padding: 6 },
-  iconText: { fontSize: 12, color: '#6B6B6B' },
-  iconDisabled: { opacity: 0.25 },
-  deleteIcon: { fontSize: 20, color: '#C8553D', lineHeight: 20 },
 
-  // Submit
-  submitButton: {
-    backgroundColor: '#C8553D',
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 24,
+  submitContainer: {
+    marginTop: spacing.xxl,
   },
-  submitDisabled: { opacity: 0.5 },
-  submitText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

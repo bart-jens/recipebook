@@ -1,11 +1,12 @@
 import { Stack } from 'expo-router';
+import { colors } from '@/lib/theme';
 
 export default function RecipeLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: '#FFFBF5' },
-        headerTintColor: '#C8553D',
+        headerStyle: { backgroundColor: colors.background },
+        headerTintColor: colors.primary,
         headerShadowVisible: false,
         headerBackTitle: 'Back',
       }}

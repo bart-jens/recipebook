@@ -2,6 +2,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Redirect, Tabs } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
 import { ActivityIndicator, View } from 'react-native';
+import { colors, typography } from '@/lib/theme';
 
 function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['name']; color: string }) {
   return <FontAwesome size={22} style={{ marginBottom: -2 }} {...props} />;
@@ -12,8 +13,8 @@ export default function TabLayout() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFBF5' }}>
-        <ActivityIndicator size="large" color="#C8553D" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -25,16 +26,16 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#C8553D',
-        tabBarInactiveTintColor: '#6B6B6B',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: '#FFFBF5',
-          borderTopColor: '#E8E0D8',
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
         },
         headerStyle: {
-          backgroundColor: '#FFFBF5',
+          backgroundColor: colors.background,
         },
-        headerTintColor: '#1A1A1A',
+        headerTintColor: colors.text,
         headerShadowVisible: false,
       }}
     >
@@ -46,7 +47,7 @@ export default function TabLayout() {
           headerTitle: 'EefEats',
           headerTitleStyle: {
             fontFamily: 'Georgia',
-            fontSize: 22,
+            fontSize: typography.h2.fontSize,
             fontWeight: '600',
           },
         }}

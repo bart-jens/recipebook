@@ -5,12 +5,17 @@ import {
   StyleSheet,
   FlatList,
   TextInput,
-  TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
+import { colors, spacing, typography, radii } from '@/lib/theme';
+import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
+import StarRating from '@/components/ui/StarRating';
+import Badge from '@/components/ui/Badge';
 
 interface Recipe {
   id: string;
@@ -94,7 +99,7 @@ export default function RecipesScreen() {
         <TextInput
           style={styles.searchInput}
           placeholder="Search your recipes..."
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.textMuted}
           value={search}
           onChangeText={setSearch}
           returnKeyType="search"
@@ -107,24 +112,24 @@ export default function RecipesScreen() {
             </Text>
           )}
           <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={styles.actionBtn}
+            <Button
+              title="Import URL"
+              variant="secondary"
+              size="sm"
               onPress={() => router.push('/recipe/import-url')}
-            >
-              <Text style={styles.actionBtnText}>Import URL</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.actionBtnPrimary]}
+            />
+            <Button
+              title="+ New"
+              variant="primary"
+              size="sm"
               onPress={() => router.push('/recipe/new')}
-            >
-              <Text style={[styles.actionBtnText, styles.actionBtnPrimaryText]}>+ New</Text>
-            </TouchableOpacity>
+            />
           </View>
         </View>
       </View>
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 40 }} size="large" color="#C8553D" />
+        <ActivityIndicator style={{ marginTop: 40 }} size="large" color={colors.primary} />
       ) : recipes.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>
@@ -140,17 +145,18 @@ export default function RecipesScreen() {
         <FlatList
           data={recipes}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 16 }}
+          contentContainerStyle={{ padding: spacing.lg }}
+          ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card} onPress={() => router.push(`/recipe/${item.id}`)}>
+            <Card onPress={() => router.push(`/recipe/${item.id}`)}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
                 <View style={styles.badges}>
-                  {item.is_favorite && <Text style={styles.heart}>♥</Text>}
+                  {item.is_favorite && (
+                    <FontAwesome name="heart" size={16} color={colors.dangerLight} />
+                  )}
                   {item.visibility === 'public' && (
-                    <View style={styles.publicBadge}>
-                      <Text style={styles.publicText}>Public</Text>
-                    </View>
+                    <Badge label="Public" variant="success" />
                   )}
                 </View>
               </View>
@@ -162,7 +168,7 @@ export default function RecipesScreen() {
               <View style={styles.cardFooter}>
                 {item.avgRating !== null && (
                   <View style={styles.ratingRow}>
-                    <Text style={styles.starFilled}>★</Text>
+                    <StarRating rating={item.avgRating} size={14} />
                     <Text style={styles.ratingText}>
                       {item.avgRating.toFixed(1)} ({item.ratingCount})
                     </Text>
@@ -179,7 +185,7 @@ export default function RecipesScreen() {
                   </Text>
                 )}
               </View>
-            </TouchableOpacity>
+            </Card>
           )}
         />
       )}
@@ -188,52 +194,63 @@ export default function RecipesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF5' },
-  searchContainer: { padding: 16, paddingBottom: 0 },
+  container: { flex: 1, backgroundColor: colors.background },
+  searchContainer: { padding: spacing.lg, paddingBottom: 0 },
   searchInput: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: '#1A1A1A',
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    ...typography.body,
+    color: colors.text,
   },
-  actionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
-  count: { fontSize: 13, color: '#6B6B6B' },
-  actionButtons: { flexDirection: 'row', gap: 8 },
-  actionBtn: {
-    borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 6,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.sm + 2,
   },
-  actionBtnPrimary: { backgroundColor: '#C8553D', borderColor: '#C8553D' },
-  actionBtnText: { fontSize: 13, fontWeight: '500', color: '#6B6B6B' },
-  actionBtnPrimaryText: { color: '#fff' },
+  count: { ...typography.label, color: colors.textSecondary },
+  actionButtons: { flexDirection: 'row', gap: spacing.sm },
   empty: { alignItems: 'center', paddingTop: 60 },
-  emptyTitle: { fontSize: 18, fontWeight: '600', color: '#1A1A1A', marginBottom: 8 },
-  emptyText: { fontSize: 14, color: '#6B6B6B', textAlign: 'center', maxWidth: 260, lineHeight: 20 },
-  card: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E8E0D8',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.sm,
   },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  cardTitle: { fontSize: 17, fontWeight: '600', color: '#1A1A1A', flex: 1 },
-  badges: { flexDirection: 'row', alignItems: 'center', gap: 6, marginLeft: 8 },
-  heart: { color: '#EF4444', fontSize: 16 },
-  publicBadge: { backgroundColor: '#F0FDF4', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 2 },
-  publicText: { fontSize: 11, color: '#15803D', fontWeight: '500' },
-  cardDesc: { marginTop: 4, fontSize: 14, color: '#6B6B6B', lineHeight: 20 },
-  cardFooter: { marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  starFilled: { color: '#F59E0B', fontSize: 14 },
-  ratingText: { fontSize: 12, color: '#6B6B6B' },
-  cardMeta: { fontSize: 12, color: '#999' },
+  emptyText: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    maxWidth: 260,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  cardTitle: { ...typography.h3, color: colors.text, flex: 1 },
+  badges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm - 2,
+    marginLeft: spacing.sm,
+  },
+  cardDesc: {
+    marginTop: spacing.xs,
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+  },
+  cardFooter: {
+    marginTop: spacing.sm,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  ratingText: { ...typography.caption, color: colors.textSecondary },
+  cardMeta: { ...typography.caption, color: colors.textMuted },
 });
