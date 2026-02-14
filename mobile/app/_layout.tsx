@@ -28,6 +28,13 @@ export default function RootLayout() {
 
   if (!loaded) return null;
 
+  const headerDefaults = {
+    headerStyle: { backgroundColor: '#FFFBF5' as const },
+    headerTintColor: '#C8553D',
+    headerShadowVisible: false,
+    headerBackTitle: 'Back',
+  };
+
   return (
     <AuthProvider>
       <Stack screenOptions={{ headerShown: false }}>
@@ -35,14 +42,19 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen
           name="recipe/[id]"
-          options={{
-            headerShown: true,
-            headerTitle: '',
-            headerBackTitle: 'Back',
-            headerStyle: { backgroundColor: '#FFFBF5' },
-            headerTintColor: '#C8553D',
-            headerShadowVisible: false,
-          }}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="recipe/new"
+          options={{ headerShown: true, headerTitle: 'New Recipe', ...headerDefaults }}
+        />
+        <Stack.Screen
+          name="recipe/import-url"
+          options={{ headerShown: true, headerTitle: 'Import from URL', ...headerDefaults }}
+        />
+        <Stack.Screen
+          name="profile/[id]"
+          options={{ headerShown: true, headerTitle: '', ...headerDefaults }}
         />
       </Stack>
     </AuthProvider>

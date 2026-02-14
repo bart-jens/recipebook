@@ -99,12 +99,28 @@ export default function RecipesScreen() {
           onChangeText={setSearch}
           returnKeyType="search"
         />
-        {recipes.length > 0 && !loading && (
-          <Text style={styles.count}>
-            {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
-            {search ? ` for "${search}"` : ''}
-          </Text>
-        )}
+        <View style={styles.actionRow}>
+          {recipes.length > 0 && !loading && (
+            <Text style={styles.count}>
+              {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
+              {search ? ` for "${search}"` : ''}
+            </Text>
+          )}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={() => router.push('/recipe/import-url')}
+            >
+              <Text style={styles.actionBtnText}>Import URL</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.actionBtnPrimary]}
+              onPress={() => router.push('/recipe/new')}
+            >
+              <Text style={[styles.actionBtnText, styles.actionBtnPrimaryText]}>+ New</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
 
       {loading ? (
@@ -184,7 +200,19 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1A1A1A',
   },
-  count: { fontSize: 13, color: '#6B6B6B', marginTop: 8 },
+  actionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
+  count: { fontSize: 13, color: '#6B6B6B' },
+  actionButtons: { flexDirection: 'row', gap: 8 },
+  actionBtn: {
+    borderWidth: 1,
+    borderColor: '#E8E0D8',
+    borderRadius: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+  },
+  actionBtnPrimary: { backgroundColor: '#C8553D', borderColor: '#C8553D' },
+  actionBtnText: { fontSize: 13, fontWeight: '500', color: '#6B6B6B' },
+  actionBtnPrimaryText: { color: '#fff' },
   empty: { alignItems: 'center', paddingTop: 60 },
   emptyTitle: { fontSize: 18, fontWeight: '600', color: '#1A1A1A', marginBottom: 8 },
   emptyText: { fontSize: 14, color: '#6B6B6B', textAlign: 'center', maxWidth: 260, lineHeight: 20 },

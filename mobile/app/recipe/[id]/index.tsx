@@ -9,7 +9,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { useLocalSearchParams, Stack, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, Stack, useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 
@@ -57,6 +57,7 @@ export default function RecipeDetailScreen() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [ratings, setRatings] = useState<RatingEntry[]>([]);
+  const [creatorName, setCreatorName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Cooking log form state
@@ -88,6 +89,17 @@ export default function RecipeDetailScreen() {
     setIngredients(ingredientData || []);
     setTags(tagData || []);
     setRatings(ratingData || []);
+
+    // Fetch creator name for non-owned public recipes
+    if (recipeData && recipeData.created_by !== user?.id) {
+      const { data: creator } = await supabase
+        .from('user_profiles')
+        .select('display_name')
+        .eq('id', recipeData.created_by)
+        .single();
+      setCreatorName(creator?.display_name || null);
+    }
+
     setLoading(false);
   }, [id]);
 
@@ -104,6 +116,86 @@ export default function RecipeDetailScreen() {
     const newVal = !recipe.is_favorite;
     setRecipe({ ...recipe, is_favorite: newVal });
     await supabase.from('recipes').update({ is_favorite: newVal }).eq('id', recipe.id);
+  };
+
+  const togglePublish = async () => {
+    if (!recipe || !isOwner) return;
+    const isPublic = recipe.visibility === 'public';
+    const newVisibility = isPublic ? 'private' : 'public';
+    const update: Record<string, string | null> = { visibility: newVisibility };
+    if (!isPublic) update.published_at = new Date().toISOString();
+    setRecipe({ ...recipe, visibility: newVisibility });
+    await supabase.from('recipes').update(update).eq('id', recipe.id);
+  };
+
+  const forkRecipe = async () => {
+    if (!recipe || !user) return;
+    // Copy recipe + ingredients
+    const { data: forked, error } = await supabase
+      .from('recipes')
+      .insert({
+        title: recipe.title,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        prep_time_minutes: recipe.prep_time_minutes,
+        cook_time_minutes: recipe.cook_time_minutes,
+        servings: recipe.servings,
+        source_type: 'fork',
+        source_url: recipe.source_url,
+        forked_from_id: recipe.id,
+        created_by: user.id,
+      })
+      .select('id')
+      .single();
+
+    if (error || !forked) {
+      Alert.alert('Error', 'Could not fork recipe');
+      return;
+    }
+
+    // Copy ingredients
+    if (ingredients.length > 0) {
+      await supabase.from('recipe_ingredients').insert(
+        ingredients.map((ing, i) => ({
+          recipe_id: forked.id,
+          ingredient_name: ing.ingredient_name,
+          quantity: ing.quantity,
+          unit: ing.unit,
+          notes: ing.notes,
+          order_index: i,
+        }))
+      );
+    }
+
+    // Copy tags
+    if (tags.length > 0) {
+      await supabase.from('recipe_tags').insert(
+        tags.map((t) => ({ recipe_id: forked.id, tag: t.tag }))
+      );
+    }
+
+    Alert.alert('Saved!', 'Recipe saved to your collection', [
+      { text: 'View', onPress: () => router.replace(`/recipe/${forked.id}`) },
+      { text: 'OK' },
+    ]);
+  };
+
+  const deleteRecipe = () => {
+    if (!recipe) return;
+    Alert.alert('Delete Recipe', `Are you sure you want to delete "${recipe.title}"?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await supabase.from('recipe_ingredients').delete().eq('recipe_id', recipe.id);
+          await supabase.from('recipe_tags').delete().eq('recipe_id', recipe.id);
+          await supabase.from('recipe_ratings').delete().eq('recipe_id', recipe.id);
+          await supabase.from('recipes').delete().eq('id', recipe.id);
+          router.back();
+        },
+      },
+    ]);
   };
 
   const submitCookingLog = async () => {
@@ -213,6 +305,16 @@ export default function RecipeDetailScreen() {
     <>
       <Stack.Screen options={{ headerTitle: recipe.title }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        {/* Creator name for non-owned recipes */}
+        {creatorName && recipe.created_by && (
+          <TouchableOpacity
+            onPress={() => router.push(`/profile/${recipe.created_by}`)}
+            style={{ marginBottom: 4 }}
+          >
+            <Text style={styles.creatorLink}>by {creatorName}</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Title and favorite */}
         <View style={styles.titleRow}>
           <Text style={styles.title}>{recipe.title}</Text>
@@ -224,6 +326,38 @@ export default function RecipeDetailScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Owner actions */}
+        {isOwner && (
+          <View style={styles.ownerActions}>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
+            >
+              <Text style={styles.editButtonText}>Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.editButton, recipe.visibility === 'public' && styles.publishedButton]}
+              onPress={togglePublish}
+            >
+              <Text style={[styles.editButtonText, recipe.visibility === 'public' && styles.publishedText]}>
+                {recipe.visibility === 'public' ? 'Published' : 'Publish'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteButton} onPress={deleteRecipe}>
+              <Text style={styles.deleteButtonText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Non-owner: fork button */}
+        {!isOwner && recipe.visibility === 'public' && (
+          <View style={styles.ownerActions}>
+            <TouchableOpacity style={styles.forkButton} onPress={forkRecipe}>
+              <Text style={styles.forkButtonText}>Save to My Recipes</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Tags */}
         {tags.length > 0 && (
@@ -384,12 +518,44 @@ const styles = StyleSheet.create({
   content: { padding: 20 },
   emptyText: { fontSize: 16, color: '#6B6B6B' },
 
+  // Creator
+  creatorLink: { fontSize: 14, color: '#C8553D', fontWeight: '500' },
+
   // Title
   titleRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 },
   title: { fontSize: 26, fontWeight: '700', color: '#1A1A1A', flex: 1, lineHeight: 32 },
   heartButton: { padding: 4, marginLeft: 12 },
   heart: { fontSize: 28, color: '#D1C8BC' },
   heartActive: { color: '#EF4444' },
+
+  // Owner actions
+  ownerActions: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  editButton: {
+    borderWidth: 1,
+    borderColor: '#E8E0D8',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  editButtonText: { fontSize: 14, color: '#6B6B6B' },
+  publishedButton: { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' },
+  publishedText: { color: '#15803D' },
+  deleteButton: {
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#FEF2F2',
+  },
+  deleteButtonText: { fontSize: 14, color: '#DC2626' },
+  forkButton: {
+    backgroundColor: '#C8553D',
+    borderRadius: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  forkButtonText: { fontSize: 14, fontWeight: '600', color: '#fff' },
 
   // Tags
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },

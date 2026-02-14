@@ -138,7 +138,9 @@ export default function DiscoverScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.card} onPress={() => router.push(`/recipe/${item.id}`)}>
               <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.creatorName}>by {item.creatorName}</Text>
+              <TouchableOpacity onPress={() => router.push(`/profile/${item.created_by}`)}>
+                <Text style={styles.creatorName}>by {item.creatorName}</Text>
+              </TouchableOpacity>
               {item.description && (
                 <Text style={styles.cardDesc} numberOfLines={2}>
                   {item.description}
