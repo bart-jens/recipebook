@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+
 import { createClient } from "@/lib/supabase/server";
 import { RecipeListControls } from "./recipe-list-controls";
 
@@ -177,12 +177,10 @@ export default async function RecipesPage({
                 <div className="flex gap-4">
                   {recipe.image_url && (
                     <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md">
-                      <Image
+                      <img
                         src={recipe.image_url}
                         alt={recipe.title}
-                        fill
-                        sizes="80px"
-                        className="object-cover"
+                        className="h-full w-full object-cover"
                       />
                     </div>
                   )}

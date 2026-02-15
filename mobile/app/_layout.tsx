@@ -62,6 +62,18 @@ export default function RootLayout() {
           options={{ headerShown: true, headerTitle: 'Import from URL', ...headerDefaults }}
         />
         <Stack.Screen
+          name="recipe/import-instagram"
+          options={{ headerShown: true, headerTitle: 'Import from Instagram', ...headerDefaults }}
+        />
+        <Stack.Screen
+          name="recipe/import-photo"
+          options={{ headerShown: true, headerTitle: 'Import from Photo', ...headerDefaults }}
+        />
+        <Stack.Screen
+          name="invites"
+          options={{ headerShown: true, headerTitle: 'Invite Friends', ...headerDefaults }}
+        />
+        <Stack.Screen
           name="profile/[id]"
           options={{ headerShown: true, headerTitle: '', ...headerDefaults }}
         />

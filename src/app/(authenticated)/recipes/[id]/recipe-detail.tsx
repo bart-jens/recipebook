@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+
 import { DeleteButton } from "./delete-button";
 import { UnitToggle, useUnitSystem } from "./unit-toggle";
 import { convertIngredient, formatQuantity } from "@/lib/unit-conversion";
@@ -91,14 +91,11 @@ export function RecipeDetail({
       </div>
 
       {recipe.image_url && (
-        <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-lg">
-          <Image
+        <div className="mb-6 aspect-video w-full overflow-hidden rounded-lg">
+          <img
             src={recipe.image_url}
             alt={recipe.title}
-            fill
-            sizes="(max-width: 672px) 100vw, 672px"
-            priority
-            className="object-cover"
+            className="h-full w-full object-cover"
           />
         </div>
       )}

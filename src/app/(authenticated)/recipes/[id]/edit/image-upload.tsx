@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Image from "next/image";
+
 import { createBrowserClient } from "@supabase/ssr";
 
 export function ImageUpload({
@@ -77,13 +77,11 @@ export function ImageUpload({
         Recipe Photo
       </label>
       {imageUrl ? (
-        <div className="relative aspect-video w-full max-w-lg overflow-hidden rounded-lg mb-2">
-          <Image
+        <div className="aspect-video w-full max-w-lg overflow-hidden rounded-lg mb-2">
+          <img
             src={imageUrl}
             alt="Recipe"
-            fill
-            sizes="(max-width: 512px) 100vw, 512px"
-            className="object-cover"
+            className="h-full w-full object-cover"
           />
         </div>
       ) : null}
