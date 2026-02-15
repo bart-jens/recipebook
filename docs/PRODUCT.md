@@ -73,6 +73,12 @@
 ## Product Ideas (Backlog)
 
 ### High Conviction
+- **Home screen refresh** — Make home a daily destination, not a static dashboard:
+  - Quick actions row (import recipe, browse discover, random recipe) — actionable entry points
+  - "What should I cook?" — Random recipe suggestion weighted toward untried/not-cooked-recently
+  - "Friends are cooking" feed — Activity from people you follow (post-social launch)
+  - "New from creators you follow" — Fresh recipes from followed creators
+  - Trending section — Most cooked this week, highest rated new recipes
 - **Meal planning** — Weekly meal planner that pulls from your recipe collection (premium feature)
 - **Shopping list** — Auto-generate grocery list from selected recipes, merge duplicate ingredients
 - **Cooking mode** — Step-by-step instruction view with large text, screen-awake, timer integration

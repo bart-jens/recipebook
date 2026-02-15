@@ -8,17 +8,21 @@ import {
 import { useLocalSearchParams, Stack, useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, fontFamily } from '@/lib/theme';
+import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
 import Avatar from '@/components/ui/Avatar';
 import SectionHeader from '@/components/ui/SectionHeader';
 import RecipeCard from '@/components/ui/RecipeCard';
 import Button from '@/components/ui/Button';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
 
+type FollowState = 'not_following' | 'following' | 'requested';
+
 interface Profile {
   id: string;
   display_name: string;
   bio: string | null;
+  is_private: boolean;
+  avatar_url: string | null;
 }
 
 interface PublicRecipe {
@@ -36,10 +40,11 @@ export default function PublicProfileScreen() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [recipes, setRecipes] = useState<PublicRecipe[]>([]);
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [followState, setFollowState] = useState<FollowState>('not_following');
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -54,7 +59,7 @@ export default function PublicProfileScreen() {
         ] = await Promise.all([
           supabase
             .from('user_profiles')
-            .select('id, display_name, bio')
+            .select('id, display_name, bio, is_private, avatar_url')
             .eq('id', id!)
             .single(),
           supabase
@@ -78,6 +83,7 @@ export default function PublicProfileScreen() {
         setFollowerCount((followers || []).length);
         setFollowingCount((following || []).length);
 
+        // Check follow state
         if (user && user.id !== id) {
           const { data: followCheck } = await supabase
             .from('user_follows')
@@ -85,7 +91,19 @@ export default function PublicProfileScreen() {
             .eq('follower_id', user.id)
             .eq('following_id', id!)
             .single();
-          setIsFollowing(!!followCheck);
+
+          if (followCheck) {
+            setFollowState('following');
+          } else {
+            // Check for pending request
+            const { data: requestCheck } = await supabase
+              .from('follow_requests')
+              .select('id')
+              .eq('requester_id', user.id)
+              .eq('target_id', id!)
+              .single();
+            setFollowState(requestCheck ? 'requested' : 'not_following');
+          }
         }
 
         setLoading(false);
@@ -95,23 +113,47 @@ export default function PublicProfileScreen() {
     }, [id, user])
   );
 
-  const toggleFollow = async () => {
-    if (!user || !id || user.id === id) return;
+  const handleFollowAction = async () => {
+    if (!user || !id || user.id === id || actionLoading) return;
 
-    if (isFollowing) {
-      await supabase
-        .from('user_follows')
-        .delete()
-        .eq('follower_id', user.id)
-        .eq('following_id', id);
-      setIsFollowing(false);
-      setFollowerCount((c) => Math.max(0, c - 1));
-    } else {
-      await supabase
-        .from('user_follows')
-        .insert({ follower_id: user.id, following_id: id });
-      setIsFollowing(true);
-      setFollowerCount((c) => c + 1);
+    setActionLoading(true);
+    try {
+      if (followState === 'following') {
+        // Unfollow
+        await supabase
+          .from('user_follows')
+          .delete()
+          .eq('follower_id', user.id)
+          .eq('following_id', id);
+        setFollowState('not_following');
+        setFollowerCount((c) => Math.max(0, c - 1));
+      } else if (followState === 'requested') {
+        // Cancel request
+        await supabase
+          .from('follow_requests')
+          .delete()
+          .eq('requester_id', user.id)
+          .eq('target_id', id);
+        setFollowState('not_following');
+      } else {
+        // Follow or request
+        if (profile?.is_private) {
+          await supabase
+            .from('follow_requests')
+            .insert({ requester_id: user.id, target_id: id });
+          setFollowState('requested');
+        } else {
+          await supabase
+            .from('user_follows')
+            .insert({ follower_id: user.id, following_id: id });
+          setFollowState('following');
+          setFollowerCount((c) => c + 1);
+        }
+      }
+    } catch (err) {
+      console.error('Follow action failed:', err);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -135,20 +177,32 @@ export default function PublicProfileScreen() {
   }
 
   const isOwnProfile = user?.id === id;
+  const canViewContent = !profile.is_private || followState === 'following' || isOwnProfile;
+
+  const followButtonTitle = {
+    following: 'Following',
+    requested: 'Requested',
+    not_following: profile.is_private ? 'Request to Follow' : 'Follow',
+  }[followState];
+
+  const followButtonVariant = followState === 'not_following' ? 'primary' : 'secondary';
 
   return (
     <>
       <Stack.Screen options={{ headerTitle: profile.display_name }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Avatar name={profile.display_name} size="lg" />
+          <Avatar name={profile.display_name} size="lg" imageUrl={profile.avatar_url} />
           <Text style={styles.name}>{profile.display_name}</Text>
+          {profile.is_private && (
+            <Text style={styles.privateLabel}>Private account</Text>
+          )}
           {profile.bio && <Text style={styles.bio}>{profile.bio}</Text>}
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.stat}>
-            <Text style={styles.statNumber}>{recipes.length}</Text>
+            <Text style={styles.statNumber}>{canViewContent ? recipes.length : '-'}</Text>
             <Text style={styles.statLabel}>recipes</Text>
           </View>
           <View style={styles.stat}>
@@ -164,34 +218,44 @@ export default function PublicProfileScreen() {
         {!isOwnProfile && (
           <View style={styles.followButtonContainer}>
             <Button
-              title={isFollowing ? 'Following' : 'Follow'}
-              onPress={toggleFollow}
-              variant={isFollowing ? 'secondary' : 'primary'}
+              title={followButtonTitle}
+              onPress={handleFollowAction}
+              variant={followButtonVariant}
               size="lg"
+              loading={actionLoading}
             />
           </View>
         )}
 
-        <View style={styles.section}>
-          <SectionHeader title="PUBLIC RECIPES" />
-          {recipes.length === 0 ? (
-            <Text style={styles.emptyRecipesText}>No published recipes yet.</Text>
-          ) : (
-            <View style={styles.recipeList}>
-              {recipes.map((recipe) => (
-                <RecipeCard
-                  key={recipe.id}
-                  recipe={{
-                    ...recipe,
-                    creatorName: profile?.display_name,
-                  }}
-                  variant="compact"
-                  onPress={() => router.push(`/recipe/${recipe.id}`)}
-                />
-              ))}
-            </View>
-          )}
-        </View>
+        {canViewContent ? (
+          <View style={styles.section}>
+            <SectionHeader title="PUBLIC RECIPES" />
+            {recipes.length === 0 ? (
+              <Text style={styles.emptyRecipesText}>No published recipes yet.</Text>
+            ) : (
+              <View style={styles.recipeList}>
+                {recipes.map((recipe) => (
+                  <RecipeCard
+                    key={recipe.id}
+                    recipe={{
+                      ...recipe,
+                      creatorName: profile?.display_name,
+                    }}
+                    variant="compact"
+                    onPress={() => router.push(`/recipe/${recipe.id}`)}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={styles.privateMessage}>
+            <Text style={styles.privateTitle}>This account is private</Text>
+            <Text style={styles.privateDescription}>
+              Follow this account to see their recipes and activity.
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </>
   );
@@ -208,6 +272,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: colors.text,
     marginTop: spacing.md,
+  },
+  privateLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
   },
   bio: {
     ...typography.bodySmall,
@@ -239,5 +308,21 @@ const styles = StyleSheet.create({
 
   recipeList: {
     gap: spacing.md,
+  },
+
+  privateMessage: {
+    alignItems: 'center',
+    paddingVertical: spacing.xxxl,
+    paddingHorizontal: spacing.xl,
+  },
+  privateTitle: {
+    ...typography.h3,
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  privateDescription: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
 });

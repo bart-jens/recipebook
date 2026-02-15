@@ -26,6 +26,26 @@ export default async function ProfilePage() {
     .select("id")
     .eq("user_id", user.id);
 
+  const { data: followers } = await supabase
+    .from("user_follows")
+    .select("id")
+    .eq("following_id", user.id);
+
+  const { data: following } = await supabase
+    .from("user_follows")
+    .select("id")
+    .eq("follower_id", user.id);
+
+  // Count pending follow requests (only for private profiles)
+  let pendingRequestCount = 0;
+  if (profile?.is_private) {
+    const { count } = await supabase
+      .from("follow_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("target_id", user.id);
+    pendingRequestCount = count || 0;
+  }
+
   const publicCount = (recipes || []).filter((r) => r.visibility === "public").length;
   const totalRecipes = (recipes || []).length;
   const timesCooked = (ratings || []).length;
@@ -40,14 +60,25 @@ export default async function ProfilePage() {
 
       <div className="mb-6 flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-tag text-2xl font-serif font-semibold text-warm-gray">
-            {(profile?.display_name || "?")[0].toUpperCase()}
-          </div>
+          {profile?.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt={profile.display_name}
+              className="h-16 w-16 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-tag text-2xl font-serif font-semibold text-warm-gray">
+              {(profile?.display_name || "?")[0].toUpperCase()}
+            </div>
+          )}
           <div>
             <h1 className="font-serif text-2xl font-semibold">
               {profile?.display_name || "Anonymous"}
             </h1>
             <p className="text-sm text-warm-gray">{user.email}</p>
+            {profile?.is_private && (
+              <span className="text-xs text-warm-gray">Private account</span>
+            )}
           </div>
         </div>
         <Link
@@ -62,6 +93,18 @@ export default async function ProfilePage() {
         <p className="mb-6 text-warm-gray leading-relaxed">{profile.bio}</p>
       )}
 
+      {pendingRequestCount > 0 && (
+        <Link
+          href="/profile/requests"
+          className="mb-6 flex items-center justify-between rounded-md border border-accent/20 bg-accent/5 p-3"
+        >
+          <span className="text-sm font-medium">Follow requests</span>
+          <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-accent px-2 text-xs font-medium text-white">
+            {pendingRequestCount}
+          </span>
+        </Link>
+      )}
+
       <div className="mb-8 flex gap-6">
         <div className="text-center">
           <p className="text-xl font-semibold">{totalRecipes}</p>
@@ -74,6 +117,14 @@ export default async function ProfilePage() {
         <div className="text-center">
           <p className="text-xl font-semibold">{timesCooked}</p>
           <p className="text-xs text-warm-gray">times cooked</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xl font-semibold">{(followers || []).length}</p>
+          <p className="text-xs text-warm-gray">followers</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xl font-semibold">{(following || []).length}</p>
+          <p className="text-xs text-warm-gray">following</p>
         </div>
       </div>
 

@@ -1,38 +1,55 @@
 "use client";
 
 import { useTransition } from "react";
-import { followUser, unfollowUser } from "../actions";
+import { followUser, unfollowUser, cancelFollowRequest } from "../actions";
+
+type FollowState = "not_following" | "following" | "requested";
 
 export function FollowButton({
   userId,
-  isFollowing,
+  state,
+  isPrivate,
 }: {
   userId: string;
-  isFollowing: boolean;
+  state: FollowState;
+  isPrivate: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
 
   function handleClick() {
     startTransition(async () => {
-      if (isFollowing) {
+      if (state === "following") {
         await unfollowUser(userId);
+      } else if (state === "requested") {
+        await cancelFollowRequest(userId);
       } else {
         await followUser(userId);
       }
     });
   }
 
+  const label =
+    state === "following"
+      ? "Following"
+      : state === "requested"
+        ? "Requested"
+        : isPrivate
+          ? "Request to Follow"
+          : "Follow";
+
+  const isActive = state === "following" || state === "requested";
+
   return (
     <button
       onClick={handleClick}
       disabled={isPending}
       className={`rounded-md px-4 py-1.5 text-sm font-medium disabled:opacity-50 ${
-        isFollowing
+        isActive
           ? "border border-warm-border text-warm-gray hover:bg-warm-tag"
           : "bg-accent text-white hover:bg-accent-hover"
       }`}
     >
-      {isPending ? "..." : isFollowing ? "Following" : "Follow"}
+      {isPending ? "..." : label}
     </button>
   );
 }

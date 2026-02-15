@@ -26,21 +26,8 @@ export default async function PublicProfilePage({
 
   if (!profile) notFound();
 
-  // Only show public recipes
-  const { data: recipes } = await supabase
-    .from("recipes")
-    .select("id, title, description, updated_at, recipe_ratings(rating)")
-    .eq("created_by", params.id)
-    .eq("visibility", "public")
-    .order("updated_at", { ascending: false });
-
-  const { data: ratings } = await supabase
-    .from("recipe_ratings")
-    .select("id")
-    .eq("user_id", params.id);
-
-  // Check if current user follows this profile
-  let isFollowing = false;
+  // Check follow state
+  let followState: "not_following" | "following" | "requested" = "not_following";
   if (user) {
     const { data: follow } = await supabase
       .from("user_follows")
@@ -48,8 +35,40 @@ export default async function PublicProfilePage({
       .eq("follower_id", user.id)
       .eq("following_id", params.id)
       .single();
-    isFollowing = !!follow;
+
+    if (follow) {
+      followState = "following";
+    } else {
+      const { data: request } = await supabase
+        .from("follow_requests")
+        .select("id")
+        .eq("requester_id", user.id)
+        .eq("target_id", params.id)
+        .single();
+      if (request) {
+        followState = "requested";
+      }
+    }
   }
+
+  const canViewContent = !profile.is_private || followState === "following";
+
+  // Fetch recipes only if allowed
+  let recipes: { id: string; title: string; description: string | null; updated_at: string; recipe_ratings: { rating: number }[] }[] = [];
+  if (canViewContent) {
+    const { data } = await supabase
+      .from("recipes")
+      .select("id, title, description, updated_at, recipe_ratings(rating)")
+      .eq("created_by", params.id)
+      .eq("visibility", "public")
+      .order("updated_at", { ascending: false });
+    recipes = (data || []) as typeof recipes;
+  }
+
+  const { data: ratings } = await supabase
+    .from("recipe_ratings")
+    .select("id")
+    .eq("user_id", params.id);
 
   const { data: followers } = await supabase
     .from("user_follows")
@@ -61,7 +80,6 @@ export default async function PublicProfilePage({
     .select("id")
     .eq("follower_id", params.id);
 
-  const publicRecipes = recipes || [];
   const timesCooked = (ratings || []).length;
 
   return (
@@ -74,9 +92,17 @@ export default async function PublicProfilePage({
 
       <div className="mb-6 flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-tag text-2xl font-serif font-semibold text-warm-gray">
-            {profile.display_name[0].toUpperCase()}
-          </div>
+          {profile.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt={profile.display_name}
+              className="h-16 w-16 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-tag text-2xl font-serif font-semibold text-warm-gray">
+              {profile.display_name[0].toUpperCase()}
+            </div>
+          )}
           <div>
             <h1 className="font-serif text-2xl font-semibold">
               {profile.display_name}
@@ -84,10 +110,17 @@ export default async function PublicProfilePage({
             {profile.role === "creator" && (
               <span className="text-xs font-medium text-accent">Creator</span>
             )}
+            {profile.is_private && (
+              <span className="text-xs text-warm-gray">Private account</span>
+            )}
           </div>
         </div>
         {user && (
-          <FollowButton userId={params.id} isFollowing={isFollowing} />
+          <FollowButton
+            userId={params.id}
+            state={followState}
+            isPrivate={profile.is_private}
+          />
         )}
       </div>
 
@@ -96,14 +129,18 @@ export default async function PublicProfilePage({
       )}
 
       <div className="mb-8 flex gap-6">
-        <div className="text-center">
-          <p className="text-xl font-semibold">{publicRecipes.length}</p>
-          <p className="text-xs text-warm-gray">recipes</p>
-        </div>
-        <div className="text-center">
-          <p className="text-xl font-semibold">{timesCooked}</p>
-          <p className="text-xs text-warm-gray">times cooked</p>
-        </div>
+        {canViewContent && (
+          <>
+            <div className="text-center">
+              <p className="text-xl font-semibold">{recipes.length}</p>
+              <p className="text-xs text-warm-gray">recipes</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-semibold">{timesCooked}</p>
+              <p className="text-xs text-warm-gray">times cooked</p>
+            </div>
+          </>
+        )}
         <div className="text-center">
           <p className="text-xl font-semibold">{(followers || []).length}</p>
           <p className="text-xs text-warm-gray">followers</p>
@@ -114,7 +151,14 @@ export default async function PublicProfilePage({
         </div>
       </div>
 
-      {publicRecipes.length > 0 ? (
+      {!canViewContent ? (
+        <div className="rounded-md border border-warm-border bg-warm-tag/30 p-8 text-center">
+          <p className="text-sm text-warm-gray">This account is private</p>
+          <p className="mt-1 text-xs text-warm-gray/60">
+            Follow this user to see their recipes and cooking activity.
+          </p>
+        </div>
+      ) : recipes.length > 0 ? (
         <div>
           <div className="mb-4 border-b border-warm-divider pb-2">
             <h2 className="font-serif text-xs font-medium uppercase tracking-widest text-warm-gray">
@@ -122,8 +166,8 @@ export default async function PublicProfilePage({
             </h2>
           </div>
           <div className="space-y-3">
-            {publicRecipes.map((recipe) => {
-              const ratings = (recipe as { recipe_ratings: { rating: number }[] }).recipe_ratings || [];
+            {recipes.map((recipe) => {
+              const ratings = recipe.recipe_ratings || [];
               const avg =
                 ratings.length > 0
                   ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length

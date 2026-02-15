@@ -233,6 +233,7 @@ export type Database = {
           bio: string | null
           role: string
           plan: string
+          is_private: boolean
           created_at: string
           updated_at: string
         }
@@ -243,6 +244,7 @@ export type Database = {
           bio?: string | null
           role?: string
           plan?: string
+          is_private?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -253,6 +255,7 @@ export type Database = {
           bio?: string | null
           role?: string
           plan?: string
+          is_private?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -284,6 +287,27 @@ export type Database = {
           social_links?: Json
           is_verified?: boolean
           subscriber_count?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      follow_requests: {
+        Row: {
+          id: string
+          requester_id: string
+          target_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          requester_id: string
+          target_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          requester_id?: string
+          target_id?: string
           created_at?: string
         }
         Relationships: []

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { colors, radii } from '@/lib/theme';
 
 type Size = 'sm' | 'md' | 'lg';
@@ -6,6 +6,7 @@ type Size = 'sm' | 'md' | 'lg';
 interface Props {
   name: string;
   size?: Size;
+  imageUrl?: string | null;
 }
 
 const dimensions: Record<Size, { container: number; font: number }> = {
@@ -14,9 +15,22 @@ const dimensions: Record<Size, { container: number; font: number }> = {
   lg: { container: 72, font: 28 },
 };
 
-export default function Avatar({ name, size = 'md' }: Props) {
+export default function Avatar({ name, size = 'md', imageUrl }: Props) {
   const d = dimensions[size];
   const initial = (name || '?')[0].toUpperCase();
+
+  if (imageUrl) {
+    return (
+      <Image
+        source={{ uri: imageUrl }}
+        style={{
+          width: d.container,
+          height: d.container,
+          borderRadius: d.container / 2,
+        }}
+      />
+    );
+  }
 
   return (
     <View
