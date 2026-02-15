@@ -14,6 +14,7 @@ interface PublicRecipe {
   id: string;
   title: string;
   description: string | null;
+  image_url: string | null;
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   published_at: string | null;
@@ -41,7 +42,7 @@ export default async function DiscoverPage({
 
   let query = supabase
     .from("recipes")
-    .select("id, title, description, prep_time_minutes, cook_time_minutes, published_at, created_by, recipe_tags(tag), recipe_ratings(rating)")
+    .select("id, title, description, image_url, prep_time_minutes, cook_time_minutes, published_at, created_by, recipe_tags(tag), recipe_ratings(rating)")
     .eq("visibility", "public");
 
   if (q) {
@@ -151,8 +152,24 @@ export default async function DiscoverPage({
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="block rounded-md border border-warm-border bg-white p-4 transition-shadow hover:shadow-md"
+                className="group block overflow-hidden rounded-md border border-warm-border bg-white transition-shadow hover:shadow-md"
               >
+                {recipe.image_url ? (
+                  <div className="aspect-[16/10] overflow-hidden bg-warm-tag">
+                    <img
+                      src={recipe.image_url}
+                      alt={recipe.title}
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-gradient-start to-gradient-end">
+                    <span className="text-2xl font-serif font-medium text-white/80">
+                      {recipe.title.slice(0, 1)}
+                    </span>
+                  </div>
+                )}
+                <div className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <h2 className="font-serif text-lg font-medium">{recipe.title}</h2>
@@ -194,6 +211,7 @@ export default async function DiscoverPage({
                   {timeInfo && (
                     <span className="text-xs text-warm-gray">{timeInfo}</span>
                   )}
+                </div>
                 </div>
               </Link>
             );

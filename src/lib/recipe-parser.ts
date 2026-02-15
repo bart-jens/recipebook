@@ -9,6 +9,7 @@ export interface ParsedRecipe {
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   servings: number | null;
+  tags: string[];
   ingredients: ParsedIngredient[];
   source_url: string;
   imageUrl: string | null;
@@ -116,6 +117,29 @@ function parseServings(raw: unknown): number | null {
   return null;
 }
 
+function parseTags(r: SchemaRecipe): string[] {
+  const tagSet = new Set<string>();
+
+  const addTags = (raw: unknown) => {
+    if (typeof raw === "string") {
+      // Could be comma-separated: "Italian, Pasta, Dinner"
+      raw.split(/[,;]/).forEach((t) => {
+        const cleaned = t.trim().toLowerCase();
+        if (cleaned && cleaned.length <= 30) tagSet.add(cleaned);
+      });
+    }
+    if (Array.isArray(raw)) {
+      raw.forEach((item) => addTags(item));
+    }
+  };
+
+  addTags(r.recipeCategory);
+  addTags(r.recipeCuisine);
+  addTags(r.keywords);
+
+  return Array.from(tagSet).slice(0, 10);
+}
+
 export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
   const response = await fetch(url, {
     headers: {
@@ -150,6 +174,9 @@ export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
   const r: SchemaRecipe = recipe;
   const ingredients = (r.recipeIngredient || []).map((s) => parseIngredient(s));
 
+  // Extract tags from recipeCategory, recipeCuisine, and keywords
+  const tags = parseTags(r);
+
   return {
     title: r.name || "Untitled Recipe",
     description: r.description || "",
@@ -157,6 +184,7 @@ export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
     prep_time_minutes: parseDuration(r.prepTime),
     cook_time_minutes: parseDuration(r.cookTime),
     servings: parseServings(r.recipeYield),
+    tags,
     ingredients,
     source_url: url,
     imageUrl: parseImage(r.image),

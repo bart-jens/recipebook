@@ -133,7 +133,7 @@ export function CookingLog({
             <button
               type="submit"
               disabled={stars === 0 || isPending}
-              className="rounded-md bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+              className="rounded-md bg-cta px-4 py-1.5 text-sm font-medium text-white hover:bg-cta-hover disabled:opacity-50"
             >
               {isPending ? "Saving..." : "Save"}
             </button>

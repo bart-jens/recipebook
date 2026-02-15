@@ -103,7 +103,7 @@ export default function ImportInstagramPage() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-accent px-4 py-3 text-base font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+          className="rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover disabled:opacity-50"
         >
           {loading ? "Fetching recipe..." : "Fetch Recipe"}
         </button>

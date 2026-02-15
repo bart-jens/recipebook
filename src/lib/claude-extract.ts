@@ -5,6 +5,7 @@ export interface ExtractedRecipe {
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   servings: number | null;
+  tags: string[];
   ingredients: {
     ingredient_name: string;
     quantity: number | null;
@@ -17,11 +18,12 @@ const RECIPE_PROMPT = `Extract the recipe from this image. Return ONLY valid JSO
 
 {
   "title": "Recipe title",
-  "description": "Brief description",
+  "description": "Brief 1-2 sentence description of the dish",
   "instructions": "Step-by-step instructions, each step on a new line",
   "prep_time_minutes": null or number,
   "cook_time_minutes": null or number,
   "servings": null or number,
+  "tags": ["tag1", "tag2"],
   "ingredients": [
     {
       "ingredient_name": "name",
@@ -31,6 +33,11 @@ const RECIPE_PROMPT = `Extract the recipe from this image. Return ONLY valid JSO
     }
   ]
 }
+
+Important guidelines:
+- For prep_time_minutes and cook_time_minutes: extract if stated. If not stated, estimate reasonable times based on the recipe steps and ingredients. A simple salad might be 10 min prep / 0 cook; a slow braise might be 15 min prep / 180 min cook.
+- For servings: extract if stated, otherwise estimate based on ingredient quantities.
+- For tags: include 2-5 lowercase tags covering cuisine (e.g. "italian", "thai"), meal type (e.g. "dinner", "dessert", "snack"), dietary info (e.g. "vegetarian", "gluten-free"), and cooking method (e.g. "baked", "grilled", "one-pot"). Only include tags that clearly apply.
 
 If no recipe is found in the image, return: {"error": "no_recipe"}`;
 

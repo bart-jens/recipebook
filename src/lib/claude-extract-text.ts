@@ -1,16 +1,17 @@
 import type { ExtractedRecipe } from "./claude-extract";
 
-const TEXT_PROMPT = `Extract the recipe from the following text. The text is from an Instagram post caption. Ignore any non-recipe content (hashtags, personal stories, engagement prompts, emojis used as decoration).
+const TEXT_PROMPT = `Extract the recipe from the following text. The text may be from an Instagram post caption or similar social media post. Ignore any non-recipe content (hashtags, personal stories, engagement prompts, emojis used as decoration, "link in bio" text, follower calls-to-action).
 
 Return ONLY valid JSON with this exact structure (no markdown, no code fences, no explanation):
 
 {
   "title": "Recipe title",
-  "description": "Brief description",
+  "description": "Brief 1-2 sentence description of the dish",
   "instructions": "Step-by-step instructions, each step on a new line",
   "prep_time_minutes": null or number,
   "cook_time_minutes": null or number,
   "servings": null or number,
+  "tags": ["tag1", "tag2"],
   "ingredients": [
     {
       "ingredient_name": "name",
@@ -20,6 +21,11 @@ Return ONLY valid JSON with this exact structure (no markdown, no code fences, n
     }
   ]
 }
+
+Important guidelines:
+- For prep_time_minutes and cook_time_minutes: extract if stated. If not stated, estimate reasonable times based on the recipe steps and ingredients. A simple salad might be 10 min prep / 0 cook; a slow braise might be 15 min prep / 180 min cook.
+- For servings: extract if stated, otherwise estimate based on ingredient quantities.
+- For tags: include 2-5 lowercase tags covering cuisine (e.g. "italian", "thai"), meal type (e.g. "dinner", "dessert", "snack"), dietary info (e.g. "vegetarian", "gluten-free"), and cooking method (e.g. "baked", "grilled", "one-pot"). Only include tags that clearly apply. You may use hashtags from the original text as hints for tags, but clean them up (lowercase, no # symbol).
 
 If no recipe is found, return: {"error": "no_recipe"}
 

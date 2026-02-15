@@ -18,7 +18,7 @@ const config: Config = {
           "sans-serif",
         ],
         serif: [
-          "Playfair Display",
+          "Fraunces",
           "Georgia",
           "Cambria",
           "Times New Roman",
@@ -26,16 +26,24 @@ const config: Config = {
         ],
       },
       colors: {
-        cream: "#FFFBF5",
+        cream: "#FAF6F0",
         accent: {
-          DEFAULT: "#C8553D",
-          hover: "#A8432F",
+          DEFAULT: "#2D5F5D",
+          hover: "#234B49",
+        },
+        cta: {
+          DEFAULT: "#D4913D",
+          hover: "#BF7D2E",
         },
         warm: {
           gray: "#6B6B6B",
-          border: "#E8E0D8",
-          divider: "#F0EBE4",
-          tag: "#F5F0EA",
+          border: "#DDD6CC",
+          divider: "#E8E2D8",
+          tag: "#F0EDE6",
+        },
+        gradient: {
+          start: "#D4913D",
+          end: "#E8C87C",
         },
       },
     },

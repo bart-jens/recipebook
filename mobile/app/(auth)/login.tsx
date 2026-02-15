@@ -114,11 +114,11 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   error: {
-    color: colors.primary,
+    color: colors.danger,
     ...typography.bodySmall,
   },
   button: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.cta,
     borderRadius: radii.md,
     paddingVertical: 14,
     alignItems: 'center',

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -39,7 +39,7 @@ export default function EditProfileScreen() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [wasPrivate, setWasPrivate] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     if (!user) return;
 
     async function load() {
@@ -61,7 +61,7 @@ export default function EditProfileScreen() {
     }
 
     load();
-  });
+  }, [user]);
 
   const pickAndUploadAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -76,15 +76,15 @@ export default function EditProfileScreen() {
     setUploadingAvatar(true);
     try {
       const asset = result.assets[0];
-      const ext = asset.uri.split('.').pop() || 'jpg';
-      const path = `${user!.id}/${Date.now()}.${ext}`;
+      const path = `${user!.id}/${Date.now()}.jpg`;
 
       const response = await fetch(asset.uri);
       const blob = await response.blob();
+      const arrayBuffer = await blob.arrayBuffer();
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(path, blob, { contentType: `image/${ext}`, upsert: true });
+        .upload(path, arrayBuffer, { contentType: 'image/jpeg', upsert: true });
 
       if (uploadError) throw uploadError;
 

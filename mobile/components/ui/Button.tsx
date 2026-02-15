@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
 
 const variantStyles: Record<Variant, ViewStyle> = {
   primary: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.cta,
   },
   secondary: {
     borderWidth: 1,

@@ -43,6 +43,7 @@ export default function ImportPhotoScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<RecipeFormData | null>(null);
+  const [extractedTags, setExtractedTags] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   const pickImage = async () => {
@@ -115,6 +116,9 @@ export default function ImportPhotoScreen() {
             }))
           : [{ ingredient_name: '', quantity: '', unit: '', notes: '' }],
       });
+      if (data.tags && Array.isArray(data.tags)) {
+        setExtractedTags(data.tags);
+      }
     } catch {
       Alert.alert('Error', 'Could not connect to the server. Please check your connection.');
     }
@@ -157,6 +161,16 @@ export default function ImportPhotoScreen() {
           unit: ing.unit.trim() || null,
           notes: ing.notes.trim() || null,
           order_index: i,
+        }))
+      );
+    }
+
+    // Save extracted tags
+    if (extractedTags.length > 0) {
+      await supabase.from('recipe_tags').insert(
+        extractedTags.map((tag) => ({
+          recipe_id: recipe.id,
+          tag: tag.toLowerCase().trim(),
         }))
       );
     }
@@ -292,7 +306,7 @@ const styles = StyleSheet.create({
   },
 
   extractButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.cta,
     borderRadius: radii.md,
     paddingVertical: spacing.lg,
     alignItems: 'center',

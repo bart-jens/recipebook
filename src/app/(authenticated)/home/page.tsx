@@ -152,7 +152,7 @@ export default async function HomePage() {
                     />
                   </div>
                 ) : (
-                  <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-accent to-[#E8A87C]">
+                  <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-gradient-start to-gradient-end">
                     <span className="text-sm font-medium text-white/80">
                       {recipe.title.slice(0, 1)}
                     </span>
@@ -197,7 +197,7 @@ export default async function HomePage() {
                     />
                   </div>
                 ) : (
-                  <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-accent to-[#E8A87C]">
+                  <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-gradient-start to-gradient-end">
                     <span className="text-sm font-medium text-white/80">
                       {recipe.title.slice(0, 1)}
                     </span>

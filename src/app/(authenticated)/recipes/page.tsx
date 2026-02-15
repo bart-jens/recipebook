@@ -96,7 +96,7 @@ export default async function RecipesPage({
           <h1 className="font-serif text-2xl font-semibold">Recipes</h1>
           <Link
             href="/recipes/new"
-            className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+            className="rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover"
           >
             + New recipe
           </Link>

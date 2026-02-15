@@ -1,17 +1,19 @@
 import { Platform, TextStyle } from 'react-native';
 
 export const colors = {
-  primary: '#C8553D',
-  primaryLight: '#D4715C',
-  background: '#FFFBF5',
+  primary: '#2D5F5D',
+  primaryLight: '#3D7A72',
+  cta: '#D4913D',
+  ctaHover: '#BF7D2E',
+  background: '#FAF6F0',
   card: '#FFFFFF',
-  surface: '#F5F0EA',
-  surfaceAlt: '#FAFAF8',
+  surface: '#F0EDE6',
+  surfaceAlt: '#F5F2EC',
   text: '#1A1A1A',
   textSecondary: '#6B6B6B',
   textMuted: '#999999',
-  border: '#E8E0D8',
-  borderLight: '#F0EBE4',
+  border: '#DDD6CC',
+  borderLight: '#E8E2D8',
   starFilled: '#F59E0B',
   starEmpty: '#D1C8BC',
   success: '#15803D',
@@ -23,13 +25,13 @@ export const colors = {
   dangerBorder: '#FECACA',
   white: '#FFFFFF',
   // Gradient colors
-  gradientWarmStart: '#C8553D',
-  gradientWarmEnd: '#E8A87C',
+  gradientWarmStart: '#D4913D',
+  gradientWarmEnd: '#E8C87C',
   gradientOverlayStart: 'transparent',
   gradientOverlayEnd: 'rgba(0,0,0,0.65)',
   // Skeleton shimmer
-  skeletonBase: '#F0EBE4',
-  skeletonHighlight: '#FAF6F0',
+  skeletonBase: '#E8E2D8',
+  skeletonHighlight: '#F5F2EC',
 } as const;
 
 export const spacing = {
@@ -43,9 +45,9 @@ export const spacing = {
 } as const;
 
 export const fontFamily = {
-  serif: 'PlayfairDisplay_400Regular',
-  serifSemiBold: 'PlayfairDisplay_600SemiBold',
-  serifBold: 'PlayfairDisplay_700Bold',
+  serif: 'Fraunces_400Regular',
+  serifSemiBold: 'Fraunces_600SemiBold',
+  serifBold: 'Fraunces_700Bold',
   system: Platform.OS === 'ios' ? 'System' : 'Roboto',
 } as const;
 

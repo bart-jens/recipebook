@@ -17,26 +17,36 @@ import { colors, spacing, typography, radii } from '@/lib/theme';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
 
+function isInstagramUrl(url: string): boolean {
+  return url.includes('instagram.com/');
+}
+
 export default function ImportUrlScreen() {
   const { user } = useAuth();
   const [url, setUrl] = useState('');
   const [extracting, setExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<RecipeFormData | null>(null);
   const [extractedImageUrl, setExtractedImageUrl] = useState<string | null>(null);
+  const [extractedTags, setExtractedTags] = useState<string[]>([]);
+  const [sourceType, setSourceType] = useState<'url' | 'instagram'>('url');
   const [saving, setSaving] = useState(false);
 
   const handleExtract = async () => {
     const trimmed = url.trim();
     if (!trimmed) {
-      Alert.alert('Error', 'Please enter a URL');
+      Alert.alert('Error', 'Please enter a link');
       return;
     }
 
     setExtracting(true);
 
+    const isInsta = isInstagramUrl(trimmed);
+    const endpoint = isInsta ? '/api/extract-instagram' : '/api/extract-url';
+    setSourceType(isInsta ? 'instagram' : 'url');
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const response = await fetch(`${API_BASE}/api/extract-url`, {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,7 +59,7 @@ export default function ImportUrlScreen() {
       const data = await response.json();
 
       if (!response.ok) {
-        Alert.alert('Extraction Failed', data.error || 'Could not extract recipe from this URL');
+        Alert.alert('Extraction Failed', data.error || 'Could not extract recipe from this link');
         setExtracting(false);
         return;
       }
@@ -62,17 +72,20 @@ export default function ImportUrlScreen() {
         cook_time_minutes: data.cook_time_minutes?.toString() || '',
         servings: data.servings?.toString() || '',
         ingredients: (data.ingredients || []).length > 0
-          ? data.ingredients.map((ing: { name: string; quantity: number | null; unit: string; notes: string }) => ({
-              ingredient_name: ing.name || '',
+          ? data.ingredients.map((ing: { ingredient_name?: string; name?: string; quantity: number | null; unit: string; notes: string }) => ({
+              ingredient_name: ing.ingredient_name || ing.name || '',
               quantity: ing.quantity?.toString() || '',
               unit: ing.unit || '',
               notes: ing.notes || '',
             }))
           : [{ ingredient_name: '', quantity: '', unit: '', notes: '' }],
       });
-      // Store extracted image URL for use at save time
+
       if (data.imageUrl) {
         setExtractedImageUrl(data.imageUrl);
+      }
+      if (data.tags && Array.isArray(data.tags)) {
+        setExtractedTags(data.tags);
       }
     } catch {
       Alert.alert('Error', 'Could not connect to the server. Please check your connection.');
@@ -94,7 +107,7 @@ export default function ImportUrlScreen() {
         prep_time_minutes: data.prep_time_minutes ? parseInt(data.prep_time_minutes) : null,
         cook_time_minutes: data.cook_time_minutes ? parseInt(data.cook_time_minutes) : null,
         servings: data.servings ? parseInt(data.servings) : null,
-        source_type: 'url',
+        source_type: sourceType,
         source_url: url.trim(),
         image_url: extractedImageUrl,
         created_by: user.id,
@@ -118,6 +131,16 @@ export default function ImportUrlScreen() {
           unit: ing.unit.trim() || null,
           notes: ing.notes.trim() || null,
           order_index: i,
+        }))
+      );
+    }
+
+    // Save extracted tags
+    if (extractedTags.length > 0) {
+      await supabase.from('recipe_tags').insert(
+        extractedTags.map((tag) => ({
+          recipe_id: recipe.id,
+          tag: tag.toLowerCase().trim(),
         }))
       );
     }
@@ -160,7 +183,7 @@ export default function ImportUrlScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ headerTitle: 'Import from URL' }} />
+      <Stack.Screen options={{ headerTitle: 'Import from Link' }} />
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
@@ -168,14 +191,14 @@ export default function ImportUrlScreen() {
       >
         <Text style={styles.heading}>Import a Recipe</Text>
         <Text style={styles.subtitle}>
-          Paste a URL from any recipe website. We'll extract the recipe details automatically.
+          Paste a link to any recipe website or Instagram post. We'll extract the recipe details automatically.
         </Text>
 
         <TextInput
           style={styles.input}
           value={url}
           onChangeText={setUrl}
-          placeholder="https://www.example.com/recipe/..."
+          placeholder="https://..."
           placeholderTextColor={colors.textMuted}
           autoCapitalize="none"
           autoCorrect={false}
@@ -199,9 +222,10 @@ export default function ImportUrlScreen() {
         </TouchableOpacity>
 
         <View style={styles.tips}>
-          <Text style={styles.tipsTitle}>Tips</Text>
-          <Text style={styles.tipText}>Works best with sites that use Recipe schema markup (most major recipe sites).</Text>
-          <Text style={styles.tipText}>After extraction, you can review and edit all fields before saving.</Text>
+          <Text style={styles.tipsTitle}>Works with</Text>
+          <Text style={styles.tipText}>Recipe websites (AllRecipes, BBC Good Food, etc.)</Text>
+          <Text style={styles.tipText}>Instagram posts with recipes in the caption</Text>
+          <Text style={styles.tipText}>Any page with structured recipe data</Text>
         </View>
       </ScrollView>
     </>
@@ -225,7 +249,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   button: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.cta,
     borderRadius: radii.md,
     paddingVertical: spacing.lg,
     alignItems: 'center',

@@ -175,19 +175,8 @@ export default function RecipesScreen() {
             >
               <FontAwesome name="link" size={18} color={colors.primary} />
               <View style={styles.importOptionText}>
-                <Text style={styles.importOptionTitle}>From URL</Text>
-                <Text style={styles.importOptionDesc}>Paste a link to any recipe website</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.importOption}
-              activeOpacity={0.7}
-              onPress={() => { setShowImportMenu(false); router.push('/recipe/import-instagram'); }}
-            >
-              <FontAwesome name="instagram" size={18} color={colors.primary} />
-              <View style={styles.importOptionText}>
-                <Text style={styles.importOptionTitle}>From Instagram</Text>
-                <Text style={styles.importOptionDesc}>Import from an Instagram post caption</Text>
+                <Text style={styles.importOptionTitle}>From Link</Text>
+                <Text style={styles.importOptionDesc}>Paste a link from any recipe site or Instagram</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity

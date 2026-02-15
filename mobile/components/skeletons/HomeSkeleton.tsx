@@ -14,19 +14,29 @@ export default function HomeSkeleton() {
         <SkeletonLine width={200} height={28} />
       </Animated.View>
 
-      <Animated.View entering={FadeIn.delay(animation.staggerDelay)} style={[styles.padded, styles.statsRow]}>
-        <Skeleton width={90} height={56} borderRadius={radii.lg} />
-        <Skeleton width={90} height={56} borderRadius={radii.lg} />
-        <Skeleton width={90} height={56} borderRadius={radii.lg} />
-      </Animated.View>
-
-      <Animated.View entering={FadeIn.delay(animation.staggerDelay * 2)} style={styles.padded}>
+      <Animated.View entering={FadeIn.delay(animation.staggerDelay)} style={styles.padded}>
         <SkeletonLine width={160} height={18} />
       </Animated.View>
 
-      <Animated.View entering={FadeIn.delay(animation.staggerDelay * 3)} style={[styles.padded, styles.carouselRow]}>
+      <Animated.View entering={FadeIn.delay(animation.staggerDelay * 2)} style={[styles.padded, styles.carouselRow]}>
         <Skeleton width={CARD_WIDTH} height={CARD_WIDTH * 1.25 + 40} borderRadius={radii.lg} />
         <Skeleton width={CARD_WIDTH} height={CARD_WIDTH * 1.25 + 40} borderRadius={radii.lg} />
+      </Animated.View>
+
+      <Animated.View entering={FadeIn.delay(animation.staggerDelay * 3)} style={styles.padded}>
+        <SkeletonLine width={140} height={18} />
+      </Animated.View>
+
+      <Animated.View entering={FadeIn.delay(animation.staggerDelay * 4)} style={styles.padded}>
+        {[0, 1, 2].map((i) => (
+          <View key={i} style={styles.activityRow}>
+            <Skeleton width={32} height={32} borderRadius={16} />
+            <View style={styles.activityLines}>
+              <SkeletonLine width={SCREEN_WIDTH * 0.55} height={14} />
+              <SkeletonLine width={80} height={12} />
+            </View>
+          </View>
+        ))}
       </Animated.View>
     </View>
   );
@@ -40,12 +50,17 @@ const styles = StyleSheet.create({
   padded: {
     paddingHorizontal: spacing.xl,
   },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
   carouselRow: {
     flexDirection: 'row',
     gap: spacing.md,
+  },
+  activityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  activityLines: {
+    gap: spacing.sm,
   },
 });

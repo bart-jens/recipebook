@@ -23,7 +23,7 @@ export function RequestActions({ requesterId }: { requesterId: string }) {
       <button
         onClick={handleApprove}
         disabled={isPending}
-        className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+        className="rounded-md bg-cta px-3 py-1.5 text-xs font-medium text-white hover:bg-cta-hover disabled:opacity-50"
       >
         Approve
       </button>
