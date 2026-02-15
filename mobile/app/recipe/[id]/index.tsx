@@ -97,6 +97,8 @@ export default function RecipeDetailScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [newTag, setNewTag] = useState('');
+  const [addingTag, setAddingTag] = useState(false);
 
   const scrollY = useSharedValue(0);
 
@@ -281,6 +283,36 @@ export default function RecipeDetailScreen() {
         },
       },
     ]);
+  };
+
+  const addTag = async () => {
+    const trimmed = newTag.trim().toLowerCase();
+    if (!trimmed || !recipe) return;
+
+    if (tags.some((t) => t.tag.toLowerCase() === trimmed)) {
+      setNewTag('');
+      setAddingTag(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('recipe_tags')
+      .insert({ recipe_id: recipe.id, tag: trimmed })
+      .select('id, tag')
+      .single();
+
+    if (!error && data) {
+      setTags([...tags, data]);
+      Haptics.selectionAsync();
+    }
+    setNewTag('');
+    setAddingTag(false);
+  };
+
+  const removeTag = async (tagId: string) => {
+    await supabase.from('recipe_tags').delete().eq('id', tagId);
+    setTags(tags.filter((t) => t.id !== tagId));
+    Haptics.selectionAsync();
   };
 
   const pickAndUploadImage = async () => {
@@ -492,11 +524,51 @@ export default function RecipeDetailScreen() {
             )}
 
             {/* Tags */}
-            {tags.length > 0 && (
+            {(tags.length > 0 || isOwner) && (
               <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(300)} style={styles.tagsRow}>
                 {tags.map((t) => (
-                  <Badge key={t.id} label={t.tag} />
+                  isOwner ? (
+                    <TouchableOpacity
+                      key={t.id}
+                      onLongPress={() => {
+                        Alert.alert('Remove tag', `Remove "${t.tag}"?`, [
+                          { text: 'Cancel', style: 'cancel' },
+                          { text: 'Remove', style: 'destructive', onPress: () => removeTag(t.id) },
+                        ]);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Badge label={t.tag} />
+                    </TouchableOpacity>
+                  ) : (
+                    <Badge key={t.id} label={t.tag} />
+                  )
                 ))}
+                {isOwner && !addingTag && (
+                  <TouchableOpacity
+                    style={styles.addTagButton}
+                    onPress={() => setAddingTag(true)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.addTagText}>+ tag</Text>
+                  </TouchableOpacity>
+                )}
+                {isOwner && addingTag && (
+                  <View style={styles.tagInputWrap}>
+                    <TextInput
+                      style={styles.tagInput}
+                      value={newTag}
+                      onChangeText={setNewTag}
+                      placeholder="tag name"
+                      placeholderTextColor={colors.textMuted}
+                      autoFocus
+                      returnKeyType="done"
+                      onSubmitEditing={addTag}
+                      onBlur={() => { if (!newTag.trim()) setAddingTag(false); }}
+                      autoCapitalize="none"
+                    />
+                  </View>
+                )}
               </Animated.View>
             )}
 
@@ -838,7 +910,36 @@ const styles = StyleSheet.create({
   },
 
   // Tags
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm - 2, marginBottom: spacing.md },
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm - 2, marginBottom: spacing.md, alignItems: 'center' },
+  addTagButton: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    borderStyle: 'dashed',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  addTagText: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: '500',
+  },
+  tagInputWrap: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: radii.xl,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs - 1,
+    minWidth: 80,
+  },
+  tagInput: {
+    ...typography.caption,
+    color: colors.text,
+    padding: 0,
+    margin: 0,
+  },
 
   // Description
   description: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },

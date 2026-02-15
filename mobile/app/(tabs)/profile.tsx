@@ -166,6 +166,12 @@ export default function ProfileScreen() {
           onPress={() => router.push('/profile/edit')}
         />
         <Button
+          title="Invite Friends"
+          variant="secondary"
+          size="lg"
+          onPress={() => router.push('/invites')}
+        />
+        <Button
           title="Sign out"
           variant="ghost"
           size="lg"

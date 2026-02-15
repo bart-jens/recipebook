@@ -5,10 +5,14 @@ import {
   StyleSheet,
   FlatList,
   TextInput,
+  Modal,
+  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors, spacing, typography, radii } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 import RecipeCard from '@/components/ui/RecipeCard';
@@ -33,6 +37,7 @@ export default function RecipesScreen() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [showImportMenu, setShowImportMenu] = useState(false);
 
   const fetchRecipes = useCallback(async () => {
     if (!user) return;
@@ -112,10 +117,10 @@ export default function RecipesScreen() {
           )}
           <View style={styles.actionButtons}>
             <Button
-              title="Import URL"
+              title="Import"
               variant="secondary"
               size="sm"
-              onPress={() => router.push('/recipe/import-url')}
+              onPress={() => setShowImportMenu(true)}
             />
             <Button
               title="+ New"
@@ -153,6 +158,52 @@ export default function RecipesScreen() {
           )}
         />
       )}
+
+      <Modal
+        visible={showImportMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowImportMenu(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowImportMenu(false)}>
+          <View style={styles.importMenu}>
+            <Text style={styles.importMenuTitle}>Import Recipe</Text>
+            <TouchableOpacity
+              style={styles.importOption}
+              activeOpacity={0.7}
+              onPress={() => { setShowImportMenu(false); router.push('/recipe/import-url'); }}
+            >
+              <FontAwesome name="link" size={18} color={colors.primary} />
+              <View style={styles.importOptionText}>
+                <Text style={styles.importOptionTitle}>From URL</Text>
+                <Text style={styles.importOptionDesc}>Paste a link to any recipe website</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.importOption}
+              activeOpacity={0.7}
+              onPress={() => { setShowImportMenu(false); router.push('/recipe/import-instagram'); }}
+            >
+              <FontAwesome name="instagram" size={18} color={colors.primary} />
+              <View style={styles.importOptionText}>
+                <Text style={styles.importOptionTitle}>From Instagram</Text>
+                <Text style={styles.importOptionDesc}>Import from an Instagram post caption</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.importOption}
+              activeOpacity={0.7}
+              onPress={() => { setShowImportMenu(false); router.push('/recipe/import-photo'); }}
+            >
+              <FontAwesome name="camera" size={18} color={colors.primary} />
+              <View style={styles.importOptionText}>
+                <Text style={styles.importOptionTitle}>From Photo</Text>
+                <Text style={styles.importOptionDesc}>Scan a photo of a recipe with AI</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -178,4 +229,42 @@ const styles = StyleSheet.create({
   },
   count: { ...typography.label, color: colors.textSecondary },
   actionButtons: { flexDirection: 'row', gap: spacing.sm },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  importMenu: {
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radii.xl,
+    borderTopRightRadius: radii.xl,
+    padding: spacing.xl,
+    paddingBottom: spacing.xxxl,
+  },
+  importMenuTitle: {
+    ...typography.h3,
+    color: colors.text,
+    marginBottom: spacing.lg,
+  },
+  importOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.lg,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    marginBottom: spacing.sm,
+    gap: spacing.lg,
+  },
+  importOptionText: { flex: 1 },
+  importOptionTitle: {
+    ...typography.body,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  importOptionDesc: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
 });

@@ -32,6 +32,9 @@ export default async function AuthenticatedLayout({
               EefEats
             </Link>
             <nav className="flex items-center gap-1">
+              <Link href="/" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag">
+                Home
+              </Link>
               <Link href="/recipes" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag">
                 My Recipes
               </Link>

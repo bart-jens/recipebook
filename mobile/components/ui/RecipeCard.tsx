@@ -19,6 +19,7 @@ interface RecipeData {
   creatorName?: string;
   avgRating?: number | null;
   ratingCount?: number;
+  forkCount?: number;
 }
 
 interface Props {
@@ -83,6 +84,11 @@ export default function RecipeCard({ recipe, onPress, variant = 'default' }: Pro
                 <Text style={styles.ratingCount}>({recipe.ratingCount})</Text>
               )}
             </View>
+          )}
+          {recipe.forkCount != null && recipe.forkCount > 0 && (
+            <Text style={styles.forkCount}>
+              {recipe.forkCount} fork{recipe.forkCount !== 1 ? 's' : ''}
+            </Text>
           )}
           {cookTime != null && (
             <Text style={styles.cookTime}>{cookTime} min</Text>
@@ -158,6 +164,10 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   ratingCount: {
+    ...typography.caption,
+    color: colors.textMuted,
+  },
+  forkCount: {
     ...typography.caption,
     color: colors.textMuted,
   },
