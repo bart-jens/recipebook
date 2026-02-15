@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, radii } from '@/lib/theme';
+import { colors, spacing, typography, radii, fontFamily } from '@/lib/theme';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
@@ -88,9 +88,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
   },
   title: {
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    fontFamily: fontFamily.serifBold,
     fontSize: 40,
-    fontWeight: '600',
     color: colors.text,
     letterSpacing: -0.5,
   },

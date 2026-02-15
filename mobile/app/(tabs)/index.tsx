@@ -147,7 +147,7 @@ export default function HomeScreen() {
       ) : (
         <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
           <EmptyState
-            icon="book"
+            lottie="empty-recipes"
             title="No recipes yet"
             subtitle="Import a recipe or create your first one!"
           />

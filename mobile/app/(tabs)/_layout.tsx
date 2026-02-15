@@ -1,11 +1,43 @@
+import { useEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Redirect, Tabs } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
 import { ActivityIndicator, View } from 'react-native';
-import { colors, typography } from '@/lib/theme';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+import { colors, typography, fontFamily, animation } from '@/lib/theme';
 
-function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['name']; color: string }) {
-  return <FontAwesome size={22} style={{ marginBottom: -2 }} {...props} />;
+function AnimatedTabBarIcon({
+  name,
+  color,
+  focused,
+}: {
+  name: React.ComponentProps<typeof FontAwesome>['name'];
+  color: string;
+  focused: boolean;
+}) {
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    if (focused) {
+      scale.value = withSpring(1.15, animation.springConfig);
+    } else {
+      scale.value = withSpring(1, animation.springConfig);
+    }
+  }, [focused]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View style={[{ marginBottom: -2 }, animatedStyle]}>
+      <FontAwesome name={name} size={22} color={color} />
+    </Animated.View>
+  );
 }
 
 export default function TabLayout() {
@@ -43,12 +75,11 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="home" color={color} focused={focused} />,
           headerTitle: 'EefEats',
           headerTitleStyle: {
-            fontFamily: 'Georgia',
+            fontFamily: fontFamily.serifBold,
             fontSize: typography.h2.fontSize,
-            fontWeight: '600',
           },
         }}
       />
@@ -56,21 +87,21 @@ export default function TabLayout() {
         name="discover"
         options={{
           title: 'Discover',
-          tabBarIcon: ({ color }) => <TabBarIcon name="compass" color={color} />,
+          tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="compass" color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="recipes"
         options={{
           title: 'My Recipes',
-          tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
+          tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="book" color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
+          tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="user" color={color} focused={focused} />,
         }}
       />
     </Tabs>

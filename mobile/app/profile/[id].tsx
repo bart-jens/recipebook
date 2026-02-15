@@ -4,17 +4,16 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
-import { Image } from 'expo-image';
 import { useLocalSearchParams, Stack, useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, radii } from '@/lib/theme';
+import { colors, spacing, typography, fontFamily } from '@/lib/theme';
 import Avatar from '@/components/ui/Avatar';
 import SectionHeader from '@/components/ui/SectionHeader';
-import Card from '@/components/ui/Card';
+import RecipeCard from '@/components/ui/RecipeCard';
 import Button from '@/components/ui/Button';
+import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
 
 interface Profile {
   id: string;
@@ -27,6 +26,8 @@ interface PublicRecipe {
   title: string;
   description: string | null;
   image_url: string | null;
+  prep_time_minutes: number | null;
+  cook_time_minutes: number | null;
 }
 
 export default function PublicProfileScreen() {
@@ -58,7 +59,7 @@ export default function PublicProfileScreen() {
             .single(),
           supabase
             .from('recipes')
-            .select('id, title, description, image_url')
+            .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes')
             .eq('created_by', id!)
             .eq('visibility', 'public')
             .order('published_at', { ascending: false }),
@@ -116,8 +117,8 @@ export default function PublicProfileScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={styles.container}>
+        <ProfileSkeleton />
       </View>
     );
   }
@@ -176,30 +177,19 @@ export default function PublicProfileScreen() {
           {recipes.length === 0 ? (
             <Text style={styles.emptyRecipesText}>No published recipes yet.</Text>
           ) : (
-            recipes.map((recipe) => (
-              <Card
-                key={recipe.id}
-                style={styles.recipeCard}
-                onPress={() => router.push(`/recipe/${recipe.id}`)}
-              >
-                <View style={styles.recipeRow}>
-                  {recipe.image_url && (
-                    <Image
-                      source={{ uri: recipe.image_url }}
-                      style={styles.recipeThumb}
-                      contentFit="cover"
-                      transition={200}
-                    />
-                  )}
-                  <View style={styles.recipeTextWrap}>
-                    <Text style={styles.recipeTitle}>{recipe.title}</Text>
-                    {recipe.description && (
-                      <Text style={styles.recipeDesc} numberOfLines={2}>{recipe.description}</Text>
-                    )}
-                  </View>
-                </View>
-              </Card>
-            ))
+            <View style={styles.recipeList}>
+              {recipes.map((recipe) => (
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={{
+                    ...recipe,
+                    creatorName: profile?.display_name,
+                  }}
+                  variant="compact"
+                  onPress={() => router.push(`/recipe/${recipe.id}`)}
+                />
+              ))}
+            </View>
           )}
         </View>
       </ScrollView>
@@ -214,8 +204,8 @@ const styles = StyleSheet.create({
 
   header: { alignItems: 'center', marginBottom: spacing.xl },
   name: {
+    fontFamily: fontFamily.serifBold,
     fontSize: 24,
-    fontWeight: '700',
     color: colors.text,
     marginTop: spacing.md,
   },
@@ -247,23 +237,7 @@ const styles = StyleSheet.create({
   emptyText: { ...typography.bodySmall, color: colors.textSecondary },
   emptyRecipesText: { ...typography.bodySmall, color: colors.textMuted, fontStyle: 'italic' },
 
-  recipeCard: {
-    marginBottom: spacing.sm,
+  recipeList: {
+    gap: spacing.md,
   },
-  recipeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  recipeThumb: {
-    width: 56,
-    height: 56,
-    borderRadius: radii.md,
-    marginRight: spacing.md,
-    backgroundColor: colors.surface,
-  },
-  recipeTextWrap: {
-    flex: 1,
-  },
-  recipeTitle: { fontSize: 16, fontWeight: '600', color: colors.text },
-  recipeDesc: { ...typography.bodySmall, color: colors.textSecondary, marginTop: spacing.xs },
 });

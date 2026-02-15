@@ -4,14 +4,14 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography } from '@/lib/theme';
+import { colors, spacing, typography, fontFamily } from '@/lib/theme';
 import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
+import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
 
 interface Profile {
   display_name: string;
@@ -60,8 +60,8 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={styles.container}>
+        <ProfileSkeleton />
       </View>
     );
   }
@@ -117,6 +117,7 @@ const styles = StyleSheet.create({
   avatarWrap: { marginBottom: spacing.md },
   name: {
     ...typography.h2,
+    fontFamily: fontFamily.serifBold,
     color: colors.text,
   },
   email: {

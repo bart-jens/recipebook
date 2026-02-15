@@ -131,7 +131,7 @@ export default function RecipesScreen() {
         <RecipeListSkeleton />
       ) : recipes.length === 0 ? (
         <EmptyState
-          icon="book"
+          lottie={search ? 'no-results' : 'empty-recipes'}
           title={search ? 'No results' : 'No recipes yet'}
           subtitle={
             search
