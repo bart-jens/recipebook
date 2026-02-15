@@ -122,6 +122,24 @@ export default function ImportUrlScreen() {
       );
     }
 
+    // Rehost external image to our own storage (fire and forget)
+    if (extractedImageUrl) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        fetch(`${API_BASE}/api/rehost-image`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token || ''}`,
+            'Cookie': `sb-access-token=${session?.access_token || ''}; sb-refresh-token=${session?.refresh_token || ''}`,
+          },
+          body: JSON.stringify({ imageUrl: extractedImageUrl, recipeId: recipe.id }),
+        });
+      } catch {
+        // Non-critical — external URL is already saved as fallback
+      }
+    }
+
     setSaving(false);
     router.replace(`/recipe/${recipe.id}`);
   };

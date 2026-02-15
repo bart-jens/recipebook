@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
   },
   privacyWarning: {
     ...typography.caption,
-    color: '#D97706',
+    color: colors.starFilled,
     marginTop: spacing.sm,
   },
 

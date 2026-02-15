@@ -10,7 +10,7 @@ export default function ImportUrlPage() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [importedData, setImportedData] = useState<RecipeFormData & { source_url: string } | null>(null);
+  const [importedData, setImportedData] = useState<RecipeFormData & { source_url: string; image_url: string | null } | null>(null);
 
   async function handleFetch(e: React.FormEvent) {
     e.preventDefault();
@@ -39,6 +39,7 @@ export default function ImportUrlPage() {
           notes: ing.notes,
         })),
         source_url: result.data.source_url,
+        image_url: result.data.imageUrl || null,
       });
     }
     setLoading(false);
@@ -48,6 +49,9 @@ export default function ImportUrlPage() {
     if (importedData) {
       formData.set("source_type", "url");
       formData.set("source_url", importedData.source_url);
+      if (importedData.image_url) {
+        formData.set("image_url", importedData.image_url);
+      }
     }
     return createRecipe(formData);
   }
