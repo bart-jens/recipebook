@@ -94,32 +94,20 @@ export default async function RecipesPage({
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Recipes</h1>
-          <Link
-            href="/recipes/new"
-            className="rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover"
-          >
-            + New recipe
-          </Link>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Link
-            href="/recipes/import-url"
-            className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
-          >
-            Import URL
-          </Link>
-          <Link
-            href="/recipes/import-instagram"
-            className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
-          >
-            Import Instagram
-          </Link>
-          <Link
-            href="/recipes/import-photo"
-            className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
-          >
-            Import Photo
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href="/recipes/import"
+              className="rounded-md border border-warm-border bg-white px-4 py-2 text-sm font-medium text-warm-gray hover:bg-warm-tag"
+            >
+              Import Recipe
+            </Link>
+            <Link
+              href="/recipes/new"
+              className="rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover"
+            >
+              Create My Own
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -141,17 +129,17 @@ export default async function RecipesPage({
           {!q && (
             <div className="mt-2 flex gap-3 justify-center">
               <Link
-                href="/recipes/new"
+                href="/recipes/import"
                 className="text-sm font-medium text-accent underline"
               >
-                Create your first recipe
+                Import a recipe
               </Link>
               <span className="text-warm-border">or</span>
               <Link
-                href="/recipes/import-url"
+                href="/recipes/new"
                 className="text-sm font-medium text-accent underline"
               >
-                Import from URL
+                Create your own
               </Link>
             </div>
           )}

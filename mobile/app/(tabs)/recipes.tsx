@@ -123,7 +123,7 @@ export default function RecipesScreen() {
               onPress={() => setShowImportMenu(true)}
             />
             <Button
-              title="+ New"
+              title="Create My Own"
               variant="primary"
               size="sm"
               onPress={() => router.push('/recipe/new')}
