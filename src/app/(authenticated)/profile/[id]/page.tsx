@@ -187,10 +187,10 @@ export default async function PublicProfilePage({
                 <Link
                   key={recipe.id}
                   href={`/recipes/${recipe.id}`}
-                  className="block rounded-md bg-warm-tag p-4 shadow-sm transition-shadow hover:shadow-md"
+                  className="block rounded-md bg-warm-tag p-4 border border-warm-border transition-opacity hover:opacity-80"
                 >
                   <div className="flex items-start justify-between">
-                    <h3 className="font-serif font-medium">{recipe.title}</h3>
+                    <h3 className="font-sans font-medium">{recipe.title}</h3>
                     {avg != null && (
                       <span className="flex items-center gap-1 text-xs text-warm-gray">
                         <svg className="h-3.5 w-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">

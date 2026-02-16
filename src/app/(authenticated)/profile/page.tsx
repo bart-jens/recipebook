@@ -72,9 +72,20 @@ export default async function ProfilePage() {
             </div>
           )}
           <div>
-            <h1 className="text-2xl font-semibold">
-              {profile?.display_name || "Anonymous"}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-semibold">
+                {profile?.display_name || "Anonymous"}
+              </h1>
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                  profile?.plan === "premium"
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-warm-tag text-warm-gray"
+                }`}
+              >
+                {profile?.plan === "premium" ? "Premium" : "Free"}
+              </span>
+            </div>
             <p className="text-sm text-warm-gray">{user.email}</p>
             {profile?.is_private && (
               <span className="text-xs text-warm-gray">Private account</span>
@@ -140,9 +151,9 @@ export default async function ProfilePage() {
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="flex items-center justify-between rounded-md bg-warm-tag px-4 py-3 shadow-sm transition-shadow hover:shadow-md"
+                className="flex items-center justify-between rounded-md bg-warm-tag px-4 py-3 border border-warm-border transition-opacity hover:opacity-80"
               >
-                <span className="font-serif font-medium">{recipe.title}</span>
+                <span className="font-sans font-medium">{recipe.title}</span>
                 <span className="text-xs text-warm-gray">
                   {recipe.visibility === "public" ? "Public" : "Private"}
                 </span>

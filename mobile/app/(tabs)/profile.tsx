@@ -9,7 +9,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, fontFamily } from '@/lib/theme';
+import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
 import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -24,10 +24,17 @@ interface Profile {
   avatar_url: string | null;
 }
 
+interface RecentRecipe {
+  id: string;
+  title: string;
+  visibility: string;
+}
+
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState({ recipes: 0, published: 0, cooked: 0, followers: 0, following: 0 });
+  const [recentRecipes, setRecentRecipes] = useState<RecentRecipe[]>([]);
   const [pendingRequests, setPendingRequests] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -50,8 +57,9 @@ export default function ProfileScreen() {
             .single(),
           supabase
             .from('recipes')
-            .select('id, visibility')
-            .eq('created_by', user!.id),
+            .select('id, title, visibility')
+            .eq('created_by', user!.id)
+            .order('updated_at', { ascending: false }),
           supabase
             .from('recipe_ratings')
             .select('id')
@@ -67,6 +75,7 @@ export default function ProfileScreen() {
         ]);
 
         setProfile(profileData);
+        setRecentRecipes((recipes || []).slice(0, 8));
         setStats({
           recipes: (recipes || []).length,
           published: (recipes || []).filter((r) => r.visibility === 'public').length,
@@ -108,6 +117,9 @@ export default function ProfileScreen() {
           <Avatar name={profile?.display_name || '?'} size="lg" imageUrl={profile?.avatar_url} />
         </View>
         <Text style={styles.name}>{profile?.display_name || 'Anonymous'}</Text>
+        {profile?.role === 'creator' && (
+          <Badge label="Creator" variant="premium" />
+        )}
         <Text style={styles.email}>{user?.email}</Text>
         {profile?.is_private && (
           <Text style={styles.privateLabel}>Private account</Text>
@@ -158,6 +170,25 @@ export default function ProfileScreen() {
         />
       </View>
 
+      {recentRecipes.length > 0 && (
+        <View style={styles.recipesSection}>
+          <Text style={styles.recipesTitle}>Your recipes</Text>
+          {recentRecipes.map((recipe) => (
+            <TouchableOpacity
+              key={recipe.id}
+              style={styles.recipeItem}
+              activeOpacity={0.7}
+              onPress={() => router.push(`/recipe/${recipe.id}`)}
+            >
+              <Text style={styles.recipeItemTitle} numberOfLines={1}>{recipe.title}</Text>
+              <Text style={styles.recipeItemVisibility}>
+                {recipe.visibility === 'public' ? 'Public' : 'Private'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
       <View style={styles.actions}>
         <Button
           title="Edit Profile"
@@ -184,7 +215,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.xl },
+  content: { padding: spacing.pagePadding },
   header: { alignItems: 'center', marginBottom: spacing.xxl },
   avatarWrap: { marginBottom: spacing.md },
   name: {
@@ -258,5 +289,35 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   section: { alignItems: 'center', marginBottom: spacing.xxl },
+  recipesSection: {
+    marginBottom: spacing.xxl,
+  },
+  recipesTitle: {
+    ...typography.sectionTitle,
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  recipeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  recipeItemTitle: {
+    ...typography.body,
+    fontFamily: fontFamily.sansMedium,
+    color: colors.text,
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  recipeItemVisibility: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
   actions: { gap: spacing.sm },
 });

@@ -69,7 +69,7 @@ export function RecommendationCard({
   };
 
   return (
-    <div className="overflow-hidden rounded-md bg-warm-tag shadow-sm">
+    <div className="overflow-hidden rounded-md bg-warm-tag">
       <div className="flex gap-4 p-4">
         {/* Thumbnail */}
         {imageUrl ? (
@@ -77,8 +77,8 @@ export function RecommendationCard({
             <img src={imageUrl} alt={title} className="h-full w-full object-cover" />
           </div>
         ) : (
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-gradient-start to-gradient-end">
-            <span className="text-lg font-serif font-medium text-white/80">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md bg-warm-tag">
+            <span className="text-lg font-sans font-medium text-white/80">
               {title.slice(0, 1)}
             </span>
           </div>
@@ -103,7 +103,7 @@ export function RecommendationCard({
           </div>
 
           {/* Title */}
-          <h3 className="font-serif text-base font-medium leading-tight">{title}</h3>
+          <h3 className="font-sans text-base font-medium leading-tight">{title}</h3>
 
           {/* Source attribution */}
           {sourceDisplay && (

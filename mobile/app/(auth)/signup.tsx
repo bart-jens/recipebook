@@ -13,18 +13,23 @@ import { router } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, typography, radii, fontFamily } from '@/lib/theme';
 
-export default function LoginScreen() {
-  const { signIn } = useAuth();
+export default function SignupScreen() {
+  const { signUp } = useAuth();
+  const [inviteCode, setInviteCode] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin() {
-    if (!email || !password) return;
+  async function handleSignup() {
+    if (!inviteCode || !email || !password) return;
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
     setLoading(true);
     setError(null);
-    const { error } = await signIn(email, password);
+    const { error } = await signUp(email, password, inviteCode);
     if (error) {
       setError(error);
       setLoading(false);
@@ -38,9 +43,18 @@ export default function LoginScreen() {
     >
       <View style={styles.inner}>
         <Text style={styles.title}>EefEats</Text>
-        <Text style={styles.subtitle}>Sign in to your recipe collection</Text>
+        <Text style={styles.subtitle}>Join with an invite code</Text>
 
         <View style={styles.form}>
+          <TextInput
+            style={[styles.input, styles.codeInput]}
+            placeholder="INVITE CODE"
+            placeholderTextColor={colors.textMuted}
+            value={inviteCode}
+            onChangeText={setInviteCode}
+            autoCapitalize="characters"
+            autoCorrect={false}
+          />
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -62,20 +76,20 @@ export default function LoginScreen() {
           {error && <Text style={styles.error}>{error}</Text>}
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
+            onPress={handleSignup}
             disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.buttonText}>Sign in</Text>
+              <Text style={styles.buttonText}>Sign up</Text>
             )}
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.linkText}>
-            Don't have an account? <Text style={styles.linkAccent}>Sign up</Text>
+            Already have an account? <Text style={styles.linkAccent}>Sign in</Text>
           </Text>
         </TouchableOpacity>
       </View>
@@ -117,6 +131,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     color: colors.text,
+  },
+  codeInput: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    letterSpacing: 2,
+    textAlign: 'center',
   },
   error: {
     color: colors.danger,

@@ -12,7 +12,7 @@ import {
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, fontFamily, radii, shadows } from '@/lib/theme';
+import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
 import Avatar from './Avatar';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
@@ -281,7 +281,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
     overflow: 'hidden',
-    ...shadows,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   main: {
     flexDirection: 'row',
@@ -303,7 +304,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   thumbnailLetter: {
-    fontFamily: fontFamily.serifSemiBold,
+    fontFamily: fontFamily.sansMedium,
     fontSize: 18,
     color: 'rgba(255,255,255,0.8)',
   },
@@ -331,7 +332,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   title: {
-    fontFamily: fontFamily.serifSemiBold,
+    fontFamily: fontFamily.sansMedium,
     fontSize: 15,
     color: colors.text,
     lineHeight: 20,

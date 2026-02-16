@@ -16,6 +16,17 @@ interface TrendingRecipe {
   created_by: string;
 }
 
+function formatTimeAgo(timestamp: string): string {
+  const diff = Date.now() - new Date(timestamp).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
+}
+
 export default async function HomePage() {
   const supabase = createClient();
   const {
@@ -26,9 +37,6 @@ export default async function HomePage() {
 
   const [
     { data: profile },
-    { count: recipeCount },
-    { count: favoriteCount },
-    { count: cookedCount },
     { data: recent },
     { data: trending },
   ] = await Promise.all([
@@ -37,19 +45,6 @@ export default async function HomePage() {
       .select("display_name")
       .eq("id", user.id)
       .single(),
-    supabase
-      .from("recipes")
-      .select("*", { count: "exact", head: true })
-      .eq("created_by", user.id),
-    supabase
-      .from("recipes")
-      .select("*", { count: "exact", head: true })
-      .eq("created_by", user.id)
-      .eq("is_favorite", true),
-    supabase
-      .from("recipe_ratings")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id),
     supabase
       .from("recipes")
       .select("id, title, image_url, updated_at")
@@ -102,15 +97,43 @@ export default async function HomePage() {
     user_rating: number | null;
   }[] = [];
   let sharerProfiles: Map<string, { display_name: string; avatar_url: string | null }> = new Map();
+  let activityItems: {
+    id: string;
+    type: "cooked" | "published";
+    userName: string;
+    userId: string;
+    recipeTitle: string;
+    recipeId: string;
+    rating?: number;
+    timestamp: string;
+  }[] = [];
 
   if (followedIds && followedIds.length > 0) {
     const ids = followedIds.map((f) => f.following_id);
-    const { data: cards } = await supabase
-      .from("recipe_share_cards")
-      .select("*")
-      .in("user_id", ids)
-      .order("shared_at", { ascending: false })
-      .limit(10);
+    const [{ data: cards }, { data: cookedActivity }, { data: publishedActivity }] =
+      await Promise.all([
+        supabase
+          .from("recipe_share_cards")
+          .select("*")
+          .in("user_id", ids)
+          .order("shared_at", { ascending: false })
+          .limit(10),
+        supabase
+          .from("recipe_ratings")
+          .select("id, user_id, recipe_id, rating, created_at")
+          .in("user_id", ids)
+          .order("created_at", { ascending: false })
+          .limit(15),
+        supabase
+          .from("recipes")
+          .select("id, title, created_by, published_at")
+          .eq("visibility", "public")
+          .in("created_by", ids)
+          .not("published_at", "is", null)
+          .order("published_at", { ascending: false })
+          .limit(10),
+      ]);
+
     shareCards = (cards || []) as typeof shareCards;
 
     if (shareCards.length > 0) {
@@ -123,6 +146,62 @@ export default async function HomePage() {
         (sharerData || []).map((p) => [p.id, { display_name: p.display_name, avatar_url: p.avatar_url }])
       );
     }
+
+    // Build activity feed
+    const activityUserIds = new Set<string>();
+    const activityRecipeIds = new Set<string>();
+    for (const c of cookedActivity || []) {
+      activityUserIds.add(c.user_id);
+      activityRecipeIds.add(c.recipe_id);
+    }
+    for (const p of publishedActivity || []) {
+      activityUserIds.add(p.created_by);
+    }
+
+    const [{ data: actProfiles }, { data: actRecipes }] = await Promise.all([
+      activityUserIds.size > 0
+        ? supabase.from("user_profiles").select("id, display_name").in("id", Array.from(activityUserIds))
+        : { data: [] },
+      activityRecipeIds.size > 0
+        ? supabase.from("recipes").select("id, title").in("id", Array.from(activityRecipeIds))
+        : { data: [] },
+    ]);
+
+    const actProfileMap = new Map((actProfiles || []).map((p) => [p.id, p.display_name]));
+    const actRecipeMap = new Map((actRecipes || []).map((r) => [r.id, r.title]));
+
+    for (const c of cookedActivity || []) {
+      const name = actProfileMap.get(c.user_id);
+      const title = actRecipeMap.get(c.recipe_id);
+      if (name && title) {
+        activityItems.push({
+          id: `cooked-${c.id}`,
+          type: "cooked",
+          userName: name,
+          userId: c.user_id,
+          recipeTitle: title,
+          recipeId: c.recipe_id,
+          rating: c.rating,
+          timestamp: c.created_at,
+        });
+      }
+    }
+    for (const p of publishedActivity || []) {
+      const name = actProfileMap.get(p.created_by);
+      if (name) {
+        activityItems.push({
+          id: `published-${p.id}`,
+          type: "published",
+          userName: name,
+          userId: p.created_by,
+          recipeTitle: p.title,
+          recipeId: p.id,
+          timestamp: p.published_at!,
+        });
+      }
+    }
+    activityItems.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    activityItems = activityItems.slice(0, 15);
   }
 
   const greeting = () => {
@@ -134,28 +213,9 @@ export default async function HomePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">
+      <h1 className="text-sm text-warm-gray">
         {greeting()}, {displayName}
       </h1>
-
-      {/* Stats */}
-      <div className="mt-6 grid grid-cols-3 gap-4">
-        <Link
-          href="/recipes"
-          className="rounded-md bg-warm-tag p-4 text-center shadow-sm transition-shadow hover:shadow-md"
-        >
-          <p className="text-2xl font-bold text-accent">{recipeCount || 0}</p>
-          <p className="mt-1 text-xs text-warm-gray">recipes</p>
-        </Link>
-        <div className="rounded-md bg-warm-tag p-4 text-center shadow-sm">
-          <p className="text-2xl font-bold text-accent">{favoriteCount || 0}</p>
-          <p className="mt-1 text-xs text-warm-gray">favorites</p>
-        </div>
-        <div className="rounded-md bg-warm-tag p-4 text-center shadow-sm">
-          <p className="text-2xl font-bold text-accent">{cookedCount || 0}</p>
-          <p className="mt-1 text-xs text-warm-gray">times cooked</p>
-        </div>
-      </div>
 
       {/* Recently Updated */}
       <div className="mt-8">
@@ -186,7 +246,7 @@ export default async function HomePage() {
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="group overflow-hidden rounded-md bg-warm-tag shadow-sm transition-shadow hover:shadow-md"
+                className="group overflow-hidden rounded-md border border-warm-border transition-opacity hover:opacity-80"
               >
                 {recipe.image_url ? (
                   <div className="aspect-[16/10] overflow-hidden bg-warm-tag">
@@ -197,14 +257,14 @@ export default async function HomePage() {
                     />
                   </div>
                 ) : (
-                  <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-gradient-start to-gradient-end">
+                  <div className="flex aspect-[16/10] items-center justify-center bg-warm-tag">
                     <span className="text-sm font-medium text-white/80">
                       {recipe.title.slice(0, 1)}
                     </span>
                   </div>
                 )}
                 <div className="p-3">
-                  <p className="line-clamp-1 font-serif text-sm font-medium">
+                  <p className="line-clamp-1 font-sans text-sm font-medium">
                     {recipe.title}
                   </p>
                 </div>
@@ -247,6 +307,55 @@ export default async function HomePage() {
         </div>
       )}
 
+      {/* Friend Activity */}
+      {activityItems.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold">Friend Activity</h2>
+          <div className="mt-4 divide-y divide-warm-border/40">
+            {activityItems.map((item) => (
+              <div key={item.id} className="flex items-start gap-3 py-3">
+                <div className="flex-1">
+                  <p className="text-sm">
+                    <Link
+                      href={`/profile/${item.userId}`}
+                      className="font-semibold text-warm-text hover:text-accent"
+                    >
+                      {item.userName}
+                    </Link>
+                    <span className="text-warm-gray">
+                      {item.type === "cooked" ? " cooked " : " published "}
+                    </span>
+                    <Link
+                      href={`/recipes/${item.recipeId}`}
+                      className="font-medium text-warm-text hover:text-accent"
+                    >
+                      {item.recipeTitle}
+                    </Link>
+                  </p>
+                  <div className="mt-1 flex items-center gap-2">
+                    {item.type === "cooked" && item.rating && (
+                      <span className="text-xs">
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <span
+                            key={i}
+                            className={i < item.rating! ? "text-amber-400" : "text-warm-border"}
+                          >
+                            &#9733;
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                    <span className="text-xs text-warm-gray">
+                      {formatTimeAgo(item.timestamp)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Discover / Trending */}
       {(trending || []).length > 0 && (
         <div className="mt-8">
@@ -264,7 +373,7 @@ export default async function HomePage() {
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="group overflow-hidden rounded-md bg-warm-tag shadow-sm transition-shadow hover:shadow-md"
+                className="group overflow-hidden rounded-md border border-warm-border transition-opacity hover:opacity-80"
               >
                 {recipe.image_url ? (
                   <div className="aspect-[16/10] overflow-hidden bg-warm-tag">
@@ -275,14 +384,14 @@ export default async function HomePage() {
                     />
                   </div>
                 ) : (
-                  <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-gradient-start to-gradient-end">
+                  <div className="flex aspect-[16/10] items-center justify-center bg-warm-tag">
                     <span className="text-sm font-medium text-white/80">
                       {recipe.title.slice(0, 1)}
                     </span>
                   </div>
                 )}
                 <div className="p-3">
-                  <p className="line-clamp-1 font-serif text-sm font-medium">
+                  <p className="line-clamp-1 font-sans text-sm font-medium">
                     {recipe.title}
                   </p>
                   <p className="mt-0.5 text-xs text-warm-gray">

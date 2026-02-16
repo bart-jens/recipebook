@@ -267,7 +267,6 @@ export default function DiscoverScreen() {
         <RecipeListSkeleton />
       ) : recipes.length === 0 ? (
         <EmptyState
-          lottie={search ? 'no-results' : 'empty-state'}
           title={search ? 'No results' : 'No published recipes yet'}
           subtitle={
             search
@@ -316,7 +315,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   controlsContainer: {
-    padding: spacing.lg,
+    padding: spacing.pagePadding,
     paddingBottom: spacing.sm,
   },
   searchInput: {
@@ -329,55 +328,51 @@ const styles = StyleSheet.create({
   },
   sortRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.lg,
     marginTop: spacing.md,
     paddingRight: spacing.lg,
   },
   sortPill: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.xl,
-    backgroundColor: colors.surface,
+    paddingBottom: spacing.sm,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   sortPillActive: {
-    backgroundColor: colors.primary,
+    borderBottomColor: colors.primary,
   },
   sortPillText: {
     ...typography.label,
     color: colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   sortPillTextActive: {
-    color: colors.white,
+    color: colors.text,
+    fontWeight: '600',
   },
   tagRow: {
     flexDirection: 'row',
-    gap: spacing.xs,
+    gap: spacing.md,
     marginTop: spacing.sm,
     paddingRight: spacing.lg,
   },
   tagPill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 1,
-    borderRadius: radii.xl,
-    backgroundColor: colors.surface,
+    paddingBottom: spacing.xs,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   tagPillActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
+    borderBottomColor: colors.primary,
   },
   tagPillText: {
     ...typography.caption,
     color: colors.textSecondary,
   },
   tagPillTextActive: {
-    color: colors.primary,
+    color: colors.text,
     fontWeight: '600',
   },
   clearTagPill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 1,
-    borderRadius: radii.xl,
+    paddingBottom: spacing.xs,
   },
   clearTagText: {
     ...typography.caption,

@@ -41,6 +41,12 @@ Both frontends share the same Supabase backend.
 - Scope writes to `auth.uid()`. Default deny — only grant what's needed.
 - Use existing migration numbering convention.
 
+### Platform Parity
+- **Both platforms must stay in sync.** Every feature that exists on web must also exist on mobile, and vice versa.
+- **Before committing code:** Always run a platform parity check (use the `platform-sync` agent) to verify the change is implemented on both web and mobile. Do not commit web-only or mobile-only changes unless explicitly asked.
+- **After implementing a feature on one platform:** Immediately implement the equivalent on the other platform in the same change.
+- **Reference parity report:** See `docs/PLATFORM-PARITY.md` for the latest feature comparison. Update it when features ship.
+
 ### Product Thinking
 - Always consider free vs premium split when designing features.
 - Think mobile-first: used in the kitchen with messy hands.

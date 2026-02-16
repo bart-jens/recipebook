@@ -172,7 +172,7 @@ export default async function RecipesPage({
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="block rounded-md bg-warm-tag p-4 shadow-sm transition-shadow hover:shadow-md"
+                className="block rounded-md bg-warm-tag p-4 border border-warm-border transition-opacity hover:opacity-80"
               >
                 <div className="flex gap-4">
                   {recipe.image_url && (
@@ -186,7 +186,7 @@ export default async function RecipesPage({
                   )}
                   <div className="flex-1">
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-serif text-lg font-medium">{recipe.title}</h2>
+                  <h2 className="font-sans text-lg font-medium">{recipe.title}</h2>
                   <div className="flex items-center gap-2 shrink-0">
                     {recipe.avgRating != null && (
                       <span className="flex items-center gap-1 text-xs text-warm-gray">

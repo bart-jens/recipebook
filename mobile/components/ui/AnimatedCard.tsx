@@ -1,12 +1,6 @@
 import React from 'react';
-import { StyleSheet, ViewStyle } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
-import { Pressable } from 'react-native';
-import { colors, radii, shadows, animation } from '@/lib/theme';
+import { StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
+import { colors, radii, animation } from '@/lib/theme';
 
 interface Props {
   children: React.ReactNode;
@@ -15,34 +9,23 @@ interface Props {
 }
 
 export default function AnimatedCard({ children, onPress, style }: Props) {
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   return (
-    <Pressable
-      onPressIn={() => {
-        scale.value = withSpring(animation.pressScale, animation.springConfig);
-      }}
-      onPressOut={() => {
-        scale.value = withSpring(1, animation.springConfig);
-      }}
+    <TouchableOpacity
+      activeOpacity={animation.pressOpacity}
       onPress={onPress}
+      style={[styles.card, style]}
     >
-      <Animated.View style={[styles.card, style, animatedStyle]}>
-        {children}
-      </Animated.View>
-    </Pressable>
+      {children}
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.card,
     borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 16,
-    ...shadows,
-  } as ViewStyle,
+  },
 });

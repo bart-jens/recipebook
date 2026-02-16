@@ -307,7 +307,6 @@ export default function HomeScreen() {
       ) : (
         <Animated.View entering={FadeInDown.delay(animation.staggerDelay).duration(400)}>
           <EmptyState
-            lottie="empty-recipes"
             title="No recipes yet"
             subtitle="Import a recipe or create your first one!"
           />
@@ -434,29 +433,27 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxxl,
   },
   greeting: {
-    fontFamily: fontFamily.sansBold,
-    fontSize: 24,
-    color: colors.text,
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.xl,
+    ...typography.body,
+    color: colors.textSecondary,
+    marginBottom: spacing.sectionGap,
+    paddingHorizontal: spacing.pagePadding,
   },
   sectionHeader: {
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: spacing.pagePadding,
     marginBottom: spacing.md,
   },
   sectionTitle: {
-    fontFamily: fontFamily.sansBold,
-    fontSize: 18,
+    ...typography.sectionTitle,
     color: colors.text,
   },
   activityList: {
-    paddingHorizontal: spacing.xl,
-    marginBottom: spacing.xxl,
+    paddingHorizontal: spacing.pagePadding,
+    marginBottom: spacing.sectionGap,
   },
   recommendationList: {
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: spacing.pagePadding,
     gap: spacing.md,
-    marginBottom: spacing.xxl,
+    marginBottom: spacing.sectionGap,
   },
   activityItem: {
     flexDirection: 'row',
@@ -505,10 +502,12 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   promptCard: {
-    marginHorizontal: spacing.xl,
-    marginBottom: spacing.xxl,
-    backgroundColor: colors.surface,
+    marginHorizontal: spacing.pagePadding,
+    marginBottom: spacing.sectionGap,
     borderRadius: radii.lg,
+    borderWidth: 1,
+    borderStyle: 'dashed' as const,
+    borderColor: colors.border,
     padding: spacing.xl,
     alignItems: 'center',
   },
@@ -528,7 +527,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
     backgroundColor: colors.cta,
-    borderRadius: radii.md,
+    borderRadius: radii.full,
   },
   promptButtonText: {
     ...typography.label,

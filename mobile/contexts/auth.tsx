@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, inviteCode: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -15,6 +16,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signIn: async () => ({ error: null }),
+  signUp: async () => ({ error: null }),
   signOut: async () => {},
 });
 
@@ -42,6 +44,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: error?.message || null };
   }
 
+  async function signUp(email: string, password: string, inviteCode: string) {
+    const code = inviteCode.trim().toUpperCase();
+    if (!code) return { error: 'Invite code is required' };
+
+    // Validate invite code
+    const { data: invite } = await supabase
+      .from('invites')
+      .select('id, used_at')
+      .eq('code', code)
+      .single();
+
+    if (!invite) return { error: 'Invalid invite code' };
+    if (invite.used_at) return { error: 'This invite code has already been used' };
+
+    // Create user
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { invite_code: code } },
+    });
+
+    if (signUpError) return { error: signUpError.message };
+
+    // Mark invite as used
+    await supabase
+      .from('invites')
+      .update({ used_at: new Date().toISOString() })
+      .eq('id', invite.id);
+
+    return { error: null };
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
   }
@@ -53,6 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user: session?.user ?? null,
         loading,
         signIn,
+        signUp,
         signOut,
       }}
     >

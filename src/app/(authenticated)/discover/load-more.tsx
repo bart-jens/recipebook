@@ -83,7 +83,7 @@ export function LoadMoreButton({
           <Link
             key={recipe.id}
             href={`/recipes/${recipe.id}`}
-            className="group block overflow-hidden rounded-md bg-warm-tag shadow-sm transition-shadow hover:shadow-md"
+            className="group block overflow-hidden rounded-md bg-warm-tag border border-warm-border transition-opacity hover:opacity-80"
           >
             {recipe.image_url ? (
               <div className="aspect-[16/10] overflow-hidden bg-warm-tag">
@@ -94,14 +94,14 @@ export function LoadMoreButton({
                 />
               </div>
             ) : (
-              <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-gradient-start to-gradient-end">
-                <span className="text-2xl font-serif font-medium text-white/80">
+              <div className="flex aspect-[16/10] items-center justify-center bg-warm-tag">
+                <span className="text-2xl font-sans font-medium text-white/80">
                   {recipe.title.slice(0, 1)}
                 </span>
               </div>
             )}
             <div className="p-4">
-              <h2 className="font-serif text-lg font-medium">{recipe.title}</h2>
+              <h2 className="font-sans text-lg font-medium">{recipe.title}</h2>
               <p className="mt-0.5 text-xs text-warm-gray">by {recipe.creator_name}</p>
               {recipe.description && (
                 <p className="mt-1 text-sm text-warm-gray line-clamp-2">{recipe.description}</p>

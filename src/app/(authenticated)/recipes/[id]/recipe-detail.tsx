@@ -162,7 +162,7 @@ export function RecipeDetail({
 
       <div className="mb-3 flex items-start justify-between">
         <div className="flex-1">
-          <h1 className="font-serif text-3xl font-semibold leading-tight">{recipe.title}</h1>
+          <h1 className="font-sans text-3xl font-semibold leading-tight">{recipe.title}</h1>
           {recipe.visibility === "public" && isOwner && (
             <span className="mt-1 inline-block rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
               Published

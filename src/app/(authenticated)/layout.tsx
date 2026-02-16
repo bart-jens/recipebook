@@ -25,24 +25,23 @@ export default async function AuthenticatedLayout({
 
   return (
     <div className="min-h-screen">
-      <header className="relative bg-accent px-6 py-4 shadow-md">
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-gradient-to-b from-transparent to-black/10" />
+      <header className="border-b border-warm-border bg-white px-6 py-4">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href="/recipes" className="font-serif text-2xl font-semibold tracking-tight text-white">
+            <Link href="/recipes" className="text-xl font-bold tracking-tight text-[#111111]">
               EefEats
             </Link>
             <nav className="flex items-center gap-1">
-              <Link href="/home" className="rounded-md px-3 py-1.5 text-sm text-white/75 hover:bg-white/10 hover:text-white">
+              <Link href="/home" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:text-[#111111]">
                 Home
               </Link>
-              <Link href="/recipes" className="rounded-md px-3 py-1.5 text-sm text-white/75 hover:bg-white/10 hover:text-white">
+              <Link href="/recipes" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:text-[#111111]">
                 My Recipes
               </Link>
-              <Link href="/discover" className="rounded-md px-3 py-1.5 text-sm text-white/75 hover:bg-white/10 hover:text-white">
+              <Link href="/discover" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:text-[#111111]">
                 Discover
               </Link>
-              <Link href="/invites" className="rounded-md px-3 py-1.5 text-sm text-white/75 hover:bg-white/10 hover:text-white">
+              <Link href="/invites" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:text-[#111111]">
                 Invites
               </Link>
             </nav>
@@ -50,9 +49,9 @@ export default async function AuthenticatedLayout({
           <div className="flex items-center gap-3">
             <Link
               href="/profile"
-              className="flex items-center gap-2 rounded-md px-2 py-1 text-sm text-white/75 hover:bg-white/10 hover:text-white"
+              className="flex items-center gap-2 rounded-md px-2 py-1 text-sm text-warm-gray hover:text-[#111111]"
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-semibold text-white">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-warm-tag text-xs font-semibold text-[#111111]">
                 {displayName[0].toUpperCase()}
               </span>
               <span className="hidden sm:inline">{displayName}</span>
@@ -60,7 +59,7 @@ export default async function AuthenticatedLayout({
             <form action={logout}>
               <button
                 type="submit"
-                className="rounded-md px-3 py-1.5 text-sm text-white/75 hover:bg-white/10 hover:text-white"
+                className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:text-[#111111]"
               >
                 Sign out
               </button>

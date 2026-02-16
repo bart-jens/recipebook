@@ -15,13 +15,10 @@ export default function SectionHeader({ title }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-    paddingBottom: spacing.sm,
     marginBottom: spacing.md,
   },
   title: {
     ...typography.sectionTitle,
-    color: colors.textSecondary,
+    color: colors.text,
   },
 });

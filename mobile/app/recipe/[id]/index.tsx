@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -25,10 +25,12 @@ import Animated, {
   Extrapolation,
   FadeInDown,
 } from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { uploadRecipeImage } from '@/lib/upload-image';
-import { colors, spacing, typography, radii, shadows, fontFamily, animation } from '@/lib/theme';
+import { convertIngredient, type UnitSystem } from '@/lib/unit-conversion';
+import { colors, spacing, typography, radii, fontFamily, animation } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 import StarRating from '@/components/ui/StarRating';
 import SectionHeader from '@/components/ui/SectionHeader';
@@ -111,6 +113,18 @@ export default function RecipeDetailScreen() {
   const [photos, setPhotos] = useState<{ id: string; url: string; imageType: string }[]>([]);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [adjustedServings, setAdjustedServings] = useState<number | null>(null);
+  const [unitSystem, setUnitSystem] = useState<UnitSystem>('metric');
+
+  useEffect(() => {
+    AsyncStorage.getItem('unit_system').then((stored) => {
+      if (stored === 'imperial' || stored === 'metric') setUnitSystem(stored);
+    });
+  }, []);
+
+  const toggleUnitSystem = (system: UnitSystem) => {
+    setUnitSystem(system);
+    AsyncStorage.setItem('unit_system', system);
+  };
 
   const scrollY = useSharedValue(0);
 
@@ -825,13 +839,36 @@ export default function RecipeDetailScreen() {
             {/* Ingredients */}
             {ingredients.length > 0 && (
               <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 4).duration(300)} style={styles.section}>
-                <SectionHeader title="INGREDIENTS" />
+                <View style={styles.ingredientHeader}>
+                  <SectionHeader title="Ingredients" />
+                  <View style={styles.unitToggle}>
+                    <TouchableOpacity
+                      style={[styles.unitOption, unitSystem === 'metric' && styles.unitOptionActive]}
+                      onPress={() => toggleUnitSystem('metric')}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.unitOptionText, unitSystem === 'metric' && styles.unitOptionTextActive]}>
+                        Metric
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.unitOption, unitSystem === 'imperial' && styles.unitOptionActive]}
+                      onPress={() => toggleUnitSystem('imperial')}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.unitOptionText, unitSystem === 'imperial' && styles.unitOptionTextActive]}>
+                        Imperial
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
                 {ingredients.map((ing) => {
                   const scaledQty = ing.quantity != null ? ing.quantity * scaleFactor : null;
+                  const converted = convertIngredient(scaledQty, ing.unit || '', unitSystem);
                   return (
                   <View key={ing.id} style={styles.ingredientRow}>
                     <Text style={styles.ingredientQty}>
-                      {formatQuantity(scaledQty)} {ing.unit || ''}
+                      {formatQuantity(converted.quantity)} {converted.unit}
                     </Text>
                     <View style={styles.ingredientNameWrap}>
                       <Text style={styles.ingredientName}>{ing.ingredient_name}</Text>
@@ -846,7 +883,7 @@ export default function RecipeDetailScreen() {
             {/* Instructions */}
             {instructions.length > 0 && (
               <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 5).duration(300)} style={styles.section}>
-                <SectionHeader title="PREPARATION" />
+                <SectionHeader title="Preparation" />
                 {instructions.length === 1 ? (
                   <Text style={styles.instructionText}>{instructions[0]}</Text>
                 ) : (
@@ -865,7 +902,7 @@ export default function RecipeDetailScreen() {
             {/* Cooking Log */}
             {isOwner && (
               <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 6).duration(300)} style={styles.section}>
-                <SectionHeader title="COOKING LOG" />
+                <SectionHeader title="Cooking log" />
 
                 {!showCookForm ? (
                   <View style={{ marginBottom: spacing.lg }}>
@@ -1061,7 +1098,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   centered: { justifyContent: 'center', alignItems: 'center' },
   scrollContent: { paddingBottom: spacing.xxxl },
-  content: { padding: spacing.xl, backgroundColor: colors.background },
+  content: { padding: spacing.pagePadding, backgroundColor: colors.background },
   emptyText: { fontSize: 16, color: colors.textSecondary },
 
   // Parallax hero
@@ -1130,7 +1167,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontFamily: fontFamily.serifSemiBold,
+    fontFamily: fontFamily.sansMedium,
     fontSize: 17,
     color: colors.text,
     marginHorizontal: spacing.md,
@@ -1204,7 +1241,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.successBg,
     borderWidth: 1,
     borderColor: colors.successBorder,
-    borderRadius: radii.md,
+    borderRadius: radii.full,
     paddingVertical: spacing.sm - 1,
     paddingHorizontal: spacing.md,
     alignItems: 'center' as const,
@@ -1302,6 +1339,32 @@ const styles = StyleSheet.create({
   section: { marginBottom: spacing.xxxl - 4 },
 
   // Ingredients
+  ingredientHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  unitToggle: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    overflow: 'hidden',
+  },
+  unitOption: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  unitOptionActive: {
+    backgroundColor: colors.primary,
+  },
+  unitOptionText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  unitOptionTextActive: {
+    color: colors.white,
+  },
   ingredientRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
@@ -1338,11 +1401,11 @@ const styles = StyleSheet.create({
 
   // Cooking log
   cookForm: {
-    backgroundColor: colors.surface,
     borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: spacing.lg,
     marginBottom: spacing.lg,
-    ...shadows,
   } as ViewStyle,
   cookFormLabel: {
     ...typography.body,
@@ -1375,11 +1438,11 @@ const styles = StyleSheet.create({
   },
 
   logEntry: {
-    backgroundColor: colors.surface,
     borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: spacing.md,
     marginTop: spacing.sm,
-    ...shadows,
   } as ViewStyle,
   logEntryHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   logDate: { ...typography.label, color: colors.text },

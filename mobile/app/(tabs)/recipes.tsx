@@ -55,6 +55,8 @@ export default function RecipesScreen() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('updated');
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [allTags, setAllTags] = useState<string[]>([]);
   const [showImportMenu, setShowImportMenu] = useState(false);
 
   const fetchRecipes = useCallback(async () => {
@@ -109,10 +111,24 @@ export default function RecipesScreen() {
       };
     });
 
+    // Collect all unique tags (before filtering)
+    const tagSet = new Set<string>();
+    for (const r of enriched) {
+      for (const t of r.tags) tagSet.add(t);
+    }
+    setAllTags(Array.from(tagSet).sort());
+
     // Filter by course
     if (selectedCourse) {
       enriched = enriched.filter((r) =>
         r.tags.some((t) => t.toLowerCase() === selectedCourse.toLowerCase())
+      );
+    }
+
+    // Filter by tag
+    if (selectedTag) {
+      enriched = enriched.filter((r) =>
+        r.tags.some((t) => t.toLowerCase() === selectedTag.toLowerCase())
       );
     }
 
@@ -125,7 +141,7 @@ export default function RecipesScreen() {
 
     setRecipes(enriched);
     setLoading(false);
-  }, [user, search, sort, selectedCourse]);
+  }, [user, search, sort, selectedCourse, selectedTag]);
 
   useFocusEffect(
     useCallback(() => {
@@ -213,13 +229,42 @@ export default function RecipesScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
+
+        {allTags.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tagRow}
+          >
+            {selectedTag && (
+              <TouchableOpacity
+                style={styles.clearPill}
+                onPress={() => setSelectedTag(null)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.clearPillText}>Clear</Text>
+              </TouchableOpacity>
+            )}
+            {allTags.map((t) => (
+              <TouchableOpacity
+                key={t}
+                style={[styles.tagPill, selectedTag === t && styles.tagPillActive]}
+                onPress={() => setSelectedTag(selectedTag === t ? null : t)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.tagPillText, selectedTag === t && styles.tagPillTextActive]}>
+                  {t}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
       </View>
 
       {loading ? (
         <RecipeListSkeleton />
       ) : recipes.length === 0 ? (
         <EmptyState
-          lottie={search ? 'no-results' : 'empty-recipes'}
           title={search ? 'No results' : 'No recipes yet'}
           subtitle={
             search
@@ -282,7 +327,7 @@ export default function RecipesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  searchContainer: { padding: spacing.lg, paddingBottom: 0 },
+  searchContainer: { padding: spacing.pagePadding, paddingBottom: 0 },
   searchInput: {
     backgroundColor: colors.surface,
     borderRadius: radii.md,
@@ -302,57 +347,75 @@ const styles = StyleSheet.create({
 
   sortRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.lg,
     marginTop: spacing.md,
     paddingRight: spacing.lg,
   },
   sortPill: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.xl,
-    backgroundColor: colors.surface,
+    paddingBottom: spacing.sm,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   sortPillActive: {
-    backgroundColor: colors.primary,
+    borderBottomColor: colors.primary,
   },
   sortPillText: {
     ...typography.label,
     color: colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   sortPillTextActive: {
-    color: colors.white,
+    color: colors.text,
+    fontWeight: '600',
   },
 
   courseRow: {
     flexDirection: 'row',
-    gap: spacing.xs,
+    gap: spacing.md,
     marginTop: spacing.sm,
     paddingRight: spacing.lg,
     paddingBottom: spacing.sm,
   },
   coursePill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 1,
-    borderRadius: radii.xl,
-    backgroundColor: colors.surface,
+    paddingBottom: spacing.xs,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   coursePillActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
+    borderBottomColor: colors.primary,
   },
   coursePillText: {
     ...typography.caption,
     color: colors.textSecondary,
   },
   coursePillTextActive: {
-    color: colors.primary,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  tagRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    paddingRight: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  tagPill: {
+    paddingBottom: spacing.xs,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tagPillActive: {
+    borderBottomColor: colors.primary,
+  },
+  tagPillText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  tagPillTextActive: {
+    color: colors.text,
     fontWeight: '600',
   },
   clearPill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 1,
-    borderRadius: radii.xl,
+    paddingBottom: spacing.xs,
   },
   clearPillText: {
     ...typography.caption,

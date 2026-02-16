@@ -1,11 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, Dimensions, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import AnimatedCard from './AnimatedCard';
 import StarRating from './StarRating';
-import { colors, spacing, typography, radii, fontFamily } from '@/lib/theme';
+import { colors, spacing, typography, radii, fontFamily, animation } from '@/lib/theme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -35,42 +32,30 @@ export default function RecipeCard({ recipe, onPress, variant = 'default' }: Pro
   const cookTime = recipe.cook_time_minutes || recipe.prep_time_minutes;
 
   return (
-    <AnimatedCard onPress={onPress} style={styles.card}>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={animation.pressOpacity}
+      style={styles.card}
+    >
       {/* Image area */}
       <View style={[styles.imageContainer, { height: imageHeight }]}>
         {recipe.image_url ? (
-          <>
-            <Image
-              source={{ uri: recipe.image_url }}
-              style={styles.image}
-              contentFit="cover"
-              transition={200}
-            />
-            <LinearGradient
-              colors={[colors.gradientOverlayStart, colors.gradientOverlayEnd]}
-              style={styles.imageGradient}
-            />
-            <Text style={styles.imageTitleOverlay} numberOfLines={2}>
-              {recipe.title}
-            </Text>
-          </>
+          <Image
+            source={{ uri: recipe.image_url }}
+            style={styles.image}
+            contentFit="cover"
+            transition={200}
+          />
         ) : (
-          <LinearGradient
-            colors={[colors.gradientWarmStart, colors.gradientWarmEnd]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.placeholderGradient}
-          >
-            <FontAwesome name="cutlery" size={isCompact ? 20 : 28} color="rgba(255,255,255,0.3)" />
-            <Text style={styles.placeholderTitle} numberOfLines={2}>
-              {recipe.title}
-            </Text>
-          </LinearGradient>
+          <View style={styles.placeholder} />
         )}
       </View>
 
-      {/* Meta row below image */}
-      <View style={styles.meta}>
+      {/* Content below image */}
+      <View style={styles.content}>
+        <Text style={styles.title} numberOfLines={2}>
+          {recipe.title}
+        </Text>
         {recipe.creatorName && (
           <Text style={styles.creatorName} numberOfLines={1}>
             {recipe.creatorName}
@@ -81,75 +66,55 @@ export default function RecipeCard({ recipe, onPress, variant = 'default' }: Pro
             <View style={styles.ratingRow}>
               <StarRating rating={recipe.avgRating} size={12} />
               {recipe.ratingCount != null && recipe.ratingCount > 0 && (
-                <Text style={styles.ratingCount}>({recipe.ratingCount})</Text>
+                <Text style={styles.metaText}>({recipe.ratingCount})</Text>
               )}
             </View>
           )}
           {recipe.forkCount != null && recipe.forkCount > 0 && (
-            <Text style={styles.forkCount}>
+            <Text style={styles.metaText}>
               {recipe.forkCount} fork{recipe.forkCount !== 1 ? 's' : ''}
             </Text>
           )}
           {cookTime != null && (
-            <Text style={styles.cookTime}>{cookTime} min</Text>
+            <Text style={styles.metaText}>{cookTime} min</Text>
           )}
         </View>
       </View>
-    </AnimatedCard>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    padding: 0,
-    overflow: 'hidden',
     borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+    overflow: 'hidden',
   },
   imageContainer: {
     width: '100%',
     overflow: 'hidden',
-    borderTopLeftRadius: radii.lg,
-    borderTopRightRadius: radii.lg,
   },
   image: {
     ...StyleSheet.absoluteFillObject,
   },
-  imageGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '60%',
-  },
-  imageTitleOverlay: {
-    position: 'absolute',
-    bottom: spacing.md,
-    left: spacing.md,
-    right: spacing.md,
-    color: colors.white,
-    fontFamily: fontFamily.serifSemiBold,
-    fontSize: 17,
-    lineHeight: 22,
-  },
-  placeholderGradient: {
+  placeholder: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: colors.surface,
+  },
+  content: {
     padding: spacing.lg,
   },
-  placeholderTitle: {
-    color: colors.white,
-    fontFamily: fontFamily.serifSemiBold,
-    fontSize: 17,
-    lineHeight: 22,
-    marginTop: spacing.sm,
-    textAlign: 'center',
-  },
-  meta: {
-    padding: spacing.md,
+  title: {
+    fontFamily: fontFamily.sansMedium,
+    fontSize: 15,
+    lineHeight: 20,
+    color: colors.text,
+    marginBottom: spacing.xs,
   },
   creatorName: {
-    ...typography.label,
+    ...typography.caption,
     color: colors.textSecondary,
     marginBottom: spacing.xs,
   },
@@ -163,15 +128,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.xs,
   },
-  ratingCount: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  forkCount: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  cookTime: {
+  metaText: {
     ...typography.caption,
     color: colors.textMuted,
   },

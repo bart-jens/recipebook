@@ -18,13 +18,6 @@ const config: Config = {
           "Roboto",
           "sans-serif",
         ],
-        serif: [
-          "Fraunces",
-          "Georgia",
-          "Cambria",
-          "Times New Roman",
-          "serif",
-        ],
       },
       keyframes: {
         fadeInUp: {
@@ -46,15 +39,11 @@ const config: Config = {
           hover: "#234B49",
         },
         warm: {
-          gray: "#6B7280",
-          border: "#E2E8F0",
-          divider: "#E2E8F0",
-          tag: "#F1F5F9",
-          surface: "#F8FAFC",
-        },
-        gradient: {
-          start: "#2D5F5D",
-          end: "#5BA8A3",
+          gray: "#666666",
+          border: "#E8E8E8",
+          divider: "#E8E8E8",
+          tag: "#F5F5F5",
+          surface: "#F5F5F5",
         },
       },
     },

@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radii.md,
+    borderRadius: radii.full,
   },
   disabled: {
     opacity: 0.5,
@@ -74,7 +74,9 @@ const variantStyles: Record<Variant, ViewStyle> = {
     backgroundColor: colors.cta,
   },
   secondary: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   danger: {
     backgroundColor: colors.dangerBg,

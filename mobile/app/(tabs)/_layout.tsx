@@ -8,7 +8,6 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
 import { colors, typography, fontFamily, animation } from '@/lib/theme';
 
 function AnimatedTabBarIcon({
@@ -59,30 +58,18 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.textOnPrimary,
-        tabBarInactiveTintColor: 'rgba(255,255,255,0.55)',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          borderTopWidth: 0,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          backgroundColor: colors.background,
           elevation: 0,
         },
-        tabBarBackground: () => (
-          <LinearGradient
-            colors={[colors.primaryLight, colors.primary]}
-            style={{ flex: 1 }}
-          />
-        ),
         headerStyle: {
-          backgroundColor: colors.primary,
+          backgroundColor: colors.background,
         },
-        headerBackground: () => (
-          <LinearGradient
-            colors={[colors.primary, colors.primaryLight]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={{ flex: 1 }}
-          />
-        ),
-        headerTintColor: colors.textOnPrimary,
+        headerTintColor: colors.text,
         headerShadowVisible: false,
       }}
     >
@@ -93,9 +80,9 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="home" color={color} focused={focused} />,
           headerTitle: 'EefEats',
           headerTitleStyle: {
-            fontFamily: fontFamily.serifBold,
+            fontFamily: fontFamily.sansBold,
             fontSize: typography.h2.fontSize,
-            color: colors.textOnPrimary,
+            color: colors.text,
           },
         }}
       />

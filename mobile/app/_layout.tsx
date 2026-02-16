@@ -1,11 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import {
-  Fraunces_400Regular,
-  Fraunces_600SemiBold,
-  Fraunces_700Bold,
-} from '@expo-google-fonts/fraunces';
-import {
   DMSans_400Regular,
   DMSans_500Medium,
   DMSans_700Bold,
@@ -25,9 +20,6 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
-    Fraunces_400Regular,
-    Fraunces_600SemiBold,
-    Fraunces_700Bold,
     DMSans_400Regular,
     DMSans_500Medium,
     DMSans_700Bold,
@@ -46,11 +38,11 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   const headerDefaults = {
-    headerStyle: { backgroundColor: colors.primary },
-    headerTintColor: colors.textOnPrimary,
+    headerStyle: { backgroundColor: colors.background },
+    headerTintColor: colors.text,
     headerShadowVisible: false,
     headerBackTitle: 'Back',
-    headerTitleStyle: { color: colors.textOnPrimary },
+    headerTitleStyle: { color: colors.text },
   };
 
   return (

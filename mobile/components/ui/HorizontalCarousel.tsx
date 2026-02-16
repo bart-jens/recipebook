@@ -1,10 +1,7 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import AnimatedCard from './AnimatedCard';
-import { colors, spacing, typography, radii, fontFamily } from '@/lib/theme';
+import { colors, spacing, typography, radii, fontFamily, animation } from '@/lib/theme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH * 0.4;
@@ -30,7 +27,7 @@ export default function HorizontalCarousel({ title, seeAllLabel, onSeeAll, items
       <View style={styles.header}>
         <Text style={styles.title}>{title}</Text>
         {seeAllLabel && onSeeAll && (
-          <TouchableOpacity activeOpacity={0.7} onPress={onSeeAll}>
+          <TouchableOpacity activeOpacity={animation.pressOpacity} onPress={onSeeAll}>
             <Text style={styles.seeAll}>{seeAllLabel}</Text>
           </TouchableOpacity>
         )}
@@ -44,7 +41,8 @@ export default function HorizontalCarousel({ title, seeAllLabel, onSeeAll, items
         decelerationRate="fast"
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
-          <AnimatedCard
+          <TouchableOpacity
+            activeOpacity={animation.pressOpacity}
             onPress={() => onItemPress(item.id)}
             style={styles.card}
           >
@@ -57,20 +55,13 @@ export default function HorizontalCarousel({ title, seeAllLabel, onSeeAll, items
                   transition={200}
                 />
               ) : (
-                <LinearGradient
-                  colors={[colors.gradientWarmStart, colors.gradientWarmEnd]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.placeholder}
-                >
-                  <FontAwesome name="cutlery" size={20} color="rgba(255,255,255,0.3)" />
-                </LinearGradient>
+                <View style={styles.placeholder} />
               )}
             </View>
             <Text style={styles.cardTitle} numberOfLines={2}>
               {item.title}
             </Text>
-          </AnimatedCard>
+          </TouchableOpacity>
         )}
       />
     </View>
@@ -79,18 +70,18 @@ export default function HorizontalCarousel({ title, seeAllLabel, onSeeAll, items
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: spacing.xxl,
+    marginBottom: spacing.sectionGap,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.md,
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: spacing.pagePadding,
   },
   title: {
-    fontFamily: fontFamily.sansBold,
-    fontSize: 18,
+    fontFamily: fontFamily.sansMedium,
+    ...typography.sectionTitle,
     color: colors.text,
   },
   seeAll: {
@@ -99,29 +90,28 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   listContent: {
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: spacing.pagePadding,
     gap: CARD_GAP,
   },
   card: {
     width: CARD_WIDTH,
-    padding: 0,
     overflow: 'hidden',
     borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
   },
   imageWrap: {
     width: CARD_WIDTH,
-    aspectRatio: 4 / 5,
+    aspectRatio: 4 / 3,
     overflow: 'hidden',
-    borderTopLeftRadius: radii.lg,
-    borderTopRightRadius: radii.lg,
   },
   image: {
     ...StyleSheet.absoluteFillObject,
   },
   placeholder: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: colors.surface,
   },
   cardTitle: {
     ...typography.label,

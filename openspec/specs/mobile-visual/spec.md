@@ -7,18 +7,19 @@ The mobile app SHALL deliver a visually rich, animated experience that feels pre
 ## ADDED Requirements
 
 ### Requirement: Image-led recipe cards
-Recipe cards in list contexts (Discover, My Recipes, Public Profile) SHALL use an image-first layout: the image fills the top of the card (3:2 aspect ratio), with the title, creator attribution, rating, and metadata displayed below or overlaid on a gradient. Cards SHALL have a subtle scale-down animation on press (0.97x scale with spring physics).
+Recipe cards in list contexts (Discover, My Recipes, Public Profile) SHALL use an image-first layout: the image fills the top of the card (4:3 aspect ratio), with the title, creator attribution, rating, and metadata displayed below the image in a separate text zone. Cards SHALL NOT use gradient overlays on images. Cards SHALL use a simple opacity change (0.7) on press instead of scale animations.
 
 #### Scenario: Recipe card with image in Discover
 - **WHEN** a recipe with an image appears in the Discover list
-- **THEN** the card SHALL display the image at the top in 3:2 aspect ratio
-- **AND** a gradient overlay SHALL ensure the overlaid title text is readable
-- **AND** pressing the card SHALL trigger a 0.97x scale-down with spring animation
+- **THEN** the card SHALL display the image at the top in 4:3 aspect ratio with no gradient overlay
+- **AND** the title and metadata SHALL be rendered below the image
+- **AND** pressing the card SHALL trigger an opacity change to 0.7
 
 #### Scenario: Recipe card without image
 - **WHEN** a recipe without an image appears in any list
-- **THEN** the card SHALL display a branded warm gradient background with a subtle utensils icon
-- **AND** the title and metadata SHALL be displayed in the same layout as image cards
+- **THEN** the card SHALL display a flat light gray (#F5F5F5) background in the image area
+- **AND** no gradient, icon, or decorative element SHALL appear in the placeholder area
+- **AND** the title and metadata SHALL be displayed below in the same layout as image cards
 
 #### Scenario: Compact card variant
 - **WHEN** a recipe appears in a secondary context (public profile recipe list, carousel)
@@ -107,46 +108,36 @@ The app SHALL provide haptic feedback for specific user actions to create a tact
 - **THEN** all haptic calls SHALL silently no-op
 
 ### Requirement: Custom serif typography for headings
-The app SHALL use a serif display font (e.g., Playfair Display) for heading-level text to add warmth and brand personality. Body text SHALL remain as the system font for readability.
+The app SHALL use DM Sans as the sole typeface for all text. Typography hierarchy SHALL be created through font weight (400 regular, 500 medium, 600 semibold, 700 bold) and size. No serif font SHALL be loaded or used.
 
 #### Scenario: App title
 - **WHEN** the user sees the "EefEats" header or login title
-- **THEN** the text SHALL be rendered in the serif display font
+- **THEN** the text SHALL be rendered in DM Sans bold
 
 #### Scenario: Recipe title on detail screen
 - **WHEN** a user views a recipe detail screen
-- **THEN** the recipe title SHALL be rendered in the serif display font
+- **THEN** the recipe title SHALL be rendered in DM Sans semibold at the display size
 
 #### Scenario: Font loading failure
-- **WHEN** the serif font fails to load
-- **THEN** the app SHALL fall back to the system serif font (Georgia on iOS, serif on Android)
+- **WHEN** the DM Sans font fails to load
+- **THEN** the app SHALL fall back to the system sans-serif font
 - **AND** the app SHALL still render and function normally
 
 ### Requirement: Animated empty states
-Empty states throughout the app SHALL use Lottie animations paired with a title and subtitle to create a delightful, branded experience instead of plain text.
+Empty states throughout the app SHALL use simple text with a dashed border container. No Lottie animations, icons, or decorative elements SHALL be used. The empty state SHALL include a title and an optional call-to-action link.
 
 #### Scenario: No recipes in My Recipes
 - **WHEN** a user with no recipes views the My Recipes tab
-- **THEN** an animated empty state SHALL be shown with a relevant animation, title, and call-to-action
+- **THEN** an empty state SHALL be shown with a dashed border container, a text message, and a call-to-action
 
 #### Scenario: No search results
 - **WHEN** a search returns no results
-- **THEN** an animated empty state SHALL be shown indicating no matches were found
+- **THEN** an empty state SHALL be shown with text indicating no matches were found
 
 #### Scenario: No cooking log entries
 - **WHEN** a recipe has no cooking log entries
-- **THEN** a subtle animated empty state SHALL be shown encouraging the user to cook the recipe
+- **THEN** a simple text empty state SHALL encourage the user to cook the recipe
 
-### Requirement: Celebration animations
-The app SHALL show celebration animations for milestone moments to create delight and reinforce positive behavior.
-
-#### Scenario: First cooking log
-- **WHEN** a user submits their first cooking log for a recipe
-- **THEN** a confetti or sparkle Lottie animation SHALL play as an overlay
-
-#### Scenario: First published recipe
-- **WHEN** a user publishes their first recipe
-- **THEN** a celebration animation SHALL play
 
 ### Requirement: Staggered entry animations
 Content sections on recipe detail and list screens SHALL use staggered fade-in animations when first rendered, creating a polished reveal effect.
