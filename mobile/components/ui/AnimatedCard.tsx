@@ -40,11 +40,9 @@ export default function AnimatedCard({ children, onPress, style }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
     padding: 16,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
     ...shadows,
   } as ViewStyle,
 });

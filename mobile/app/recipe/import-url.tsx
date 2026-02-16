@@ -243,9 +243,7 @@ const styles = StyleSheet.create({
   heading: { ...typography.h2, color: colors.text, marginBottom: spacing.sm },
   subtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.xxl },
   input: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.surface,
     borderRadius: radii.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: 14,

@@ -16,7 +16,7 @@ export default function ImportPage() {
       <div className="grid gap-4 max-w-lg">
         <Link
           href="/recipes/import-url"
-          className="group block rounded-md border border-warm-border bg-white p-5 transition-shadow hover:shadow-md"
+          className="group block rounded-md bg-warm-tag p-5 shadow-sm transition-shadow hover:shadow-md"
         >
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent">
@@ -35,7 +35,7 @@ export default function ImportPage() {
 
         <Link
           href="/recipes/import-photo"
-          className="group block rounded-md border border-warm-border bg-white p-5 transition-shadow hover:shadow-md"
+          className="group block rounded-md bg-warm-tag p-5 shadow-sm transition-shadow hover:shadow-md"
         >
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent">

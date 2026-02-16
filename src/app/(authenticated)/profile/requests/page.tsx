@@ -58,7 +58,7 @@ export default async function FollowRequestsPage() {
             return (
               <div
                 key={request.id}
-                className="flex items-center justify-between rounded-md border border-warm-border bg-white p-4"
+                className="flex items-center justify-between rounded-md bg-warm-tag p-4 shadow-sm"
               >
                 <Link
                   href={`/profile/${request.requester_id}`}

@@ -73,7 +73,7 @@ export function CookingLog({
           {ratings.map((entry) => (
             <div
               key={entry.id}
-              className="flex items-start justify-between rounded-md border border-warm-divider p-3"
+              className="flex items-start justify-between rounded-md bg-warm-tag p-3"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export function CookingLog({
       )}
 
       {showForm ? (
-        <form onSubmit={handleSubmit} className="rounded-md border border-warm-border p-4 space-y-3">
+        <form onSubmit={handleSubmit} className="rounded-md bg-warm-tag p-4 space-y-3">
           <div>
             <label className="mb-1 block text-sm text-warm-gray">Rating</label>
             <StarRating value={stars} onChange={setStars} />
@@ -116,7 +116,7 @@ export function CookingLog({
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="rounded-md border border-warm-border px-3 py-1.5 text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+              className="rounded-md bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
           <div>
@@ -126,7 +126,7 @@ export function CookingLog({
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               placeholder="How did it turn out?"
-              className="w-full rounded-md border border-warm-border px-3 py-1.5 text-sm placeholder:text-warm-gray/40 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full rounded-md bg-white px-3 py-1.5 text-sm placeholder:text-warm-gray/40 focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
           <div className="flex gap-2">
@@ -140,7 +140,7 @@ export function CookingLog({
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="rounded-md border border-warm-border px-4 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
+              className="rounded-md bg-warm-tag px-4 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
             >
               Cancel
             </button>
@@ -149,7 +149,7 @@ export function CookingLog({
       ) : (
         <button
           onClick={() => setShowForm(true)}
-          className="rounded-md border border-warm-border px-4 py-2 text-sm text-warm-gray hover:bg-warm-tag"
+          className="rounded-md bg-warm-tag px-4 py-2 text-sm text-warm-gray hover:bg-warm-border"
         >
           I cooked this
         </button>

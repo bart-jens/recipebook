@@ -7,6 +7,19 @@ const SORT_OPTIONS = [
   { value: "updated", label: "Recently updated" },
   { value: "alpha", label: "Alphabetical" },
   { value: "rating", label: "Highest rated" },
+  { value: "prep", label: "Prep time" },
+  { value: "cook", label: "Cook time" },
+];
+
+const COURSE_OPTIONS = [
+  { value: "", label: "All courses" },
+  { value: "breakfast", label: "Breakfast" },
+  { value: "lunch", label: "Lunch" },
+  { value: "dinner", label: "Dinner" },
+  { value: "appetizer", label: "Appetizer" },
+  { value: "side dish", label: "Side dish" },
+  { value: "dessert", label: "Dessert" },
+  { value: "snack", label: "Snack" },
 ];
 
 export function RecipeListControls() {
@@ -18,6 +31,7 @@ export function RecipeListControls() {
   const q = searchParams.get("q") || "";
   const sort = searchParams.get("sort") || "updated";
   const tag = searchParams.get("tag") || "";
+  const course = searchParams.get("course") || "";
 
   function updateParams(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -48,7 +62,7 @@ export function RecipeListControls() {
           placeholder="Search recipes..."
           defaultValue={q}
           onChange={(e) => handleSearch(e.target.value)}
-          className="w-full rounded-md border border-warm-border bg-white px-3 py-2 pl-9 text-sm placeholder:text-warm-gray/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          className="w-full rounded-md bg-warm-tag px-3 py-2 pl-9 text-sm placeholder:text-warm-gray/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
         />
         <svg
           className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-gray/50"
@@ -78,9 +92,20 @@ export function RecipeListControls() {
           </button>
         )}
         <select
+          value={course}
+          onChange={(e) => updateParams({ course: e.target.value })}
+          className="rounded-md bg-warm-tag px-3 py-2 text-sm text-warm-gray focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+        >
+          {COURSE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <select
           value={sort}
           onChange={(e) => updateParams({ sort: e.target.value })}
-          className="rounded-md border border-warm-border bg-white px-3 py-2 text-sm text-warm-gray focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          className="rounded-md bg-warm-tag px-3 py-2 text-sm text-warm-gray focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
         >
           {SORT_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>

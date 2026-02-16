@@ -8,6 +8,7 @@ import {
   Modal,
   TouchableOpacity,
   Pressable,
+  ScrollView,
 } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -18,6 +19,20 @@ import Button from '@/components/ui/Button';
 import RecipeCard from '@/components/ui/RecipeCard';
 import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
+
+type SortOption = 'updated' | 'alpha' | 'rating' | 'prep' | 'cook';
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'updated', label: 'Recent' },
+  { value: 'alpha', label: 'A-Z' },
+  { value: 'rating', label: 'Top Rated' },
+  { value: 'prep', label: 'Prep Time' },
+  { value: 'cook', label: 'Cook Time' },
+];
+
+const COURSE_OPTIONS = [
+  'Breakfast', 'Lunch', 'Dinner', 'Appetizer', 'Side dish', 'Dessert', 'Snack',
+];
 
 interface Recipe {
   id: string;
@@ -30,6 +45,7 @@ interface Recipe {
   visibility: string;
   avgRating: number | null;
   ratingCount: number;
+  tags: string[];
 }
 
 export default function RecipesScreen() {
@@ -37,6 +53,8 @@ export default function RecipesScreen() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [sort, setSort] = useState<SortOption>('updated');
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [showImportMenu, setShowImportMenu] = useState(false);
 
   const fetchRecipes = useCallback(async () => {
@@ -45,9 +63,18 @@ export default function RecipesScreen() {
 
     let query = supabase
       .from('recipes')
-      .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes, is_favorite, visibility')
-      .eq('created_by', user.id)
-      .order('updated_at', { ascending: false });
+      .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes, is_favorite, visibility, recipe_tags(tag)')
+      .eq('created_by', user.id);
+
+    if (sort === 'alpha') {
+      query = query.order('title', { ascending: true });
+    } else if (sort === 'prep') {
+      query = query.order('prep_time_minutes', { ascending: true, nullsFirst: false });
+    } else if (sort === 'cook') {
+      query = query.order('cook_time_minutes', { ascending: true, nullsFirst: false });
+    } else {
+      query = query.order('updated_at', { ascending: false });
+    }
 
     if (search) {
       query = query.ilike('title', `%${search}%`);
@@ -72,24 +99,33 @@ export default function RecipesScreen() {
       }
     }
 
-    const enriched: Recipe[] = recipeList.map((r) => {
+    let enriched: Recipe[] = recipeList.map((r) => {
       const ratingInfo = ratingMap.get(r.id);
       return {
         ...r,
         avgRating: ratingInfo ? ratingInfo.total / ratingInfo.count : null,
         ratingCount: ratingInfo?.count || 0,
+        tags: ((r as any).recipe_tags || []).map((t: { tag: string }) => t.tag),
       };
     });
 
-    // Sort favorites first
+    // Filter by course
+    if (selectedCourse) {
+      enriched = enriched.filter((r) =>
+        r.tags.some((t) => t.toLowerCase() === selectedCourse.toLowerCase())
+      );
+    }
+
+    // Sort favorites first, then by rating if selected
     enriched.sort((a, b) => {
       if (a.is_favorite !== b.is_favorite) return a.is_favorite ? -1 : 1;
+      if (sort === 'rating') return (b.avgRating || 0) - (a.avgRating || 0);
       return 0;
     });
 
     setRecipes(enriched);
     setLoading(false);
-  }, [user, search]);
+  }, [user, search, sort, selectedCourse]);
 
   useFocusEffect(
     useCallback(() => {
@@ -123,13 +159,60 @@ export default function RecipesScreen() {
               onPress={() => setShowImportMenu(true)}
             />
             <Button
-              title="Create My Own"
+              title="Create"
               variant="primary"
               size="sm"
               onPress={() => router.push('/recipe/new')}
             />
           </View>
         </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.sortRow}
+        >
+          {SORT_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.value}
+              style={[styles.sortPill, sort === opt.value && styles.sortPillActive]}
+              onPress={() => setSort(opt.value)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.sortPillText, sort === opt.value && styles.sortPillTextActive]}>
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.courseRow}
+        >
+          {selectedCourse && (
+            <TouchableOpacity
+              style={styles.clearPill}
+              onPress={() => setSelectedCourse(null)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.clearPillText}>Clear</Text>
+            </TouchableOpacity>
+          )}
+          {COURSE_OPTIONS.map((c) => (
+            <TouchableOpacity
+              key={c}
+              style={[styles.coursePill, selectedCourse === c && styles.coursePillActive]}
+              onPress={() => setSelectedCourse(selectedCourse === c ? null : c)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.coursePillText, selectedCourse === c && styles.coursePillTextActive]}>
+                {c}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       {loading ? (
@@ -201,9 +284,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   searchContainer: { padding: spacing.lg, paddingBottom: 0 },
   searchInput: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.surface,
     borderRadius: radii.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
@@ -218,6 +299,66 @@ const styles = StyleSheet.create({
   },
   count: { ...typography.label, color: colors.textSecondary },
   actionButtons: { flexDirection: 'row', gap: spacing.sm },
+
+  sortRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    paddingRight: spacing.lg,
+  },
+  sortPill: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.xl,
+    backgroundColor: colors.surface,
+  },
+  sortPillActive: {
+    backgroundColor: colors.primary,
+  },
+  sortPillText: {
+    ...typography.label,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  sortPillTextActive: {
+    color: colors.white,
+  },
+
+  courseRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+    paddingRight: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  coursePill: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 1,
+    borderRadius: radii.xl,
+    backgroundColor: colors.surface,
+  },
+  coursePillActive: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  coursePillText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  coursePillTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  clearPill: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 1,
+    borderRadius: radii.xl,
+  },
+  clearPillText: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: '600',
+  },
 
   modalOverlay: {
     flex: 1,

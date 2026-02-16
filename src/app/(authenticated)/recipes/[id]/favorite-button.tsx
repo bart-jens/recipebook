@@ -22,7 +22,7 @@ export function FavoriteButton({
     <button
       onClick={handleClick}
       disabled={isPending}
-      className="rounded-md border border-warm-border p-1.5 text-warm-gray hover:bg-warm-tag disabled:opacity-50"
+      className="rounded-md bg-warm-tag p-1.5 text-warm-gray hover:bg-warm-border disabled:opacity-50"
       title={isFavorite ? "Remove from favorites" : "Add to favorites"}
     >
       <svg

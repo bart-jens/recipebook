@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sendInviteEmail } from "@/lib/email";
 
 const INVITE_LIMITS: Record<string, number> = {
   free: 5,
@@ -28,7 +29,7 @@ export async function createInvite(email: string) {
   // Check plan limits
   const { data: profile } = await supabase
     .from("user_profiles")
-    .select("plan, role")
+    .select("plan, role, display_name")
     .eq("id", user.id)
     .single();
 
@@ -56,6 +57,14 @@ export async function createInvite(email: string) {
   });
 
   if (error) return { error: error.message };
+
+  // Send invite email (best-effort)
+  try {
+    const inviterName = profile?.display_name || "Someone";
+    await sendInviteEmail(email.trim().toLowerCase(), code, inviterName);
+  } catch (e) {
+    console.error("Failed to send invite email:", e);
+  }
 
   revalidatePath("/invites");
   return { code };

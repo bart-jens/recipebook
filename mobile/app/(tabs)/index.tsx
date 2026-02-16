@@ -507,9 +507,7 @@ const styles = StyleSheet.create({
   promptCard: {
     marginHorizontal: spacing.xl,
     marginBottom: spacing.xxl,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
     padding: spacing.xl,
     alignItems: 'center',

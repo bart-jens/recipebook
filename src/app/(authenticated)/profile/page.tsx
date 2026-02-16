@@ -83,7 +83,7 @@ export default async function ProfilePage() {
         </div>
         <Link
           href="/profile/edit"
-          className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
+          className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
         >
           Edit profile
         </Link>
@@ -140,7 +140,7 @@ export default async function ProfilePage() {
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="flex items-center justify-between rounded-md border border-warm-border bg-white px-4 py-3 transition-shadow hover:shadow-md"
+                className="flex items-center justify-between rounded-md bg-warm-tag px-4 py-3 shadow-sm transition-shadow hover:shadow-md"
               >
                 <span className="font-serif font-medium">{recipe.title}</span>
                 <span className="text-xs text-warm-gray">

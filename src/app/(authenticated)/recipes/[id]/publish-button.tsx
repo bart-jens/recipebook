@@ -43,7 +43,7 @@ export function PublishButton({
           disabled={isPending || (!isPublic && atLimit)}
           className={`rounded-md px-3 py-1.5 text-sm font-medium disabled:opacity-50 ${
             isPublic
-              ? "border border-warm-border text-warm-gray hover:bg-warm-tag"
+              ? "bg-warm-tag text-warm-gray hover:bg-warm-border"
               : "border border-accent text-accent hover:bg-accent hover:text-white"
           }`}
         >

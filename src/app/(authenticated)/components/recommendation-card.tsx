@@ -69,7 +69,7 @@ export function RecommendationCard({
   };
 
   return (
-    <div className="overflow-hidden rounded-md border border-warm-border bg-white">
+    <div className="overflow-hidden rounded-md bg-warm-tag shadow-sm">
       <div className="flex gap-4 p-4">
         {/* Thumbnail */}
         {imageUrl ? (

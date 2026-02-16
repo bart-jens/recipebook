@@ -104,9 +104,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   input: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.surface,
     borderRadius: radii.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: 14,

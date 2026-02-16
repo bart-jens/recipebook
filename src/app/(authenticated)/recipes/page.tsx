@@ -32,12 +32,13 @@ interface EnrichedRecipe extends RecipeRow {
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: { q?: string; sort?: string; tag?: string };
+  searchParams: { q?: string; sort?: string; tag?: string; course?: string };
 }) {
   const supabase = createClient();
   const q = searchParams.q || "";
   const sort = searchParams.sort || "updated";
   const tag = searchParams.tag || "";
+  const course = searchParams.course || "";
 
   let query = supabase
     .from("recipes")
@@ -54,6 +55,10 @@ export default async function RecipesPage({
 
   if (sort === "alpha") {
     query = query.order("title", { ascending: true });
+  } else if (sort === "prep") {
+    query = query.order("prep_time_minutes", { ascending: true, nullsFirst: false });
+  } else if (sort === "cook") {
+    query = query.order("cook_time_minutes", { ascending: true, nullsFirst: false });
   } else {
     query = query.order("updated_at", { ascending: false });
   }
@@ -65,6 +70,13 @@ export default async function RecipesPage({
   if (tag) {
     filtered = filtered.filter(
       (r) => r.recipe_tags && r.recipe_tags.length > 0
+    );
+  }
+
+  // Filter by course (match against tags)
+  if (course) {
+    filtered = filtered.filter(
+      (r) => r.recipe_tags && r.recipe_tags.some((t) => t.tag.toLowerCase() === course.toLowerCase())
     );
   }
 
@@ -97,7 +109,7 @@ export default async function RecipesPage({
           <div className="flex gap-2">
             <Link
               href="/recipes/import"
-              className="rounded-md border border-warm-border bg-white px-4 py-2 text-sm font-medium text-warm-gray hover:bg-warm-tag"
+              className="rounded-md bg-warm-tag px-4 py-2 text-sm font-medium text-warm-gray hover:bg-warm-border"
             >
               Import Recipe
             </Link>
@@ -105,7 +117,7 @@ export default async function RecipesPage({
               href="/recipes/new"
               className="rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover"
             >
-              Create My Own
+              Create
             </Link>
           </div>
         </div>
@@ -122,7 +134,7 @@ export default async function RecipesPage({
       </p>
 
       {enriched.length === 0 ? (
-        <div className="rounded-md border border-dashed border-warm-border p-8 text-center">
+        <div className="rounded-md border border-dashed border-warm-border/50 p-8 text-center">
           <p className="text-warm-gray">
             {q ? "No recipes match your search." : "No recipes yet."}
           </p>
@@ -160,7 +172,7 @@ export default async function RecipesPage({
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="block rounded-md border border-warm-border bg-white p-4 transition-shadow hover:shadow-md"
+                className="block rounded-md bg-warm-tag p-4 shadow-sm transition-shadow hover:shadow-md"
               >
                 <div className="flex gap-4">
                   {recipe.image_url && (

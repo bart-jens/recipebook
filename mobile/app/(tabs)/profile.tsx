@@ -236,8 +236,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     backgroundColor: `${colors.primary}10`,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: `${colors.primary}30`,
     marginBottom: spacing.xxl,
   },
   requestsText: {

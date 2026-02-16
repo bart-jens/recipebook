@@ -30,7 +30,7 @@ export function RequestActions({ requesterId }: { requesterId: string }) {
       <button
         onClick={handleDeny}
         disabled={isPending}
-        className="rounded-md border border-warm-border px-3 py-1.5 text-xs text-warm-gray hover:bg-warm-tag disabled:opacity-50"
+        className="rounded-md bg-warm-tag px-3 py-1.5 text-xs text-warm-gray hover:bg-warm-border disabled:opacity-50"
       >
         Deny
       </button>

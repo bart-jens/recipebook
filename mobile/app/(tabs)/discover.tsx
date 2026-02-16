@@ -320,9 +320,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   searchInput: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.surface,
     borderRadius: radii.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
@@ -363,8 +361,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs + 1,
     borderRadius: radii.xl,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
   },
   tagPillActive: {
     backgroundColor: colors.primaryLight,

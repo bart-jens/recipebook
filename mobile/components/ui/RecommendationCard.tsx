@@ -278,10 +278,8 @@ export default function RecommendationCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
     overflow: 'hidden',
     ...shadows,
   },

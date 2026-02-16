@@ -30,7 +30,7 @@ const emptyForm: RecipeFormData = {
 };
 
 const inputClass =
-  "mt-1 block w-full rounded-md border border-warm-border bg-white px-3 py-3 text-base focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+  "mt-1 block w-full rounded-md bg-warm-tag px-3 py-3 text-base focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent";
 
 export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps) {
   const [data, setData] = useState<RecipeFormData>(initialData ?? emptyForm);

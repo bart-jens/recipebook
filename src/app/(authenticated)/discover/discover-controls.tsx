@@ -48,7 +48,7 @@ export function DiscoverControls() {
           placeholder="Search published recipes..."
           defaultValue={q}
           onChange={(e) => handleSearch(e.target.value)}
-          className="w-full rounded-md border border-warm-border bg-white px-3 py-2 pl-9 text-sm placeholder:text-warm-gray/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          className="w-full rounded-md bg-warm-tag px-3 py-2 pl-9 text-sm placeholder:text-warm-gray/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
         />
         <svg
           className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-gray/50"
@@ -80,7 +80,7 @@ export function DiscoverControls() {
         <select
           value={sort}
           onChange={(e) => updateParams({ sort: e.target.value })}
-          className="rounded-md border border-warm-border bg-white px-3 py-2 text-sm text-warm-gray focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          className="rounded-md bg-warm-tag px-3 py-2 text-sm text-warm-gray focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
         >
           {SORT_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>

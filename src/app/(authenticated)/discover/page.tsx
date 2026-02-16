@@ -154,7 +154,7 @@ export default async function DiscoverPage({
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="group block overflow-hidden rounded-md border border-warm-border bg-white transition-shadow hover:shadow-md"
+                className="group block overflow-hidden rounded-md bg-warm-tag shadow-sm transition-shadow hover:shadow-md"
               >
                 {recipe.image_url ? (
                   <div className="aspect-[16/10] overflow-hidden bg-warm-tag">

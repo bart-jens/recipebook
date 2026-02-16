@@ -290,9 +290,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   input: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.surface,
     borderRadius: radii.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
@@ -311,9 +309,7 @@ const styles = StyleSheet.create({
   },
 
   privacyCard: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.surface,
     borderRadius: radii.md,
     padding: spacing.lg,
     marginBottom: spacing.xxl,

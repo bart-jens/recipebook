@@ -127,7 +127,7 @@ export default function ImportPhotoPage() {
             placeholder="e.g. The Food Lab, Ottolenghi Simple"
             value={sourceName}
             onChange={(e) => setSourceName(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-warm-border bg-white px-3 py-2.5 text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+            className="mt-1 block w-full rounded-md bg-warm-tag px-3 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
           />
           <p className="mt-1 text-xs text-warm-gray/60">Where is this recipe from? Cookbook, website, family recipe...</p>
         </div>

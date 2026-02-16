@@ -74,9 +74,7 @@ const variantStyles: Record<Variant, ViewStyle> = {
     backgroundColor: colors.cta,
   },
   secondary: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
   },
   danger: {
     backgroundColor: colors.dangerBg,

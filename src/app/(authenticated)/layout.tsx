@@ -25,7 +25,8 @@ export default async function AuthenticatedLayout({
 
   return (
     <div className="min-h-screen">
-      <header className="bg-accent px-6 py-4">
+      <header className="relative bg-accent px-6 py-4 shadow-md">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-gradient-to-b from-transparent to-black/10" />
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/recipes" className="font-serif text-2xl font-semibold tracking-tight text-white">

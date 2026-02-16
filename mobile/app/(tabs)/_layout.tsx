@@ -8,6 +8,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, typography, fontFamily, animation } from '@/lib/theme';
 
 function AnimatedTabBarIcon({
@@ -61,12 +62,26 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.textOnPrimary,
         tabBarInactiveTintColor: 'rgba(255,255,255,0.55)',
         tabBarStyle: {
-          backgroundColor: colors.primary,
-          borderTopColor: colors.primaryDark,
+          borderTopWidth: 0,
+          elevation: 0,
         },
+        tabBarBackground: () => (
+          <LinearGradient
+            colors={[colors.primaryLight, colors.primary]}
+            style={{ flex: 1 }}
+          />
+        ),
         headerStyle: {
           backgroundColor: colors.primary,
         },
+        headerBackground: () => (
+          <LinearGradient
+            colors={[colors.primary, colors.primaryLight]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={{ flex: 1 }}
+          />
+        ),
         headerTintColor: colors.textOnPrimary,
         headerShadowVisible: false,
       }}

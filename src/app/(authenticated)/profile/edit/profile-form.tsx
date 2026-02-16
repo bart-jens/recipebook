@@ -30,7 +30,7 @@ export function ProfileForm({
   return (
     <form action={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
           {error}
         </div>
       )}
@@ -45,7 +45,7 @@ export function ProfileForm({
           type="text"
           defaultValue={profile.display_name}
           required
-          className="w-full rounded-md border border-warm-border px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          className="w-full rounded-md bg-warm-tag px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
         />
       </div>
 
@@ -60,12 +60,12 @@ export function ProfileForm({
           maxLength={300}
           defaultValue={profile.bio}
           placeholder="Tell people a bit about yourself..."
-          className="w-full rounded-md border border-warm-border px-3 py-2 text-sm placeholder:text-warm-gray/40 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          className="w-full rounded-md bg-warm-tag px-3 py-2 text-sm placeholder:text-warm-gray/40 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
         />
         <p className="mt-1 text-xs text-warm-gray/60">Max 300 characters</p>
       </div>
 
-      <div className="rounded-md border border-warm-border p-4">
+      <div className="rounded-md bg-warm-tag p-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">Private account</p>
@@ -109,7 +109,7 @@ export function ProfileForm({
         <button
           type="button"
           onClick={() => router.push("/profile")}
-          className="rounded-md border border-warm-border px-4 py-2 text-sm text-warm-gray hover:bg-warm-tag"
+          className="rounded-md bg-warm-tag px-4 py-2 text-sm text-warm-gray hover:bg-warm-border"
         >
           Cancel
         </button>

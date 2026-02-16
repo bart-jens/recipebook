@@ -142,16 +142,16 @@ export default async function HomePage() {
       <div className="mt-6 grid grid-cols-3 gap-4">
         <Link
           href="/recipes"
-          className="rounded-md border border-warm-border bg-white p-4 text-center transition-shadow hover:shadow-md"
+          className="rounded-md bg-warm-tag p-4 text-center shadow-sm transition-shadow hover:shadow-md"
         >
           <p className="text-2xl font-bold text-accent">{recipeCount || 0}</p>
           <p className="mt-1 text-xs text-warm-gray">recipes</p>
         </Link>
-        <div className="rounded-md border border-warm-border bg-white p-4 text-center">
+        <div className="rounded-md bg-warm-tag p-4 text-center shadow-sm">
           <p className="text-2xl font-bold text-accent">{favoriteCount || 0}</p>
           <p className="mt-1 text-xs text-warm-gray">favorites</p>
         </div>
-        <div className="rounded-md border border-warm-border bg-white p-4 text-center">
+        <div className="rounded-md bg-warm-tag p-4 text-center shadow-sm">
           <p className="text-2xl font-bold text-accent">{cookedCount || 0}</p>
           <p className="mt-1 text-xs text-warm-gray">times cooked</p>
         </div>
@@ -171,7 +171,7 @@ export default async function HomePage() {
           </Link>
         </div>
         {(recent || []).length === 0 ? (
-          <div className="mt-4 rounded-md border border-dashed border-warm-border p-8 text-center">
+          <div className="mt-4 rounded-md border border-dashed border-warm-border/50 p-8 text-center">
             <p className="text-warm-gray">No recipes yet.</p>
             <Link
               href="/recipes/new"
@@ -186,7 +186,7 @@ export default async function HomePage() {
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="group overflow-hidden rounded-md border border-warm-border bg-white transition-shadow hover:shadow-md"
+                className="group overflow-hidden rounded-md bg-warm-tag shadow-sm transition-shadow hover:shadow-md"
               >
                 {recipe.image_url ? (
                   <div className="aspect-[16/10] overflow-hidden bg-warm-tag">
@@ -264,7 +264,7 @@ export default async function HomePage() {
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="group overflow-hidden rounded-md border border-warm-border bg-white transition-shadow hover:shadow-md"
+                className="group overflow-hidden rounded-md bg-warm-tag shadow-sm transition-shadow hover:shadow-md"
               >
                 {recipe.image_url ? (
                   <div className="aspect-[16/10] overflow-hidden bg-warm-tag">

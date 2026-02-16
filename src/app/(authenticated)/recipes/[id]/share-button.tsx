@@ -34,7 +34,7 @@ export function ShareButton({
       <button
         onClick={handleUnshare}
         disabled={isPending}
-        className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag disabled:opacity-50"
+        className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border disabled:opacity-50"
       >
         {isPending ? "..." : "Shared"}
       </button>
@@ -68,7 +68,7 @@ export function ShareButton({
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="e.g. Doubled the chili oil, used fresh noodles..."
                 rows={3}
-                className="mt-1 block w-full rounded-md border border-warm-border bg-white px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                className="mt-1 block w-full rounded-md bg-warm-tag px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
             <div className="mt-4 flex justify-end gap-2">

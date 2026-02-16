@@ -50,7 +50,7 @@ export default async function InvitesPage() {
             {(invites || []).map((invite) => (
               <div
                 key={invite.id}
-                className="flex items-center justify-between rounded-md border border-warm-border bg-white px-4 py-3"
+                className="flex items-center justify-between rounded-md bg-warm-tag px-4 py-3 shadow-sm"
               >
                 <div>
                   <p className="text-sm font-medium">{invite.email}</p>

@@ -162,7 +162,7 @@ export default async function PublicProfilePage({
       </div>
 
       {!canViewContent ? (
-        <div className="rounded-md border border-warm-border bg-warm-tag/30 p-8 text-center">
+        <div className="rounded-md bg-warm-tag p-8 text-center">
           <p className="text-sm text-warm-gray">This account is private</p>
           <p className="mt-1 text-xs text-warm-gray/60">
             Follow this user to see their recipes and cooking activity.
@@ -187,7 +187,7 @@ export default async function PublicProfilePage({
                 <Link
                   key={recipe.id}
                   href={`/recipes/${recipe.id}`}
-                  className="block rounded-md border border-warm-border bg-white p-4 transition-shadow hover:shadow-md"
+                  className="block rounded-md bg-warm-tag p-4 shadow-sm transition-shadow hover:shadow-md"
                 >
                   <div className="flex items-start justify-between">
                     <h3 className="font-serif font-medium">{recipe.title}</h3>

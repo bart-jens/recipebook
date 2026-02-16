@@ -83,7 +83,7 @@ export function LoadMoreButton({
           <Link
             key={recipe.id}
             href={`/recipes/${recipe.id}`}
-            className="group block overflow-hidden rounded-md border border-warm-border bg-white transition-shadow hover:shadow-md"
+            className="group block overflow-hidden rounded-md bg-warm-tag shadow-sm transition-shadow hover:shadow-md"
           >
             {recipe.image_url ? (
               <div className="aspect-[16/10] overflow-hidden bg-warm-tag">
@@ -119,7 +119,7 @@ export function LoadMoreButton({
           <button
             onClick={loadMore}
             disabled={loading}
-            className="rounded-md border border-warm-border bg-white px-6 py-2 text-sm font-medium text-warm-gray hover:bg-warm-tag disabled:opacity-50"
+            className="rounded-md bg-warm-tag px-6 py-2 text-sm font-medium text-warm-gray hover:bg-warm-border disabled:opacity-50"
           >
             {loading ? "Loading..." : "Load more"}
           </button>

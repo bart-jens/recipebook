@@ -28,7 +28,7 @@ export function InviteForm() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="friend@email.com"
           required
-          className="flex-1 rounded-md border border-warm-border px-3 py-2 text-sm placeholder:text-warm-gray/40 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          className="flex-1 rounded-md bg-warm-tag px-3 py-2 text-sm placeholder:text-warm-gray/40 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
         />
         <button
           type="submit"
@@ -40,19 +40,16 @@ export function InviteForm() {
       </form>
 
       {result?.code && (
-        <div className="mt-3 rounded-md border border-green-200 bg-green-50 p-3">
+        <div className="mt-3 rounded-md bg-green-50 p-3">
           <p className="text-sm text-green-700">
-            Invite created! Share this code:{" "}
+            Invite created and emailed! Code:{" "}
             <span className="font-mono font-semibold">{result.code}</span>
-          </p>
-          <p className="mt-1 text-xs text-green-600">
-            They can sign up at the login page with this code.
           </p>
         </div>
       )}
 
       {result?.error && (
-        <div className="mt-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+        <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-600">
           {result.error}
         </div>
       )}

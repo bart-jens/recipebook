@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 
 import { DeleteButton } from "./delete-button";
@@ -92,6 +93,8 @@ export function RecipeDetail({
   photos?: { id: string; url: string; imageType: string }[];
 }) {
   const [unitSystem, setUnitSystem] = useUnitSystem();
+  const [servings, setServings] = useState(recipe.servings ?? 0);
+  const scaleFactor = recipe.servings ? servings / recipe.servings : 1;
 
   const instructions = recipe.instructions ? formatInstructions(recipe.instructions) : [];
 
@@ -170,7 +173,7 @@ export function RecipeDetail({
           {isOwner ? (
             <>
               <FavoriteButton recipeId={recipe.id} isFavorite={recipe.is_favorite} />
-              {(recipe.source_type === "manual" || recipe.source_type === "fork") ? (
+              {(recipe.source_type === "manual" || forkedFrom) ? (
                 <PublishButton
                   recipeId={recipe.id}
                   isPublic={recipe.visibility === "public"}
@@ -186,7 +189,7 @@ export function RecipeDetail({
               )}
               <Link
                 href={`/recipes/${recipe.id}/edit`}
-                className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
+                className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
               >
                 Edit
               </Link>
@@ -252,8 +255,29 @@ export function RecipeDetail({
           </span>
         )}
         {recipe.servings && (
-          <span className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
-            Servings: {recipe.servings}
+          <span className="inline-flex items-center gap-2 rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
+            Servings:
+            <button
+              onClick={() => setServings(Math.max(1, servings - 1))}
+              className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/10 text-accent hover:bg-accent/20"
+            >
+              -
+            </button>
+            <span className="min-w-[1.5rem] text-center font-medium">{servings}</span>
+            <button
+              onClick={() => setServings(servings + 1)}
+              className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/10 text-accent hover:bg-accent/20"
+            >
+              +
+            </button>
+            {servings !== recipe.servings && (
+              <button
+                onClick={() => setServings(recipe.servings!)}
+                className="text-xs text-accent hover:underline"
+              >
+                reset
+              </button>
+            )}
           </span>
         )}
         {recipe.prep_time_minutes && recipe.cook_time_minutes && (
@@ -271,7 +295,8 @@ export function RecipeDetail({
           </div>
           <ul className="space-y-2">
             {ingredients.map((ing) => {
-              const converted = convertIngredient(ing.quantity, ing.unit || "", unitSystem);
+              const scaledQty = ing.quantity != null ? ing.quantity * scaleFactor : null;
+              const converted = convertIngredient(scaledQty, ing.unit || "", unitSystem);
               return (
                 <li key={ing.id} className="flex items-baseline gap-2 border-b border-warm-divider pb-2">
                   <span className="min-w-[4rem] text-right font-medium">

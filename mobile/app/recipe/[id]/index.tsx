@@ -59,6 +59,7 @@ interface Recipe {
   is_favorite: boolean;
   visibility: string;
   created_by: string;
+  forked_from_id: string | null;
 }
 
 interface Ingredient {
@@ -109,6 +110,7 @@ export default function RecipeDetailScreen() {
   const [userPlan, setUserPlan] = useState('free');
   const [photos, setPhotos] = useState<{ id: string; url: string; imageType: string }[]>([]);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [adjustedServings, setAdjustedServings] = useState<number | null>(null);
 
   const scrollY = useSharedValue(0);
 
@@ -181,7 +183,7 @@ export default function RecipeDetailScreen() {
       setPublishCount(count || 0);
 
       // Check share status for imported recipes
-      if (recipeData.source_type !== 'manual' && recipeData.source_type !== 'fork') {
+      if (recipeData.source_type !== 'manual' && !recipeData.forked_from_id) {
         const { data: share } = await supabase
           .from('recipe_shares')
           .select('notes')
@@ -265,7 +267,7 @@ export default function RecipeDetailScreen() {
         prep_time_minutes: recipe.prep_time_minutes,
         cook_time_minutes: recipe.cook_time_minutes,
         servings: recipe.servings,
-        source_type: 'fork',
+        source_type: recipe.source_type,
         source_url: recipe.source_url,
         forked_from_id: recipe.id,
         created_by: user.id,
@@ -528,6 +530,9 @@ export default function RecipeDetailScreen() {
         .filter(Boolean)
     : [];
 
+  const currentServings = adjustedServings ?? recipe.servings;
+  const scaleFactor = recipe.servings && currentServings ? currentServings / recipe.servings : 1;
+
   const formatQuantity = (qty: number | null) => {
     if (qty === null) return '';
     if (qty === Math.floor(qty)) return String(qty);
@@ -649,7 +654,7 @@ export default function RecipeDetailScreen() {
                   size="sm"
                   onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
                 />
-                {(recipe.source_type === 'manual' || recipe.source_type === 'fork') ? (
+                {(recipe.source_type === 'manual' || recipe.forked_from_id) ? (
                   recipe.visibility === 'public' ? (
                     <TouchableOpacity
                       activeOpacity={0.7}
@@ -694,7 +699,7 @@ export default function RecipeDetailScreen() {
             )}
 
             {/* Publish limit indicator for free users */}
-            {isOwner && userPlan === 'free' && (recipe.source_type === 'manual' || recipe.source_type === 'fork') && (
+            {isOwner && userPlan === 'free' && (recipe.source_type === 'manual' || recipe.forked_from_id) && (
               <Text style={styles.publishLimitText}>
                 {publishCount}/{publishLimit} published (free plan)
               </Text>
@@ -783,9 +788,29 @@ export default function RecipeDetailScreen() {
                   <Text style={styles.metaText}>Cook: {recipe.cook_time_minutes} min</Text>
                 </View>
               )}
-              {recipe.servings && (
-                <View style={styles.metaPill}>
-                  <Text style={styles.metaText}>Servings: {recipe.servings}</Text>
+              {recipe.servings != null && recipe.servings > 0 && (
+                <View style={styles.servingsAdjuster}>
+                  <Text style={styles.metaText}>Servings:</Text>
+                  <TouchableOpacity
+                    onPress={() => setAdjustedServings(Math.max(1, (currentServings || 1) - 1))}
+                    style={styles.servingsButton}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.servingsButtonText}>-</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.servingsCount}>{currentServings}</Text>
+                  <TouchableOpacity
+                    onPress={() => setAdjustedServings((currentServings || 1) + 1)}
+                    style={styles.servingsButton}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.servingsButtonText}>+</Text>
+                  </TouchableOpacity>
+                  {adjustedServings != null && adjustedServings !== recipe.servings && (
+                    <TouchableOpacity onPress={() => setAdjustedServings(null)} activeOpacity={0.7}>
+                      <Text style={styles.servingsReset}>reset</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
               {recipe.prep_time_minutes && recipe.cook_time_minutes && (
@@ -801,17 +826,20 @@ export default function RecipeDetailScreen() {
             {ingredients.length > 0 && (
               <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 4).duration(300)} style={styles.section}>
                 <SectionHeader title="INGREDIENTS" />
-                {ingredients.map((ing) => (
+                {ingredients.map((ing) => {
+                  const scaledQty = ing.quantity != null ? ing.quantity * scaleFactor : null;
+                  return (
                   <View key={ing.id} style={styles.ingredientRow}>
                     <Text style={styles.ingredientQty}>
-                      {formatQuantity(ing.quantity)} {ing.unit || ''}
+                      {formatQuantity(scaledQty)} {ing.unit || ''}
                     </Text>
                     <View style={styles.ingredientNameWrap}>
                       <Text style={styles.ingredientName}>{ing.ingredient_name}</Text>
                       {ing.notes && <Text style={styles.ingredientNotes}>({ing.notes})</Text>}
                     </View>
                   </View>
-                ))}
+                  );
+                })}
               </Animated.View>
             )}
 
@@ -1198,9 +1226,6 @@ const styles = StyleSheet.create({
   addTagButton: {
     backgroundColor: colors.surface,
     borderRadius: radii.xl,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    borderStyle: 'dashed',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
@@ -1239,6 +1264,39 @@ const styles = StyleSheet.create({
   metaText: { ...typography.label, color: colors.textSecondary },
   totalPill: { backgroundColor: colors.primary },
   totalText: { color: colors.white },
+  servingsAdjuster: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radii.xl,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm - 2,
+    gap: spacing.sm,
+  },
+  servingsButton: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.primary + '1A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  servingsButtonText: {
+    ...typography.label,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  servingsCount: {
+    ...typography.label,
+    color: colors.text,
+    fontWeight: '600',
+    minWidth: 20,
+    textAlign: 'center',
+  },
+  servingsReset: {
+    ...typography.caption,
+    color: colors.primary,
+  },
 
   // Sections
   section: { marginBottom: spacing.xxxl - 4 },
@@ -1280,9 +1338,7 @@ const styles = StyleSheet.create({
 
   // Cooking log
   cookForm: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.surface,
     borderRadius: radii.md,
     padding: spacing.lg,
     marginBottom: spacing.lg,
@@ -1295,8 +1351,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   cookNotesInput: {
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.card,
     borderRadius: radii.sm,
     padding: spacing.md,
     ...typography.bodySmall,
@@ -1320,9 +1375,7 @@ const styles = StyleSheet.create({
   },
 
   logEntry: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    backgroundColor: colors.surface,
     borderRadius: radii.md,
     padding: spacing.md,
     marginTop: spacing.sm,
