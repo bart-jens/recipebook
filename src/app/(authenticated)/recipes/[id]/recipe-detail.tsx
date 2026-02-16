@@ -71,6 +71,10 @@ export function RecipeDetail({
   forkedFrom,
   creatorName,
   creatorId,
+  publishCount,
+  userPlan,
+  isShared,
+  shareNotes,
   photos,
 }: {
   recipe: Recipe;

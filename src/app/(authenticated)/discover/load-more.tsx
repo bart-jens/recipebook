@@ -16,8 +16,6 @@ interface LoadedRecipe {
 
 export function LoadMoreButton({
   searchQuery,
-  sortBy,
-  filterTag,
   initialOffset,
   pageSize,
 }: {
