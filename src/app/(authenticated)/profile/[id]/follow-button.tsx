@@ -46,7 +46,7 @@ export function FollowButton({
       className={`rounded-md px-4 py-1.5 text-sm font-medium disabled:opacity-50 ${
         isActive
           ? "bg-warm-tag text-warm-gray hover:bg-warm-border"
-          : "bg-cta text-white hover:bg-cta-hover"
+          : "bg-cta text-white hover:bg-cta-hover active:scale-[0.98] transition-transform"
       }`}
     >
       {isPending ? "..." : label}

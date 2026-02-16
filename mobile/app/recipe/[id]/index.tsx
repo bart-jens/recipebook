@@ -39,6 +39,7 @@ import IconButton from '@/components/ui/IconButton';
 import AnimatedHeart from '@/components/ui/AnimatedHeart';
 import RecipeDetailSkeleton from '@/components/skeletons/RecipeDetailSkeleton';
 import CelebrationOverlay from '@/components/ui/CelebrationOverlay';
+import CollectionPicker from '@/components/ui/CollectionPicker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator } from 'react-native';
 
@@ -114,6 +115,7 @@ export default function RecipeDetailScreen() {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [adjustedServings, setAdjustedServings] = useState<number | null>(null);
   const [unitSystem, setUnitSystem] = useState<UnitSystem>('metric');
+  const [showCollectionPicker, setShowCollectionPicker] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem('unit_system').then((stored) => {
@@ -780,6 +782,20 @@ export default function RecipeDetailScreen() {
               </Animated.View>
             )}
 
+            {/* Add to Collection */}
+            {isOwner && (
+              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(300)}>
+                <TouchableOpacity
+                  style={styles.collectionButton}
+                  onPress={() => setShowCollectionPicker(true)}
+                  activeOpacity={0.7}
+                >
+                  <FontAwesome name="folder-o" size={14} color={colors.textSecondary} />
+                  <Text style={styles.collectionButtonText}>Add to Collection</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            )}
+
             {/* Description */}
             {recipe.description && (
               <Animated.Text
@@ -1090,6 +1106,14 @@ export default function RecipeDetailScreen() {
           <View style={styles.headerSpacer} />
         </Animated.View>
       </View>
+
+      {recipe && (
+        <CollectionPicker
+          recipeId={recipe.id}
+          visible={showCollectionPicker}
+          onClose={() => setShowCollectionPicker(false)}
+        />
+      )}
     </>
   );
 }
@@ -1260,6 +1284,21 @@ const styles = StyleSheet.create({
 
   // Tags
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm - 2, marginBottom: spacing.md, alignItems: 'center' },
+  collectionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    alignSelf: 'flex-start',
+    marginBottom: spacing.md,
+  },
+  collectionButtonText: {
+    ...typography.label,
+    color: colors.textSecondary,
+  },
   addTagButton: {
     backgroundColor: colors.surface,
     borderRadius: radii.xl,

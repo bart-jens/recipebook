@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { RecommendationCard } from "../components/recommendation-card";
+import { ActivityFeed } from "./activity-feed";
 
 interface RecentRecipe {
   id: string;
@@ -16,15 +17,16 @@ interface TrendingRecipe {
   created_by: string;
 }
 
-function formatTimeAgo(timestamp: string): string {
-  const diff = Date.now() - new Date(timestamp).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return `${Math.floor(days / 7)}w ago`;
+interface FeedItem {
+  event_type: "cooked" | "published" | "forked";
+  user_id: string;
+  recipe_id: string;
+  event_at: string;
+  notes: string | null;
+  display_name: string;
+  avatar_url: string | null;
+  recipe_title: string;
+  recipe_image_url: string | null;
 }
 
 export default async function HomePage() {
@@ -39,6 +41,7 @@ export default async function HomePage() {
     { data: profile },
     { data: recent },
     { data: trending },
+    { data: followingData },
   ] = await Promise.all([
     supabase
       .from("user_profiles")
@@ -57,9 +60,14 @@ export default async function HomePage() {
       .eq("visibility", "public")
       .order("published_at", { ascending: false })
       .limit(6),
+    supabase
+      .from("user_follows")
+      .select("following_id")
+      .eq("follower_id", user.id),
   ]);
 
   const displayName = profile?.display_name || "Chef";
+  const followingCount = (followingData || []).length;
 
   // Get creator names for trending recipes
   const creatorIds = Array.from(
@@ -76,12 +84,18 @@ export default async function HomePage() {
     (profiles || []).map((p) => [p.id, p.display_name])
   );
 
-  // Fetch recommendation cards from followed users
-  const { data: followedIds } = await supabase
-    .from("user_follows")
-    .select("following_id")
-    .eq("follower_id", user.id);
+  // Activity feed via RPC
+  let feedItems: FeedItem[] = [];
+  if (followingCount > 0) {
+    const { data } = await supabase.rpc("get_activity_feed", {
+      p_user_id: user.id,
+      p_limit: 20,
+    });
+    feedItems = (data || []) as FeedItem[];
+  }
 
+  // Recommendation cards from followed users
+  const ids = (followingData || []).map((f) => f.following_id);
   let shareCards: {
     share_id: string;
     user_id: string;
@@ -97,42 +111,14 @@ export default async function HomePage() {
     user_rating: number | null;
   }[] = [];
   let sharerProfiles: Map<string, { display_name: string; avatar_url: string | null }> = new Map();
-  let activityItems: {
-    id: string;
-    type: "cooked" | "published";
-    userName: string;
-    userId: string;
-    recipeTitle: string;
-    recipeId: string;
-    rating?: number;
-    timestamp: string;
-  }[] = [];
 
-  if (followedIds && followedIds.length > 0) {
-    const ids = followedIds.map((f) => f.following_id);
-    const [{ data: cards }, { data: cookedActivity }, { data: publishedActivity }] =
-      await Promise.all([
-        supabase
-          .from("recipe_share_cards")
-          .select("*")
-          .in("user_id", ids)
-          .order("shared_at", { ascending: false })
-          .limit(10),
-        supabase
-          .from("recipe_ratings")
-          .select("id, user_id, recipe_id, rating, created_at")
-          .in("user_id", ids)
-          .order("created_at", { ascending: false })
-          .limit(15),
-        supabase
-          .from("recipes")
-          .select("id, title, created_by, published_at")
-          .eq("visibility", "public")
-          .in("created_by", ids)
-          .not("published_at", "is", null)
-          .order("published_at", { ascending: false })
-          .limit(10),
-      ]);
+  if (ids.length > 0) {
+    const { data: cards } = await supabase
+      .from("recipe_share_cards")
+      .select("*")
+      .in("user_id", ids)
+      .order("shared_at", { ascending: false })
+      .limit(10);
 
     shareCards = (cards || []) as typeof shareCards;
 
@@ -146,62 +132,6 @@ export default async function HomePage() {
         (sharerData || []).map((p) => [p.id, { display_name: p.display_name, avatar_url: p.avatar_url }])
       );
     }
-
-    // Build activity feed
-    const activityUserIds = new Set<string>();
-    const activityRecipeIds = new Set<string>();
-    for (const c of cookedActivity || []) {
-      activityUserIds.add(c.user_id);
-      activityRecipeIds.add(c.recipe_id);
-    }
-    for (const p of publishedActivity || []) {
-      activityUserIds.add(p.created_by);
-    }
-
-    const [{ data: actProfiles }, { data: actRecipes }] = await Promise.all([
-      activityUserIds.size > 0
-        ? supabase.from("user_profiles").select("id, display_name").in("id", Array.from(activityUserIds))
-        : { data: [] },
-      activityRecipeIds.size > 0
-        ? supabase.from("recipes").select("id, title").in("id", Array.from(activityRecipeIds))
-        : { data: [] },
-    ]);
-
-    const actProfileMap = new Map((actProfiles || []).map((p) => [p.id, p.display_name]));
-    const actRecipeMap = new Map((actRecipes || []).map((r) => [r.id, r.title]));
-
-    for (const c of cookedActivity || []) {
-      const name = actProfileMap.get(c.user_id);
-      const title = actRecipeMap.get(c.recipe_id);
-      if (name && title) {
-        activityItems.push({
-          id: `cooked-${c.id}`,
-          type: "cooked",
-          userName: name,
-          userId: c.user_id,
-          recipeTitle: title,
-          recipeId: c.recipe_id,
-          rating: c.rating,
-          timestamp: c.created_at,
-        });
-      }
-    }
-    for (const p of publishedActivity || []) {
-      const name = actProfileMap.get(p.created_by);
-      if (name) {
-        activityItems.push({
-          id: `published-${p.id}`,
-          type: "published",
-          userName: name,
-          userId: p.created_by,
-          recipeTitle: p.title,
-          recipeId: p.id,
-          timestamp: p.published_at!,
-        });
-      }
-    }
-    activityItems.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    activityItems = activityItems.slice(0, 15);
   }
 
   const greeting = () => {
@@ -231,7 +161,7 @@ export default async function HomePage() {
           </Link>
         </div>
         {(recent || []).length === 0 ? (
-          <div className="mt-4 rounded-md border border-dashed border-warm-border/50 p-8 text-center">
+          <div className="mt-4 rounded-md border border-accent/20 bg-accent/5 p-8 text-center">
             <p className="text-warm-gray">No recipes yet.</p>
             <Link
               href="/recipes/new"
@@ -246,7 +176,7 @@ export default async function HomePage() {
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="group overflow-hidden rounded-md border border-warm-border transition-opacity hover:opacity-80"
+                className="group overflow-hidden rounded-md border border-warm-border transition-all hover:-translate-y-px hover:shadow-sm"
               >
                 {recipe.image_url ? (
                   <div className="aspect-[16/10] overflow-hidden bg-warm-tag">
@@ -272,6 +202,40 @@ export default async function HomePage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Friends are cooking — Activity Feed */}
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold">Friends are cooking</h2>
+        <div className="mt-4">
+          {followingCount === 0 ? (
+            <div className="rounded-md border border-accent/20 bg-accent/5 p-8 text-center">
+              <p className="text-warm-gray">Follow friends to see what they&apos;re cooking</p>
+              <Link
+                href="/discover"
+                className="mt-2 inline-block text-sm font-medium text-accent hover:underline"
+              >
+                Browse Discover to find people
+              </Link>
+            </div>
+          ) : feedItems.length === 0 ? (
+            <div className="rounded-md border border-accent/20 bg-accent/5 p-8 text-center">
+              <p className="text-warm-gray">Your friends haven&apos;t been cooking lately</p>
+              <Link
+                href="/recipes"
+                className="mt-2 inline-block text-sm font-medium text-accent hover:underline"
+              >
+                Why not cook something yourself?
+              </Link>
+            </div>
+          ) : (
+            <ActivityFeed
+              initialItems={feedItems}
+              userId={user.id}
+              hasMore={feedItems.length === 20}
+            />
+          )}
+        </div>
       </div>
 
       {/* Friend Recommendations */}
@@ -307,55 +271,6 @@ export default async function HomePage() {
         </div>
       )}
 
-      {/* Friend Activity */}
-      {activityItems.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-lg font-semibold">Friend Activity</h2>
-          <div className="mt-4 divide-y divide-warm-border/40">
-            {activityItems.map((item) => (
-              <div key={item.id} className="flex items-start gap-3 py-3">
-                <div className="flex-1">
-                  <p className="text-sm">
-                    <Link
-                      href={`/profile/${item.userId}`}
-                      className="font-semibold text-warm-text hover:text-accent"
-                    >
-                      {item.userName}
-                    </Link>
-                    <span className="text-warm-gray">
-                      {item.type === "cooked" ? " cooked " : " published "}
-                    </span>
-                    <Link
-                      href={`/recipes/${item.recipeId}`}
-                      className="font-medium text-warm-text hover:text-accent"
-                    >
-                      {item.recipeTitle}
-                    </Link>
-                  </p>
-                  <div className="mt-1 flex items-center gap-2">
-                    {item.type === "cooked" && item.rating && (
-                      <span className="text-xs">
-                        {Array.from({ length: 5 }, (_, i) => (
-                          <span
-                            key={i}
-                            className={i < item.rating! ? "text-amber-400" : "text-warm-border"}
-                          >
-                            &#9733;
-                          </span>
-                        ))}
-                      </span>
-                    )}
-                    <span className="text-xs text-warm-gray">
-                      {formatTimeAgo(item.timestamp)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Discover / Trending */}
       {(trending || []).length > 0 && (
         <div className="mt-8">
@@ -373,7 +288,7 @@ export default async function HomePage() {
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="group overflow-hidden rounded-md border border-warm-border transition-opacity hover:opacity-80"
+                className="group overflow-hidden rounded-md border border-warm-border transition-all hover:-translate-y-px hover:shadow-sm"
               >
                 {recipe.image_url ? (
                   <div className="aspect-[16/10] overflow-hidden bg-warm-tag">

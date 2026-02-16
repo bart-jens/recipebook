@@ -151,7 +151,7 @@ export default async function ProfilePage() {
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="flex items-center justify-between rounded-md bg-warm-tag px-4 py-3 border border-warm-border transition-opacity hover:opacity-80"
+                className="flex items-center justify-between rounded-md bg-warm-tag px-4 py-3 border border-warm-border transition-all hover:-translate-y-px hover:shadow-sm"
               >
                 <span className="font-sans font-medium">{recipe.title}</span>
                 <span className="text-xs text-warm-gray">

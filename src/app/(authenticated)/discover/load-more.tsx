@@ -83,7 +83,7 @@ export function LoadMoreButton({
           <Link
             key={recipe.id}
             href={`/recipes/${recipe.id}`}
-            className="group block overflow-hidden rounded-md bg-warm-tag border border-warm-border transition-opacity hover:opacity-80"
+            className="group block overflow-hidden rounded-md bg-warm-tag border border-warm-border transition-all hover:-translate-y-px hover:shadow-sm"
           >
             {recipe.image_url ? (
               <div className="aspect-[16/10] overflow-hidden bg-warm-tag">

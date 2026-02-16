@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, radii, fontFamily } from '@/lib/theme';
+import { colors, spacing, typography, radii } from '@/lib/theme';
+import { Logo } from '@/components/ui/Logo';
 
 export default function SignupScreen() {
   const { signUp } = useAuth();
@@ -42,7 +43,7 @@ export default function SignupScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.inner}>
-        <Text style={styles.title}>EefEats</Text>
+        <Logo height={40} />
         <Text style={styles.subtitle}>Join with an invite code</Text>
 
         <View style={styles.form}>
@@ -107,12 +108,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xxl,
-  },
-  title: {
-    fontFamily: fontFamily.sansBold,
-    fontSize: 40,
-    color: colors.text,
-    letterSpacing: -0.5,
   },
   subtitle: {
     marginTop: spacing.sm,

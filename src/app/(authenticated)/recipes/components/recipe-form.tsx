@@ -161,7 +161,7 @@ export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover disabled:opacity-50 md:w-auto"
+        className="w-full rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50 md:w-auto"
       >
         {loading ? "Saving..." : submitLabel}
       </button>

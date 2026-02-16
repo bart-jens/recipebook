@@ -181,7 +181,7 @@ export default function ImportPhotoPage() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover disabled:opacity-50"
+          className="rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           {loading ? "Extracting recipe..." : "Extract Recipe"}
         </button>

@@ -10,9 +10,10 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import { colors, spacing, typography, radii } from '@/lib/theme';
+import { colors, spacing, typography, radii, animation } from '@/lib/theme';
 import RecipeCard from '@/components/ui/RecipeCard';
 import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
@@ -267,6 +268,7 @@ export default function DiscoverScreen() {
         <RecipeListSkeleton />
       ) : recipes.length === 0 ? (
         <EmptyState
+          icon="compass"
           title={search ? 'No results' : 'No published recipes yet'}
           subtitle={
             search
@@ -297,11 +299,15 @@ export default function DiscoverScreen() {
               </View>
             ) : null
           }
-          renderItem={({ item }) => (
-            <RecipeCard
-              recipe={item}
-              onPress={() => router.push(`/recipe/${item.id}`)}
-            />
+          renderItem={({ item, index }) => (
+            <Animated.View
+              entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
+            >
+              <RecipeCard
+                recipe={item}
+                onPress={() => router.push(`/recipe/${item.id}`)}
+              />
+            </Animated.View>
           )}
         />
       )}

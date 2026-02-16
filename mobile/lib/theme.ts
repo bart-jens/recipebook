@@ -32,6 +32,10 @@ export const colors = {
   // Skeleton shimmer
   skeletonBase: '#E8E8E8',
   skeletonHighlight: '#F5F5F5',
+  // Teal wash (accent at varying opacity)
+  accentWash: 'rgba(45,95,93,0.05)',
+  accentWashBorder: 'rgba(45,95,93,0.20)',
+  accentWashIcon: 'rgba(45,95,93,0.40)',
 } as const;
 
 export const spacing = {
@@ -100,9 +104,13 @@ export const shadows = Platform.select({
 }) as Record<string, unknown>;
 
 export const animation = {
-  springConfig: { damping: 15, stiffness: 150, mass: 0.8 }, // kept for heart only
+  springConfig: { damping: 15, stiffness: 150, mass: 0.8 },
+  pressSpring: { damping: 25, stiffness: 200 },
+  pressScale: 0.98,
+  buttonPressScale: 0.96,
   pressOpacity: 0.7,
   heartScale: 1.3,
-  staggerDelay: 50,
+  staggerDelay: 30,
+  staggerMax: 10,
   skeletonDuration: 1200,
 } as const;

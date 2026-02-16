@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
+import { StyleSheet, ViewStyle, Pressable } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { colors, radii, animation } from '@/lib/theme';
 
 interface Props {
@@ -8,15 +9,32 @@ interface Props {
   style?: ViewStyle | ViewStyle[];
 }
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 export default function AnimatedCard({ children, onPress, style }: Props) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  function handlePressIn() {
+    scale.value = withSpring(animation.pressScale, animation.pressSpring);
+  }
+
+  function handlePressOut() {
+    scale.value = withSpring(1, animation.pressSpring);
+  }
+
   return (
-    <TouchableOpacity
-      activeOpacity={animation.pressOpacity}
+    <AnimatedPressable
       onPress={onPress}
-      style={[styles.card, style]}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={[styles.card, style, animatedStyle]}
     >
       {children}
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 

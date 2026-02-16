@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/server";
 import { RecipeListControls } from "./recipe-list-controls";
+import { CollectionsSection } from "./collections-section";
+import { getCollections, getUserPlan } from "./collections/actions";
 
 interface RecipeTag {
   tag: string;
@@ -101,6 +103,11 @@ export default async function RecipesPage({
 
   const totalCount = enriched.length;
 
+  const [collections, userPlan] = await Promise.all([
+    getCollections(),
+    getUserPlan(),
+  ]);
+
   return (
     <div>
       <div className="mb-8">
@@ -115,13 +122,19 @@ export default async function RecipesPage({
             </Link>
             <Link
               href="/recipes/new"
-              className="rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover"
+              className="rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform"
             >
               Create
             </Link>
           </div>
         </div>
       </div>
+
+      <CollectionsSection
+        collections={collections}
+        userPlan={userPlan}
+        collectionCount={collections.length}
+      />
 
       <div className="mb-6">
         <RecipeListControls />
@@ -134,7 +147,7 @@ export default async function RecipesPage({
       </p>
 
       {enriched.length === 0 ? (
-        <div className="rounded-md border border-dashed border-warm-border/50 p-8 text-center">
+        <div className="rounded-md border border-accent/20 bg-accent/5 p-8 text-center">
           <p className="text-warm-gray">
             {q ? "No recipes match your search." : "No recipes yet."}
           </p>
@@ -158,7 +171,7 @@ export default async function RecipesPage({
         </div>
       ) : (
         <div className="space-y-3">
-          {enriched.map((recipe) => {
+          {enriched.map((recipe, i) => {
             const timeInfo = [
               recipe.prep_time_minutes && `${recipe.prep_time_minutes} min prep`,
               recipe.cook_time_minutes && `${recipe.cook_time_minutes} min cook`,
@@ -172,7 +185,8 @@ export default async function RecipesPage({
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="block rounded-md bg-warm-tag p-4 border border-warm-border transition-opacity hover:opacity-80"
+                className="block rounded-md bg-warm-tag p-4 border border-warm-border transition-all hover:-translate-y-px hover:shadow-sm animate-fade-in-up"
+                style={i < 10 ? { animationDelay: `${i * 30}ms`, animationFillMode: "backwards" } : undefined}
               >
                 <div className="flex gap-4">
                   {recipe.image_url && (

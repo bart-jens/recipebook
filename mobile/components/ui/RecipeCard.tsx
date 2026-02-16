@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Pressable } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import StarRating from './StarRating';
 import { colors, spacing, typography, radii, fontFamily, animation } from '@/lib/theme';
@@ -22,20 +23,38 @@ interface RecipeData {
 interface Props {
   recipe: RecipeData;
   onPress: () => void;
+  onLongPress?: () => void;
   variant?: 'default' | 'compact';
 }
 
-export default function RecipeCard({ recipe, onPress, variant = 'default' }: Props) {
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+export default function RecipeCard({ recipe, onPress, onLongPress, variant = 'default' }: Props) {
   const isCompact = variant === 'compact';
   const imageHeight = isCompact ? 100 : 160;
+  const scale = useSharedValue(1);
 
   const cookTime = recipe.cook_time_minutes || recipe.prep_time_minutes;
 
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  function handlePressIn() {
+    scale.value = withSpring(animation.pressScale, animation.pressSpring);
+  }
+
+  function handlePressOut() {
+    scale.value = withSpring(1, animation.pressSpring);
+  }
+
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       onPress={onPress}
-      activeOpacity={animation.pressOpacity}
-      style={styles.card}
+      onLongPress={onLongPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={[styles.card, animatedStyle]}
     >
       {/* Image area */}
       <View style={[styles.imageContainer, { height: imageHeight }]}>
@@ -47,7 +66,11 @@ export default function RecipeCard({ recipe, onPress, variant = 'default' }: Pro
             transition={200}
           />
         ) : (
-          <View style={styles.placeholder} />
+          <View style={styles.placeholder}>
+            <Text style={styles.placeholderLetter}>
+              {recipe.title.charAt(0).toUpperCase()}
+            </Text>
+          </View>
         )}
       </View>
 
@@ -80,7 +103,7 @@ export default function RecipeCard({ recipe, onPress, variant = 'default' }: Pro
           )}
         </View>
       </View>
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 
@@ -101,7 +124,14 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.accentWash,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderLetter: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 36,
+    color: colors.accentWashIcon,
   },
   content: {
     padding: spacing.lg,

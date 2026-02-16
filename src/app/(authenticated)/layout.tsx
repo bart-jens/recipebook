@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/login/actions";
+import { Logo } from "@/components/logo";
 
 export default async function AuthenticatedLayout({
   children,
@@ -28,8 +29,8 @@ export default async function AuthenticatedLayout({
       <header className="border-b border-warm-border bg-white px-6 py-4">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href="/recipes" className="text-xl font-bold tracking-tight text-[#111111]">
-              EefEats
+            <Link href="/home" className="inline-flex">
+              <Logo height={22} />
             </Link>
             <nav className="flex items-center gap-1">
               <Link href="/home" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:text-[#111111]">

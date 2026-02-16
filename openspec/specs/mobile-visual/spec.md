@@ -7,19 +7,18 @@ The mobile app SHALL deliver a visually rich, animated experience that feels pre
 ## ADDED Requirements
 
 ### Requirement: Image-led recipe cards
-Recipe cards in list contexts (Discover, My Recipes, Public Profile) SHALL use an image-first layout: the image fills the top of the card (4:3 aspect ratio), with the title, creator attribution, rating, and metadata displayed below the image in a separate text zone. Cards SHALL NOT use gradient overlays on images. Cards SHALL use a simple opacity change (0.7) on press instead of scale animations.
+Recipe cards in list contexts SHALL use an image-first layout with 4:3 aspect ratio. Cards SHALL provide press feedback through a gentle scale animation (0.98x with spring physics, damping 25, stiffness 200) instead of opacity-only feedback. Cards without images SHALL use a teal wash placeholder (accent at 5% opacity) with the recipe initial in accent color.
 
-#### Scenario: Recipe card with image in Discover
-- **WHEN** a recipe with an image appears in the Discover list
-- **THEN** the card SHALL display the image at the top in 4:3 aspect ratio with no gradient overlay
-- **AND** the title and metadata SHALL be rendered below the image
-- **AND** pressing the card SHALL trigger an opacity change to 0.7
+#### Scenario: Recipe card press feedback
+- **WHEN** a user presses a recipe card
+- **THEN** the card SHALL scale to 0.98x with a snappy spring animation
+- **AND** release SHALL spring back to 1.0x
+- **AND** the animation SHALL run on the native thread
 
 #### Scenario: Recipe card without image
-- **WHEN** a recipe without an image appears in any list
-- **THEN** the card SHALL display a flat light gray (#F5F5F5) background in the image area
-- **AND** no gradient, icon, or decorative element SHALL appear in the placeholder area
-- **AND** the title and metadata SHALL be displayed below in the same layout as image cards
+- **WHEN** a recipe card has no image
+- **THEN** the placeholder SHALL use a teal wash background (accent at 5% opacity)
+- **AND** the initial letter SHALL be rendered in the accent color at 40% opacity
 
 #### Scenario: Compact card variant
 - **WHEN** a recipe appears in a secondary context (public profile recipe list, carousel)
@@ -124,19 +123,19 @@ The app SHALL use DM Sans as the sole typeface for all text. Typography hierarch
 - **AND** the app SHALL still render and function normally
 
 ### Requirement: Animated empty states
-Empty states throughout the app SHALL use simple text with a dashed border container. No Lottie animations, icons, or decorative elements SHALL be used. The empty state SHALL include a title and an optional call-to-action link.
+Empty states SHALL use a branded container with teal wash background (accent at 5%), solid accent/20 border, and a simple FontAwesome icon. No Lottie animations.
 
 #### Scenario: No recipes in My Recipes
 - **WHEN** a user with no recipes views the My Recipes tab
-- **THEN** an empty state SHALL be shown with a dashed border container, a text message, and a call-to-action
+- **THEN** an empty state SHALL display with a teal wash container, a book icon, title, and CTA
 
 #### Scenario: No search results
 - **WHEN** a search returns no results
-- **THEN** an empty state SHALL be shown with text indicating no matches were found
+- **THEN** an empty state SHALL display with a teal wash container, a search icon, and text
 
 #### Scenario: No cooking log entries
 - **WHEN** a recipe has no cooking log entries
-- **THEN** a simple text empty state SHALL encourage the user to cook the recipe
+- **THEN** a teal wash empty state with a fire icon SHALL encourage the user to cook
 
 
 ### Requirement: Staggered entry animations
@@ -148,4 +147,18 @@ Content sections on recipe detail and list screens SHALL use staggered fade-in a
 
 #### Scenario: List items appearing
 - **WHEN** a recipe list finishes loading
-- **THEN** cards SHALL appear with a staggered fade-in animation (50ms delay per card, up to 8 cards)
+- **THEN** cards SHALL appear with a staggered fade-in animation (30ms delay per card, up to 10 cards)
+
+### Requirement: Tab bar active indicator
+The tab bar SHALL display a small teal dot (4px diameter circle) below the active tab icon as a visual indicator, in addition to the teal icon color.
+
+#### Scenario: Active tab display
+- **WHEN** a tab is the currently active tab
+- **THEN** a 4px teal circle SHALL appear below the tab icon
+- **AND** the icon SHALL be tinted in the accent color
+
+#### Scenario: Tab selection change
+- **WHEN** the user taps a different tab
+- **THEN** the newly selected tab icon SHALL bounce (scale 1 to 1.15 to 1) with spring physics
+- **AND** the teal dot SHALL appear below the new tab
+- **AND** the previous tab's dot SHALL disappear

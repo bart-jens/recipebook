@@ -1,13 +1,16 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { router, useFocusEffect } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, typography, fontFamily, radii, animation } from '@/lib/theme';
@@ -43,17 +46,16 @@ interface SharerProfile {
   avatar_url: string | null;
 }
 
-interface ActivityItem {
-  id: string;
-  type: 'cooked' | 'published';
-  userName: string;
-  userId: string;
-  avatarUrl: string | null;
-  recipeTitle: string;
-  recipeId: string;
-  recipeImage: string | null;
-  rating?: number;
-  timestamp: string;
+interface FeedItem {
+  event_type: 'cooked' | 'published' | 'forked';
+  user_id: string;
+  recipe_id: string;
+  event_at: string;
+  notes: string | null;
+  display_name: string;
+  avatar_url: string | null;
+  recipe_title: string;
+  recipe_image_url: string | null;
 }
 
 export default function HomeScreen() {
@@ -61,194 +63,132 @@ export default function HomeScreen() {
   const [displayName, setDisplayName] = useState('');
   const [recentRecipes, setRecentRecipes] = useState<CarouselRecipe[]>([]);
   const [trendingRecipes, setTrendingRecipes] = useState<CarouselRecipe[]>([]);
-  const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [shareCards, setShareCards] = useState<ShareCard[]>([]);
   const [sharerProfiles, setSharerProfiles] = useState<Map<string, SharerProfile>>(new Map());
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreFeed, setHasMoreFeed] = useState(false);
+  const previousFeedCount = useRef(0);
+
+  const loadData = useCallback(async (isRefresh = false) => {
+    if (!user) return;
+
+    const [
+      { data: profile },
+      { data: recent },
+      { data: trending },
+      { data: following },
+    ] = await Promise.all([
+      supabase
+        .from('user_profiles')
+        .select('display_name')
+        .eq('id', user.id)
+        .single(),
+      supabase
+        .from('recipes')
+        .select('id, title, image_url')
+        .eq('created_by', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(10),
+      supabase
+        .from('recipes')
+        .select('id, title, image_url')
+        .eq('visibility', 'public')
+        .order('published_at', { ascending: false })
+        .limit(10),
+      supabase
+        .from('user_follows')
+        .select('following_id')
+        .eq('follower_id', user.id),
+    ]);
+
+    setDisplayName(profile?.display_name || '');
+    setRecentRecipes(recent || []);
+    setTrendingRecipes(trending || []);
+
+    const followedIds = (following || []).map((f) => f.following_id);
+    setFollowingCount(followedIds.length);
+
+    // Activity feed via RPC
+    if (followedIds.length > 0) {
+      const { data: feed } = await supabase.rpc('get_activity_feed', {
+        p_user_id: user.id,
+        p_limit: 20,
+      });
+      const items = (feed || []) as FeedItem[];
+      setFeedItems(items);
+      setHasMoreFeed(items.length === 20);
+
+      // Haptic feedback on refresh if new items
+      if (isRefresh && items.length > previousFeedCount.current) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      previousFeedCount.current = items.length;
+
+      // Recommendation cards
+      const { data: cards } = await supabase
+        .from('recipe_share_cards')
+        .select('*')
+        .in('user_id', followedIds)
+        .order('shared_at', { ascending: false })
+        .limit(10);
+
+      const typedCards = (cards || []) as ShareCard[];
+      setShareCards(typedCards);
+
+      if (typedCards.length > 0) {
+        const sharerIds = Array.from(new Set(typedCards.map((c) => c.user_id)));
+        const { data: sharerData } = await supabase
+          .from('user_profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', sharerIds);
+        setSharerProfiles(
+          new Map(
+            (sharerData || []).map((p) => [
+              p.id,
+              { display_name: p.display_name, avatar_url: p.avatar_url },
+            ])
+          )
+        );
+      }
+    } else {
+      setFeedItems([]);
+      setShareCards([]);
+      setHasMoreFeed(false);
+    }
+
+    setLoading(false);
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
-      if (!user) return;
-
-      async function load() {
-        const [
-          { data: profile },
-          { data: recent },
-          { data: trending },
-          { data: following },
-        ] = await Promise.all([
-          supabase
-            .from('user_profiles')
-            .select('display_name')
-            .eq('id', user!.id)
-            .single(),
-          supabase
-            .from('recipes')
-            .select('id, title, image_url')
-            .eq('created_by', user!.id)
-            .order('updated_at', { ascending: false })
-            .limit(10),
-          supabase
-            .from('recipes')
-            .select('id, title, image_url')
-            .eq('visibility', 'public')
-            .order('published_at', { ascending: false })
-            .limit(10),
-          supabase
-            .from('user_follows')
-            .select('following_id')
-            .eq('follower_id', user!.id),
-        ]);
-
-        setDisplayName(profile?.display_name || '');
-        setRecentRecipes(recent || []);
-        setTrendingRecipes(trending || []);
-
-        const followedIds = (following || []).map((f) => f.following_id);
-        setFollowingCount(followedIds.length);
-
-        // Build friend activity feed
-        if (followedIds.length > 0) {
-          const [
-            { data: cookedActivity },
-            { data: publishedActivity },
-          ] = await Promise.all([
-            // Friends who cooked/rated recipes recently
-            supabase
-              .from('recipe_ratings')
-              .select('id, user_id, recipe_id, rating, created_at')
-              .in('user_id', followedIds)
-              .order('created_at', { ascending: false })
-              .limit(15),
-            // Friends who published recipes recently
-            supabase
-              .from('recipes')
-              .select('id, title, image_url, created_by, published_at')
-              .eq('visibility', 'public')
-              .in('created_by', followedIds)
-              .not('published_at', 'is', null)
-              .order('published_at', { ascending: false })
-              .limit(10),
-          ]);
-
-          // Get all user profiles and recipe details we need
-          const userIds = new Set<string>();
-          const recipeIds = new Set<string>();
-
-          for (const c of cookedActivity || []) {
-            userIds.add(c.user_id);
-            recipeIds.add(c.recipe_id);
-          }
-          for (const p of publishedActivity || []) {
-            userIds.add(p.created_by);
-          }
-
-          const [
-            { data: profiles },
-            { data: recipeDetails },
-          ] = await Promise.all([
-            userIds.size > 0
-              ? supabase
-                  .from('user_profiles')
-                  .select('id, display_name, avatar_url')
-                  .in('id', Array.from(userIds))
-              : { data: [] },
-            recipeIds.size > 0
-              ? supabase
-                  .from('recipes')
-                  .select('id, title, image_url')
-                  .in('id', Array.from(recipeIds))
-              : { data: [] },
-          ]);
-
-          const profileMap = new Map(
-            (profiles || []).map((p) => [p.id, { name: p.display_name, avatar: p.avatar_url }])
-          );
-          const recipeMap = new Map(
-            (recipeDetails || []).map((r) => [r.id, { title: r.title, image: r.image_url }])
-          );
-
-          const items: ActivityItem[] = [];
-
-          for (const c of cookedActivity || []) {
-            const prof = profileMap.get(c.user_id);
-            const recipe = recipeMap.get(c.recipe_id);
-            if (prof && recipe) {
-              items.push({
-                id: `cooked-${c.id}`,
-                type: 'cooked',
-                userName: prof.name,
-                userId: c.user_id,
-                avatarUrl: prof.avatar,
-                recipeTitle: recipe.title,
-                recipeId: c.recipe_id,
-                recipeImage: recipe.image,
-                rating: c.rating,
-                timestamp: c.created_at,
-              });
-            }
-          }
-
-          for (const p of publishedActivity || []) {
-            const prof = profileMap.get(p.created_by);
-            if (prof) {
-              items.push({
-                id: `published-${p.id}`,
-                type: 'published',
-                userName: prof.name,
-                userId: p.created_by,
-                avatarUrl: prof.avatar,
-                recipeTitle: p.title,
-                recipeId: p.id,
-                recipeImage: p.image_url,
-                timestamp: p.published_at!,
-              });
-            }
-          }
-
-          // Sort by timestamp descending
-          items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
-          setActivity(items.slice(0, 20));
-
-          // Fetch recommendation cards from followed users
-          const { data: cards } = await supabase
-            .from('recipe_share_cards')
-            .select('*')
-            .in('user_id', followedIds)
-            .order('shared_at', { ascending: false })
-            .limit(10);
-
-          const typedCards = (cards || []) as ShareCard[];
-          setShareCards(typedCards);
-
-          if (typedCards.length > 0) {
-            const sharerIds = Array.from(new Set(typedCards.map((c) => c.user_id)));
-            const { data: sharerData } = await supabase
-              .from('user_profiles')
-              .select('id, display_name, avatar_url')
-              .in('id', sharerIds);
-            setSharerProfiles(
-              new Map(
-                (sharerData || []).map((p) => [
-                  p.id,
-                  { display_name: p.display_name, avatar_url: p.avatar_url },
-                ])
-              )
-            );
-          }
-        } else {
-          setActivity([]);
-          setShareCards([]);
-        }
-
-        setLoading(false);
-      }
-
-      load();
-    }, [user])
+      loadData();
+    }, [loadData])
   );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData(true);
+    setRefreshing(false);
+  }, [loadData]);
+
+  const loadMoreFeed = useCallback(async () => {
+    if (loadingMore || !hasMoreFeed || feedItems.length === 0 || !user) return;
+    setLoadingMore(true);
+    const lastItem = feedItems[feedItems.length - 1];
+    const { data } = await supabase.rpc('get_activity_feed', {
+      p_user_id: user.id,
+      p_before: lastItem.event_at,
+      p_limit: 20,
+    });
+    const newItems = (data || []) as FeedItem[];
+    setFeedItems((prev) => [...prev, ...newItems]);
+    setHasMoreFeed(newItems.length === 20);
+    setLoadingMore(false);
+  }, [loadingMore, hasMoreFeed, feedItems, user]);
 
   if (loading) {
     return (
@@ -276,20 +216,49 @@ export default function HomeScreen() {
     return `${Math.floor(days / 7)}w ago`;
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <Text key={i} style={i <= rating ? styles.starFilled : styles.starEmpty}>
-          {'\u2605'}
-        </Text>
-      );
+  const actionVerb = (type: string) => {
+    switch (type) {
+      case 'cooked': return ' cooked ';
+      case 'published': return ' published ';
+      case 'forked': return ' forked ';
+      default: return ' ';
     }
-    return <View style={styles.starsRow}>{stars}</View>;
   };
 
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+  const renderFeedItem = ({ item, index }: { item: FeedItem; index: number }) => (
+    <Animated.View
+      entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
+    >
+    <TouchableOpacity
+      style={styles.feedItem}
+      activeOpacity={0.7}
+      onPress={() => router.push(`/recipe/${item.recipe_id}`)}
+    >
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => router.push(`/profile/${item.user_id}`)}
+      >
+        <Avatar name={item.display_name} size="sm" imageUrl={item.avatar_url} />
+      </TouchableOpacity>
+      <View style={styles.feedContent}>
+        <Text style={styles.feedText} numberOfLines={2}>
+          <Text style={styles.feedName}>{item.display_name}</Text>
+          {actionVerb(item.event_type)}
+          <Text style={styles.feedRecipe}>{item.recipe_title}</Text>
+        </Text>
+        {item.notes && (
+          <Text style={styles.feedNotes} numberOfLines={2}>
+            {'\u201C'}{item.notes}{'\u201D'}
+          </Text>
+        )}
+        <Text style={styles.feedTime}>{formatTimeAgo(item.event_at)}</Text>
+      </View>
+    </TouchableOpacity>
+    </Animated.View>
+  );
+
+  const renderHeader = () => (
+    <View>
       <Animated.Text entering={FadeInDown.duration(400)} style={styles.greeting}>
         {greeting()}, {displayName || 'Chef'}
       </Animated.Text>
@@ -307,73 +276,59 @@ export default function HomeScreen() {
       ) : (
         <Animated.View entering={FadeInDown.delay(animation.staggerDelay).duration(400)}>
           <EmptyState
+            icon="book"
             title="No recipes yet"
             subtitle="Import a recipe or create your first one!"
           />
         </Animated.View>
       )}
 
-      {/* Friend Activity Feed */}
+      {/* Feed section header */}
       <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Friend Activity</Text>
+          <Text style={styles.sectionTitle}>Friends are cooking</Text>
         </View>
 
-        {activity.length > 0 ? (
-          <View style={styles.activityList}>
-            {activity.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.activityItem}
-                activeOpacity={0.7}
-                onPress={() => router.push(`/recipe/${item.recipeId}`)}
-              >
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    router.push(`/profile/${item.userId}`);
-                  }}
-                >
-                  <Avatar name={item.userName} size="sm" imageUrl={item.avatarUrl} />
-                </TouchableOpacity>
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityText} numberOfLines={2}>
-                    <Text style={styles.activityName}>{item.userName}</Text>
-                    {item.type === 'cooked' ? ' cooked ' : ' published '}
-                    <Text style={styles.activityRecipe}>{item.recipeTitle}</Text>
-                  </Text>
-                  <View style={styles.activityMeta}>
-                    {item.type === 'cooked' && item.rating && renderStars(item.rating)}
-                    <Text style={styles.activityTime}>{formatTimeAgo(item.timestamp)}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ) : followingCount === 0 ? (
+        {followingCount === 0 ? (
           <View style={styles.promptCard}>
-            <Text style={styles.promptTitle}>See what friends are cooking</Text>
+            <Text style={styles.promptTitle}>Follow friends to see what they're cooking</Text>
             <Text style={styles.promptSubtitle}>
-              Follow people to see their cooking activity here.
+              Browse Discover to find people.
             </Text>
             <TouchableOpacity
               style={styles.promptButton}
               activeOpacity={0.7}
               onPress={() => router.push('/(tabs)/discover')}
             >
-              <Text style={styles.promptButtonText}>Discover recipes</Text>
+              <Text style={styles.promptButtonText}>Discover</Text>
             </TouchableOpacity>
           </View>
-        ) : (
+        ) : feedItems.length === 0 ? (
           <View style={styles.promptCard}>
-            <Text style={styles.promptTitle}>No recent activity</Text>
+            <Text style={styles.promptTitle}>Your friends haven't been cooking lately</Text>
             <Text style={styles.promptSubtitle}>
-              Your friends haven't cooked or published anything recently.
+              Why not cook something yourself?
             </Text>
+            <TouchableOpacity
+              style={styles.promptButton}
+              activeOpacity={0.7}
+              onPress={() => router.push('/(tabs)/recipes')}
+            >
+              <Text style={styles.promptButtonText}>My recipes</Text>
+            </TouchableOpacity>
           </View>
-        )}
+        ) : null}
       </Animated.View>
+    </View>
+  );
+
+  const renderFooter = () => (
+    <View>
+      {loadingMore && (
+        <View style={styles.loadingMore}>
+          <ActivityIndicator size="small" color={colors.textMuted} />
+        </View>
+      )}
 
       {/* Friend Recommendations */}
       {shareCards.length > 0 && (
@@ -419,7 +374,30 @@ export default function HomeScreen() {
           />
         </Animated.View>
       )}
-    </ScrollView>
+
+      <View style={{ height: spacing.xxxl }} />
+    </View>
+  );
+
+  return (
+    <FlatList
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      data={feedItems.length > 0 ? feedItems : []}
+      keyExtractor={(item, i) => `${item.event_type}-${item.recipe_id}-${item.event_at}-${i}`}
+      renderItem={renderFeedItem}
+      ListHeaderComponent={renderHeader}
+      ListFooterComponent={renderFooter}
+      onEndReached={loadMoreFeed}
+      onEndReachedThreshold={0.3}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.textMuted}
+        />
+      }
+    />
   );
 }
 
@@ -430,7 +408,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingTop: spacing.sm,
-    paddingBottom: spacing.xxxl,
   },
   greeting: {
     ...typography.body,
@@ -446,68 +423,58 @@ const styles = StyleSheet.create({
     ...typography.sectionTitle,
     color: colors.text,
   },
-  activityList: {
-    paddingHorizontal: spacing.pagePadding,
-    marginBottom: spacing.sectionGap,
-  },
   recommendationList: {
     paddingHorizontal: spacing.pagePadding,
     gap: spacing.md,
     marginBottom: spacing.sectionGap,
   },
-  activityItem: {
+  feedItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.md,
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.pagePadding,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
-  activityContent: {
+  feedContent: {
     flex: 1,
   },
-  activityText: {
+  feedText: {
     ...typography.bodySmall,
     color: colors.textSecondary,
     lineHeight: 20,
   },
-  activityName: {
+  feedName: {
     fontWeight: '600',
     color: colors.text,
   },
-  activityRecipe: {
+  feedRecipe: {
     fontWeight: '500',
     color: colors.text,
   },
-  activityMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.xs,
-  },
-  starsRow: {
-    flexDirection: 'row',
-    gap: 1,
-  },
-  starFilled: {
-    fontSize: 12,
-    color: colors.starFilled,
-  },
-  starEmpty: {
-    fontSize: 12,
-    color: colors.border,
-  },
-  activityTime: {
+  feedNotes: {
     ...typography.caption,
     color: colors.textMuted,
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
+  feedTime: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
+  },
+  loadingMore: {
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
   },
   promptCard: {
     marginHorizontal: spacing.pagePadding,
     marginBottom: spacing.sectionGap,
     borderRadius: radii.lg,
     borderWidth: 1,
-    borderStyle: 'dashed' as const,
-    borderColor: colors.border,
+    borderColor: colors.accentWashBorder,
+    backgroundColor: colors.accentWash,
     padding: spacing.xl,
     alignItems: 'center',
   },
@@ -516,6 +483,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.text,
     marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   promptSubtitle: {
     ...typography.bodySmall,

@@ -187,7 +187,7 @@ export default async function PublicProfilePage({
                 <Link
                   key={recipe.id}
                   href={`/recipes/${recipe.id}`}
-                  className="block rounded-md bg-warm-tag p-4 border border-warm-border transition-opacity hover:opacity-80"
+                  className="block rounded-md bg-warm-tag p-4 border border-warm-border transition-all hover:-translate-y-px hover:shadow-sm"
                 >
                   <div className="flex items-start justify-between">
                     <h3 className="font-sans font-medium">{recipe.title}</h3>

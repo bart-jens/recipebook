@@ -33,7 +33,7 @@ export function InviteForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover disabled:opacity-50"
+          className="rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           {isPending ? "Creating..." : "Create invite"}
         </button>

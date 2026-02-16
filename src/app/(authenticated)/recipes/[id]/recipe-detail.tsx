@@ -13,6 +13,7 @@ import { PublishButton } from "./publish-button";
 import { ShareButton } from "./share-button";
 import { ForkButton } from "./fork-button";
 import { PhotoCarousel } from "./photo-carousel";
+import { CollectionPicker } from "./collection-picker";
 
 interface Ingredient {
   id: string;
@@ -204,6 +205,12 @@ export function RecipeDetail({
       {isOwner && (
         <div className="mb-4">
           <TagEditor recipeId={recipe.id} tags={tags} />
+        </div>
+      )}
+
+      {isOwner && (
+        <div className="mb-4">
+          <CollectionPicker recipeId={recipe.id} />
         </div>
       )}
 

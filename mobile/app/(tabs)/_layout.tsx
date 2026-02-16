@@ -8,7 +8,8 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { colors, typography, fontFamily, animation } from '@/lib/theme';
+import { colors, typography, animation } from '@/lib/theme';
+import { Logo } from '@/components/ui/Logo';
 
 function AnimatedTabBarIcon({
   name,
@@ -34,8 +35,17 @@ function AnimatedTabBarIcon({
   }));
 
   return (
-    <Animated.View style={[{ marginBottom: -2 }, animatedStyle]}>
+    <Animated.View style={[{ alignItems: 'center', marginBottom: -2 }, animatedStyle]}>
       <FontAwesome name={name} size={22} color={color} />
+      <View
+        style={{
+          width: 4,
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: focused ? colors.primary : 'transparent',
+          marginTop: 3,
+        }}
+      />
     </Animated.View>
   );
 }
@@ -78,12 +88,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="home" color={color} focused={focused} />,
-          headerTitle: 'EefEats',
-          headerTitleStyle: {
-            fontFamily: fontFamily.sansBold,
-            fontSize: typography.h2.fontSize,
-            color: colors.text,
-          },
+          headerTitle: () => <Logo height={22} />,
         }}
       />
       <Tabs.Screen

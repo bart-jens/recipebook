@@ -133,14 +133,14 @@ export default async function DiscoverPage({
       </p>
 
       {enriched.length === 0 ? (
-        <div className="rounded-md border border-dashed border-warm-border p-8 text-center">
+        <div className="rounded-md border border-accent/20 bg-accent/5 p-8 text-center">
           <p className="text-warm-gray">
             {q ? "No recipes match your search." : "No published recipes yet. Be the first!"}
           </p>
         </div>
       ) : (
         <div className="space-y-3">
-          {enriched.map((recipe) => {
+          {enriched.map((recipe, i) => {
             const timeInfo = [
               recipe.prep_time_minutes && `${recipe.prep_time_minutes} min prep`,
               recipe.cook_time_minutes && `${recipe.cook_time_minutes} min cook`,
@@ -154,7 +154,8 @@ export default async function DiscoverPage({
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="group block overflow-hidden rounded-md bg-warm-tag border border-warm-border transition-opacity hover:opacity-80"
+                className="group block overflow-hidden rounded-md bg-warm-tag border border-warm-border transition-all hover:-translate-y-px hover:shadow-sm animate-fade-in-up"
+                style={i < 10 ? { animationDelay: `${i * 30}ms`, animationFillMode: "backwards" } : undefined}
               >
                 {recipe.image_url ? (
                   <div className="aspect-[16/10] overflow-hidden bg-warm-tag">
@@ -165,8 +166,8 @@ export default async function DiscoverPage({
                     />
                   </div>
                 ) : (
-                  <div className="flex aspect-[16/10] items-center justify-center bg-warm-tag">
-                    <span className="text-2xl font-sans font-medium text-white/80">
+                  <div className="flex aspect-[16/10] items-center justify-center bg-accent/5">
+                    <span className="text-2xl font-sans font-medium text-accent/40">
                       {recipe.title.slice(0, 1)}
                     </span>
                   </div>

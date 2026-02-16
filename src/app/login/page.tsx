@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { login } from "./actions";
+import { Logo } from "@/components/logo";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -21,10 +22,11 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-white p-4">
       <div className="w-full max-w-sm space-y-8">
-        <div className="relative text-center">
-          <div className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full bg-accent/10" />
-          <h1 className="relative animate-fade-in-up font-sans text-4xl font-semibold tracking-tight">EefEats</h1>
-          <p className="relative mt-2 animate-fade-in-up text-sm text-warm-gray [animation-delay:100ms] [animation-fill-mode:backwards]">
+        <div className="text-center">
+          <div className="flex animate-fade-in-up justify-center">
+            <Logo height={40} />
+          </div>
+          <p className="mt-3 animate-fade-in-up text-sm text-warm-gray [animation-delay:100ms] [animation-fill-mode:backwards]">
             Sign in to your recipe collection
           </p>
         </div>
@@ -60,7 +62,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover disabled:opacity-50"
+              className="w-full rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
             >
               {loading ? "Signing in..." : "Sign in"}
             </button>

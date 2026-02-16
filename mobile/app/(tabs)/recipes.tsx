@@ -10,15 +10,17 @@ import {
   Pressable,
   ScrollView,
 } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { colors, spacing, typography, radii } from '@/lib/theme';
+import { colors, spacing, typography, radii, animation } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 import RecipeCard from '@/components/ui/RecipeCard';
 import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
+import CollectionsSection from '@/components/ui/CollectionsSection';
 
 type SortOption = 'updated' | 'alpha' | 'rating' | 'prep' | 'cook';
 
@@ -58,6 +60,64 @@ export default function RecipesScreen() {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [showImportMenu, setShowImportMenu] = useState(false);
+  const [collections, setCollections] = useState<{ id: string; name: string; description: string | null; recipe_count: number; cover_url: string | null }[]>([]);
+  const [collectionPlan, setCollectionPlan] = useState('free');
+
+  const fetchCollections = useCallback(async () => {
+    if (!user) return;
+
+    const [{ data: cols }, { data: profile }] = await Promise.all([
+      supabase
+        .from('collections')
+        .select('id, name, description, cover_image_url')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false }),
+      supabase.from('user_profiles').select('plan').eq('id', user.id).single(),
+    ]);
+
+    setCollectionPlan(profile?.plan || 'free');
+
+    if (!cols || cols.length === 0) {
+      setCollections([]);
+      return;
+    }
+
+    // Get recipe counts
+    const { data: memberships } = await supabase
+      .from('collection_recipes')
+      .select('collection_id, recipe_id')
+      .in('collection_id', cols.map((c: { id: string }) => c.id));
+
+    const countMap = new Map<string, number>();
+    for (const m of memberships || []) {
+      countMap.set((m as { collection_id: string }).collection_id, (countMap.get((m as { collection_id: string }).collection_id) || 0) + 1);
+    }
+
+    // Get cover images
+    const needCover = cols.filter((c: { cover_image_url: string | null }) => !c.cover_image_url);
+    const coverMap = new Map<string, string>();
+    if (needCover.length > 0) {
+      const { data: coverData } = await supabase
+        .from('collection_recipes')
+        .select('collection_id, recipes(image_url)')
+        .in('collection_id', needCover.map((c: { id: string }) => c.id))
+        .order('added_at', { ascending: true });
+
+      for (const cr of (coverData || []) as unknown as { collection_id: string; recipes: { image_url: string | null } | null }[]) {
+        if (!coverMap.has(cr.collection_id) && cr.recipes?.image_url) {
+          coverMap.set(cr.collection_id, cr.recipes.image_url);
+        }
+      }
+    }
+
+    setCollections(cols.map((c: { id: string; name: string; description: string | null; cover_image_url: string | null }) => ({
+      id: c.id,
+      name: c.name,
+      description: c.description,
+      recipe_count: countMap.get(c.id) || 0,
+      cover_url: c.cover_image_url || coverMap.get(c.id) || null,
+    })));
+  }, [user]);
 
   const fetchRecipes = useCallback(async () => {
     if (!user) return;
@@ -146,7 +206,8 @@ export default function RecipesScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchRecipes();
-    }, [fetchRecipes])
+      fetchCollections();
+    }, [fetchRecipes, fetchCollections])
   );
 
   return (
@@ -261,10 +322,17 @@ export default function RecipesScreen() {
         )}
       </View>
 
+      <CollectionsSection
+        collections={collections}
+        userPlan={collectionPlan}
+        onRefresh={fetchCollections}
+      />
+
       {loading ? (
         <RecipeListSkeleton />
       ) : recipes.length === 0 ? (
         <EmptyState
+          icon="book"
           title={search ? 'No results' : 'No recipes yet'}
           subtitle={
             search
@@ -278,11 +346,15 @@ export default function RecipesScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: spacing.lg }}
           ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
-          renderItem={({ item }) => (
-            <RecipeCard
-              recipe={item}
-              onPress={() => router.push(`/recipe/${item.id}`)}
-            />
+          renderItem={({ item, index }) => (
+            <Animated.View
+              entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
+            >
+              <RecipeCard
+                recipe={item}
+                onPress={() => router.push(`/recipe/${item.id}`)}
+              />
+            </Animated.View>
           )}
         />
       )}
