@@ -1,11 +1,12 @@
 ## ADDED Requirements
 
 ### Requirement: Fetch and parse recipe URL
-The system SHALL fetch the HTML of a provided URL server-side and extract schema.org/Recipe JSON-LD data. The system SHALL parse the structured data into the application's recipe format, **including the recipe image when available**.
+The system SHALL fetch the HTML of a provided URL server-side and extract schema.org/Recipe JSON-LD data. The system SHALL parse the structured data into the application's recipe format, **including the recipe image when available**. **The system SHALL also extract and store a `source_name` derived from the URL domain.**
 
 #### Scenario: Valid recipe URL with JSON-LD
 - **WHEN** a user submits a URL like "https://www.seriouseats.com/classic-carbonara" that contains schema.org/Recipe JSON-LD
 - **THEN** the system SHALL extract the recipe title, description, instructions, ingredients, prep time, cook time, and servings
+- **AND** `source_name` SHALL be set to "Serious Eats" (derived from domain)
 
 #### Scenario: Valid recipe URL with JSON-LD and image
 - **WHEN** a user submits a URL that contains schema.org/Recipe JSON-LD with an `image` field
@@ -36,6 +37,14 @@ The system SHALL fetch the HTML of a provided URL server-side and extract schema
 #### Scenario: Multiple recipes on page
 - **WHEN** a page contains multiple schema.org/Recipe entries
 - **THEN** the system SHALL use the first recipe found
+
+#### Scenario: Source name derivation from common domains
+- **WHEN** a recipe is imported from "https://www.bonappetit.com/recipe/..."
+- **THEN** `source_name` SHALL be set to "Bon Appetit"
+
+#### Scenario: Source name fallback to raw domain
+- **WHEN** a recipe is imported from an unrecognized domain "https://joes-kitchen.blog/..."
+- **THEN** `source_name` SHALL be set to "joes-kitchen.blog"
 
 ### Requirement: Parse ingredient strings
 The system SHALL parse ingredient strings from schema.org data into structured parts: quantity (decimal), unit, ingredient name, and notes.
