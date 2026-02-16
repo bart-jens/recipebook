@@ -18,7 +18,7 @@ export function ForkButton({ recipeId }: { recipeId: string }) {
       disabled={isPending}
       className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border disabled:opacity-50"
     >
-      {isPending ? "Forking..." : "Save to my recipes"}
+      {isPending ? "Forking..." : "Fork"}
     </button>
   );
 }

@@ -1,11 +1,11 @@
 ## MODIFIED Requirements
 
 ### Requirement: Recipe list page
-The system SHALL display a list of all recipes owned by the authenticated user at `/recipes`, sorted by most recently updated. Each list item SHALL show the recipe **image** (when available), title, description (truncated), and prep+cook time if available. The page SHALL include an "Import from URL" link alongside the "New recipe" button.
+The system SHALL display a list of all recipes in the user's collection at `/recipes`, sorted by most recently updated. The collection includes both owned recipes (created_by = user) and saved public recipes (via saved_recipes table). Each list item SHALL show the recipe image (when available), title, description (truncated), prep+cook time if available, and a favorited indicator if the recipe is favorited. The page SHALL include filter options for: All, Favorited, and Want to Cook (never cooked). The page SHALL include an "Import from URL" link alongside the "New recipe" button.
 
 #### Scenario: User with recipes
 - **WHEN** an authenticated user navigates to `/recipes`
-- **THEN** all their recipes SHALL be displayed sorted by `updated_at` descending
+- **THEN** all their owned recipes and saved recipes SHALL be displayed sorted by `updated_at` descending
 
 #### Scenario: User with no recipes
 - **WHEN** an authenticated user with no recipes navigates to `/recipes`
@@ -26,6 +26,22 @@ The system SHALL display a list of all recipes owned by the authenticated user a
 #### Scenario: List item without image
 - **WHEN** a recipe has no `image_url`
 - **THEN** the list item SHALL show a placeholder icon instead of a broken image
+
+#### Scenario: Favorited indicator on list item
+- **WHEN** a recipe is favorited by the user (has a recipe_favorites entry)
+- **THEN** the list item SHALL show a distinct favorited indicator
+
+#### Scenario: Filter by Favorited
+- **WHEN** user selects the "Favorited" filter
+- **THEN** only recipes with a recipe_favorites entry for this user SHALL be shown
+
+#### Scenario: Filter by Want to Cook
+- **WHEN** user selects the "Want to Cook" filter
+- **THEN** only recipes with zero cook_log entries for this user SHALL be shown
+
+#### Scenario: Saved recipe in list
+- **WHEN** user A has saved user B's public recipe
+- **THEN** user B's recipe SHALL appear in user A's recipe list alongside their own recipes
 
 ### Requirement: Recipe detail page
 The system SHALL display the full recipe on a detail page. **When the recipe has an image, it SHALL be shown as a full-width hero at the top of the page.** The owner SHALL see options to edit, publish/unpublish, and delete. **Source attribution SHALL be shown when source_name or source_url is present.** For public recipes, the page SHALL additionally show the creator's display name and avatar (linked to their profile). For the owner's own public recipes, a "Published" badge and "Unpublish" option SHALL be shown. **For imported recipes, a "Share" action SHALL be shown instead of "Publish".** The detail page SHALL show interaction actions: "Cooked It" (always available), "Rate" (enabled after cooking), and "Favorite" (enabled after cooking). For public recipes not owned by the user, a "Save" / "Saved" toggle and a "Fork" action SHALL be shown. For forked recipes, fork attribution SHALL be displayed. The user's cook history for the recipe SHALL be displayed. **An "Add to Collection" action SHALL be available for both owned and saved recipes, showing a picker with the user's collections.**
@@ -101,3 +117,9 @@ When importing a recipe from a photo (source_type = 'photo'), the system SHALL p
 #### Scenario: User photographs book cover
 - **WHEN** user taps "Scan book cover" and photographs the cover of "Salt Fat Acid Heat"
 - **THEN** the system SHALL extract the book title via Gemini Vision and pre-fill the source name field with "Salt Fat Acid Heat"
+
+## REMOVED Requirements
+
+### Requirement: Favorites toggle on recipe list
+**Reason**: Replaced by the new recipe interaction model. `is_favorite` column on recipes is replaced by `recipe_favorites` table with cooking gate. The old favorites filter is replaced by "Favorited" and "Want to Cook" filters.
+**Migration**: `is_favorite` column dropped. New `recipe_favorites` table handles the favorited concept with cooking gate (must cook before favoriting).

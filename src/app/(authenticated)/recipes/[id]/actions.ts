@@ -90,12 +90,84 @@ export async function removeTag(tagId: string) {
   }
 }
 
-export async function toggleFavorite(recipeId: string, isFavorite: boolean) {
+export async function toggleFavorite(recipeId: string, shouldFavorite: boolean) {
   const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  if (shouldFavorite) {
+    const { error } = await supabase.from("recipe_favorites").insert({
+      user_id: user.id,
+      recipe_id: recipeId,
+    });
+    if (error) return { error: error.message };
+  } else {
+    const { error } = await supabase
+      .from("recipe_favorites")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("recipe_id", recipeId);
+    if (error) return { error: error.message };
+  }
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/recipes");
+}
+
+export async function logCook(recipeId: string, cookedAt: string, notes: string | null) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase.from("cook_log").insert({
+    user_id: user.id,
+    recipe_id: recipeId,
+    cooked_at: cookedAt,
+    notes,
+  });
+  if (error) return { error: error.message };
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/recipes");
+}
+
+export async function deleteCookEntry(cookId: string) {
+  const supabase = createClient();
+  const { data: entry } = await supabase
+    .from("cook_log")
+    .select("recipe_id")
+    .eq("id", cookId)
+    .single();
+  const { error } = await supabase.from("cook_log").delete().eq("id", cookId);
+  if (error) return { error: error.message };
+  if (entry) {
+    revalidatePath(`/recipes/${entry.recipe_id}`);
+    revalidatePath("/recipes");
+  }
+}
+
+export async function saveRecipe(recipeId: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase.from("saved_recipes").insert({
+    user_id: user.id,
+    recipe_id: recipeId,
+  });
+  if (error) return { error: error.message };
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/recipes");
+}
+
+export async function unsaveRecipe(recipeId: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
   const { error } = await supabase
-    .from("recipes")
-    .update({ is_favorite: isFavorite })
-    .eq("id", recipeId);
+    .from("saved_recipes")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("recipe_id", recipeId);
   if (error) return { error: error.message };
   revalidatePath(`/recipes/${recipeId}`);
   revalidatePath("/recipes");
@@ -159,17 +231,20 @@ export async function forkRecipe(recipeId: string) {
     .eq("id", recipeId)
     .single();
   if (!original) return { error: "Recipe not found" };
+  if (original.visibility !== "public") return { error: "Can only fork public recipes" };
+  if (original.created_by === user.id) return { error: "Cannot fork your own recipe" };
 
-  const { data: ingredients } = await supabase
-    .from("recipe_ingredients")
-    .select("*")
-    .eq("recipe_id", recipeId)
-    .order("order_index");
-
-  const { data: tags } = await supabase
-    .from("recipe_tags")
-    .select("tag")
-    .eq("recipe_id", recipeId);
+  const [{ data: ingredients }, { data: tags }] = await Promise.all([
+    supabase
+      .from("recipe_ingredients")
+      .select("*")
+      .eq("recipe_id", recipeId)
+      .order("order_index"),
+    supabase
+      .from("recipe_tags")
+      .select("tag")
+      .eq("recipe_id", recipeId),
+  ]);
 
   // Create forked copy
   const { data: fork, error } = await supabase
@@ -181,8 +256,8 @@ export async function forkRecipe(recipeId: string) {
       prep_time_minutes: original.prep_time_minutes,
       cook_time_minutes: original.cook_time_minutes,
       servings: original.servings,
-      source_url: original.source_url,
-      source_type: original.source_type,
+      image_url: original.image_url,
+      source_type: "fork",
       created_by: user.id,
       forked_from_id: recipeId,
       visibility: "private",
@@ -192,7 +267,13 @@ export async function forkRecipe(recipeId: string) {
 
   if (error || !fork) return { error: error?.message || "Failed to fork" };
 
-  // Copy ingredients
+  // Copy ingredients and tags, log analytics event
+  await supabase.from("recipe_analytics").insert({
+    recipe_id: recipeId,
+    event_type: "fork",
+    user_id: user.id,
+  });
+
   if (ingredients && ingredients.length > 0) {
     await supabase.from("recipe_ingredients").insert(
       ingredients.map((ing) => ({
@@ -206,7 +287,6 @@ export async function forkRecipe(recipeId: string) {
     );
   }
 
-  // Copy tags
   if (tags && tags.length > 0) {
     await supabase.from("recipe_tags").insert(
       tags.map((t) => ({

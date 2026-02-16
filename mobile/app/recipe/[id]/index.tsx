@@ -59,7 +59,6 @@ interface Recipe {
   source_name: string | null;
   source_type: string;
   image_url: string | null;
-  is_favorite: boolean;
   visibility: string;
   created_by: string;
   forked_from_id: string | null;
@@ -97,11 +96,17 @@ export default function RecipeDetailScreen() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [ratings, setRatings] = useState<RatingEntry[]>([]);
   const [creatorName, setCreatorName] = useState<string | null>(null);
+  const [forkedFrom, setForkedFrom] = useState<{ id: string; title: string; creatorName: string; creatorId: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [cookEntries, setCookEntries] = useState<{ id: string; cooked_at: string; notes: string | null }[]>([]);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [showCookForm, setShowCookForm] = useState(false);
-  const [cookRating, setCookRating] = useState(0);
   const [cookNotes, setCookNotes] = useState('');
+  const [showRatingForm, setShowRatingForm] = useState(false);
+  const [ratingStars, setRatingStars] = useState(0);
+  const [ratingNotes, setRatingNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -188,6 +193,32 @@ export default function RecipeDetailScreen() {
       setCreatorName(creator?.display_name || null);
     }
 
+    // Fetch fork attribution info
+    if (recipeData?.forked_from_id) {
+      const { data: original } = await supabase
+        .from('recipes')
+        .select('id, title, created_by')
+        .eq('id', recipeData.forked_from_id)
+        .single();
+      if (original) {
+        const { data: origCreator } = await supabase
+          .from('user_profiles')
+          .select('display_name')
+          .eq('id', original.created_by)
+          .single();
+        setForkedFrom({
+          id: original.id,
+          title: original.title,
+          creatorName: origCreator?.display_name || 'Unknown',
+          creatorId: original.created_by,
+        });
+      } else {
+        setForkedFrom(null);
+      }
+    } else {
+      setForkedFrom(null);
+    }
+
     // Owner-specific data
     if (recipeData && recipeData.created_by === user?.id) {
       // Fetch publish count and user plan
@@ -211,6 +242,22 @@ export default function RecipeDetailScreen() {
       }
     }
 
+    // Fetch user interaction data
+    if (user) {
+      const [{ data: cookData }, { data: favData }, { data: savedData }] = await Promise.all([
+        supabase.from('cook_log').select('id, cooked_at, notes')
+          .eq('recipe_id', id).eq('user_id', user.id)
+          .order('cooked_at', { ascending: false }),
+        supabase.from('recipe_favorites').select('id')
+          .eq('recipe_id', id).eq('user_id', user.id).maybeSingle(),
+        supabase.from('saved_recipes').select('id')
+          .eq('recipe_id', id).eq('user_id', user.id).maybeSingle(),
+      ]);
+      setCookEntries(cookData || []);
+      setIsFavorited(!!favData);
+      setIsSaved(!!savedData);
+    }
+
     setLoading(false);
   }, [id]);
 
@@ -223,11 +270,30 @@ export default function RecipeDetailScreen() {
   const isOwner = user?.id === recipe?.created_by;
   const hasImage = !!recipe?.image_url;
 
+  const hasCooked = cookEntries.length > 0;
+
   const toggleFavorite = async () => {
-    if (!recipe || !isOwner) return;
-    const newVal = !recipe.is_favorite;
-    setRecipe({ ...recipe, is_favorite: newVal });
-    await supabase.from('recipes').update({ is_favorite: newVal }).eq('id', recipe.id);
+    if (!recipe || !user || !hasCooked) return;
+    const newVal = !isFavorited;
+    setIsFavorited(newVal);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (newVal) {
+      await supabase.from('recipe_favorites').insert({ user_id: user.id, recipe_id: recipe.id });
+    } else {
+      await supabase.from('recipe_favorites').delete().eq('user_id', user.id).eq('recipe_id', recipe.id);
+    }
+  };
+
+  const toggleSave = async () => {
+    if (!recipe || !user) return;
+    const newVal = !isSaved;
+    setIsSaved(newVal);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (newVal) {
+      await supabase.from('saved_recipes').insert({ user_id: user.id, recipe_id: recipe.id });
+    } else {
+      await supabase.from('saved_recipes').delete().eq('user_id', user.id).eq('recipe_id', recipe.id);
+    }
   };
 
   const publishLimit = 10;
@@ -283,8 +349,8 @@ export default function RecipeDetailScreen() {
         prep_time_minutes: recipe.prep_time_minutes,
         cook_time_minutes: recipe.cook_time_minutes,
         servings: recipe.servings,
-        source_type: recipe.source_type,
-        source_url: recipe.source_url,
+        image_url: recipe.image_url,
+        source_type: 'fork',
         forked_from_id: recipe.id,
         created_by: user.id,
       })
@@ -295,6 +361,13 @@ export default function RecipeDetailScreen() {
       Alert.alert('Error', 'Could not fork recipe');
       return;
     }
+
+    // Copy ingredients and tags, log analytics event
+    await supabase.from('recipe_analytics').insert({
+      recipe_id: recipe.id,
+      event_type: 'fork',
+      user_id: user.id,
+    });
 
     if (ingredients.length > 0) {
       await supabase.from('recipe_ingredients').insert(
@@ -315,7 +388,8 @@ export default function RecipeDetailScreen() {
       );
     }
 
-    Alert.alert('Saved!', 'Recipe saved to your collection', [
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Alert.alert('Forked!', 'Recipe added to your collection', [
       { text: 'View', onPress: () => router.replace(`/recipe/${forked.id}`) },
       { text: 'OK' },
     ]);
@@ -385,39 +459,73 @@ export default function RecipeDetailScreen() {
     ]);
   };
 
-  const submitCookingLog = async () => {
-    if (!recipe || cookRating === 0) return;
+  const logCookEntry = async () => {
+    if (!recipe || !user) return;
     setSubmitting(true);
-
     const { data, error } = await supabase
-      .from('recipe_ratings')
+      .from('cook_log')
       .insert({
+        user_id: user.id,
         recipe_id: recipe.id,
-        user_id: user!.id,
-        rating: cookRating,
+        cooked_at: new Date().toISOString(),
         notes: cookNotes.trim() || null,
-        cooked_date: new Date().toISOString().split('T')[0],
       })
       .select()
       .single();
-
     if (error) {
-      Alert.alert('Error', 'Could not save cooking log');
+      Alert.alert('Error', 'Could not log cook entry');
     } else if (data) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      if (ratings.length === 0) {
-        setShowCelebration(true);
-      }
-      setRatings([data, ...ratings]);
-      setCookRating(0);
+      if (cookEntries.length === 0) setShowCelebration(true);
+      setCookEntries([data, ...cookEntries]);
       setCookNotes('');
       setShowCookForm(false);
     }
     setSubmitting(false);
   };
 
-  const deleteCookingEntry = async (entryId: string) => {
-    Alert.alert('Delete entry', 'Remove this cooking log entry?', [
+  const submitRating = async () => {
+    if (!recipe || !user || ratingStars === 0) return;
+    setSubmitting(true);
+    const { data, error } = await supabase
+      .from('recipe_ratings')
+      .insert({
+        recipe_id: recipe.id,
+        user_id: user.id,
+        rating: ratingStars,
+        notes: ratingNotes.trim() || null,
+        cooked_date: null,
+      })
+      .select()
+      .single();
+    if (error) {
+      Alert.alert('Error', 'Could not save rating');
+    } else if (data) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setRatings([data, ...ratings]);
+      setRatingStars(0);
+      setRatingNotes('');
+      setShowRatingForm(false);
+    }
+    setSubmitting(false);
+  };
+
+  const deleteCookLogEntry = async (entryId: string) => {
+    Alert.alert('Delete entry', 'Remove this cook log entry?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await supabase.from('cook_log').delete().eq('id', entryId);
+          setCookEntries(cookEntries.filter((c) => c.id !== entryId));
+        },
+      },
+    ]);
+  };
+
+  const deleteRatingEntry = async (entryId: string) => {
+    Alert.alert('Delete entry', 'Remove this rating?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
@@ -613,6 +721,25 @@ export default function RecipeDetailScreen() {
               </TouchableOpacity>
             )}
 
+            {/* Fork attribution */}
+            {forkedFrom ? (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.push(`/recipe/${forkedFrom.id}`)}
+                style={{ marginBottom: spacing.xs }}
+              >
+                <Text style={styles.forkAttribution}>
+                  Forked from{' '}
+                  <Text style={styles.forkAttributionLink}>{forkedFrom.title}</Text>
+                  {' '}by {forkedFrom.creatorName}
+                </Text>
+              </TouchableOpacity>
+            ) : recipe.source_type === 'fork' ? (
+              <Text style={[styles.forkAttribution, { marginBottom: spacing.xs }]}>
+                Forked from a recipe that is no longer available
+              </Text>
+            ) : null}
+
             {/* Aggregate rating for public recipes */}
             {recipe.visibility === 'public' && !isOwner && ratings.length > 0 && (() => {
               const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
@@ -652,13 +779,11 @@ export default function RecipeDetailScreen() {
             {/* Title and favorite */}
             <Animated.View entering={FadeInDown.duration(300)} style={styles.titleRow}>
               <Text style={styles.title}>{recipe.title}</Text>
-              {isOwner && (
-                <AnimatedHeart
-                  isFavorite={recipe.is_favorite}
-                  onToggle={toggleFavorite}
-                  size={24}
-                />
-              )}
+              <AnimatedHeart
+                isFavorite={isFavorited}
+                onToggle={hasCooked ? toggleFavorite : () => {}}
+                size={24}
+              />
             </Animated.View>
 
             {/* Owner actions */}
@@ -721,12 +846,18 @@ export default function RecipeDetailScreen() {
               </Text>
             )}
 
-            {/* Non-owner: fork button */}
+            {/* Non-owner: save + fork */}
             {!isOwner && recipe.visibility === 'public' && (
               <Animated.View entering={FadeInDown.delay(animation.staggerDelay).duration(300)} style={styles.ownerActions}>
                 <Button
-                  title="Save to My Recipes"
-                  variant="primary"
+                  title={isSaved ? 'Saved' : 'Save'}
+                  variant={isSaved ? 'primary' : 'secondary'}
+                  size="md"
+                  onPress={toggleSave}
+                />
+                <Button
+                  title="Fork"
+                  variant="secondary"
                   size="md"
                   onPress={forkRecipe}
                 />
@@ -916,87 +1047,150 @@ export default function RecipeDetailScreen() {
             )}
 
             {/* Cooking Log */}
-            {isOwner && (
-              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 6).duration(300)} style={styles.section}>
-                <SectionHeader title="Cooking log" />
+            <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 6).duration(300)} style={styles.section}>
+              <SectionHeader title="Cooking log" />
 
-                {!showCookForm ? (
-                  <View style={{ marginBottom: spacing.lg }}>
-                    <Button
-                      title="I cooked this!"
-                      variant="primary"
-                      size="lg"
-                      onPress={() => setShowCookForm(true)}
+              {cookEntries.length === 0 && !showCookForm && (
+                <Text style={styles.emptyLog}>You haven't cooked this yet.</Text>
+              )}
+
+              {cookEntries.map((entry) => (
+                <View key={entry.id} style={styles.logEntry}>
+                  <View style={styles.logEntryHeader}>
+                    <Text style={styles.logDate}>
+                      {new Date(entry.cooked_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </Text>
+                    <IconButton
+                      name="times"
+                      onPress={() => deleteCookLogEntry(entry.id)}
+                      color={colors.starEmpty}
+                      size={16}
                     />
                   </View>
-                ) : (
-                  <View style={styles.cookForm}>
-                    <Text style={styles.cookFormLabel}>How was it?</Text>
-                    <StarRating
-                      rating={cookRating}
-                      size={20}
-                      interactive
-                      onRate={(r) => {
-                        Haptics.selectionAsync();
-                        setCookRating(r);
+                  {entry.notes && <Text style={styles.logNotes}>{entry.notes}</Text>}
+                </View>
+              ))}
+
+              {!showCookForm ? (
+                <View style={{ marginTop: spacing.md, marginBottom: spacing.lg }}>
+                  <Button
+                    title="Cooked It"
+                    variant="primary"
+                    size="lg"
+                    onPress={() => setShowCookForm(true)}
+                  />
+                </View>
+              ) : (
+                <View style={styles.cookForm}>
+                  <Text style={styles.cookFormLabel}>Notes (optional)</Text>
+                  <TextInput
+                    style={styles.cookNotesInput}
+                    placeholder="How did it turn out?"
+                    placeholderTextColor={colors.textMuted}
+                    value={cookNotes}
+                    onChangeText={setCookNotes}
+                    multiline
+                  />
+                  <View style={styles.cookFormButtons}>
+                    <Button
+                      title="Cancel"
+                      variant="ghost"
+                      size="sm"
+                      onPress={() => {
+                        setShowCookForm(false);
+                        setCookNotes('');
                       }}
                     />
-                    <TextInput
-                      style={styles.cookNotesInput}
-                      placeholder="Notes (optional)"
-                      placeholderTextColor={colors.textMuted}
-                      value={cookNotes}
-                      onChangeText={setCookNotes}
-                      multiline
+                    <Button
+                      title={submitting ? 'Logging...' : 'Log Cook'}
+                      variant="primary"
+                      size="sm"
+                      onPress={logCookEntry}
+                      disabled={submitting}
+                      loading={submitting}
                     />
-                    <View style={styles.cookFormButtons}>
+                  </View>
+                </View>
+              )}
+
+              {/* Ratings — gated by cooking */}
+              <SectionHeader title="Ratings" />
+              {!hasCooked ? (
+                <Text style={styles.emptyLog}>Cook this recipe to leave a rating.</Text>
+              ) : (
+                <>
+                  {ratings.map((entry) => (
+                    <View key={entry.id} style={styles.logEntry}>
+                      <View style={styles.logEntryHeader}>
+                        <StarRating rating={entry.rating} size={14} />
+                        <IconButton
+                          name="times"
+                          onPress={() => deleteRatingEntry(entry.id)}
+                          color={colors.starEmpty}
+                          size={16}
+                        />
+                      </View>
+                      {entry.notes && <Text style={styles.logNotes}>{entry.notes}</Text>}
+                    </View>
+                  ))}
+                  {!showRatingForm ? (
+                    <View style={{ marginTop: spacing.md }}>
                       <Button
-                        title="Cancel"
-                        variant="ghost"
-                        size="sm"
-                        onPress={() => {
-                          setShowCookForm(false);
-                          setCookRating(0);
-                          setCookNotes('');
+                        title="Add rating"
+                        variant="secondary"
+                        size="md"
+                        onPress={() => setShowRatingForm(true)}
+                      />
+                    </View>
+                  ) : (
+                    <View style={styles.cookForm}>
+                      <Text style={styles.cookFormLabel}>Rating</Text>
+                      <StarRating
+                        rating={ratingStars}
+                        size={20}
+                        interactive
+                        onRate={(r) => {
+                          Haptics.selectionAsync();
+                          setRatingStars(r);
                         }}
                       />
-                      <Button
-                        title={submitting ? 'Saving...' : 'Save'}
-                        variant="primary"
-                        size="sm"
-                        onPress={submitCookingLog}
-                        disabled={cookRating === 0 || submitting}
-                        loading={submitting}
+                      <TextInput
+                        style={styles.cookNotesInput}
+                        placeholder="Notes (optional)"
+                        placeholderTextColor={colors.textMuted}
+                        value={ratingNotes}
+                        onChangeText={setRatingNotes}
+                        multiline
                       />
+                      <View style={styles.cookFormButtons}>
+                        <Button
+                          title="Cancel"
+                          variant="ghost"
+                          size="sm"
+                          onPress={() => {
+                            setShowRatingForm(false);
+                            setRatingStars(0);
+                            setRatingNotes('');
+                          }}
+                        />
+                        <Button
+                          title={submitting ? 'Saving...' : 'Save Rating'}
+                          variant="primary"
+                          size="sm"
+                          onPress={submitRating}
+                          disabled={ratingStars === 0 || submitting}
+                          loading={submitting}
+                        />
+                      </View>
                     </View>
-                  </View>
-                )}
-
-                {ratings.length === 0 && !showCookForm && (
-                  <Text style={styles.emptyLog}>You haven't cooked this yet.</Text>
-                )}
-
-                {ratings.map((entry) => (
-                  <View key={entry.id} style={styles.logEntry}>
-                    <View style={styles.logEntryHeader}>
-                      <Text style={styles.logDate}>
-                        {entry.cooked_date
-                          ? new Date(entry.cooked_date + 'T00:00:00').toLocaleDateString()
-                          : 'No date'}
-                      </Text>
-                      <StarRating rating={entry.rating} size={14} />
-                      <IconButton
-                        name="times"
-                        onPress={() => deleteCookingEntry(entry.id)}
-                        color={colors.starEmpty}
-                        size={16}
-                      />
-                    </View>
-                    {entry.notes && <Text style={styles.logNotes}>{entry.notes}</Text>}
-                  </View>
-                ))}
-              </Animated.View>
-            )}
+                  )}
+                </>
+              )}
+            </Animated.View>
 
             <View style={{ height: spacing.xxxl + spacing.sm }} />
           </View>
@@ -1221,6 +1415,8 @@ const styles = StyleSheet.create({
 
   // Creator & source
   creatorLink: { ...typography.bodySmall, color: colors.primary, fontWeight: '500' },
+  forkAttribution: { ...typography.bodySmall, color: colors.textSecondary },
+  forkAttributionLink: { color: colors.primary },
   aggregateRating: {
     flexDirection: 'row',
     alignItems: 'center',

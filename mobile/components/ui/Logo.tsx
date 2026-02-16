@@ -11,10 +11,19 @@ function ForkE({ size, color }: { size: number; color: string }) {
   const width = Math.ceil(size * (22 / 32));
   return (
     <Svg width={width} height={size} viewBox="0 0 22 32" fill={color}>
-      <Rect x="0" y="0" width="4.5" height="32" />
-      <Path d="M4.5 0h14.5a2.25 2.25 0 0 1 0 4.5H4.5z" />
-      <Path d="M4.5 13.75h11.5a2.25 2.25 0 0 1 0 4.5H4.5z" />
-      <Path d="M4.5 27.5h14.5a2.25 2.25 0 0 1 0 4.5H4.5z" />
+      {/* Four prongs — rounded tips, the fork's signature */}
+      <Rect x="0.5" y="0" width="3" height="11" rx="1.5" />
+      <Rect x="6" y="0" width="3" height="11" rx="1.5" />
+      <Rect x="11.5" y="0" width="3" height="11" rx="1.5" />
+      <Rect x="17" y="0" width="3" height="11" rx="1.5" />
+      {/* Neck — organic taper from tines to handle */}
+      <Path d="M0.5 9 H20 C20 13, 12 14, 5.5 14.5 H0.5 Z" />
+      {/* Handle */}
+      <Path d="M0.5 13 h5 v16.5 a2.5 2.5 0 0 1 -5 0 Z" />
+      {/* Middle nub (E middle bar) */}
+      <Path d="M5.5 18 h8.5 a1.75 1.75 0 0 1 0 3.5 H5.5 Z" />
+      {/* Bottom nub (E bottom bar) */}
+      <Path d="M5.5 27.5 h10.5 a1.75 1.75 0 0 1 0 3.5 H5.5 Z" />
     </Svg>
   );
 }
@@ -48,8 +57,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    fontFamily: fontFamily.sansBold,
+    fontFamily: fontFamily.logo,
     color: colors.text,
-    letterSpacing: -0.5,
+    letterSpacing: 0,
   },
 });

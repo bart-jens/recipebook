@@ -21,29 +21,60 @@ export default async function RecipeDetailPage({
 
   if (!recipe) notFound();
 
-  const [{ data: ingredients }, { data: tags }, { data: ratings }, { data: images }] =
-    await Promise.all([
-      supabase
-        .from("recipe_ingredients")
-        .select("*")
-        .eq("recipe_id", recipe.id)
-        .order("order_index"),
-      supabase
-        .from("recipe_tags")
-        .select("id, tag")
-        .eq("recipe_id", recipe.id)
-        .order("tag"),
-      supabase
-        .from("recipe_ratings")
-        .select("id, rating, notes, cooked_date, created_at")
-        .eq("recipe_id", recipe.id)
-        .order("cooked_date", { ascending: false }),
-      supabase
-        .from("recipe_images")
-        .select("id, storage_path, image_type")
-        .eq("recipe_id", recipe.id)
-        .order("created_at"),
-    ]);
+  const [
+    { data: ingredients },
+    { data: tags },
+    { data: ratings },
+    { data: images },
+    { data: cookEntries },
+    { data: favoriteEntry },
+    { data: savedEntry },
+  ] = await Promise.all([
+    supabase
+      .from("recipe_ingredients")
+      .select("*")
+      .eq("recipe_id", recipe.id)
+      .order("order_index"),
+    supabase
+      .from("recipe_tags")
+      .select("id, tag")
+      .eq("recipe_id", recipe.id)
+      .order("tag"),
+    supabase
+      .from("recipe_ratings")
+      .select("id, rating, notes, cooked_date, created_at")
+      .eq("recipe_id", recipe.id)
+      .order("cooked_date", { ascending: false }),
+    supabase
+      .from("recipe_images")
+      .select("id, storage_path, image_type")
+      .eq("recipe_id", recipe.id)
+      .order("created_at"),
+    user
+      ? supabase
+          .from("cook_log")
+          .select("id, cooked_at, notes")
+          .eq("recipe_id", recipe.id)
+          .eq("user_id", user.id)
+          .order("cooked_at", { ascending: false })
+      : Promise.resolve({ data: [] }),
+    user
+      ? supabase
+          .from("recipe_favorites")
+          .select("id")
+          .eq("recipe_id", recipe.id)
+          .eq("user_id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? supabase
+          .from("saved_recipes")
+          .select("id")
+          .eq("recipe_id", recipe.id)
+          .eq("user_id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
   // Build photo list: user uploads first, then source images
   const recipePhotos = (images || [])
@@ -59,7 +90,7 @@ export default async function RecipeDetailPage({
     }));
 
   // Fetch fork source info if this is a fork
-  let forkedFrom: { id: string; title: string; creator_name: string } | null = null;
+  let forkedFrom: { id: string; title: string; creator_name: string; creator_id: string } | null = null;
   if (recipe.forked_from_id) {
     const { data: original } = await supabase
       .from("recipes")
@@ -76,6 +107,7 @@ export default async function RecipeDetailPage({
         id: original.id,
         title: original.title,
         creator_name: creator?.display_name || "Unknown",
+        creator_id: original.created_by,
       };
     }
   }
@@ -118,6 +150,9 @@ export default async function RecipeDetailPage({
       ingredients={ingredients || []}
       tags={tags || []}
       ratings={ratings || []}
+      cookEntries={cookEntries || []}
+      isFavorited={!!favoriteEntry}
+      isSaved={!!savedEntry}
       isOwner={isOwner}
       forkedFrom={forkedFrom}
       creatorName={creatorName}

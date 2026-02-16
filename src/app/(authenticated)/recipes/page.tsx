@@ -20,7 +20,6 @@ interface RecipeRow {
   image_url: string | null;
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
-  is_favorite: boolean;
   updated_at: string;
   recipe_tags: RecipeTag[];
   recipe_ratings: RecipeRating[];
@@ -29,79 +28,131 @@ interface RecipeRow {
 interface EnrichedRecipe extends RecipeRow {
   avgRating: number | null;
   ratingCount: number;
+  isFavorited: boolean;
+  hasCooked: boolean;
 }
 
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: { q?: string; sort?: string; tag?: string; course?: string };
+  searchParams: { q?: string; sort?: string; tag?: string; course?: string; filter?: string };
 }) {
   const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const q = searchParams.q || "";
   const sort = searchParams.sort || "updated";
   const tag = searchParams.tag || "";
   const course = searchParams.course || "";
+  const filter = searchParams.filter || "";
 
-  let query = supabase
+  const selectFields = "id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, recipe_tags(tag), recipe_ratings(rating)";
+
+  // Fetch owned recipes, saved recipe IDs, favorites, and cook log in parallel
+  let ownedQuery = supabase
     .from("recipes")
-    .select("id, title, description, image_url, prep_time_minutes, cook_time_minutes, is_favorite, updated_at, recipe_tags(tag), recipe_ratings(rating)");
+    .select(selectFields)
+    .eq("created_by", user!.id);
 
   if (q) {
-    query = query.ilike("title", `%${q}%`);
+    ownedQuery = ownedQuery.ilike("title", `%${q}%`);
   }
 
+  const [
+    { data: ownedRecipes },
+    { data: savedEntries },
+    { data: favEntries },
+    { data: cookLogEntries },
+  ] = await Promise.all([
+    ownedQuery,
+    supabase.from("saved_recipes").select("recipe_id").eq("user_id", user!.id),
+    supabase.from("recipe_favorites").select("recipe_id").eq("user_id", user!.id),
+    supabase.from("cook_log").select("recipe_id").eq("user_id", user!.id),
+  ]);
+
+  const savedRecipeIds = new Set((savedEntries || []).map((s) => s.recipe_id));
+  const favoritedIds = new Set((favEntries || []).map((f) => f.recipe_id));
+  const cookedIds = new Set((cookLogEntries || []).map((c) => c.recipe_id));
+
+  // Fetch saved recipe details if any
+  let savedRecipes: typeof ownedRecipes = [];
+  if (savedRecipeIds.size > 0) {
+    let savedQuery = supabase
+      .from("recipes")
+      .select(selectFields)
+      .in("id", Array.from(savedRecipeIds));
+    if (q) {
+      savedQuery = savedQuery.ilike("title", `%${q}%`);
+    }
+    const { data } = await savedQuery;
+    savedRecipes = data;
+  }
+
+  // Merge owned + saved
+  let merged = [
+    ...(ownedRecipes || []),
+    ...(savedRecipes || []),
+  ] as unknown as RecipeRow[];
+
+  // Filter by tag
   if (tag) {
-    // Filter recipes that have this tag via inner join
-    query = query.eq("recipe_tags.tag", tag);
-  }
-
-  if (sort === "alpha") {
-    query = query.order("title", { ascending: true });
-  } else if (sort === "prep") {
-    query = query.order("prep_time_minutes", { ascending: true, nullsFirst: false });
-  } else if (sort === "cook") {
-    query = query.order("cook_time_minutes", { ascending: true, nullsFirst: false });
-  } else {
-    query = query.order("updated_at", { ascending: false });
-  }
-
-  const { data: recipes } = await query;
-
-  // Filter out recipes that don't actually have the tag (Supabase returns all recipes with empty tag array)
-  let filtered = (recipes || []) as unknown as RecipeRow[];
-  if (tag) {
-    filtered = filtered.filter(
-      (r) => r.recipe_tags && r.recipe_tags.length > 0
+    merged = merged.filter(
+      (r) => r.recipe_tags && r.recipe_tags.some((t) => t.tag === tag)
     );
   }
 
-  // Filter by course (match against tags)
+  // Filter by course
   if (course) {
-    filtered = filtered.filter(
+    merged = merged.filter(
       (r) => r.recipe_tags && r.recipe_tags.some((t) => t.tag.toLowerCase() === course.toLowerCase())
     );
   }
 
-  // Compute average ratings and sort
-  const enriched: EnrichedRecipe[] = filtered.map((r) => {
+  // Enrich with computed fields
+  const enriched: EnrichedRecipe[] = merged.map((r) => {
     const ratings = r.recipe_ratings || [];
     const avg =
       ratings.length > 0
         ? ratings.reduce((sum, rt) => sum + rt.rating, 0) / ratings.length
         : null;
-    return { ...r, avgRating: avg, ratingCount: ratings.length };
+    return {
+      ...r,
+      avgRating: avg,
+      ratingCount: ratings.length,
+      isFavorited: favoritedIds.has(r.id),
+      hasCooked: cookedIds.has(r.id),
+    };
   });
 
+  // Apply interaction filters
+  let filtered = enriched;
+  if (filter === "favorited") {
+    filtered = filtered.filter((r) => r.isFavorited);
+  } else if (filter === "want-to-cook") {
+    filtered = filtered.filter((r) => !r.hasCooked);
+  }
+
   // Sort: favorites first, then by chosen sort
-  enriched.sort((a, b) => {
-    if (a.is_favorite !== b.is_favorite) return a.is_favorite ? -1 : 1;
+  filtered.sort((a, b) => {
+    if (a.isFavorited !== b.isFavorited) return a.isFavorited ? -1 : 1;
     if (sort === "rating") {
       return (b.avgRating || 0) - (a.avgRating || 0);
     }
-    return 0; // already sorted by DB
+    if (sort === "alpha") {
+      return a.title.localeCompare(b.title);
+    }
+    if (sort === "prep") {
+      return (a.prep_time_minutes || 999) - (b.prep_time_minutes || 999);
+    }
+    if (sort === "cook") {
+      return (a.cook_time_minutes || 999) - (b.cook_time_minutes || 999);
+    }
+    // Default: updated
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
   });
 
-  const totalCount = enriched.length;
+  const totalCount = filtered.length;
 
   const [collections, userPlan] = await Promise.all([
     getCollections(),
@@ -146,7 +197,7 @@ export default async function RecipesPage({
           : `${totalCount} recipe${totalCount !== 1 ? "s" : ""}`}
       </p>
 
-      {enriched.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="rounded-md border border-accent/20 bg-accent/5 p-8 text-center">
           <p className="text-warm-gray">
             {q ? "No recipes match your search." : "No recipes yet."}
@@ -171,7 +222,7 @@ export default async function RecipesPage({
         </div>
       ) : (
         <div className="space-y-3">
-          {enriched.map((recipe, i) => {
+          {filtered.map((recipe, i) => {
             const timeInfo = [
               recipe.prep_time_minutes && `${recipe.prep_time_minutes} min prep`,
               recipe.cook_time_minutes && `${recipe.cook_time_minutes} min cook`,
@@ -210,7 +261,7 @@ export default async function RecipesPage({
                         {recipe.avgRating.toFixed(1)}
                       </span>
                     )}
-                    {recipe.is_favorite && (
+                    {recipe.isFavorited && (
                       <svg className="h-4 w-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                       </svg>

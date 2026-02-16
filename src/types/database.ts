@@ -86,6 +86,99 @@ export type Database = {
           },
         ]
       }
+      cook_log: {
+        Row: {
+          id: string
+          user_id: string
+          recipe_id: string
+          cooked_at: string
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          recipe_id: string
+          cooked_at?: string
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          recipe_id?: string
+          cooked_at?: string
+          notes?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cook_log_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_recipes: {
+        Row: {
+          id: string
+          user_id: string
+          recipe_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          recipe_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          recipe_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_recipes_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipe_favorites: {
+        Row: {
+          id: string
+          user_id: string
+          recipe_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          recipe_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          recipe_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_favorites_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipe_images: {
         Row: {
           created_at: string
@@ -265,7 +358,7 @@ export type Database = {
           id: string
           image_url: string | null
           instructions: string | null
-          is_favorite: boolean
+
           prep_time_minutes: number | null
           published_at: string | null
           servings: number | null
@@ -288,7 +381,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructions?: string | null
-          is_favorite?: boolean
+
           prep_time_minutes?: number | null
           published_at?: string | null
           servings?: number | null
@@ -311,7 +404,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructions?: string | null
-          is_favorite?: boolean
+
           prep_time_minutes?: number | null
           published_at?: string | null
           servings?: number | null

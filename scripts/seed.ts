@@ -47,7 +47,6 @@ const RECIPES = [
     image_url: IMAGES.pasta,
     visibility: "public" as const,
     published_at: new Date().toISOString(),
-    is_favorite: true,
     ingredients: [
       { ingredient_name: "Penne pasta", quantity: 400, unit: "g", notes: "", order_index: 0 },
       { ingredient_name: "Heavy cream", quantity: 250, unit: "ml", notes: "", order_index: 1 },
@@ -75,7 +74,6 @@ const RECIPES = [
     image_url: IMAGES.curry,
     visibility: "public" as const,
     published_at: new Date().toISOString(),
-    is_favorite: false,
     ingredients: [
       { ingredient_name: "Chicken thighs", quantity: 500, unit: "g", notes: "boneless", order_index: 0 },
       { ingredient_name: "Green curry paste", quantity: 3, unit: "tbsp", notes: "", order_index: 1 },
@@ -103,7 +101,6 @@ const RECIPES = [
     image_url: IMAGES.pizza,
     visibility: "public" as const,
     published_at: new Date().toISOString(),
-    is_favorite: true,
     ingredients: [
       { ingredient_name: "Bread flour", quantity: 300, unit: "g", notes: "tipo 00 if available", order_index: 0 },
       { ingredient_name: "Instant yeast", quantity: 1, unit: "tsp", notes: "", order_index: 1 },
@@ -132,7 +129,6 @@ const RECIPES = [
     image_url: IMAGES.burger,
     visibility: "public" as const,
     published_at: new Date().toISOString(),
-    is_favorite: false,
     ingredients: [
       { ingredient_name: "Ground beef", quantity: 400, unit: "g", notes: "80/20 blend", order_index: 0 },
       { ingredient_name: "American cheese", quantity: 4, unit: "slices", notes: "", order_index: 1 },
@@ -159,7 +155,6 @@ const RECIPES = [
     image_url: IMAGES.pancakes,
     visibility: "public" as const,
     published_at: new Date().toISOString(),
-    is_favorite: true,
     ingredients: [
       { ingredient_name: "Eggs", quantity: 3, unit: "", notes: "separated", order_index: 0 },
       { ingredient_name: "Milk", quantity: 40, unit: "ml", notes: "", order_index: 1 },
@@ -189,7 +184,6 @@ const RECIPES = [
     image_url: IMAGES.ramen,
     visibility: "public" as const,
     published_at: new Date().toISOString(),
-    is_favorite: false,
     ingredients: [
       { ingredient_name: "Pork belly", quantity: 500, unit: "g", notes: "skin off", order_index: 0 },
       { ingredient_name: "Soy sauce", quantity: 100, unit: "ml", notes: "", order_index: 1 },
@@ -218,7 +212,6 @@ const RECIPES = [
     image_url: IMAGES.salad,
     visibility: "public" as const,
     published_at: new Date().toISOString(),
-    is_favorite: false,
     ingredients: [
       { ingredient_name: "Farro", quantity: 200, unit: "g", notes: "", order_index: 0 },
       { ingredient_name: "Chickpeas", quantity: 400, unit: "g", notes: "canned, drained", order_index: 1 },
@@ -246,7 +239,6 @@ const RECIPES = [
     source_type: "manual" as const,
     image_url: IMAGES.cake,
     visibility: "private" as const,
-    is_favorite: true,
     ingredients: [
       { ingredient_name: "Dark chocolate", quantity: 150, unit: "g", notes: "70% cocoa", order_index: 0 },
       { ingredient_name: "Unsalted butter", quantity: 100, unit: "g", notes: "plus extra for ramekins", order_index: 1 },
@@ -272,7 +264,6 @@ const RECIPES = [
     image_url: IMAGES.sushi,
     visibility: "public" as const,
     published_at: new Date().toISOString(),
-    is_favorite: false,
     ingredients: [
       { ingredient_name: "Sushi rice", quantity: 300, unit: "g", notes: "", order_index: 0 },
       { ingredient_name: "Rice vinegar", quantity: 3, unit: "tbsp", notes: "", order_index: 1 },
@@ -296,7 +287,6 @@ const RECIPES = [
     source_type: "manual" as const,
     image_url: IMAGES.soup,
     visibility: "private" as const,
-    is_favorite: false,
     ingredients: [
       { ingredient_name: "Ripe tomatoes", quantity: 1, unit: "kg", notes: "", order_index: 0 },
       { ingredient_name: "Garlic", quantity: 6, unit: "cloves", notes: "unpeeled", order_index: 1 },
@@ -321,7 +311,6 @@ const RECIPES = [
     image_url: IMAGES.tacos,
     visibility: "public" as const,
     published_at: new Date().toISOString(),
-    is_favorite: false,
     ingredients: [
       { ingredient_name: "White fish fillets", quantity: 500, unit: "g", notes: "cod or mahi-mahi", order_index: 0 },
       { ingredient_name: "All-purpose flour", quantity: 150, unit: "g", notes: "", order_index: 1 },
@@ -351,7 +340,6 @@ const RECIPES = [
     image_url: IMAGES.risotto,
     visibility: "public" as const,
     published_at: new Date().toISOString(),
-    is_favorite: false,
     ingredients: [
       { ingredient_name: "Arborio rice", quantity: 300, unit: "g", notes: "", order_index: 0 },
       { ingredient_name: "Mixed mushrooms", quantity: 300, unit: "g", notes: "shiitake, oyster, cremini", order_index: 1 },
@@ -376,7 +364,6 @@ const RECIPES = [
     source_type: "manual" as const,
     image_url: IMAGES.bread,
     visibility: "private" as const,
-    is_favorite: false,
     ingredients: [
       { ingredient_name: "Bread flour", quantity: 450, unit: "g", notes: "", order_index: 0 },
       { ingredient_name: "Whole wheat flour", quantity: 50, unit: "g", notes: "", order_index: 1 },
@@ -398,7 +385,6 @@ const RECIPES = [
     image_url: IMAGES.steak,
     visibility: "public" as const,
     published_at: new Date().toISOString(),
-    is_favorite: true,
     ingredients: [
       { ingredient_name: "Ribeye steak", quantity: 2, unit: "", notes: "2.5cm thick, room temperature", order_index: 0 },
       { ingredient_name: "Unsalted butter", quantity: 80, unit: "g", notes: "softened", order_index: 1 },
@@ -425,7 +411,6 @@ const RECIPES = [
     source_url: "https://www.instagram.com/p/example",
     image_url: IMAGES.smoothie,
     visibility: "private" as const,
-    is_favorite: false,
     ingredients: [
       { ingredient_name: "Frozen mixed berries", quantity: 150, unit: "g", notes: "", order_index: 0 },
       { ingredient_name: "Banana", quantity: 1, unit: "", notes: "frozen", order_index: 1 },
@@ -492,7 +477,6 @@ async function seed() {
       source_url: (recipe as any).source_url || null,
       visibility: recipe.visibility,
       published_at: (recipe as any).published_at || null,
-      is_favorite: recipe.is_favorite,
       created_by: userId,
     };
 

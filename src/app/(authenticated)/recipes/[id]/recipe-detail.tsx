@@ -12,6 +12,7 @@ import { CookingLog } from "./cooking-log";
 import { PublishButton } from "./publish-button";
 import { ShareButton } from "./share-button";
 import { ForkButton } from "./fork-button";
+import { SaveButton } from "./save-button";
 import { PhotoCarousel } from "./photo-carousel";
 import { CollectionPicker } from "./collection-picker";
 
@@ -20,6 +21,12 @@ interface Ingredient {
   quantity: number | null;
   unit: string | null;
   ingredient_name: string;
+  notes: string | null;
+}
+
+interface CookEntry {
+  id: string;
+  cooked_at: string;
   notes: string | null;
 }
 
@@ -35,7 +42,6 @@ interface Recipe {
   source_url: string | null;
   source_name: string | null;
   source_type: string;
-  is_favorite: boolean;
   visibility: string;
 }
 
@@ -56,6 +62,7 @@ interface ForkedFrom {
   id: string;
   title: string;
   creator_name: string;
+  creator_id: string;
 }
 
 function formatInstructions(text: string): string[] {
@@ -69,6 +76,9 @@ export function RecipeDetail({
   ingredients,
   tags,
   ratings,
+  cookEntries,
+  isFavorited,
+  isSaved,
   isOwner,
   forkedFrom,
   creatorName,
@@ -83,6 +93,9 @@ export function RecipeDetail({
   ingredients: Ingredient[];
   tags: Tag[];
   ratings: RatingEntry[];
+  cookEntries: CookEntry[];
+  isFavorited: boolean;
+  isSaved: boolean;
   isOwner: boolean;
   forkedFrom: ForkedFrom | null;
   creatorName: string | null;
@@ -93,6 +106,7 @@ export function RecipeDetail({
   shareNotes?: string | null;
   photos?: { id: string; url: string; imageType: string }[];
 }) {
+  const hasCooked = cookEntries.length > 0;
   const [unitSystem, setUnitSystem] = useUnitSystem();
   const [servings, setServings] = useState(recipe.servings ?? 0);
   const scaleFactor = recipe.servings ? servings / recipe.servings : 1;
@@ -119,15 +133,22 @@ export function RecipeDetail({
         </div>
       ) : null}
 
-      {forkedFrom && (
+      {forkedFrom ? (
         <div className="mb-3 text-sm text-warm-gray">
           Forked from{" "}
           <Link href={`/recipes/${forkedFrom.id}`} className="text-accent hover:underline">
             {forkedFrom.title}
           </Link>{" "}
-          by {forkedFrom.creator_name}
+          by{" "}
+          <Link href={`/profile/${forkedFrom.creator_id}`} className="text-accent hover:underline">
+            {forkedFrom.creator_name}
+          </Link>
         </div>
-      )}
+      ) : recipe.source_type === "fork" ? (
+        <div className="mb-3 text-sm text-warm-gray">
+          Forked from a recipe that is no longer available
+        </div>
+      ) : null}
 
       {creatorName && creatorId && (
         <div className="mb-3 text-sm text-warm-gray">
@@ -173,7 +194,7 @@ export function RecipeDetail({
         <div className="flex gap-2 pt-1">
           {isOwner ? (
             <>
-              <FavoriteButton recipeId={recipe.id} isFavorite={recipe.is_favorite} />
+              <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
               {(recipe.source_type === "manual" || forkedFrom) ? (
                 <PublishButton
                   recipeId={recipe.id}
@@ -197,7 +218,11 @@ export function RecipeDetail({
               <DeleteButton recipeId={recipe.id} />
             </>
           ) : (
-            <ForkButton recipeId={recipe.id} />
+            <>
+              <SaveButton recipeId={recipe.id} isSaved={isSaved} />
+              <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
+              <ForkButton recipeId={recipe.id} />
+            </>
           )}
         </div>
       </div>
@@ -343,7 +368,7 @@ export function RecipeDetail({
       )}
 
       <div className="mb-10">
-        <CookingLog recipeId={recipe.id} ratings={ratings} />
+        <CookingLog recipeId={recipe.id} cookEntries={cookEntries} ratings={ratings} />
       </div>
     </div>
   );

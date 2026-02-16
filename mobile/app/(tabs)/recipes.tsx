@@ -23,6 +23,7 @@ import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 import CollectionsSection from '@/components/ui/CollectionsSection';
 
 type SortOption = 'updated' | 'alpha' | 'rating' | 'prep' | 'cook';
+type FilterOption = '' | 'favorited' | 'want-to-cook';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'updated', label: 'Recent' },
@@ -30,6 +31,12 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'rating', label: 'Top Rated' },
   { value: 'prep', label: 'Prep Time' },
   { value: 'cook', label: 'Cook Time' },
+];
+
+const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
+  { value: '', label: 'All' },
+  { value: 'favorited', label: 'Favorited' },
+  { value: 'want-to-cook', label: 'Want to Cook' },
 ];
 
 const COURSE_OPTIONS = [
@@ -43,11 +50,12 @@ interface Recipe {
   image_url: string | null;
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
-  is_favorite: boolean;
   visibility: string;
   avgRating: number | null;
   ratingCount: number;
   tags: string[];
+  isFavorited: boolean;
+  hasCooked: boolean;
 }
 
 export default function RecipesScreen() {
@@ -56,6 +64,7 @@ export default function RecipesScreen() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('updated');
+  const [activeFilter, setActiveFilter] = useState<FilterOption>('');
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<string[]>([]);
@@ -123,30 +132,52 @@ export default function RecipesScreen() {
     if (!user) return;
     setLoading(true);
 
-    let query = supabase
+    const selectFields = 'id, title, description, image_url, prep_time_minutes, cook_time_minutes, visibility, recipe_tags(tag)';
+
+    let ownedQuery = supabase
       .from('recipes')
-      .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes, is_favorite, visibility, recipe_tags(tag)')
+      .select(selectFields)
       .eq('created_by', user.id);
 
-    if (sort === 'alpha') {
-      query = query.order('title', { ascending: true });
-    } else if (sort === 'prep') {
-      query = query.order('prep_time_minutes', { ascending: true, nullsFirst: false });
-    } else if (sort === 'cook') {
-      query = query.order('cook_time_minutes', { ascending: true, nullsFirst: false });
-    } else {
-      query = query.order('updated_at', { ascending: false });
-    }
-
     if (search) {
-      query = query.ilike('title', `%${search}%`);
+      ownedQuery = ownedQuery.ilike('title', `%${search}%`);
     }
 
-    const { data } = await query;
-    const recipeList = data || [];
+    // Fetch owned recipes, saved IDs, favorites, and cook log in parallel
+    const [
+      { data: ownedData },
+      { data: savedEntries },
+      { data: favEntries },
+      { data: cookLogEntries },
+    ] = await Promise.all([
+      ownedQuery,
+      supabase.from('saved_recipes').select('recipe_id').eq('user_id', user.id),
+      supabase.from('recipe_favorites').select('recipe_id').eq('user_id', user.id),
+      supabase.from('cook_log').select('recipe_id').eq('user_id', user.id),
+    ]);
+
+    const savedRecipeIds = new Set((savedEntries || []).map((s) => s.recipe_id));
+    const favoritedIds = new Set((favEntries || []).map((f) => f.recipe_id));
+    const cookedIds = new Set((cookLogEntries || []).map((c) => c.recipe_id));
+
+    // Fetch saved recipe details if any
+    let savedRecipes: typeof ownedData = [];
+    if (savedRecipeIds.size > 0) {
+      let savedQuery = supabase
+        .from('recipes')
+        .select(selectFields)
+        .in('id', Array.from(savedRecipeIds));
+      if (search) {
+        savedQuery = savedQuery.ilike('title', `%${search}%`);
+      }
+      const { data } = await savedQuery;
+      savedRecipes = data;
+    }
+
+    const recipeList = [...(ownedData || []), ...(savedRecipes || [])];
 
     // Batch fetch ratings for all recipes
-    let ratingMap = new Map<string, { total: number; count: number }>();
+    const ratingMap = new Map<string, { total: number; count: number }>();
     if (recipeList.length > 0) {
       const { data: ratings } = await supabase
         .from('recipe_ratings')
@@ -168,6 +199,8 @@ export default function RecipesScreen() {
         avgRating: ratingInfo ? ratingInfo.total / ratingInfo.count : null,
         ratingCount: ratingInfo?.count || 0,
         tags: ((r as any).recipe_tags || []).map((t: { tag: string }) => t.tag),
+        isFavorited: favoritedIds.has(r.id),
+        hasCooked: cookedIds.has(r.id),
       };
     });
 
@@ -192,16 +225,24 @@ export default function RecipesScreen() {
       );
     }
 
-    // Sort favorites first, then by rating if selected
+    // Apply interaction filter
+    if (activeFilter === 'favorited') {
+      enriched = enriched.filter((r) => r.isFavorited);
+    } else if (activeFilter === 'want-to-cook') {
+      enriched = enriched.filter((r) => !r.hasCooked);
+    }
+
+    // Sort favorites first, then by chosen sort
     enriched.sort((a, b) => {
-      if (a.is_favorite !== b.is_favorite) return a.is_favorite ? -1 : 1;
+      if (a.isFavorited !== b.isFavorited) return a.isFavorited ? -1 : 1;
       if (sort === 'rating') return (b.avgRating || 0) - (a.avgRating || 0);
+      if (sort === 'alpha') return a.title.localeCompare(b.title);
       return 0;
     });
 
     setRecipes(enriched);
     setLoading(false);
-  }, [user, search, sort, selectedCourse, selectedTag]);
+  }, [user, search, sort, activeFilter, selectedCourse, selectedTag]);
 
   useFocusEffect(
     useCallback(() => {
@@ -257,6 +298,25 @@ export default function RecipesScreen() {
               activeOpacity={0.7}
             >
               <Text style={[styles.sortPillText, sort === opt.value && styles.sortPillTextActive]}>
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.courseRow}
+        >
+          {FILTER_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.value}
+              style={[styles.coursePill, activeFilter === opt.value && styles.coursePillActive]}
+              onPress={() => setActiveFilter(opt.value)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.coursePillText, activeFilter === opt.value && styles.coursePillTextActive]}>
                 {opt.label}
               </Text>
             </TouchableOpacity>

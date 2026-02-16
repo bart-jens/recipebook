@@ -11,6 +11,12 @@ const SORT_OPTIONS = [
   { value: "cook", label: "Cook time" },
 ];
 
+const FILTER_OPTIONS = [
+  { value: "", label: "All recipes" },
+  { value: "favorited", label: "Favorited" },
+  { value: "want-to-cook", label: "Want to Cook" },
+];
+
 const COURSE_OPTIONS = [
   { value: "", label: "All courses" },
   { value: "breakfast", label: "Breakfast" },
@@ -32,6 +38,7 @@ export function RecipeListControls() {
   const sort = searchParams.get("sort") || "updated";
   const tag = searchParams.get("tag") || "";
   const course = searchParams.get("course") || "";
+  const filter = searchParams.get("filter") || "";
 
   function updateParams(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -91,6 +98,17 @@ export function RecipeListControls() {
             <span className="ml-0.5">&times;</span>
           </button>
         )}
+        <select
+          value={filter}
+          onChange={(e) => updateParams({ filter: e.target.value })}
+          className="rounded-md bg-warm-tag px-3 py-2 text-sm text-warm-gray focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+        >
+          {FILTER_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
         <select
           value={course}
           onChange={(e) => updateParams({ course: e.target.value })}

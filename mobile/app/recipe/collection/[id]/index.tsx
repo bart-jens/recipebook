@@ -23,7 +23,6 @@ interface Recipe {
   image_url: string | null;
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
-  is_favorite: boolean;
   visibility: string;
   avgRating: number | null;
   ratingCount: number;
@@ -69,7 +68,7 @@ export default function CollectionDetailScreen() {
     const recipeIds = memberships.map((m: { recipe_id: string }) => m.recipe_id);
     const { data: recipeData } = await supabase
       .from('recipes')
-      .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes, is_favorite, visibility, recipe_tags(tag)')
+      .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes, visibility, recipe_tags(tag)')
       .in('id', recipeIds);
 
     // Batch ratings
