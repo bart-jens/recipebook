@@ -102,7 +102,7 @@ export function AvatarUpload({
             className="h-20 w-20 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-warm-tag text-3xl font-serif font-semibold text-warm-gray">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-warm-tag text-3xl font-semibold text-warm-gray">
             {displayName[0]?.toUpperCase() || "?"}
           </div>
         )}

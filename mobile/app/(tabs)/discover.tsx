@@ -7,6 +7,8 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -38,36 +40,20 @@ interface DiscoverRecipe {
   tags: string[];
 }
 
+const PAGE_SIZE = 20;
+
 export default function DiscoverScreen() {
   const [recipes, setRecipes] = useState<DiscoverRecipe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('newest');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<string[]>([]);
 
-  const fetchRecipes = useCallback(async () => {
-    setLoading(true);
-
-    let query = supabase
-      .from('recipes')
-      .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes, created_by, recipe_tags(tag)')
-      .eq('visibility', 'public')
-      .order('published_at', { ascending: false })
-      .limit(50);
-
-    if (search) {
-      query = query.ilike('title', `%${search}%`);
-    }
-
-    const { data: recipeData } = await query;
-    if (!recipeData || recipeData.length === 0) {
-      setRecipes([]);
-      setAllTags([]);
-      setLoading(false);
-      return;
-    }
-
+  const enrichRecipes = async (recipeData: any[]): Promise<DiscoverRecipe[]> => {
     // Collect all unique tags
     const tagSet = new Set<string>();
     for (const r of recipeData) {
@@ -147,9 +133,67 @@ export default function DiscoverScreen() {
       enriched.sort((a, b) => b.forkCount - a.forkCount);
     }
 
+    return enriched;
+  };
+
+  const fetchRecipes = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true); else setLoading(true);
+
+    let query = supabase
+      .from('recipes')
+      .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes, created_by, recipe_tags(tag)')
+      .eq('visibility', 'public')
+      .order('published_at', { ascending: false })
+      .limit(PAGE_SIZE);
+
+    if (search) {
+      query = query.ilike('title', `%${search}%`);
+    }
+
+    const { data: recipeData } = await query;
+    if (!recipeData || recipeData.length === 0) {
+      setRecipes([]);
+      setAllTags([]);
+      setHasMore(false);
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
+    const enriched = await enrichRecipes(recipeData);
     setRecipes(enriched);
+    setHasMore(recipeData.length >= PAGE_SIZE);
     setLoading(false);
+    setRefreshing(false);
   }, [search, sort, selectedTag]);
+
+  const loadMoreRecipes = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+
+    let query = supabase
+      .from('recipes')
+      .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes, created_by, recipe_tags(tag)')
+      .eq('visibility', 'public')
+      .order('published_at', { ascending: false })
+      .range(recipes.length, recipes.length + PAGE_SIZE - 1);
+
+    if (search) {
+      query = query.ilike('title', `%${search}%`);
+    }
+
+    const { data: recipeData } = await query;
+    if (!recipeData || recipeData.length === 0) {
+      setHasMore(false);
+      setLoadingMore(false);
+      return;
+    }
+
+    const enriched = await enrichRecipes(recipeData);
+    setRecipes((prev) => [...prev, ...enriched]);
+    setHasMore(recipeData.length >= PAGE_SIZE);
+    setLoadingMore(false);
+  }, [recipes.length, search, sort, selectedTag, loadingMore, hasMore]);
 
   useFocusEffect(
     useCallback(() => {
@@ -237,6 +281,23 @@ export default function DiscoverScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => fetchRecipes(true)}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          }
+          onEndReached={loadMoreRecipes}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={styles.footer}>
+                <ActivityIndicator size="small" color={colors.primary} />
+              </View>
+            ) : null
+          }
           renderItem={({ item }) => (
             <RecipeCard
               recipe={item}
@@ -332,5 +393,9 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: spacing.md,
+  },
+  footer: {
+    paddingVertical: spacing.xl,
+    alignItems: 'center',
   },
 });

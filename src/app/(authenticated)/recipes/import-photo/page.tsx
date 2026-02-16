@@ -47,6 +47,7 @@ export default function ImportPhotoPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [importedData, setImportedData] = useState<RecipeFormData | null>(null);
+  const [sourceName, setSourceName] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -100,6 +101,9 @@ export default function ImportPhotoPage() {
 
   async function handleSave(formData: FormData) {
     formData.set("source_type", "photo");
+    if (sourceName.trim()) {
+      formData.set("source_name", sourceName.trim());
+    }
     return createRecipe(formData);
   }
 
@@ -110,8 +114,22 @@ export default function ImportPhotoPage() {
           <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
             &larr; Back to recipes
           </Link>
-          <h1 className="mt-2 font-serif text-2xl font-semibold">Review Imported Recipe</h1>
+          <h1 className="mt-2 text-2xl font-semibold">Review Imported Recipe</h1>
           <p className="mt-1 text-sm text-warm-gray">Extracted from photo. Review and edit before saving.</p>
+        </div>
+        <div className="mb-6 max-w-2xl">
+          <label htmlFor="source_name" className="block text-sm font-medium text-warm-gray">
+            Source (optional)
+          </label>
+          <input
+            id="source_name"
+            type="text"
+            placeholder="e.g. The Food Lab, Ottolenghi Simple"
+            value={sourceName}
+            onChange={(e) => setSourceName(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-warm-border bg-white px-3 py-2.5 text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+          <p className="mt-1 text-xs text-warm-gray/60">Where is this recipe from? Cookbook, website, family recipe...</p>
         </div>
         <RecipeForm
           initialData={importedData}
@@ -134,7 +152,7 @@ export default function ImportPhotoPage() {
         <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
           &larr; Back to recipes
         </Link>
-        <h1 className="mt-2 font-serif text-2xl font-semibold">Import from Photo</h1>
+        <h1 className="mt-2 text-2xl font-semibold">Import from Photo</h1>
         <p className="mt-1 text-sm text-warm-gray">Upload a photo of a recipe card or cookbook page.</p>
       </div>
 

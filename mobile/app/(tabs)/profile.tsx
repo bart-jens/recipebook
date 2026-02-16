@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   avatarWrap: { marginBottom: spacing.md },
   name: {
     ...typography.h2,
-    fontFamily: fontFamily.serifBold,
+    fontFamily: fontFamily.sansBold,
     color: colors.text,
   },
   email: {

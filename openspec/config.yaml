@@ -15,7 +15,7 @@ context: |
   - Deployment: Vercel
   - Recipe extraction: Gemini Vision API (photo → structured recipe JSON)
   - URL parsing: schema.org Recipe markup parser
-  - Styling: Tailwind CSS (warm NYT Cooking-inspired palette)
+  - Styling: Tailwind CSS (teal + amber palette, DM Sans + Fraunces typography)
 
   Tech Stack (Mobile — planned):
   - Framework: React Native with Expo (managed workflow)

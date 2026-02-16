@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { RecommendationCard } from "../components/recommendation-card";
 
 interface RecentRecipe {
   id: string;
@@ -80,6 +81,50 @@ export default async function HomePage() {
     (profiles || []).map((p) => [p.id, p.display_name])
   );
 
+  // Fetch recommendation cards from followed users
+  const { data: followedIds } = await supabase
+    .from("user_follows")
+    .select("following_id")
+    .eq("follower_id", user.id);
+
+  let shareCards: {
+    share_id: string;
+    user_id: string;
+    recipe_id: string;
+    share_notes: string | null;
+    shared_at: string;
+    title: string;
+    source_url: string | null;
+    source_name: string | null;
+    source_type: string;
+    image_url: string | null;
+    tags: string[] | null;
+    user_rating: number | null;
+  }[] = [];
+  let sharerProfiles: Map<string, { display_name: string; avatar_url: string | null }> = new Map();
+
+  if (followedIds && followedIds.length > 0) {
+    const ids = followedIds.map((f) => f.following_id);
+    const { data: cards } = await supabase
+      .from("recipe_share_cards")
+      .select("*")
+      .in("user_id", ids)
+      .order("shared_at", { ascending: false })
+      .limit(10);
+    shareCards = (cards || []) as typeof shareCards;
+
+    if (shareCards.length > 0) {
+      const sharerIds = Array.from(new Set(shareCards.map((c) => c.user_id)));
+      const { data: sharerData } = await supabase
+        .from("user_profiles")
+        .select("id, display_name, avatar_url")
+        .in("id", sharerIds);
+      sharerProfiles = new Map(
+        (sharerData || []).map((p) => [p.id, { display_name: p.display_name, avatar_url: p.avatar_url }])
+      );
+    }
+  }
+
   const greeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -89,7 +134,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <h1 className="font-serif text-2xl font-semibold">
+      <h1 className="text-2xl font-semibold">
         {greeting()}, {displayName}
       </h1>
 
@@ -115,7 +160,7 @@ export default async function HomePage() {
       {/* Recently Updated */}
       <div className="mt-8">
         <div className="flex items-center justify-between">
-          <h2 className="font-serif text-lg font-semibold">
+          <h2 className="text-lg font-semibold">
             Recently Updated
           </h2>
           <Link
@@ -169,11 +214,44 @@ export default async function HomePage() {
         )}
       </div>
 
+      {/* Friend Recommendations */}
+      {shareCards.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold">
+            Friend Recommendations
+          </h2>
+          <div className="mt-4 space-y-3">
+            {shareCards.map((card) => {
+              const sharer = sharerProfiles.get(card.user_id);
+              return (
+                <RecommendationCard
+                  key={card.share_id}
+                  shareId={card.share_id}
+                  title={card.title}
+                  sourceUrl={card.source_url}
+                  sourceName={card.source_name}
+                  sourceType={card.source_type}
+                  imageUrl={card.image_url}
+                  tags={card.tags}
+                  userRating={card.user_rating}
+                  shareNotes={card.share_notes}
+                  sharedAt={card.shared_at}
+                  sharerName={sharer?.display_name || "Unknown"}
+                  sharerAvatarUrl={sharer?.avatar_url || null}
+                  sharerId={card.user_id}
+                  recipeId={card.recipe_id}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Discover / Trending */}
       {(trending || []).length > 0 && (
         <div className="mt-8">
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-lg font-semibold">Discover</h2>
+            <h2 className="text-lg font-semibold">Discover</h2>
             <Link
               href="/discover"
               className="text-sm text-warm-gray hover:text-accent"

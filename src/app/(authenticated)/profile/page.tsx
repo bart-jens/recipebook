@@ -67,12 +67,12 @@ export default async function ProfilePage() {
               className="h-16 w-16 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-tag text-2xl font-serif font-semibold text-warm-gray">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-tag text-2xl font-semibold text-warm-gray">
               {(profile?.display_name || "?")[0].toUpperCase()}
             </div>
           )}
           <div>
-            <h1 className="font-serif text-2xl font-semibold">
+            <h1 className="text-2xl font-semibold">
               {profile?.display_name || "Anonymous"}
             </h1>
             <p className="text-sm text-warm-gray">{user.email}</p>
@@ -131,7 +131,7 @@ export default async function ProfilePage() {
       {(recipes || []).length > 0 && (
         <div>
           <div className="mb-4 border-b border-warm-divider pb-2">
-            <h2 className="font-serif text-xs font-medium uppercase tracking-widest text-warm-gray">
+            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">
               Your Recipes
             </h2>
           </div>

@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   title: {
-    fontFamily: fontFamily.serifSemiBold,
+    fontFamily: fontFamily.sansBold,
     fontSize: 18,
     color: colors.text,
   },

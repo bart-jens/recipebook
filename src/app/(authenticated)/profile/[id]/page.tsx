@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { FollowButton } from "./follow-button";
+import { RecommendationCard } from "../../components/recommendation-card";
 
 export default async function PublicProfilePage({
   params,
@@ -55,14 +56,23 @@ export default async function PublicProfilePage({
 
   // Fetch recipes only if allowed
   let recipes: { id: string; title: string; description: string | null; updated_at: string; recipe_ratings: { rating: number }[] }[] = [];
+  let shareCards: { share_id: string; user_id: string; recipe_id: string; share_notes: string | null; shared_at: string; title: string; source_url: string | null; source_name: string | null; source_type: string; image_url: string | null; tags: string[] | null; user_rating: number | null }[] = [];
   if (canViewContent) {
-    const { data } = await supabase
-      .from("recipes")
-      .select("id, title, description, updated_at, recipe_ratings(rating)")
-      .eq("created_by", params.id)
-      .eq("visibility", "public")
-      .order("updated_at", { ascending: false });
-    recipes = (data || []) as typeof recipes;
+    const [{ data: recipeData }, { data: shareData }] = await Promise.all([
+      supabase
+        .from("recipes")
+        .select("id, title, description, updated_at, recipe_ratings(rating)")
+        .eq("created_by", params.id)
+        .eq("visibility", "public")
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("recipe_share_cards")
+        .select("*")
+        .eq("user_id", params.id)
+        .order("shared_at", { ascending: false }),
+    ]);
+    recipes = (recipeData || []) as typeof recipes;
+    shareCards = (shareData || []) as typeof shareCards;
   }
 
   const { data: ratings } = await supabase
@@ -99,12 +109,12 @@ export default async function PublicProfilePage({
               className="h-16 w-16 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-tag text-2xl font-serif font-semibold text-warm-gray">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-tag text-2xl font-semibold text-warm-gray">
               {profile.display_name[0].toUpperCase()}
             </div>
           )}
           <div>
-            <h1 className="font-serif text-2xl font-semibold">
+            <h1 className="text-2xl font-semibold">
               {profile.display_name}
             </h1>
             {profile.role === "creator" && (
@@ -161,7 +171,7 @@ export default async function PublicProfilePage({
       ) : recipes.length > 0 ? (
         <div>
           <div className="mb-4 border-b border-warm-divider pb-2">
-            <h2 className="font-serif text-xs font-medium uppercase tracking-widest text-warm-gray">
+            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">
               Published Recipes
             </h2>
           </div>
@@ -202,6 +212,38 @@ export default async function PublicProfilePage({
         </div>
       ) : (
         <p className="text-sm text-warm-gray/60">No published recipes yet.</p>
+      )}
+
+      {/* Recommendations */}
+      {canViewContent && shareCards.length > 0 && (
+        <div className="mt-8">
+          <div className="mb-4 border-b border-warm-divider pb-2">
+            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">
+              Recommendations
+            </h2>
+          </div>
+          <div className="space-y-3">
+            {shareCards.map((card) => (
+              <RecommendationCard
+                key={card.share_id}
+                shareId={card.share_id}
+                title={card.title}
+                sourceUrl={card.source_url}
+                sourceName={card.source_name}
+                sourceType={card.source_type}
+                imageUrl={card.image_url}
+                tags={card.tags}
+                userRating={card.user_rating}
+                shareNotes={card.share_notes}
+                sharedAt={card.shared_at}
+                sharerName={profile.display_name}
+                sharerAvatarUrl={profile.avatar_url}
+                sharerId={params.id}
+                recipeId={card.recipe_id}
+              />
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

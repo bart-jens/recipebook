@@ -9,7 +9,9 @@ import { TagEditor } from "./tag-editor";
 import { FavoriteButton } from "./favorite-button";
 import { CookingLog } from "./cooking-log";
 import { PublishButton } from "./publish-button";
+import { ShareButton } from "./share-button";
 import { ForkButton } from "./fork-button";
+import { PhotoCarousel } from "./photo-carousel";
 
 interface Ingredient {
   id: string;
@@ -29,6 +31,7 @@ interface Recipe {
   cook_time_minutes: number | null;
   servings: number | null;
   source_url: string | null;
+  source_name: string | null;
   source_type: string;
   is_favorite: boolean;
   visibility: string;
@@ -68,6 +71,7 @@ export function RecipeDetail({
   forkedFrom,
   creatorName,
   creatorId,
+  photos,
 }: {
   recipe: Recipe;
   ingredients: Ingredient[];
@@ -77,6 +81,11 @@ export function RecipeDetail({
   forkedFrom: ForkedFrom | null;
   creatorName: string | null;
   creatorId: string | null;
+  publishCount?: number;
+  userPlan?: string;
+  isShared?: boolean;
+  shareNotes?: string | null;
+  photos?: { id: string; url: string; imageType: string }[];
 }) {
   const [unitSystem, setUnitSystem] = useUnitSystem();
 
@@ -90,7 +99,9 @@ export function RecipeDetail({
         </Link>
       </div>
 
-      {recipe.image_url && (
+      {photos && photos.length > 0 ? (
+        <PhotoCarousel photos={photos} />
+      ) : recipe.image_url ? (
         <div className="mb-6 aspect-video w-full overflow-hidden rounded-lg">
           <img
             src={recipe.image_url}
@@ -98,7 +109,7 @@ export function RecipeDetail({
             className="h-full w-full object-cover"
           />
         </div>
-      )}
+      ) : null}
 
       {forkedFrom && (
         <div className="mb-3 text-sm text-warm-gray">
@@ -119,6 +130,29 @@ export function RecipeDetail({
         </div>
       )}
 
+      {recipe.visibility === "public" && !isOwner && ratings.length > 0 && (() => {
+        const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
+        return (
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <svg
+                  key={star}
+                  className={`h-4 w-4 ${star <= Math.round(avgRating) ? "text-amber-400" : "text-warm-border"}`}
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              ))}
+            </div>
+            <span className="text-sm text-warm-gray">
+              {avgRating.toFixed(1)} ({ratings.length} {ratings.length === 1 ? "rating" : "ratings"})
+            </span>
+          </div>
+        );
+      })()}
+
       <div className="mb-3 flex items-start justify-between">
         <div className="flex-1">
           <h1 className="font-serif text-3xl font-semibold leading-tight">{recipe.title}</h1>
@@ -132,7 +166,20 @@ export function RecipeDetail({
           {isOwner ? (
             <>
               <FavoriteButton recipeId={recipe.id} isFavorite={recipe.is_favorite} />
-              <PublishButton recipeId={recipe.id} isPublic={recipe.visibility === "public"} />
+              {(recipe.source_type === "manual" || recipe.source_type === "fork") ? (
+                <PublishButton
+                  recipeId={recipe.id}
+                  isPublic={recipe.visibility === "public"}
+                  publishCount={publishCount}
+                  userPlan={userPlan}
+                />
+              ) : (
+                <ShareButton
+                  recipeId={recipe.id}
+                  isShared={isShared ?? false}
+                  existingNotes={shareNotes}
+                />
+              )}
               <Link
                 href={`/recipes/${recipe.id}/edit`}
                 className="rounded-md border border-warm-border px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag"
@@ -166,15 +213,21 @@ export function RecipeDetail({
         </div>
       )}
 
-      {recipe.source_url && (
-        <a
-          href={recipe.source_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mb-6 inline-block text-sm text-accent hover:underline"
-        >
-          View original source &rarr;
-        </a>
+      {recipe.source_type !== "manual" && (recipe.source_name || recipe.source_url) && (
+        <div className="mb-6 text-sm text-warm-gray">
+          {recipe.source_url ? (
+            <a
+              href={recipe.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent hover:underline"
+            >
+              from {recipe.source_name || new URL(recipe.source_url).hostname.replace(/^www\./, "")}
+            </a>
+          ) : (
+            <span>from {recipe.source_name}</span>
+          )}
+        </div>
       )}
 
       {recipe.description && (
@@ -209,7 +262,7 @@ export function RecipeDetail({
       {ingredients.length > 0 && (
         <div className="mb-10">
           <div className="mb-4 flex items-center justify-between border-b border-warm-divider pb-2">
-            <h2 className="font-serif text-xs font-medium uppercase tracking-widest text-warm-gray">Ingredients</h2>
+            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">Ingredients</h2>
             <UnitToggle system={unitSystem} onChange={setUnitSystem} />
           </div>
           <ul className="space-y-2">
@@ -232,7 +285,7 @@ export function RecipeDetail({
       {instructions.length > 0 && (
         <div className="mb-10">
           <div className="mb-4 border-b border-warm-divider pb-2">
-            <h2 className="font-serif text-xs font-medium uppercase tracking-widest text-warm-gray">Preparation</h2>
+            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">Preparation</h2>
           </div>
           {instructions.length === 1 ? (
             <div className="leading-relaxed text-warm-gray whitespace-pre-line">

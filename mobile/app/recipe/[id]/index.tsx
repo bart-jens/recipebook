@@ -6,8 +6,10 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Linking,
   ViewStyle,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
@@ -51,6 +53,8 @@ interface Recipe {
   cook_time_minutes: number | null;
   servings: number | null;
   source_url: string | null;
+  source_name: string | null;
+  source_type: string;
   image_url: string | null;
   is_favorite: boolean;
   visibility: string;
@@ -99,6 +103,12 @@ export default function RecipeDetailScreen() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [addingTag, setAddingTag] = useState(false);
+  const [isShared, setIsShared] = useState(false);
+  const [shareNotes, setShareNotes] = useState<string | null>(null);
+  const [publishCount, setPublishCount] = useState(0);
+  const [userPlan, setUserPlan] = useState('free');
+  const [photos, setPhotos] = useState<{ id: string; url: string; imageType: string }[]>([]);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
   const scrollY = useSharedValue(0);
 
@@ -111,7 +121,7 @@ export default function RecipeDetailScreen() {
   const fetchRecipe = useCallback(async () => {
     if (!id) return;
 
-    const [{ data: recipeData }, { data: ingredientData }, { data: tagData }, { data: ratingData }] =
+    const [{ data: recipeData }, { data: ingredientData }, { data: tagData }, { data: ratingData }, { data: imageData }] =
       await Promise.all([
         supabase.from('recipes').select('*').eq('id', id).single(),
         supabase
@@ -125,12 +135,31 @@ export default function RecipeDetailScreen() {
           .select('id, rating, notes, cooked_date, created_at')
           .eq('recipe_id', id)
           .order('cooked_date', { ascending: false }),
+        supabase
+          .from('recipe_images')
+          .select('id, storage_path, image_type')
+          .eq('recipe_id', id)
+          .order('created_at'),
       ]);
 
     setRecipe(recipeData);
     setIngredients(ingredientData || []);
     setTags(tagData || []);
     setRatings(ratingData || []);
+
+    // Build photo list: user uploads first, then source images
+    const photoList = (imageData || [])
+      .sort((a, b) => {
+        if (a.image_type === 'user_upload' && b.image_type !== 'user_upload') return -1;
+        if (a.image_type !== 'user_upload' && b.image_type === 'user_upload') return 1;
+        return 0;
+      })
+      .map((img) => ({
+        id: img.id,
+        url: supabase.storage.from('recipe-images').getPublicUrl(img.storage_path).data.publicUrl,
+        imageType: img.image_type,
+      }));
+    setPhotos(photoList);
 
     if (recipeData && recipeData.created_by !== user?.id) {
       const { data: creator } = await supabase
@@ -139,6 +168,29 @@ export default function RecipeDetailScreen() {
         .eq('id', recipeData.created_by)
         .single();
       setCreatorName(creator?.display_name || null);
+    }
+
+    // Owner-specific data
+    if (recipeData && recipeData.created_by === user?.id) {
+      // Fetch publish count and user plan
+      const [{ data: profileData }, { count }] = await Promise.all([
+        supabase.from('user_profiles').select('plan').eq('id', user!.id).single(),
+        supabase.from('recipes').select('id', { count: 'exact', head: true }).eq('created_by', user!.id).eq('visibility', 'public'),
+      ]);
+      setUserPlan(profileData?.plan || 'free');
+      setPublishCount(count || 0);
+
+      // Check share status for imported recipes
+      if (recipeData.source_type !== 'manual' && recipeData.source_type !== 'fork') {
+        const { data: share } = await supabase
+          .from('recipe_shares')
+          .select('notes')
+          .eq('user_id', user!.id)
+          .eq('recipe_id', id)
+          .maybeSingle();
+        setIsShared(!!share);
+        setShareNotes(share?.notes || null);
+      }
     }
 
     setLoading(false);
@@ -160,17 +212,46 @@ export default function RecipeDetailScreen() {
     await supabase.from('recipes').update({ is_favorite: newVal }).eq('id', recipe.id);
   };
 
+  const publishLimit = 10;
+  const atPublishLimit = userPlan === 'free' && publishCount >= publishLimit;
+
   const togglePublish = async () => {
     if (!recipe || !isOwner) return;
     const isPublic = recipe.visibility === 'public';
-    const newVisibility = isPublic ? 'private' : 'public';
-    const update: Record<string, string | null> = { visibility: newVisibility };
-    if (!isPublic) update.published_at = new Date().toISOString();
-    setRecipe({ ...recipe, visibility: newVisibility });
-    if (!isPublic) {
-      setShowCelebration(true);
+
+    if (!isPublic && atPublishLimit) {
+      Alert.alert(
+        'Publish limit reached',
+        `Free accounts can publish up to ${publishLimit} recipes. Upgrade to Premium for unlimited publishing.`
+      );
+      return;
     }
-    await supabase.from('recipes').update(update).eq('id', recipe.id);
+
+    Alert.alert(
+      isPublic ? 'Unpublish recipe?' : 'Publish recipe?',
+      isPublic
+        ? 'This will remove the recipe from public discovery. Continue?'
+        : 'Publishing will make this recipe visible to everyone. Continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: isPublic ? 'Unpublish' : 'Publish',
+          onPress: async () => {
+            const newVisibility = isPublic ? 'private' : 'public';
+            const update: Record<string, string | null> = { visibility: newVisibility };
+            if (!isPublic) update.published_at = new Date().toISOString();
+            setRecipe({ ...recipe, visibility: newVisibility });
+            if (!isPublic) {
+              setShowCelebration(true);
+              setPublishCount((c) => c + 1);
+            } else {
+              setPublishCount((c) => Math.max(0, c - 1));
+            }
+            await supabase.from('recipes').update(update).eq('id', recipe.id);
+          },
+        },
+      ]
+    );
   };
 
   const forkRecipe = async () => {
@@ -219,6 +300,52 @@ export default function RecipeDetailScreen() {
     Alert.alert('Saved!', 'Recipe saved to your collection', [
       { text: 'View', onPress: () => router.replace(`/recipe/${forked.id}`) },
       { text: 'OK' },
+    ]);
+  };
+
+  const handleShare = () => {
+    if (!recipe || !user) return;
+    Alert.prompt(
+      'Share this recipe',
+      'Any changes you made? (optional)',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Share',
+          onPress: async (notes?: string) => {
+            const { error } = await supabase.from('recipe_shares').insert({
+              user_id: user.id,
+              recipe_id: recipe.id,
+              notes: notes?.trim() || null,
+            });
+            if (error) {
+              Alert.alert('Error', 'Could not share recipe');
+            } else {
+              setIsShared(true);
+              setShareNotes(notes?.trim() || null);
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            }
+          },
+        },
+      ],
+      'plain-text',
+      shareNotes || ''
+    );
+  };
+
+  const handleUnshare = async () => {
+    if (!recipe || !user) return;
+    Alert.alert('Unshare recipe?', 'This will remove the recommendation from your followers.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Unshare',
+        style: 'destructive',
+        onPress: async () => {
+          await supabase.from('recipe_shares').delete().eq('user_id', user.id).eq('recipe_id', recipe.id);
+          setIsShared(false);
+          setShareNotes(null);
+        },
+      },
     ]);
   };
 
@@ -465,6 +592,42 @@ export default function RecipeDetailScreen() {
               </TouchableOpacity>
             )}
 
+            {/* Aggregate rating for public recipes */}
+            {recipe.visibility === 'public' && !isOwner && ratings.length > 0 && (() => {
+              const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
+              return (
+                <View style={styles.aggregateRating}>
+                  <View style={styles.aggregateStars}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Text
+                        key={star}
+                        style={star <= Math.round(avgRating) ? styles.starFilled : styles.starEmpty}
+                      >
+                        {'\u2605'}
+                      </Text>
+                    ))}
+                  </View>
+                  <Text style={styles.aggregateText}>
+                    {avgRating.toFixed(1)} ({ratings.length} {ratings.length === 1 ? 'rating' : 'ratings'})
+                  </Text>
+                </View>
+              );
+            })()}
+
+            {/* Source attribution for imported recipes */}
+            {recipe.source_type !== 'manual' && (recipe.source_name || recipe.source_url) && (
+              <TouchableOpacity
+                activeOpacity={recipe.source_url ? 0.7 : 1}
+                onPress={recipe.source_url ? () => Linking.openURL(recipe.source_url!) : undefined}
+                disabled={!recipe.source_url}
+                style={{ marginBottom: spacing.xs }}
+              >
+                <Text style={recipe.source_url ? styles.sourceLink : styles.sourceText}>
+                  from {recipe.source_name || (recipe.source_url ? new URL(recipe.source_url).hostname.replace(/^www\./, '') : '')}
+                </Text>
+              </TouchableOpacity>
+            )}
+
             {/* Title and favorite */}
             <Animated.View entering={FadeInDown.duration(300)} style={styles.titleRow}>
               <Text style={styles.title}>{recipe.title}</Text>
@@ -486,21 +649,40 @@ export default function RecipeDetailScreen() {
                   size="sm"
                   onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
                 />
-                {recipe.visibility === 'public' ? (
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    style={styles.publishedButton}
-                    onPress={togglePublish}
-                  >
-                    <Text style={styles.publishedText}>Published</Text>
-                  </TouchableOpacity>
+                {(recipe.source_type === 'manual' || recipe.source_type === 'fork') ? (
+                  recipe.visibility === 'public' ? (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      style={styles.publishedButton}
+                      onPress={togglePublish}
+                    >
+                      <Text style={styles.publishedText}>Published</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <Button
+                      title={atPublishLimit ? `${publishCount}/${publishLimit}` : 'Publish'}
+                      variant="secondary"
+                      size="sm"
+                      onPress={togglePublish}
+                      disabled={atPublishLimit}
+                    />
+                  )
                 ) : (
-                  <Button
-                    title="Publish"
-                    variant="secondary"
-                    size="sm"
-                    onPress={togglePublish}
-                  />
+                  isShared ? (
+                    <Button
+                      title="Shared"
+                      variant="secondary"
+                      size="sm"
+                      onPress={handleUnshare}
+                    />
+                  ) : (
+                    <Button
+                      title="Share"
+                      variant="secondary"
+                      size="sm"
+                      onPress={handleShare}
+                    />
+                  )
                 )}
                 <Button
                   title="Delete"
@@ -509,6 +691,13 @@ export default function RecipeDetailScreen() {
                   onPress={deleteRecipe}
                 />
               </Animated.View>
+            )}
+
+            {/* Publish limit indicator for free users */}
+            {isOwner && userPlan === 'free' && (recipe.source_type === 'manual' || recipe.source_type === 'fork') && (
+              <Text style={styles.publishLimitText}>
+                {publishCount}/{publishLimit} published (free plan)
+              </Text>
             )}
 
             {/* Non-owner: fork button */}
@@ -732,31 +921,81 @@ export default function RecipeDetailScreen() {
           </View>
         </Animated.ScrollView>
 
-        {/* Parallax hero image (positioned behind scroll content) */}
+        {/* Parallax hero image / photo carousel */}
         {hasImage && (
           <Animated.View style={[styles.heroContainer, heroAnimatedStyle]}>
-            <TouchableOpacity
-              activeOpacity={isOwner ? 0.8 : 1}
-              onPress={isOwner ? pickAndUploadImage : undefined}
-              disabled={!isOwner || uploading}
-              style={styles.heroTouchable}
-            >
-              <Image
-                source={{ uri: recipe.image_url! }}
-                style={styles.heroImage}
-                contentFit="cover"
-                transition={200}
-              />
-              <LinearGradient
-                colors={[colors.gradientOverlayStart, colors.gradientOverlayEnd]}
-                style={styles.heroGradient}
-              />
-              {uploading && (
-                <View style={styles.uploadOverlay}>
-                  <ActivityIndicator size="large" color={colors.white} />
+            {photos.length > 1 ? (
+              <View style={styles.heroTouchable}>
+                <ScrollView
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  onMomentumScrollEnd={(e) => {
+                    const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+                    setActivePhotoIndex(index);
+                  }}
+                  style={StyleSheet.absoluteFill}
+                >
+                  {photos.map((photo) => (
+                    <TouchableOpacity
+                      key={photo.id}
+                      activeOpacity={isOwner ? 0.8 : 1}
+                      onPress={isOwner ? pickAndUploadImage : undefined}
+                      disabled={!isOwner || uploading}
+                      style={{ width: SCREEN_WIDTH, height: HERO_HEIGHT }}
+                    >
+                      <Image
+                        source={{ uri: photo.url }}
+                        style={StyleSheet.absoluteFill}
+                        contentFit="cover"
+                        transition={200}
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                <LinearGradient
+                  colors={[colors.gradientOverlayStart, colors.gradientOverlayEnd]}
+                  style={styles.heroGradient}
+                  pointerEvents="none"
+                />
+                {/* Page indicator */}
+                <View style={styles.pageIndicator}>
+                  <View style={styles.pageCounter}>
+                    <Text style={styles.pageCounterText}>
+                      {activePhotoIndex + 1} / {photos.length}
+                    </Text>
+                  </View>
                 </View>
-              )}
-            </TouchableOpacity>
+                {uploading && (
+                  <View style={styles.uploadOverlay}>
+                    <ActivityIndicator size="large" color={colors.white} />
+                  </View>
+                )}
+              </View>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={isOwner ? 0.8 : 1}
+                onPress={isOwner ? pickAndUploadImage : undefined}
+                disabled={!isOwner || uploading}
+                style={styles.heroTouchable}
+              >
+                <Image
+                  source={{ uri: recipe.image_url! }}
+                  style={styles.heroImage}
+                  contentFit="cover"
+                  transition={200}
+                />
+                <LinearGradient
+                  colors={[colors.gradientOverlayStart, colors.gradientOverlayEnd]}
+                  style={styles.heroGradient}
+                />
+                {uploading && (
+                  <View style={styles.uploadOverlay}>
+                    <ActivityIndicator size="large" color={colors.white} />
+                  </View>
+                )}
+              </TouchableOpacity>
+            )}
           </Animated.View>
         )}
 
@@ -825,6 +1064,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  pageIndicator: {
+    position: 'absolute',
+    bottom: spacing.md,
+    right: spacing.md,
+  },
+  pageCounter: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: radii.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+  },
+  pageCounterText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.white,
+  },
 
   // Custom header
   header: {
@@ -875,8 +1130,32 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
 
-  // Creator
+  // Creator & source
   creatorLink: { ...typography.bodySmall, color: colors.primary, fontWeight: '500' },
+  aggregateRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  aggregateStars: {
+    flexDirection: 'row',
+    gap: 1,
+  },
+  starFilled: {
+    fontSize: 15,
+    color: colors.starFilled,
+  },
+  starEmpty: {
+    fontSize: 15,
+    color: colors.border,
+  },
+  aggregateText: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+  },
+  sourceLink: { ...typography.bodySmall, color: colors.primary },
+  sourceText: { ...typography.bodySmall, color: colors.textSecondary },
 
   // Title
   titleRow: {
@@ -907,6 +1186,11 @@ const styles = StyleSheet.create({
     ...typography.label,
     color: colors.success,
     fontWeight: '600',
+  },
+  publishLimitText: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginBottom: spacing.lg,
   },
 
   // Tags

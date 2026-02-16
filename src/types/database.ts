@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          image_type: string
           is_primary: boolean
           recipe_id: string
           storage_path: string
@@ -25,6 +26,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          image_type?: string
           is_primary?: boolean
           recipe_id: string
           storage_path: string
@@ -32,6 +34,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          image_type?: string
           is_primary?: boolean
           recipe_id?: string
           storage_path?: string
@@ -148,6 +151,38 @@ export type Database = {
           },
         ]
       }
+      recipe_shares: {
+        Row: {
+          id: string
+          user_id: string
+          recipe_id: string
+          notes: string | null
+          shared_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          recipe_id: string
+          notes?: string | null
+          shared_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          recipe_id?: string
+          notes?: string | null
+          shared_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_shares_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipes: {
         Row: {
           cook_time_minutes: number | null
@@ -163,6 +198,7 @@ export type Database = {
           published_at: string | null
           servings: number | null
           source_image_path: string | null
+          source_name: string | null
           source_type: string
           source_url: string | null
           sponsored: boolean
@@ -185,6 +221,7 @@ export type Database = {
           published_at?: string | null
           servings?: number | null
           source_image_path?: string | null
+          source_name?: string | null
           source_type?: string
           source_url?: string | null
           sponsored?: boolean
@@ -207,6 +244,7 @@ export type Database = {
           published_at?: string | null
           servings?: number | null
           source_image_path?: string | null
+          source_name?: string | null
           source_type?: string
           source_url?: string | null
           sponsored?: boolean
@@ -421,7 +459,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      recipe_share_cards: {
+        Row: {
+          share_id: string
+          user_id: string
+          recipe_id: string
+          share_notes: string | null
+          shared_at: string
+          title: string
+          source_url: string | null
+          source_name: string | null
+          source_type: string
+          image_url: string | null
+          tags: string[] | null
+          user_rating: number | null
+        }
+      }
     }
     Functions: {
       [_ in never]: never

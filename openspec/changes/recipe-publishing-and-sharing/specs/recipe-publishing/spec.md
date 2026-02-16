@@ -1,16 +1,16 @@
 # Recipe Publishing
 
-Publish personal recipes as public canonical recipes, browse and discover public recipes, and enforce free-tier publishing limits.
+Publish original personal recipes as public canonical recipes, browse and discover public recipes, and enforce free-tier publishing limits.
 
 ---
 
 ## ADDED Requirements
 
 ### Requirement: Publish flow
-The system SHALL allow a recipe owner to publish a personal recipe by setting its visibility to 'public'. Publishing SHALL set `published_at` to the current timestamp. A confirmation dialog SHALL be shown before publishing. After publishing, the recipe SHALL appear in the discovery page.
+The system SHALL allow a recipe owner to publish a personal recipe by setting its visibility to 'public'. Publishing SHALL only be available for original recipes (source_type = 'manual'). Publishing SHALL set `published_at` to the current timestamp. A confirmation dialog SHALL be shown before publishing. After publishing, the recipe SHALL appear in the discovery page.
 
 #### Scenario: Publishing a recipe
-- **WHEN** user taps "Publish" on their private recipe and confirms
+- **WHEN** user taps "Publish" on their private original recipe and confirms
 - **THEN** the recipe's visibility SHALL be set to 'public'
 - **AND** published_at SHALL be set to now()
 - **AND** a success message SHALL be shown
@@ -19,6 +19,11 @@ The system SHALL allow a recipe owner to publish a personal recipe by setting it
 - **WHEN** user taps "Publish" on a private recipe
 - **THEN** a confirmation dialog SHALL be shown: "Publishing will make this recipe visible to everyone. Continue?"
 - **AND** the recipe SHALL NOT be published until the user confirms
+
+#### Scenario: Publish not available for imported recipes
+- **WHEN** user views an imported recipe (source_type != 'manual')
+- **THEN** the publish action SHALL NOT be shown
+- **AND** the share action SHALL be shown instead
 
 ### Requirement: Unpublish flow
 The system SHALL allow a recipe owner to unpublish a public recipe by setting its visibility back to 'private'. Unpublishing SHALL clear `published_at`. A confirmation dialog SHALL be shown before unpublishing.

@@ -53,5 +53,13 @@ export async function rehostImage(
     .from("recipe-images")
     .getPublicUrl(storagePath);
 
+  // Insert recipe_images record with source type
+  await supabase.from("recipe_images").insert({
+    recipe_id: recipeId,
+    storage_path: storagePath,
+    is_primary: true,
+    image_type: "source",
+  });
+
   return urlData.publicUrl;
 }

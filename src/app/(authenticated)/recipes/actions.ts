@@ -18,6 +18,8 @@ export async function createRecipe(formData: FormData) {
   const ingredientsJson = formData.get("ingredients") as string;
   const externalImageUrl = (formData.get("image_url") as string) || null;
 
+  const sourceName = (formData.get("source_name") as string) || null;
+
   const { data: recipe, error } = await supabase
     .from("recipes")
     .insert({
@@ -29,6 +31,7 @@ export async function createRecipe(formData: FormData) {
       servings: servings ? parseInt(servings) : null,
       source_type: (formData.get("source_type") as string) || "manual",
       source_url: (formData.get("source_url") as string) || null,
+      source_name: sourceName,
       image_url: externalImageUrl,
       created_by: user.id,
     })

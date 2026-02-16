@@ -28,6 +28,7 @@ export default function ImportUrlScreen() {
   const [extractedData, setExtractedData] = useState<RecipeFormData | null>(null);
   const [extractedImageUrl, setExtractedImageUrl] = useState<string | null>(null);
   const [extractedTags, setExtractedTags] = useState<string[]>([]);
+  const [extractedSourceName, setExtractedSourceName] = useState<string | null>(null);
   const [sourceType, setSourceType] = useState<'url' | 'instagram'>('url');
   const [saving, setSaving] = useState(false);
 
@@ -87,6 +88,9 @@ export default function ImportUrlScreen() {
       if (data.tags && Array.isArray(data.tags)) {
         setExtractedTags(data.tags);
       }
+      if (data.source_name) {
+        setExtractedSourceName(data.source_name);
+      }
     } catch {
       Alert.alert('Error', 'Could not connect to the server. Please check your connection.');
     }
@@ -109,6 +113,7 @@ export default function ImportUrlScreen() {
         servings: data.servings ? parseInt(data.servings) : null,
         source_type: sourceType,
         source_url: url.trim(),
+        source_name: extractedSourceName,
         image_url: extractedImageUrl,
         created_by: user.id,
       })

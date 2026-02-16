@@ -21,7 +21,7 @@ export default async function RecipeDetailPage({
 
   if (!recipe) notFound();
 
-  const [{ data: ingredients }, { data: tags }, { data: ratings }] =
+  const [{ data: ingredients }, { data: tags }, { data: ratings }, { data: images }] =
     await Promise.all([
       supabase
         .from("recipe_ingredients")
@@ -38,7 +38,25 @@ export default async function RecipeDetailPage({
         .select("id, rating, notes, cooked_date, created_at")
         .eq("recipe_id", recipe.id)
         .order("cooked_date", { ascending: false }),
+      supabase
+        .from("recipe_images")
+        .select("id, storage_path, image_type")
+        .eq("recipe_id", recipe.id)
+        .order("created_at"),
     ]);
+
+  // Build photo list: user uploads first, then source images
+  const recipePhotos = (images || [])
+    .sort((a, b) => {
+      if (a.image_type === "user_upload" && b.image_type !== "user_upload") return -1;
+      if (a.image_type !== "user_upload" && b.image_type === "user_upload") return 1;
+      return 0;
+    })
+    .map((img) => ({
+      id: img.id,
+      url: supabase.storage.from("recipe-images").getPublicUrl(img.storage_path).data.publicUrl,
+      imageType: img.image_type,
+    }));
 
   // Fetch fork source info if this is a fork
   let forkedFrom: { id: string; title: string; creator_name: string } | null = null;
@@ -77,6 +95,23 @@ export default async function RecipeDetailPage({
 
   const isOwner = user?.id === recipe.created_by;
 
+  // Fetch publish count, user plan, and share status
+  let publishCount = 0;
+  let userPlan = "free";
+  let shareData: { isShared: boolean; notes: string | null } = { isShared: false, notes: null };
+  if (isOwner) {
+    const [{ data: profile }, { count }, { data: share }] = await Promise.all([
+      supabase.from("user_profiles").select("plan").eq("id", user!.id).single(),
+      supabase.from("recipes").select("id", { count: "exact", head: true }).eq("created_by", user!.id).eq("visibility", "public"),
+      supabase.from("recipe_shares").select("notes").eq("user_id", user!.id).eq("recipe_id", recipe.id).maybeSingle(),
+    ]);
+    userPlan = profile?.plan || "free";
+    publishCount = count || 0;
+    if (share) {
+      shareData = { isShared: true, notes: share.notes };
+    }
+  }
+
   return (
     <RecipeDetail
       recipe={recipe}
@@ -87,6 +122,11 @@ export default async function RecipeDetailPage({
       forkedFrom={forkedFrom}
       creatorName={creatorName}
       creatorId={creatorId}
+      publishCount={publishCount}
+      userPlan={userPlan}
+      isShared={shareData.isShared}
+      shareNotes={shareData.notes}
+      photos={recipePhotos}
     />
   );
 }

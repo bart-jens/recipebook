@@ -51,7 +51,7 @@ export function CookingLog({
   return (
     <div>
       <div className="mb-4 flex items-center justify-between border-b border-warm-divider pb-2">
-        <h2 className="font-serif text-xs font-medium uppercase tracking-widest text-warm-gray">
+        <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">
           Cooking Log
         </h2>
         {avgRating != null && (

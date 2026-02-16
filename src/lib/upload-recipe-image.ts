@@ -1,11 +1,34 @@
 import { createClient } from "@/lib/supabase/server";
 
+const PHOTO_LIMITS = { free: 3, premium: 10 } as const;
+
 export async function uploadRecipeImage(
   userId: string,
   recipeId: string,
   imageBuffer: Buffer
 ): Promise<string> {
   const supabase = createClient();
+
+  // Enforce photo limits based on user plan
+  const [{ data: profile }, { count }] = await Promise.all([
+    supabase.from("user_profiles").select("plan").eq("id", userId).single(),
+    supabase
+      .from("recipe_images")
+      .select("id", { count: "exact", head: true })
+      .eq("recipe_id", recipeId)
+      .eq("image_type", "user_upload"),
+  ]);
+
+  const plan = (profile?.plan || "free") as keyof typeof PHOTO_LIMITS;
+  const limit = PHOTO_LIMITS[plan] ?? PHOTO_LIMITS.free;
+  const currentCount = count || 0;
+
+  if (currentCount >= limit) {
+    throw new Error(
+      `Photo limit reached (${currentCount}/${limit}). ${plan === "free" ? "Upgrade to Premium for more photos." : ""}`
+    );
+  }
+
   const uuid = crypto.randomUUID();
   const storagePath = `${userId}/${recipeId}/${uuid}.webp`;
 
@@ -32,6 +55,7 @@ export async function uploadRecipeImage(
     recipe_id: recipeId,
     storage_path: storagePath,
     is_primary: true,
+    image_type: "user_upload",
   });
 
   // Update recipes.image_url

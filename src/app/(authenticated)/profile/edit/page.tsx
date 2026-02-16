@@ -18,7 +18,7 @@ export default async function EditProfilePage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-6 font-serif text-2xl font-semibold">Edit Profile</h1>
+      <h1 className="mb-6 text-2xl font-semibold">Edit Profile</h1>
       <div className="mb-6">
         <AvatarUpload
           userId={user.id}

@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    fontFamily: fontFamily.serifSemiBold,
+    fontFamily: fontFamily.sansBold,
     fontSize: 18,
     color: colors.text,
     textAlign: 'center',

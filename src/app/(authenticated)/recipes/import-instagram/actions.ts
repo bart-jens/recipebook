@@ -2,6 +2,7 @@
 
 import { extractRecipeFromText } from "@/lib/claude-extract-text";
 import type { ExtractedRecipe } from "@/lib/claude-extract";
+import { getInstagramHandle } from "@/lib/source-name";
 
 async function fetchInstagramCaption(url: string): Promise<string> {
   // Try oEmbed first (most reliable when it works)
@@ -67,7 +68,7 @@ async function fetchInstagramCaption(url: string): Promise<string> {
 
 export async function extractFromInstagramUrl(
   url: string
-): Promise<{ data?: ExtractedRecipe; error?: string }> {
+): Promise<{ data?: ExtractedRecipe & { source_name: string }; error?: string }> {
   if (!url.trim()) {
     return { error: "Please enter an Instagram URL" };
   }
@@ -78,7 +79,12 @@ export async function extractFromInstagramUrl(
 
   try {
     const caption = await fetchInstagramCaption(url);
-    return extractRecipeFromText(caption);
+    const result = await extractRecipeFromText(caption);
+    if (result.data) {
+      const sourceName = getInstagramHandle(url) || "Instagram";
+      return { data: { ...result.data, source_name: sourceName } };
+    }
+    return result as { error: string };
   } catch (e) {
     const message = e instanceof Error ? e.message : "";
     if (message === "no_caption") {

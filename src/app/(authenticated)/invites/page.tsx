@@ -27,7 +27,7 @@ export default async function InvitesPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-2 font-serif text-2xl font-semibold">Invite Friends</h1>
+      <h1 className="mb-2 text-2xl font-semibold">Invite Friends</h1>
       <p className="mb-6 text-sm text-warm-gray">
         EefEats is invite-only. Share codes with friends to let them join.
         <span className="ml-1 font-medium">
@@ -42,7 +42,7 @@ export default async function InvitesPage() {
       {(invites || []).length > 0 && (
         <div>
           <div className="mb-4 border-b border-warm-divider pb-2">
-            <h2 className="font-serif text-xs font-medium uppercase tracking-widest text-warm-gray">
+            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">
               Your Invites
             </h2>
           </div>

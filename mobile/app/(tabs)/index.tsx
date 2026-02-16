@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/auth';
 import { colors, spacing, typography, fontFamily, radii, animation } from '@/lib/theme';
 import Avatar from '@/components/ui/Avatar';
 import HorizontalCarousel from '@/components/ui/HorizontalCarousel';
+import RecommendationCard from '@/components/ui/RecommendationCard';
 import EmptyState from '@/components/ui/EmptyState';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
 
@@ -20,6 +21,26 @@ interface CarouselRecipe {
   id: string;
   title: string;
   image_url: string | null;
+}
+
+interface ShareCard {
+  share_id: string;
+  user_id: string;
+  recipe_id: string;
+  share_notes: string | null;
+  shared_at: string;
+  title: string;
+  source_url: string | null;
+  source_name: string | null;
+  source_type: string;
+  image_url: string | null;
+  tags: string[] | null;
+  user_rating: number | null;
+}
+
+interface SharerProfile {
+  display_name: string;
+  avatar_url: string | null;
 }
 
 interface ActivityItem {
@@ -41,6 +62,8 @@ export default function HomeScreen() {
   const [recentRecipes, setRecentRecipes] = useState<CarouselRecipe[]>([]);
   const [trendingRecipes, setTrendingRecipes] = useState<CarouselRecipe[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [shareCards, setShareCards] = useState<ShareCard[]>([]);
+  const [sharerProfiles, setSharerProfiles] = useState<Map<string, SharerProfile>>(new Map());
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -188,8 +211,36 @@ export default function HomeScreen() {
           items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
           setActivity(items.slice(0, 20));
+
+          // Fetch recommendation cards from followed users
+          const { data: cards } = await supabase
+            .from('recipe_share_cards')
+            .select('*')
+            .in('user_id', followedIds)
+            .order('shared_at', { ascending: false })
+            .limit(10);
+
+          const typedCards = (cards || []) as ShareCard[];
+          setShareCards(typedCards);
+
+          if (typedCards.length > 0) {
+            const sharerIds = Array.from(new Set(typedCards.map((c) => c.user_id)));
+            const { data: sharerData } = await supabase
+              .from('user_profiles')
+              .select('id, display_name, avatar_url')
+              .in('id', sharerIds);
+            setSharerProfiles(
+              new Map(
+                (sharerData || []).map((p) => [
+                  p.id,
+                  { display_name: p.display_name, avatar_url: p.avatar_url },
+                ])
+              )
+            );
+          }
         } else {
           setActivity([]);
+          setShareCards([]);
         }
 
         setLoading(false);
@@ -325,6 +376,39 @@ export default function HomeScreen() {
         )}
       </Animated.View>
 
+      {/* Friend Recommendations */}
+      {shareCards.length > 0 && (
+        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2.5).duration(400)}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Friend Recommendations</Text>
+          </View>
+          <View style={styles.recommendationList}>
+            {shareCards.map((card) => {
+              const sharer = sharerProfiles.get(card.user_id);
+              return (
+                <RecommendationCard
+                  key={card.share_id}
+                  shareId={card.share_id}
+                  title={card.title}
+                  sourceUrl={card.source_url}
+                  sourceName={card.source_name}
+                  sourceType={card.source_type}
+                  imageUrl={card.image_url}
+                  tags={card.tags}
+                  userRating={card.user_rating}
+                  shareNotes={card.share_notes}
+                  sharedAt={card.shared_at}
+                  sharerName={sharer?.display_name || 'Unknown'}
+                  sharerAvatarUrl={sharer?.avatar_url || null}
+                  sharerId={card.user_id}
+                  recipeId={card.recipe_id}
+                />
+              );
+            })}
+          </View>
+        </Animated.View>
+      )}
+
       {trendingRecipes.length > 0 && (
         <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}>
           <HorizontalCarousel
@@ -350,7 +434,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxxl,
   },
   greeting: {
-    fontFamily: fontFamily.serifSemiBold,
+    fontFamily: fontFamily.sansBold,
     fontSize: 24,
     color: colors.text,
     marginBottom: spacing.xl,
@@ -361,12 +445,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   sectionTitle: {
-    fontFamily: fontFamily.serifSemiBold,
+    fontFamily: fontFamily.sansBold,
     fontSize: 18,
     color: colors.text,
   },
   activityList: {
     paddingHorizontal: spacing.xl,
+    marginBottom: spacing.xxl,
+  },
+  recommendationList: {
+    paddingHorizontal: spacing.xl,
+    gap: spacing.md,
     marginBottom: spacing.xxl,
   },
   activityItem: {

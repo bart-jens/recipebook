@@ -10,7 +10,7 @@ export default function ImportInstagramPage() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [importedData, setImportedData] = useState<RecipeFormData | null>(null);
+  const [importedData, setImportedData] = useState<RecipeFormData & { source_name: string } | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +38,7 @@ export default function ImportInstagramPage() {
           unit: ing.unit,
           notes: ing.notes,
         })),
+        source_name: result.data.source_name,
       });
     }
     setLoading(false);
@@ -46,6 +47,9 @@ export default function ImportInstagramPage() {
   async function handleSave(formData: FormData) {
     formData.set("source_type", "instagram");
     formData.set("source_url", url);
+    if (importedData?.source_name) {
+      formData.set("source_name", importedData.source_name);
+    }
     return createRecipe(formData);
   }
 
@@ -56,7 +60,7 @@ export default function ImportInstagramPage() {
           <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
             &larr; Back to recipes
           </Link>
-          <h1 className="mt-2 font-serif text-2xl font-semibold">Review Imported Recipe</h1>
+          <h1 className="mt-2 text-2xl font-semibold">Review Imported Recipe</h1>
           <p className="mt-1 text-sm text-warm-gray">Extracted from Instagram. Review and edit before saving.</p>
         </div>
         <RecipeForm
@@ -80,7 +84,7 @@ export default function ImportInstagramPage() {
         <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
           &larr; Back to recipes
         </Link>
-        <h1 className="mt-2 font-serif text-2xl font-semibold">Import from Instagram</h1>
+        <h1 className="mt-2 text-2xl font-semibold">Import from Instagram</h1>
         <p className="mt-1 text-sm text-warm-gray">Paste an Instagram post link to extract the recipe.</p>
       </div>
 

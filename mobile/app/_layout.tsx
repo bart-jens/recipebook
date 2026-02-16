@@ -5,6 +5,11 @@ import {
   Fraunces_600SemiBold,
   Fraunces_700Bold,
 } from '@expo-google-fonts/fraunces';
+import {
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_700Bold,
+} from '@expo-google-fonts/dm-sans';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -23,6 +28,9 @@ export default function RootLayout() {
     Fraunces_400Regular,
     Fraunces_600SemiBold,
     Fraunces_700Bold,
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_700Bold,
   });
 
   useEffect(() => {
@@ -38,10 +46,11 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   const headerDefaults = {
-    headerStyle: { backgroundColor: colors.background },
-    headerTintColor: colors.primary,
+    headerStyle: { backgroundColor: colors.primary },
+    headerTintColor: colors.textOnPrimary,
     headerShadowVisible: false,
     headerBackTitle: 'Back',
+    headerTitleStyle: { color: colors.textOnPrimary },
   };
 
   return (

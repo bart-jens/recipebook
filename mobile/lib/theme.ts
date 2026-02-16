@@ -3,15 +3,17 @@ import { Platform, TextStyle } from 'react-native';
 export const colors = {
   primary: '#2D5F5D',
   primaryLight: '#3D7A72',
+  primaryDark: '#234B49',
   cta: '#D4913D',
   ctaHover: '#BF7D2E',
-  background: '#FAF6F0',
+  background: '#FFFFFF',
   card: '#FFFFFF',
   surface: '#F0EDE6',
   surfaceAlt: '#F5F2EC',
   text: '#1A1A1A',
   textSecondary: '#6B6B6B',
   textMuted: '#999999',
+  textOnPrimary: '#FFFFFF',
   border: '#DDD6CC',
   borderLight: '#E8E2D8',
   starFilled: '#F59E0B',
@@ -48,6 +50,9 @@ export const fontFamily = {
   serif: 'Fraunces_400Regular',
   serifSemiBold: 'Fraunces_600SemiBold',
   serifBold: 'Fraunces_700Bold',
+  sans: 'DMSans_400Regular',
+  sansMedium: 'DMSans_500Medium',
+  sansBold: 'DMSans_700Bold',
   system: Platform.OS === 'ios' ? 'System' : 'Roboto',
 } as const;
 
@@ -65,9 +70,12 @@ export const typography: Record<string, TextStyle> = {
     letterSpacing: 1.5,
     lineHeight: 16,
   },
-  // Serif display styles
+  // Serif display styles (recipe titles only)
   display: { fontSize: 28, fontFamily: fontFamily.serifBold, lineHeight: 34 },
   displaySmall: { fontSize: 22, fontFamily: fontFamily.serifSemiBold, lineHeight: 28 },
+  // Sans heading styles (page/section headings)
+  heading: { fontSize: 22, fontFamily: fontFamily.sansBold, lineHeight: 28 },
+  headingSmall: { fontSize: 18, fontFamily: fontFamily.sansBold, lineHeight: 24 },
 } as const;
 
 export const radii = {

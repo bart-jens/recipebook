@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { parseRecipeUrl } from "@/lib/recipe-parser";
+import { rehostImage } from "@/lib/rehost-image";
 
 export async function updateRecipe(recipeId: string, formData: FormData) {
   const supabase = createClient();
@@ -215,6 +217,135 @@ export async function forkRecipe(recipeId: string) {
   }
 
   redirect(`/recipes/${fork.id}`);
+}
+
+export async function shareRecipe(recipeId: string, notes: string | null) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase.from("recipe_shares").insert({
+    user_id: user.id,
+    recipe_id: recipeId,
+    notes,
+  });
+  if (error) return { error: error.message };
+  revalidatePath(`/recipes/${recipeId}`);
+}
+
+export async function unshareRecipe(recipeId: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase
+    .from("recipe_shares")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("recipe_id", recipeId);
+  if (error) return { error: error.message };
+  revalidatePath(`/recipes/${recipeId}`);
+}
+
+export async function saveRecommendation(data: {
+  sourceUrl: string | null;
+  title: string;
+  sourceName: string | null;
+  sourceType: string;
+  imageUrl: string | null;
+  tags: string[] | null;
+}): Promise<{ recipeId?: string; error?: string; fromUrl?: boolean }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  // Try re-importing from source URL if available
+  if (data.sourceUrl) {
+    try {
+      const parsed = await parseRecipeUrl(data.sourceUrl);
+      if (parsed) {
+        const { data: recipe, error } = await supabase
+          .from("recipes")
+          .insert({
+            title: parsed.title,
+            description: parsed.description || null,
+            instructions: parsed.instructions || null,
+            prep_time_minutes: parsed.prep_time_minutes,
+            cook_time_minutes: parsed.cook_time_minutes,
+            servings: parsed.servings,
+            source_url: data.sourceUrl,
+            source_name: parsed.source_name || data.sourceName,
+            source_type: "url",
+            image_url: parsed.imageUrl,
+            created_by: user.id,
+          })
+          .select("id")
+          .single();
+
+        if (error || !recipe) return { error: error?.message || "Failed to save" };
+
+        // Insert ingredients
+        if (parsed.ingredients.length > 0) {
+          await supabase.from("recipe_ingredients").insert(
+            parsed.ingredients.map((ing, i) => ({
+              recipe_id: recipe.id,
+              ingredient_name: ing.ingredient_name,
+              quantity: ing.quantity,
+              unit: ing.unit,
+              notes: ing.notes,
+              order_index: i,
+            }))
+          );
+        }
+
+        // Insert tags from parsed data or original share card
+        const tagsToInsert = parsed.tags.length > 0 ? parsed.tags : (data.tags || []);
+        if (tagsToInsert.length > 0) {
+          await supabase.from("recipe_tags").insert(
+            tagsToInsert.map((tag) => ({ recipe_id: recipe.id, tag }))
+          );
+        }
+
+        // Rehost image
+        if (parsed.imageUrl) {
+          try {
+            const rehostedUrl = await rehostImage(parsed.imageUrl, user.id, recipe.id);
+            await supabase.from("recipes").update({ image_url: rehostedUrl }).eq("id", recipe.id);
+          } catch {
+            // Keep original URL as fallback
+          }
+        }
+
+        return { recipeId: recipe.id, fromUrl: true };
+      }
+    } catch {
+      // Source URL unreachable — fall through to metadata copy
+    }
+  }
+
+  // Fallback: create recipe from share card metadata only
+  const { data: recipe, error } = await supabase
+    .from("recipes")
+    .insert({
+      title: data.title,
+      source_url: data.sourceUrl,
+      source_name: data.sourceName,
+      source_type: data.sourceUrl ? "url" : "manual",
+      image_url: data.imageUrl,
+      created_by: user.id,
+    })
+    .select("id")
+    .single();
+
+  if (error || !recipe) return { error: error?.message || "Failed to save" };
+
+  if (data.tags && data.tags.length > 0) {
+    await supabase.from("recipe_tags").insert(
+      data.tags.map((tag) => ({ recipe_id: recipe.id, tag }))
+    );
+  }
+
+  return { recipeId: recipe.id, fromUrl: false };
 }
 
 export async function deleteRating(ratingId: string) {

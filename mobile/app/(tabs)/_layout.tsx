@@ -58,16 +58,16 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarActiveTintColor: colors.textOnPrimary,
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.55)',
         tabBarStyle: {
-          backgroundColor: colors.background,
-          borderTopColor: colors.border,
+          backgroundColor: colors.primary,
+          borderTopColor: colors.primaryDark,
         },
         headerStyle: {
-          backgroundColor: colors.background,
+          backgroundColor: colors.primary,
         },
-        headerTintColor: colors.text,
+        headerTintColor: colors.textOnPrimary,
         headerShadowVisible: false,
       }}
     >
@@ -80,6 +80,7 @@ export default function TabLayout() {
           headerTitleStyle: {
             fontFamily: fontFamily.serifBold,
             fontSize: typography.h2.fontSize,
+            color: colors.textOnPrimary,
           },
         }}
       />

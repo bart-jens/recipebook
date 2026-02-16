@@ -10,7 +10,7 @@ export default function ImportUrlPage() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [importedData, setImportedData] = useState<RecipeFormData & { source_url: string; image_url: string | null } | null>(null);
+  const [importedData, setImportedData] = useState<RecipeFormData & { source_url: string; source_name: string; image_url: string | null } | null>(null);
 
   async function handleFetch(e: React.FormEvent) {
     e.preventDefault();
@@ -39,6 +39,7 @@ export default function ImportUrlPage() {
           notes: ing.notes,
         })),
         source_url: result.data.source_url,
+        source_name: result.data.source_name,
         image_url: result.data.imageUrl || null,
       });
     }
@@ -49,6 +50,7 @@ export default function ImportUrlPage() {
     if (importedData) {
       formData.set("source_type", "url");
       formData.set("source_url", importedData.source_url);
+      formData.set("source_name", importedData.source_name);
       if (importedData.image_url) {
         formData.set("image_url", importedData.image_url);
       }
@@ -62,7 +64,7 @@ export default function ImportUrlPage() {
         <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
           &larr; Back to recipes
         </Link>
-        <h1 className="mt-2 font-serif text-2xl font-semibold">Import from URL</h1>
+        <h1 className="mt-2 text-2xl font-semibold">Import from URL</h1>
       </div>
 
       {!importedData ? (

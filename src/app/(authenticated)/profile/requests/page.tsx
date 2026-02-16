@@ -47,7 +47,7 @@ export default async function FollowRequestsPage() {
         </Link>
       </div>
 
-      <h1 className="mb-6 font-serif text-2xl font-semibold">Follow Requests</h1>
+      <h1 className="mb-6 text-2xl font-semibold">Follow Requests</h1>
 
       {(requests || []).length === 0 ? (
         <p className="text-sm text-warm-gray/60">No pending follow requests.</p>
@@ -71,7 +71,7 @@ export default async function FollowRequestsPage() {
                       className="h-10 w-10 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-tag text-sm font-serif font-semibold text-warm-gray">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-tag text-sm font-semibold text-warm-gray">
                       {(requester?.display_name || "?")[0].toUpperCase()}
                     </div>
                   )}

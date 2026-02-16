@@ -1,16 +1,10 @@
-# Social Platform — Delta Spec (recipe-publishing change)
-
-Updates to the social platform spec for recipe visibility columns and RLS policies.
-
----
-
 ## MODIFIED Requirements
 
 ### Requirement: Recipe visibility and publishing
-The `recipes` table SHALL be extended with: `visibility` (text, NOT NULL, default 'private', CHECK in: private, public, subscribers), `forked_from_id` (uuid, nullable FK to recipes, ON DELETE SET NULL), `published_at` (timestamptz, nullable).
+The `recipes` table SHALL be extended with: `visibility` (text, NOT NULL, default 'private', CHECK in: private, public, subscribers), `forked_from_id` (uuid, nullable FK to recipes, ON DELETE SET NULL), `published_at` (timestamptz, nullable). **A CHECK constraint SHALL enforce that imported recipes (source_type != 'manual') cannot have visibility other than 'private'.** Imported recipes use the recipe_shares mechanism for social sharing instead.
 
 #### Scenario: Publishing a personal recipe
-- **WHEN** a user sets a recipe's visibility to 'public'
+- **WHEN** a user sets a manual recipe's visibility to 'public'
 - **THEN** `published_at` SHALL be set to now() and the recipe SHALL appear in public discovery
 
 #### Scenario: Unpublishing a recipe
@@ -21,6 +15,14 @@ The `recipes` table SHALL be extended with: `visibility` (text, NOT NULL, defaul
 - **WHEN** a new recipe is created
 - **THEN** visibility SHALL default to 'private'
 - **AND** published_at SHALL be null
+
+#### Scenario: Imported recipe cannot be published
+- **WHEN** a user attempts to set visibility to 'public' on a recipe with source_type = 'url'
+- **THEN** the update SHALL be rejected by the database CHECK constraint
+
+#### Scenario: Imported recipe cannot be set to subscribers
+- **WHEN** a user attempts to set visibility to 'subscribers' on a recipe with source_type = 'instagram'
+- **THEN** the update SHALL be rejected by the database CHECK constraint
 
 #### Scenario: Forking a canonical recipe
 - **WHEN** user A forks recipe X
@@ -45,8 +47,6 @@ RLS policies SHALL be updated for recipe visibility:
 - Private recipes: only owner can read/write (unchanged)
 - Public recipes: any authenticated user can read, only owner can write
 - Subscribers-only recipes: owner + subscribers of the creator can read, only owner can write
-- User profiles: see user-profiles change
-- Follows: see user-profiles change
 - Ratings on public recipes: any authenticated user can read, author of rating can insert/update/delete their own
 
 #### Scenario: Reading a public recipe

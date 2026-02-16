@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  TextInput,
   ActivityIndicator,
   Alert,
   ScrollView,
@@ -44,6 +45,8 @@ export default function ImportPhotoScreen() {
   const [extracting, setExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<RecipeFormData | null>(null);
   const [extractedTags, setExtractedTags] = useState<string[]>([]);
+  const [sourceName, setSourceName] = useState('');
+  const [scanningCover, setScanningCover] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const pickImage = async () => {
@@ -71,6 +74,40 @@ export default function ImportPhotoScreen() {
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
     }
+  };
+
+  const scanBookCover = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Camera access is required to scan a book cover.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+
+    setScanningCover(true);
+    try {
+      const { base64, mediaType } = await resizeAndBase64(result.assets[0].uri);
+      const response = await fetch(`${API_BASE}/api/extract-book-cover`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64, mediaType }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.title) {
+        setSourceName(data.title);
+      } else {
+        Alert.alert('Could not read cover', data.error || 'Try taking a clearer photo of the book title.');
+      }
+    } catch {
+      Alert.alert('Error', 'Could not connect to the server.');
+    }
+    setScanningCover(false);
   };
 
   const handleExtract = async () => {
@@ -140,6 +177,7 @@ export default function ImportPhotoScreen() {
         cook_time_minutes: data.cook_time_minutes ? parseInt(data.cook_time_minutes) : null,
         servings: data.servings ? parseInt(data.servings) : null,
         source_type: 'photo',
+        source_name: sourceName.trim() || null,
         created_by: user.id,
       })
       .select('id')
@@ -183,6 +221,33 @@ export default function ImportPhotoScreen() {
     return (
       <>
         <Stack.Screen options={{ headerTitle: 'Review & Save' }} />
+        <View style={styles.sourceInputContainer}>
+          <Text style={styles.sourceLabel}>Source (optional)</Text>
+          <View style={styles.sourceRow}>
+            <TextInput
+              style={[styles.sourceInput, { flex: 1 }]}
+              value={sourceName}
+              onChangeText={setSourceName}
+              placeholder="e.g. The Food Lab, Ottolenghi Simple"
+              placeholderTextColor={colors.textMuted}
+            />
+            <TouchableOpacity
+              style={styles.scanButton}
+              onPress={scanBookCover}
+              disabled={scanningCover}
+              activeOpacity={0.7}
+            >
+              {scanningCover ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <FontAwesome name="camera" size={16} color={colors.primary} />
+              )}
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.sourceHint}>
+            Where is this recipe from? Tap the camera to scan a book cover.
+          </Text>
+        </View>
         <RecipeForm
           initialData={extractedData}
           onSubmit={handleSave}
@@ -323,4 +388,47 @@ const styles = StyleSheet.create({
   },
   tipsTitle: { ...typography.bodySmall, fontWeight: '600', color: colors.text, marginBottom: spacing.sm },
   tipText: { ...typography.label, color: colors.textSecondary, marginBottom: spacing.xs },
+
+  // Source input
+  sourceInputContainer: {
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+  },
+  sourceLabel: {
+    ...typography.bodySmall,
+    fontWeight: '500',
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  sourceInput: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 12,
+    ...typography.body,
+    color: colors.text,
+  },
+  sourceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  scanButton: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sourceHint: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
+  },
 });

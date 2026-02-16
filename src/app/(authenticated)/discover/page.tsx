@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { DiscoverControls } from "./discover-controls";
+import { LoadMoreButton } from "./load-more";
 
 interface RecipeTag {
   tag: string;
@@ -53,7 +54,8 @@ export default async function DiscoverPage({
     query = query.eq("recipe_tags.tag", tag);
   }
 
-  query = query.order("published_at", { ascending: false });
+  const PAGE_SIZE = 20;
+  query = query.order("published_at", { ascending: false }).limit(PAGE_SIZE);
 
   const { data: recipes } = await query;
 
@@ -114,7 +116,7 @@ export default async function DiscoverPage({
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-serif text-2xl font-semibold">Discover</h1>
+        <h1 className="text-2xl font-semibold">Discover</h1>
         <p className="mt-1 text-sm text-warm-gray">
           Browse recipes published by the EefEats community
         </p>
@@ -216,6 +218,16 @@ export default async function DiscoverPage({
               </Link>
             );
           })}
+
+          {enriched.length >= PAGE_SIZE && (
+            <LoadMoreButton
+              searchQuery={q}
+              sortBy={sort}
+              filterTag={tag}
+              initialOffset={PAGE_SIZE}
+              pageSize={PAGE_SIZE}
+            />
+          )}
         </div>
       )}
     </div>

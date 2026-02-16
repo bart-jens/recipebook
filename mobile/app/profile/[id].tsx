@@ -12,6 +12,7 @@ import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
 import Avatar from '@/components/ui/Avatar';
 import SectionHeader from '@/components/ui/SectionHeader';
 import RecipeCard from '@/components/ui/RecipeCard';
+import RecommendationCard from '@/components/ui/RecommendationCard';
 import Button from '@/components/ui/Button';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
 
@@ -34,12 +35,28 @@ interface PublicRecipe {
   cook_time_minutes: number | null;
 }
 
+interface ShareCard {
+  share_id: string;
+  user_id: string;
+  recipe_id: string;
+  share_notes: string | null;
+  shared_at: string;
+  title: string;
+  source_url: string | null;
+  source_name: string | null;
+  source_type: string;
+  image_url: string | null;
+  tags: string[] | null;
+  user_rating: number | null;
+}
+
 export default function PublicProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [recipes, setRecipes] = useState<PublicRecipe[]>([]);
+  const [shareCards, setShareCards] = useState<ShareCard[]>([]);
   const [followState, setFollowState] = useState<FollowState>('not_following');
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -56,6 +73,7 @@ export default function PublicProfileScreen() {
           { data: publicRecipes },
           { data: followers },
           { data: following },
+          { data: shareData },
         ] = await Promise.all([
           supabase
             .from('user_profiles')
@@ -76,10 +94,16 @@ export default function PublicProfileScreen() {
             .from('user_follows')
             .select('id')
             .eq('follower_id', id!),
+          supabase
+            .from('recipe_share_cards')
+            .select('*')
+            .eq('user_id', id!)
+            .order('shared_at', { ascending: false }),
         ]);
 
         setProfile(profileData);
         setRecipes(publicRecipes || []);
+        setShareCards((shareData || []) as ShareCard[]);
         setFollowerCount((followers || []).length);
         setFollowingCount((following || []).length);
 
@@ -228,26 +252,55 @@ export default function PublicProfileScreen() {
         )}
 
         {canViewContent ? (
-          <View style={styles.section}>
-            <SectionHeader title="PUBLIC RECIPES" />
-            {recipes.length === 0 ? (
-              <Text style={styles.emptyRecipesText}>No published recipes yet.</Text>
-            ) : (
-              <View style={styles.recipeList}>
-                {recipes.map((recipe) => (
-                  <RecipeCard
-                    key={recipe.id}
-                    recipe={{
-                      ...recipe,
-                      creatorName: profile?.display_name,
-                    }}
-                    variant="compact"
-                    onPress={() => router.push(`/recipe/${recipe.id}`)}
-                  />
-                ))}
+          <>
+            <View style={styles.section}>
+              <SectionHeader title="PUBLIC RECIPES" />
+              {recipes.length === 0 ? (
+                <Text style={styles.emptyRecipesText}>No published recipes yet.</Text>
+              ) : (
+                <View style={styles.recipeList}>
+                  {recipes.map((recipe) => (
+                    <RecipeCard
+                      key={recipe.id}
+                      recipe={{
+                        ...recipe,
+                        creatorName: profile?.display_name,
+                      }}
+                      variant="compact"
+                      onPress={() => router.push(`/recipe/${recipe.id}`)}
+                    />
+                  ))}
+                </View>
+              )}
+            </View>
+
+            {shareCards.length > 0 && (
+              <View style={styles.section}>
+                <SectionHeader title="RECOMMENDATIONS" />
+                <View style={styles.recipeList}>
+                  {shareCards.map((card) => (
+                    <RecommendationCard
+                      key={card.share_id}
+                      shareId={card.share_id}
+                      title={card.title}
+                      sourceUrl={card.source_url}
+                      sourceName={card.source_name}
+                      sourceType={card.source_type}
+                      imageUrl={card.image_url}
+                      tags={card.tags}
+                      userRating={card.user_rating}
+                      shareNotes={card.share_notes}
+                      sharedAt={card.shared_at}
+                      sharerName={profile.display_name}
+                      sharerAvatarUrl={profile.avatar_url}
+                      sharerId={id!}
+                      recipeId={card.recipe_id}
+                    />
+                  ))}
+                </View>
               </View>
             )}
-          </View>
+          </>
         ) : (
           <View style={styles.privateMessage}>
             <Text style={styles.privateTitle}>This account is private</Text>
@@ -268,7 +321,7 @@ const styles = StyleSheet.create({
 
   header: { alignItems: 'center', marginBottom: spacing.xl },
   name: {
-    fontFamily: fontFamily.serifBold,
+    fontFamily: fontFamily.sansBold,
     fontSize: 24,
     color: colors.text,
     marginTop: spacing.md,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { extractRecipeFromText } from "@/lib/claude-extract-text";
+import { getInstagramHandle } from "@/lib/source-name";
 
 interface InstagramData {
   caption: string;
@@ -124,7 +125,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error }, { status: 422 });
     }
 
-    return NextResponse.json({ ...result.data, imageUrl });
+    const sourceName = getInstagramHandle(url) || "Instagram";
+    return NextResponse.json({ ...result.data, imageUrl, source_name: sourceName });
   } catch (e) {
     const message = e instanceof Error ? e.message : "";
     if (message === "no_caption") {

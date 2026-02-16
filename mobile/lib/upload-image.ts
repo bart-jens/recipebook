@@ -1,7 +1,10 @@
 import { supabase } from './supabase';
 
+const PHOTO_LIMITS = { free: 3, premium: 10 } as const;
+
 /**
  * Upload a recipe image from a local URI to Supabase Storage.
+ * Enforces per-recipe photo limits based on user plan.
  * Reads the file, uploads to the recipe-images bucket, inserts
  * a recipe_images row, and updates recipes.image_url.
  */
@@ -10,6 +13,26 @@ export async function uploadRecipeImage(
   recipeId: string,
   imageUri: string
 ): Promise<string> {
+  // Enforce photo limits based on user plan
+  const [{ data: profile }, { count }] = await Promise.all([
+    supabase.from('user_profiles').select('plan').eq('id', userId).single(),
+    supabase
+      .from('recipe_images')
+      .select('id', { count: 'exact', head: true })
+      .eq('recipe_id', recipeId)
+      .eq('image_type', 'user_upload'),
+  ]);
+
+  const plan = (profile?.plan || 'free') as keyof typeof PHOTO_LIMITS;
+  const limit = PHOTO_LIMITS[plan] ?? PHOTO_LIMITS.free;
+  const currentCount = count || 0;
+
+  if (currentCount >= limit) {
+    throw new Error(
+      `Photo limit reached (${currentCount}/${limit}). ${plan === 'free' ? 'Upgrade to Premium for more photos.' : ''}`
+    );
+  }
+
   // Read the file as a blob
   const response = await fetch(imageUri);
   const blob = await response.blob();
@@ -44,6 +67,7 @@ export async function uploadRecipeImage(
     recipe_id: recipeId,
     storage_path: storagePath,
     is_primary: true,
+    image_type: 'user_upload',
   });
 
   // Update recipes.image_url

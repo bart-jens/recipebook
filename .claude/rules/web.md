@@ -10,7 +10,7 @@ paths:
 - Next.js 14 with App Router (`src/app/`)
 - TypeScript throughout
 - Tailwind CSS for styling — use utility classes, not inline styles
-- Warm palette inspired by NYT Cooking (defined in `tailwind.config.ts`)
+- Teal + amber palette with DM Sans / Fraunces typography (defined in `tailwind.config.ts`)
 
 ## Routing
 - Authenticated routes under `src/app/(authenticated)/`

@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import { parseIngredient, type ParsedIngredient } from "./ingredient-parser";
 import { parseDuration } from "./duration-parser";
+import { getSourceNameFromUrl } from "./source-name";
 
 export interface ParsedRecipe {
   title: string;
@@ -12,6 +13,7 @@ export interface ParsedRecipe {
   tags: string[];
   ingredients: ParsedIngredient[];
   source_url: string;
+  source_name: string;
   imageUrl: string | null;
 }
 
@@ -187,6 +189,7 @@ export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
     tags,
     ingredients,
     source_url: url,
+    source_name: getSourceNameFromUrl(url),
     imageUrl: parseImage(r.image),
   };
 }
