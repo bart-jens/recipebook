@@ -28,7 +28,16 @@ The system SHALL display a list of all recipes owned by the authenticated user a
 - **THEN** the list item SHALL show a placeholder icon instead of a broken image
 
 ### Requirement: Recipe detail page
-The system SHALL display the full recipe on a detail page. **When the recipe has an image, it SHALL be shown as a full-width hero at the top of the page.** The owner SHALL see options to edit, publish/unpublish, and delete. **Source attribution SHALL be shown when source_name or source_url is present.** For public recipes, the page SHALL additionally show the creator's display name and avatar (linked to their profile). For the owner's own public recipes, a "Published" badge and "Unpublish" option SHALL be shown. **For imported recipes, a "Share" action SHALL be shown instead of "Publish".**
+The system SHALL display the full recipe on a detail page. **When the recipe has an image, it SHALL be shown as a full-width hero at the top of the page.** The owner SHALL see options to edit, publish/unpublish, and delete. **Source attribution SHALL be shown when source_name or source_url is present.** For public recipes, the page SHALL additionally show the creator's display name and avatar (linked to their profile). For the owner's own public recipes, a "Published" badge and "Unpublish" option SHALL be shown. **For imported recipes, a "Share" action SHALL be shown instead of "Publish".** The detail page SHALL show interaction actions: "Cooked It" (always available), "Rate" (enabled after cooking), and "Favorite" (enabled after cooking). For public recipes not owned by the user, a "Save" / "Saved" toggle and a "Fork" action SHALL be shown. For forked recipes, fork attribution SHALL be displayed. The user's cook history for the recipe SHALL be displayed. **An "Add to Collection" action SHALL be available for both owned and saved recipes, showing a picker with the user's collections.**
+
+#### Scenario: Add to collection action
+- **WHEN** user views any recipe in their collection (owned or saved)
+- **THEN** an "Add to Collection" action SHALL be available
+
+#### Scenario: Collection picker on recipe detail
+- **WHEN** user taps "Add to Collection"
+- **THEN** a list of the user's collections SHALL be shown with checkboxes
+- **AND** collections that already contain this recipe SHALL be pre-checked
 
 #### Scenario: Detail page with image
 - **WHEN** a user views a recipe that has an `image_url`

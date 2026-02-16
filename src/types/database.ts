@@ -550,7 +550,24 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      get_activity_feed: {
+        Args: {
+          p_user_id: string
+          p_before?: string
+          p_limit?: number
+        }
+        Returns: {
+          event_type: string
+          user_id: string
+          recipe_id: string
+          event_at: string
+          notes: string | null
+          display_name: string | null
+          avatar_url: string | null
+          recipe_title: string | null
+          recipe_image_url: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
