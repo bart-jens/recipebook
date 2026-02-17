@@ -79,7 +79,10 @@ export default async function PublicProfilePage({
     p_chef_id: params.id,
   });
 
-  if (error || !chefData) notFound();
+  if (error || !chefData) {
+    console.error("get_chef_profile failed:", error?.message, error?.code, error?.details);
+    notFound();
+  }
 
   const data = chefData as unknown as ChefProfileData;
   const profile = data.profile;
