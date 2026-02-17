@@ -36,6 +36,9 @@ interface Props {
   onSubmit: (data: RecipeFormData) => Promise<void>;
   submitLabel: string;
   loading?: boolean;
+  sourceName?: string | null;
+  onSourceNameChange?: (value: string) => void;
+  headerContent?: React.ReactNode;
 }
 
 const emptyIngredient = (): IngredientField => ({
@@ -55,7 +58,7 @@ export const defaultFormData: RecipeFormData = {
   ingredients: [emptyIngredient()],
 };
 
-export default function RecipeForm({ initialData, onSubmit, submitLabel, loading }: Props) {
+export default function RecipeForm({ initialData, onSubmit, submitLabel, loading, sourceName, onSourceNameChange, headerContent }: Props) {
   const [form, setForm] = useState<RecipeFormData>(initialData || defaultFormData);
 
   const updateField = (field: keyof RecipeFormData, value: string) => {
@@ -114,6 +117,8 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
+        {headerContent}
+
         <Text style={styles.label}>Title *</Text>
         <TextInput
           style={styles.input}
@@ -133,6 +138,19 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
           multiline
           numberOfLines={3}
         />
+
+        {onSourceNameChange !== undefined && (
+          <>
+            <Text style={styles.label}>Source</Text>
+            <TextInput
+              style={styles.input}
+              value={sourceName || ''}
+              onChangeText={onSourceNameChange}
+              placeholder="e.g. The Food Lab, Ottolenghi Simple"
+              placeholderTextColor={colors.textMuted}
+            />
+          </>
+        )}
 
         <View style={styles.row}>
           <View style={styles.rowItem}>

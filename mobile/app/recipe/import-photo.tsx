@@ -46,6 +46,7 @@ export default function ImportPhotoScreen() {
   const [extractedData, setExtractedData] = useState<RecipeFormData | null>(null);
   const [extractedTags, setExtractedTags] = useState<string[]>([]);
   const [sourceName, setSourceName] = useState('');
+  const [sourceSkipped, setSourceSkipped] = useState(false);
   const [scanningCover, setScanningCover] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -92,15 +93,21 @@ export default function ImportPhotoScreen() {
     setScanningCover(true);
     try {
       const { base64, mediaType } = await resizeAndBase64(result.assets[0].uri);
+      const { data: { session } } = await supabase.auth.getSession();
       const response = await fetch(`${API_BASE}/api/extract-book-cover`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+          'Cookie': `sb-access-token=${session?.access_token || ''}; sb-refresh-token=${session?.refresh_token || ''}`,
+        },
         body: JSON.stringify({ base64, mediaType }),
       });
 
       const data = await response.json();
       if (response.ok && data.title) {
         setSourceName(data.title);
+        setSourceSkipped(false);
       } else {
         Alert.alert('Could not read cover', data.error || 'Try taking a clearer photo of the book title.');
       }
@@ -221,38 +228,50 @@ export default function ImportPhotoScreen() {
     return (
       <>
         <Stack.Screen options={{ headerTitle: 'Review & Save' }} />
-        <View style={styles.sourceInputContainer}>
-          <Text style={styles.sourceLabel}>Source (optional)</Text>
-          <View style={styles.sourceRow}>
-            <TextInput
-              style={[styles.sourceInput, { flex: 1 }]}
-              value={sourceName}
-              onChangeText={setSourceName}
-              placeholder="e.g. The Food Lab, Ottolenghi Simple"
-              placeholderTextColor={colors.textMuted}
-            />
-            <TouchableOpacity
-              style={styles.scanButton}
-              onPress={scanBookCover}
-              disabled={scanningCover}
-              activeOpacity={0.7}
-            >
-              {scanningCover ? (
-                <ActivityIndicator size="small" color={colors.primary} />
-              ) : (
-                <FontAwesome name="camera" size={16} color={colors.primary} />
-              )}
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.sourceHint}>
-            Where is this recipe from? Tap the camera to scan a book cover.
-          </Text>
-        </View>
         <RecipeForm
           initialData={extractedData}
           onSubmit={handleSave}
           submitLabel="Save Recipe"
           loading={saving}
+          headerContent={
+            !sourceSkipped ? (
+              <View style={styles.sourceCard}>
+                <Text style={styles.sourceCardTitle}>Where is this recipe from?</Text>
+
+                <TouchableOpacity
+                  style={[styles.scanCoverButton, scanningCover && { opacity: 0.5 }]}
+                  onPress={scanBookCover}
+                  disabled={scanningCover}
+                  activeOpacity={0.7}
+                >
+                  {scanningCover ? (
+                    <ActivityIndicator size="small" color={colors.primary} />
+                  ) : (
+                    <FontAwesome name="camera" size={16} color={colors.primary} />
+                  )}
+                  <Text style={styles.scanCoverText}>
+                    {scanningCover ? 'Scanning...' : 'Scan book cover'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TextInput
+                  style={styles.sourceInput}
+                  value={sourceName}
+                  onChangeText={setSourceName}
+                  placeholder="e.g. The Food Lab, Ottolenghi Simple"
+                  placeholderTextColor={colors.textMuted}
+                />
+
+                <TouchableOpacity
+                  style={styles.skipButton}
+                  onPress={() => { setSourceSkipped(true); setSourceName(''); }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.skipText}>Skip for now</Text>
+                </TouchableOpacity>
+              </View>
+            ) : undefined
+          }
         />
       </>
     );
@@ -387,42 +406,51 @@ const styles = StyleSheet.create({
   tipsTitle: { ...typography.bodySmall, fontWeight: '600', color: colors.text, marginBottom: spacing.sm },
   tipText: { ...typography.label, color: colors.textSecondary, marginBottom: spacing.xs },
 
-  // Source input
-  sourceInputContainer: {
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
+  // Source attribution card
+  sourceCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    gap: spacing.md,
   },
-  sourceLabel: {
+  sourceCardTitle: {
+    ...typography.bodySmall,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  scanCoverButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.background,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: spacing.md,
+  },
+  scanCoverText: {
     ...typography.bodySmall,
     fontWeight: '500',
     color: colors.text,
-    marginBottom: spacing.xs,
   },
   sourceInput: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background,
     borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
     paddingHorizontal: spacing.lg,
-    paddingVertical: 12,
+    paddingVertical: spacing.md,
     ...typography.body,
     color: colors.text,
   },
-  sourceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+  skipButton: {
+    paddingVertical: spacing.md,
   },
-  scanButton: {
-    width: 44,
-    height: 44,
-    borderRadius: radii.md,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sourceHint: {
+  skipText: {
     ...typography.caption,
     color: colors.textMuted,
-    marginTop: spacing.xs,
+    textDecorationLine: 'underline' as const,
   },
 });

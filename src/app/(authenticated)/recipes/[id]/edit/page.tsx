@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { RecipeForm } from "../../components/recipe-form";
 import { ImageUpload } from "./image-upload";
+import { EditRecipeClient } from "./edit-recipe-client";
 import { updateRecipe } from "../actions";
 
 export default async function EditRecipePage({
@@ -55,7 +55,7 @@ export default async function EditRecipePage({
         <h1 className="mt-2 text-2xl font-semibold">Edit Recipe</h1>
       </div>
       <ImageUpload recipeId={recipe.id} currentImageUrl={recipe.image_url} />
-      <RecipeForm initialData={initialData} action={action} submitLabel="Save Changes" />
+      <EditRecipeClient initialData={initialData} initialSourceName={recipe.source_name} action={action} />
     </div>
   );
 }

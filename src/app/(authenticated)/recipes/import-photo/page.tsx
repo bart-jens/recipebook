@@ -48,7 +48,40 @@ export default function ImportPhotoPage() {
   const [error, setError] = useState<string | null>(null);
   const [importedData, setImportedData] = useState<(RecipeFormData & { tags?: string[] }) | null>(null);
   const [sourceName, setSourceName] = useState("");
+  const [sourceSkipped, setSourceSkipped] = useState(false);
+  const [scanningCover, setScanningCover] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+
+  async function handleScanBookCover(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setScanningCover(true);
+    setScanError(null);
+
+    try {
+      const { base64, mediaType } = await resizeImage(file, 1200);
+      const res = await fetch("/api/extract-book-cover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ base64, mediaType }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.title) {
+        setSourceName(data.title);
+        setSourceSkipped(false);
+      } else {
+        setScanError(data.error || "Could not read the book cover. Try a clearer photo.");
+      }
+    } catch {
+      setScanError("Could not connect to the server.");
+    }
+
+    setScanningCover(false);
+    e.target.value = "";
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -121,20 +154,48 @@ export default function ImportPhotoPage() {
           <h1 className="mt-2 text-2xl font-semibold">Review Imported Recipe</h1>
           <p className="mt-1 text-sm text-warm-gray">Extracted from photo. Review and edit before saving.</p>
         </div>
-        <div className="mb-6 max-w-2xl">
-          <label htmlFor="source_name" className="block text-sm font-medium text-warm-gray">
-            Source (optional)
-          </label>
-          <input
-            id="source_name"
-            type="text"
-            placeholder="e.g. The Food Lab, Ottolenghi Simple"
-            value={sourceName}
-            onChange={(e) => setSourceName(e.target.value)}
-            className="mt-1 block w-full rounded-md bg-warm-tag px-3 py-2.5 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-          />
-          <p className="mt-1 text-xs text-warm-gray/60">Where is this recipe from? Cookbook, website, family recipe...</p>
-        </div>
+        {!sourceSkipped && (
+          <div className="mb-6 max-w-2xl rounded-lg border border-warm-border bg-warm-tag p-5">
+            <p className="text-sm font-medium text-warm-gray">Where is this recipe from?</p>
+
+            <label
+              className={`mt-3 flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-md border border-warm-border bg-white px-4 py-3.5 text-sm font-medium text-warm-gray transition-colors hover:border-accent hover:text-accent ${scanningCover ? "opacity-50 pointer-events-none" : ""}`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0011.586 3H8.414a1 1 0 00-.707.293L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+              </svg>
+              {scanningCover ? "Scanning..." : "Scan book cover"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                capture="environment"
+                className="hidden"
+                onChange={handleScanBookCover}
+              />
+            </label>
+
+            {scanError && <p className="mt-2 text-xs text-red-600">{scanError}</p>}
+
+            <div className="mt-3">
+              <input
+                id="source_name"
+                type="text"
+                placeholder="e.g. The Food Lab, Ottolenghi Simple"
+                value={sourceName}
+                onChange={(e) => setSourceName(e.target.value)}
+                className="block w-full rounded-md bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => { setSourceSkipped(true); setSourceName(""); }}
+              className="mt-3 text-xs text-warm-gray/60 underline hover:text-warm-gray"
+            >
+              Skip for now
+            </button>
+          </div>
+        )}
         <RecipeForm
           initialData={importedData}
           action={handleSave}

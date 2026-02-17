@@ -17,6 +17,8 @@ interface RecipeFormProps {
   initialData?: RecipeFormData;
   action: (formData: FormData) => Promise<{ error?: string } | void>;
   submitLabel: string;
+  sourceName?: string | null;
+  onSourceNameChange?: (value: string) => void;
 }
 
 const emptyForm: RecipeFormData = {
@@ -32,7 +34,7 @@ const emptyForm: RecipeFormData = {
 const inputClass =
   "mt-1 block w-full rounded-md bg-warm-tag px-3 py-3 text-base focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent";
 
-export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps) {
+export function RecipeForm({ initialData, action, submitLabel, sourceName, onSourceNameChange }: RecipeFormProps) {
   const [data, setData] = useState<RecipeFormData>(initialData ?? emptyForm);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -60,6 +62,9 @@ export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps
     formData.set("cook_time_minutes", data.cook_time_minutes);
     formData.set("servings", data.servings);
     formData.set("ingredients", JSON.stringify(data.ingredients));
+    if (onSourceNameChange !== undefined) {
+      formData.set("source_name", sourceName || "");
+    }
 
     const result = await action(formData);
     if (result?.error) {
@@ -96,6 +101,22 @@ export function RecipeForm({ initialData, action, submitLabel }: RecipeFormProps
           className={inputClass}
         />
       </div>
+
+      {onSourceNameChange !== undefined && (
+        <div>
+          <label htmlFor="source_name" className="block text-sm font-medium text-warm-gray">
+            Source
+          </label>
+          <input
+            id="source_name"
+            type="text"
+            placeholder="e.g. The Food Lab, Ottolenghi Simple"
+            value={sourceName || ""}
+            onChange={(e) => onSourceNameChange(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+      )}
 
       <div>
         <label htmlFor="instructions" className="block text-sm font-medium text-warm-gray">

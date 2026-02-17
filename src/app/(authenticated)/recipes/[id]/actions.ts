@@ -18,17 +18,25 @@ export async function updateRecipe(recipeId: string, formData: FormData) {
   const cookTime = formData.get("cook_time_minutes") as string;
   const servings = formData.get("servings") as string;
   const ingredientsJson = formData.get("ingredients") as string;
+  const sourceName = formData.has("source_name")
+    ? (formData.get("source_name") as string) || null
+    : undefined;
+
+  const updateData: Record<string, unknown> = {
+    title,
+    description,
+    instructions,
+    prep_time_minutes: prepTime ? parseInt(prepTime) : null,
+    cook_time_minutes: cookTime ? parseInt(cookTime) : null,
+    servings: servings ? parseInt(servings) : null,
+  };
+  if (sourceName !== undefined) {
+    updateData.source_name = sourceName;
+  }
 
   const { error } = await supabase
     .from("recipes")
-    .update({
-      title,
-      description,
-      instructions,
-      prep_time_minutes: prepTime ? parseInt(prepTime) : null,
-      cook_time_minutes: cookTime ? parseInt(cookTime) : null,
-      servings: servings ? parseInt(servings) : null,
-    })
+    .update(updateData)
     .eq("id", recipeId);
 
   if (error) return { error: error.message };

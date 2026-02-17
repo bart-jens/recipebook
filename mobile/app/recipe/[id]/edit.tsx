@@ -10,6 +10,7 @@ export default function EditRecipeScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const [initialData, setInitialData] = useState<RecipeFormData | null>(null);
+  const [sourceName, setSourceName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -32,6 +33,7 @@ export default function EditRecipeScreen() {
         return;
       }
 
+      setSourceName(recipe.source_name || '');
       setInitialData({
         title: recipe.title || '',
         description: recipe.description || '',
@@ -67,6 +69,7 @@ export default function EditRecipeScreen() {
         prep_time_minutes: data.prep_time_minutes ? parseInt(data.prep_time_minutes) : null,
         cook_time_minutes: data.cook_time_minutes ? parseInt(data.cook_time_minutes) : null,
         servings: data.servings ? parseInt(data.servings) : null,
+        source_name: sourceName.trim() || null,
       })
       .eq('id', id);
 
@@ -116,6 +119,8 @@ export default function EditRecipeScreen() {
         onSubmit={handleSubmit}
         submitLabel="Save Changes"
         loading={saving}
+        sourceName={sourceName}
+        onSourceNameChange={setSourceName}
       />
     </>
   );
