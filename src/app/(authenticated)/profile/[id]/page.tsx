@@ -128,9 +128,6 @@ export default async function PublicProfilePage({
             <h1 className="text-2xl font-semibold">
               {profile.display_name}
             </h1>
-            {profile.role === "creator" && (
-              <span className="text-xs font-medium text-accent">Creator</span>
-            )}
             {profile.is_private && (
               <span className="text-xs text-warm-gray">Private account</span>
             )}
