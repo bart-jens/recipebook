@@ -6,10 +6,10 @@ import { ProfileTabs } from "./profile-tabs";
 
 interface ChefProfileData {
   profile: {
+    id: string;
     display_name: string;
     avatar_url: string | null;
     bio: string | null;
-    role: string;
     is_private: boolean;
   };
   stats: {
@@ -19,11 +19,44 @@ interface ChefProfileData {
     following_count: number;
   };
   is_following: boolean;
+  is_owner: boolean;
   can_view: boolean;
-  activity: Array<{ recipe_id: string; recipe_title: string; cooked_at: string; notes: string | null }>;
-  favorites: Array<{ recipe_id: string; recipe_title: string; recipe_image_url: string | null; favorited_at: string; rating: number | null }>;
-  published: Array<{ id: string; title: string; description: string | null; image_url: string | null; published_at: string }>;
-  recommendations: Array<{ recipe_id: string; title: string; source_name: string | null; shared_at: string; notes: string | null }>;
+  activity: Array<{
+    recipe_id: string;
+    recipe_title: string;
+    recipe_image_url: string | null;
+    cooked_at: string;
+    notes: string | null;
+  }>;
+  favorites: Array<{
+    recipe_id: string;
+    recipe_title: string;
+    recipe_image_url: string | null;
+    favorited_at: string;
+    rating: number | null;
+  }>;
+  published: Array<{
+    id: string;
+    title: string;
+    description: string | null;
+    image_url: string | null;
+    prep_time_minutes: number | null;
+    cook_time_minutes: number | null;
+    published_at: string;
+  }>;
+  recommendations: Array<{
+    share_id: string;
+    recipe_id: string;
+    share_notes: string | null;
+    shared_at: string;
+    title: string;
+    source_url: string | null;
+    source_name: string | null;
+    source_type: string;
+    image_url: string | null;
+    tags: string[] | null;
+    user_rating: number | null;
+  }>;
 }
 
 export default async function PublicProfilePage({
