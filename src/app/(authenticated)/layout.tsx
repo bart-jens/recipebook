@@ -26,50 +26,50 @@ export default async function AuthenticatedLayout({
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-warm-border bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/home" className="inline-flex">
+      <header className="border-b border-warm-border bg-white">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <div className="flex items-center justify-between py-3">
+            <Link href="/home" className="inline-flex shrink-0">
               <Logo height={22} />
             </Link>
-            <nav className="flex items-center gap-1">
-              <Link href="/home" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:text-[#111111]">
-                Home
-              </Link>
-              <Link href="/recipes" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:text-[#111111]">
-                My Recipes
-              </Link>
-              <Link href="/discover" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:text-[#111111]">
-                Discover
-              </Link>
-              <Link href="/invites" className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:text-[#111111]">
-                Invites
-              </Link>
-            </nav>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/profile"
-              className="flex items-center gap-2 rounded-md px-2 py-1 text-sm text-warm-gray hover:text-[#111111]"
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-warm-tag text-xs font-semibold text-[#111111]">
-                {displayName[0].toUpperCase()}
-              </span>
-              <span className="hidden sm:inline">{displayName}</span>
-            </Link>
-            <form action={logout}>
-              <button
-                type="submit"
-                className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:text-[#111111]"
+            <div className="flex items-center gap-2">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 rounded-md px-2 py-1 text-sm text-warm-gray hover:text-[#111111]"
               >
-                Sign out
-              </button>
-            </form>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-warm-tag text-xs font-semibold text-[#111111]">
+                  {displayName[0].toUpperCase()}
+                </span>
+                <span className="hidden sm:inline">{displayName}</span>
+              </Link>
+              <form action={logout}>
+                <button
+                  type="submit"
+                  className="rounded-md px-2 py-1.5 text-sm text-warm-gray hover:text-[#111111]"
+                >
+                  Sign out
+                </button>
+              </form>
+            </div>
           </div>
+          <nav className="flex items-center gap-1 -mb-px overflow-x-auto">
+            <Link href="/home" className="shrink-0 border-b-2 border-transparent px-3 py-2 text-sm text-warm-gray hover:text-[#111111]">
+              Home
+            </Link>
+            <Link href="/recipes" className="shrink-0 border-b-2 border-transparent px-3 py-2 text-sm text-warm-gray hover:text-[#111111]">
+              My Recipes
+            </Link>
+            <Link href="/discover" className="shrink-0 border-b-2 border-transparent px-3 py-2 text-sm text-warm-gray hover:text-[#111111]">
+              Discover
+            </Link>
+            <Link href="/invites" className="shrink-0 border-b-2 border-transparent px-3 py-2 text-sm text-warm-gray hover:text-[#111111]">
+              Invites
+            </Link>
+          </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-6 py-8">{children}</main>
-      <footer className="border-t border-warm-divider px-6 py-6">
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">{children}</main>
+      <footer className="border-t border-warm-divider px-4 py-6 sm:px-6">
         <div className="mx-auto flex max-w-3xl items-center justify-center gap-2 text-xs text-warm-gray/40">
           <span>EefEats</span>
           <ForkDot size={10} color="rgba(45,95,93,0.25)" />
