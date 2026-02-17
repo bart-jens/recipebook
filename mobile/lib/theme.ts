@@ -58,7 +58,7 @@ export const fontFamily = {
   sans: 'DMSans_400Regular',
   sansMedium: 'DMSans_500Medium',
   sansBold: 'DMSans_700Bold',
-  logo: 'Fraunces_700Bold',
+  logo: 'Outfit_700Bold',
   system: Platform.OS === 'ios' ? 'System' : 'Roboto',
 } as const;
 

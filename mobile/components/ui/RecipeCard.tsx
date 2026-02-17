@@ -2,7 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions, Pressable } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Image } from 'expo-image';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import StarRating from './StarRating';
+import { ForkDot } from './Logo';
 import { colors, spacing, typography, radii, fontFamily, animation } from '@/lib/theme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -18,6 +20,7 @@ interface RecipeData {
   avgRating?: number | null;
   ratingCount?: number;
   forkCount?: number;
+  isFavorited?: boolean;
 }
 
 interface Props {
@@ -67,18 +70,21 @@ export default function RecipeCard({ recipe, onPress, onLongPress, variant = 'de
           />
         ) : (
           <View style={styles.placeholder}>
-            <Text style={styles.placeholderLetter}>
-              {recipe.title.charAt(0).toUpperCase()}
-            </Text>
+            <ForkDot size={28} color="rgba(45,95,93,0.2)" />
           </View>
         )}
       </View>
 
       {/* Content below image */}
       <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={2}>
-          {recipe.title}
-        </Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, recipe.isFavorited && styles.titleWithHeart]} numberOfLines={2}>
+            {recipe.title}
+          </Text>
+          {recipe.isFavorited && (
+            <FontAwesome name="heart" size={12} color={colors.dangerLight} style={styles.heartIcon} />
+          )}
+        </View>
         {recipe.creatorName && (
           <Text style={styles.creatorName} numberOfLines={1}>
             {recipe.creatorName}
@@ -136,12 +142,23 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: spacing.xs,
+  },
   title: {
     fontFamily: fontFamily.sansMedium,
     fontSize: 15,
     lineHeight: 20,
     color: colors.text,
-    marginBottom: spacing.xs,
+    flex: 1,
+  },
+  titleWithHeart: {
+    marginRight: spacing.sm,
+  },
+  heartIcon: {
+    marginTop: 3,
   },
   creatorName: {
     ...typography.caption,

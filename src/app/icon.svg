@@ -1,9 +1,11 @@
 <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
   <rect width="32" height="32" rx="6" fill="#2D5F5D"/>
-  <g fill="#FFFFFF" transform="translate(5, 4) scale(0.75)">
-    <rect x="0" y="0" width="4.5" height="32"/>
-    <path d="M4.5 0h14.5a2.25 2.25 0 0 1 0 4.5H4.5z"/>
-    <path d="M4.5 13.75h11.5a2.25 2.25 0 0 1 0 4.5H4.5z"/>
-    <path d="M4.5 27.5h14.5a2.25 2.25 0 0 1 0 4.5H4.5z"/>
+  <g fill="#FFFFFF">
+    <rect x="9.33" y="6.67" width="2" height="9.33" rx="1"/>
+    <rect x="12.67" y="6.67" width="2" height="9.33" rx="1"/>
+    <rect x="16" y="6.67" width="2" height="9.33" rx="1"/>
+    <rect x="19.33" y="6.67" width="2" height="9.33" rx="1"/>
+    <path d="M9.33 14 h12 c0 3.33 -4 4.67 -6.67 4.67 h-5.33 Z"/>
+    <rect x="12" y="17.33" width="4" height="8.67" rx="2"/>
   </g>
 </svg>

@@ -1,54 +1,50 @@
 import { View, Text, StyleSheet } from 'react-native';
-import Svg, { Rect, Path } from 'react-native-svg';
+import Svg, { Circle, Rect, Path, G } from 'react-native-svg';
 import { colors, fontFamily } from '@/lib/theme';
 
 interface LogoProps {
-  /** Controls the font-size of the text portion. Fork-E scales to match cap height. */
   height?: number;
 }
 
-function ForkE({ size, color }: { size: number; color: string }) {
-  const width = Math.ceil(size * (22 / 32));
+export function ForkDot({ size, color = colors.primary }: { size: number; color?: string }) {
   return (
-    <Svg width={width} height={size} viewBox="0 0 22 32" fill={color}>
-      {/* Four prongs — rounded tips, the fork's signature */}
-      <Rect x="0.5" y="0" width="3" height="11" rx="1.5" />
-      <Rect x="6" y="0" width="3" height="11" rx="1.5" />
-      <Rect x="11.5" y="0" width="3" height="11" rx="1.5" />
-      <Rect x="17" y="0" width="3" height="11" rx="1.5" />
-      {/* Neck — organic taper from tines to handle */}
-      <Path d="M0.5 9 H20 C20 13, 12 14, 5.5 14.5 H0.5 Z" />
-      {/* Handle */}
-      <Path d="M0.5 13 h5 v16.5 a2.5 2.5 0 0 1 -5 0 Z" />
-      {/* Middle nub (E middle bar) */}
-      <Path d="M5.5 18 h8.5 a1.75 1.75 0 0 1 0 3.5 H5.5 Z" />
-      {/* Bottom nub (E bottom bar) */}
-      <Path d="M5.5 27.5 h10.5 a1.75 1.75 0 0 1 0 3.5 H5.5 Z" />
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Circle cx="12" cy="12" r="12" fill={color} />
+      <G fill="white">
+        <Rect x="7" y="5" width="1.5" height="7" rx="0.75" />
+        <Rect x="9.5" y="5" width="1.5" height="7" rx="0.75" />
+        <Rect x="12" y="5" width="1.5" height="7" rx="0.75" />
+        <Rect x="14.5" y="5" width="1.5" height="7" rx="0.75" />
+        <Path d="M7 10.5 h9 c0 2.5 -3 3.5 -5 3.5 h-4 Z" />
+        <Rect x="9" y="13" width="3" height="6.5" rx="1.5" />
+      </G>
     </Svg>
   );
 }
 
 export function Logo({ height = 24 }: LogoProps) {
-  const eHeight = Math.round(height * 0.72);
-  const gap = Math.max(1, Math.round(height * 0.05));
+  const dotSize = Math.max(6, Math.round(height * 0.38));
+  const gap = Math.max(2, Math.round(height * 0.12));
 
   return (
     <View style={styles.container} accessibilityLabel="EefEats" accessibilityRole="image">
-      <ForkE size={eHeight} color={colors.primary} />
       <Text
         style={[
           styles.text,
-          { fontSize: height, lineHeight: height, marginLeft: gap },
+          { fontSize: height, lineHeight: height },
         ]}
       >
-        efEats
+        EefEats
       </Text>
+      <View style={{ marginLeft: gap, alignSelf: 'flex-end', marginBottom: Math.round(height * 0.04) }}>
+        <ForkDot size={dotSize} />
+      </View>
     </View>
   );
 }
 
 export function LogoMark({ size = 24, color = colors.primary }: { size?: number; color?: string }) {
-  return <ForkE size={size} color={color} />;
+  return <ForkDot size={size} color={color} />;
 }
 
 const styles = StyleSheet.create({

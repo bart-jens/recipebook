@@ -1,11 +1,11 @@
-<svg viewBox="0 0 22 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-  <!-- Fork-E mark: capital E with rounded fork-tine tips -->
-  <!-- Stem (handle) -->
-  <rect x="0" y="0" width="4.5" height="32"/>
-  <!-- Top tine -->
-  <path d="M4.5 0h14.5a2.25 2.25 0 0 1 0 4.5H4.5z"/>
-  <!-- Middle tine (shorter) -->
-  <path d="M4.5 13.75h11.5a2.25 2.25 0 0 1 0 4.5H4.5z"/>
-  <!-- Bottom tine -->
-  <path d="M4.5 27.5h14.5a2.25 2.25 0 0 1 0 4.5H4.5z"/>
+<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="12"/>
+  <g fill="white">
+    <rect x="7" y="5" width="1.5" height="7" rx="0.75"/>
+    <rect x="9.5" y="5" width="1.5" height="7" rx="0.75"/>
+    <rect x="12" y="5" width="1.5" height="7" rx="0.75"/>
+    <rect x="14.5" y="5" width="1.5" height="7" rx="0.75"/>
+    <path d="M7 10.5 h9 c0 2.5 -3 3.5 -5 3.5 h-4 Z"/>
+    <rect x="9" y="13" width="3" height="6.5" rx="1.5"/>
+  </g>
 </svg>

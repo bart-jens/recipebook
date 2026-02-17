@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable } from 'react-native';
+import { Alert, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -16,16 +16,22 @@ interface Props {
   isFavorite: boolean;
   onToggle: () => void;
   size?: number;
+  disabled?: boolean;
 }
 
-export default function AnimatedHeart({ isFavorite, onToggle, size = 24 }: Props) {
+export default function AnimatedHeart({ isFavorite, onToggle, size = 24, disabled = false }: Props) {
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
+    opacity: disabled ? 0.35 : 1,
   }));
 
   const handlePress = () => {
+    if (disabled) {
+      Alert.alert('Cook first', 'Cook this recipe to add it to favorites.');
+      return;
+    }
     scale.value = withSequence(
       withSpring(animation.heartScale, { damping: 8, stiffness: 200 }),
       withSpring(1, animation.springConfig)

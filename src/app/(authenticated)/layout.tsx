@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/login/actions";
-import { Logo } from "@/components/logo";
+import { Logo, ForkDot } from "@/components/logo";
 
 export default async function AuthenticatedLayout({
   children,
@@ -70,8 +70,10 @@ export default async function AuthenticatedLayout({
       </header>
       <main className="mx-auto max-w-3xl px-6 py-8">{children}</main>
       <footer className="border-t border-warm-divider px-6 py-6">
-        <div className="mx-auto max-w-3xl text-center text-xs text-warm-gray/40">
-          EefEats &mdash; made with love
+        <div className="mx-auto flex max-w-3xl items-center justify-center gap-2 text-xs text-warm-gray/40">
+          <span>EefEats</span>
+          <ForkDot size={10} color="rgba(45,95,93,0.25)" />
+          <span>made with love</span>
         </div>
       </footer>
     </div>

@@ -661,6 +661,12 @@ export type Database = {
           recipe_image_url: string | null
         }[]
       }
+      fork_recipe: {
+        Args: {
+          source_recipe_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

@@ -340,57 +340,18 @@ export default function RecipeDetailScreen() {
 
   const forkRecipe = async () => {
     if (!recipe || !user) return;
-    const { data: forked, error } = await supabase
-      .from('recipes')
-      .insert({
-        title: recipe.title,
-        description: recipe.description,
-        instructions: recipe.instructions,
-        prep_time_minutes: recipe.prep_time_minutes,
-        cook_time_minutes: recipe.cook_time_minutes,
-        servings: recipe.servings,
-        image_url: recipe.image_url,
-        source_type: 'fork',
-        forked_from_id: recipe.id,
-        created_by: user.id,
-      })
-      .select('id')
-      .single();
-
-    if (error || !forked) {
-      Alert.alert('Error', 'Could not fork recipe');
-      return;
-    }
-
-    // Copy ingredients and tags, log analytics event
-    await supabase.from('recipe_analytics').insert({
-      recipe_id: recipe.id,
-      event_type: 'fork',
-      user_id: user.id,
+    const { data: newRecipeId, error } = await supabase.rpc('fork_recipe', {
+      source_recipe_id: recipe.id,
     });
 
-    if (ingredients.length > 0) {
-      await supabase.from('recipe_ingredients').insert(
-        ingredients.map((ing, i) => ({
-          recipe_id: forked.id,
-          ingredient_name: ing.ingredient_name,
-          quantity: ing.quantity,
-          unit: ing.unit,
-          notes: ing.notes,
-          order_index: i,
-        }))
-      );
-    }
-
-    if (tags.length > 0) {
-      await supabase.from('recipe_tags').insert(
-        tags.map((t) => ({ recipe_id: forked.id, tag: t.tag }))
-      );
+    if (error || !newRecipeId) {
+      Alert.alert('Error', error?.message || 'Could not fork recipe');
+      return;
     }
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     Alert.alert('Forked!', 'Recipe added to your collection', [
-      { text: 'View', onPress: () => router.replace(`/recipe/${forked.id}`) },
+      { text: 'View', onPress: () => router.replace(`/recipe/${newRecipeId}`) },
       { text: 'OK' },
     ]);
   };
@@ -781,8 +742,9 @@ export default function RecipeDetailScreen() {
               <Text style={styles.title}>{recipe.title}</Text>
               <AnimatedHeart
                 isFavorite={isFavorited}
-                onToggle={hasCooked ? toggleFavorite : () => {}}
+                onToggle={toggleFavorite}
                 size={24}
+                disabled={!hasCooked}
               />
             </Animated.View>
 
@@ -795,7 +757,7 @@ export default function RecipeDetailScreen() {
                   size="sm"
                   onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
                 />
-                {(recipe.source_type === 'manual' || recipe.forked_from_id) ? (
+                {(recipe.source_type === 'manual' || recipe.source_type === 'fork') ? (
                   recipe.visibility === 'public' ? (
                     <TouchableOpacity
                       activeOpacity={0.7}
@@ -840,7 +802,7 @@ export default function RecipeDetailScreen() {
             )}
 
             {/* Publish limit indicator for free users */}
-            {isOwner && userPlan === 'free' && (recipe.source_type === 'manual' || recipe.forked_from_id) && (
+            {isOwner && userPlan === 'free' && (recipe.source_type === 'manual' || recipe.source_type === 'fork') && (
               <Text style={styles.publishLimitText}>
                 {publishCount}/{publishLimit} published (free plan)
               </Text>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { RecommendationCard } from "../components/recommendation-card";
 import { ActivityFeed } from "./activity-feed";
+import { ForkDot } from "@/components/logo";
 
 interface RecentRecipe {
   id: string;
@@ -161,8 +162,9 @@ export default async function HomePage() {
           </Link>
         </div>
         {(recent || []).length === 0 ? (
-          <div className="mt-4 rounded-md border border-accent/20 bg-accent/5 p-8 text-center">
-            <p className="text-warm-gray">No recipes yet.</p>
+          <div className="mt-4 flex flex-col items-center rounded-md border border-accent/20 bg-accent/5 p-8">
+            <ForkDot size={20} color="rgba(45,95,93,0.3)" />
+            <p className="mt-3 text-warm-gray">No recipes yet.</p>
             <Link
               href="/recipes/new"
               className="mt-2 inline-block text-sm font-medium text-accent hover:underline"
@@ -187,10 +189,8 @@ export default async function HomePage() {
                     />
                   </div>
                 ) : (
-                  <div className="flex aspect-[16/10] items-center justify-center bg-warm-tag">
-                    <span className="text-sm font-medium text-white/80">
-                      {recipe.title.slice(0, 1)}
-                    </span>
+                  <div className="flex aspect-[16/10] items-center justify-center bg-accent/5">
+                    <ForkDot size={20} color="rgba(45,95,93,0.2)" />
                   </div>
                 )}
                 <div className="p-3">
@@ -209,8 +209,9 @@ export default async function HomePage() {
         <h2 className="text-lg font-semibold">Friends are cooking</h2>
         <div className="mt-4">
           {followingCount === 0 ? (
-            <div className="rounded-md border border-accent/20 bg-accent/5 p-8 text-center">
-              <p className="text-warm-gray">Follow friends to see what they&apos;re cooking</p>
+            <div className="flex flex-col items-center rounded-md border border-accent/20 bg-accent/5 p-8">
+              <ForkDot size={20} color="rgba(45,95,93,0.3)" />
+              <p className="mt-3 text-warm-gray">Follow friends to see what they&apos;re cooking</p>
               <Link
                 href="/discover"
                 className="mt-2 inline-block text-sm font-medium text-accent hover:underline"
@@ -219,8 +220,9 @@ export default async function HomePage() {
               </Link>
             </div>
           ) : feedItems.length === 0 ? (
-            <div className="rounded-md border border-accent/20 bg-accent/5 p-8 text-center">
-              <p className="text-warm-gray">Your friends haven&apos;t been cooking lately</p>
+            <div className="flex flex-col items-center rounded-md border border-accent/20 bg-accent/5 p-8">
+              <ForkDot size={20} color="rgba(45,95,93,0.3)" />
+              <p className="mt-3 text-warm-gray">Your friends haven&apos;t been cooking lately</p>
               <Link
                 href="/recipes"
                 className="mt-2 inline-block text-sm font-medium text-accent hover:underline"
@@ -299,10 +301,8 @@ export default async function HomePage() {
                     />
                   </div>
                 ) : (
-                  <div className="flex aspect-[16/10] items-center justify-center bg-warm-tag">
-                    <span className="text-sm font-medium text-white/80">
-                      {recipe.title.slice(0, 1)}
-                    </span>
+                  <div className="flex aspect-[16/10] items-center justify-center bg-accent/5">
+                    <ForkDot size={20} color="rgba(45,95,93,0.2)" />
                   </div>
                 )}
                 <div className="p-3">

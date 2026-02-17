@@ -195,7 +195,7 @@ export function RecipeDetail({
           {isOwner ? (
             <>
               <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
-              {(recipe.source_type === "manual" || forkedFrom) ? (
+              {(recipe.source_type === "manual" || recipe.source_type === "fork") ? (
                 <PublishButton
                   recipeId={recipe.id}
                   isPublic={recipe.visibility === "public"}
@@ -221,7 +221,9 @@ export function RecipeDetail({
             <>
               <SaveButton recipeId={recipe.id} isSaved={isSaved} />
               <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
-              <ForkButton recipeId={recipe.id} />
+              {recipe.visibility === "public" && (
+                <ForkButton recipeId={recipe.id} />
+              )}
             </>
           )}
         </div>

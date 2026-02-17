@@ -1,58 +1,53 @@
 interface LogoProps {
-  /** Controls the font-size of the text portion. Fork-E scales to match cap height. */
   height?: number;
   className?: string;
 }
 
-function ForkE({ size, color }: { size: number; color: string }) {
-  const width = Math.ceil(size * (22 / 32));
+export function ForkDot({ size, color = "#2D5F5D" }: { size: number; color?: string }) {
   return (
     <svg
-      width={width}
+      width={size}
       height={size}
-      viewBox="0 0 22 32"
-      fill={color}
+      viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      {/* Four prongs — rounded tips, the fork's signature */}
-      <rect x="0.5" y="0" width="3" height="11" rx="1.5" />
-      <rect x="6" y="0" width="3" height="11" rx="1.5" />
-      <rect x="11.5" y="0" width="3" height="11" rx="1.5" />
-      <rect x="17" y="0" width="3" height="11" rx="1.5" />
-      {/* Neck — organic taper from tines to handle */}
-      <path d="M0.5 9 H20 C20 13, 12 14, 5.5 14.5 H0.5 Z" />
-      {/* Handle */}
-      <path d="M0.5 13 h5 v16.5 a2.5 2.5 0 0 1 -5 0 Z" />
-      {/* Middle nub (E middle bar) */}
-      <path d="M5.5 18 h8.5 a1.75 1.75 0 0 1 0 3.5 H5.5 Z" />
-      {/* Bottom nub (E bottom bar) */}
-      <path d="M5.5 27.5 h10.5 a1.75 1.75 0 0 1 0 3.5 H5.5 Z" />
+      <circle cx="12" cy="12" r="12" fill={color} />
+      <g fill="white">
+        <rect x="7" y="5" width="1.5" height="7" rx="0.75" />
+        <rect x="9.5" y="5" width="1.5" height="7" rx="0.75" />
+        <rect x="12" y="5" width="1.5" height="7" rx="0.75" />
+        <rect x="14.5" y="5" width="1.5" height="7" rx="0.75" />
+        <path d="M7 10.5 h9 c0 2.5 -3 3.5 -5 3.5 h-4 Z" />
+        <rect x="9" y="13" width="3" height="6.5" rx="1.5" />
+      </g>
     </svg>
   );
 }
 
 export function Logo({ height = 24, className }: LogoProps) {
-  const eHeight = Math.round(height * 0.72);
-  const gap = Math.max(1, Math.round(height * 0.05));
+  const dotSize = Math.max(6, Math.round(height * 0.38));
+  const gap = Math.max(2, Math.round(height * 0.12));
 
   return (
     <span
-      className={`inline-flex items-baseline ${className ?? ""}`}
+      className={`inline-flex items-center ${className ?? ""}`}
       role="img"
       aria-label="EefEats"
     >
-      <ForkE size={eHeight} color="#2D5F5D" />
       <span
         className="font-logo font-bold text-[#111111]"
-        style={{ fontSize: height, lineHeight: 1, marginLeft: gap }}
+        style={{ fontSize: height, lineHeight: 1 }}
       >
-        efEats
+        EefEats
+      </span>
+      <span style={{ marginLeft: gap, display: "inline-flex", alignSelf: "flex-end", marginBottom: Math.round(height * 0.04) }}>
+        <ForkDot size={dotSize} />
       </span>
     </span>
   );
 }
 
 export function LogoMark({ size = 24, color = "#2D5F5D" }: { size?: number; color?: string }) {
-  return <ForkE size={size} color={color} />;
+  return <ForkDot size={size} color={color} />;
 }

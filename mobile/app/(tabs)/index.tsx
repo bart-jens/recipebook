@@ -18,6 +18,7 @@ import Avatar from '@/components/ui/Avatar';
 import HorizontalCarousel from '@/components/ui/HorizontalCarousel';
 import RecommendationCard from '@/components/ui/RecommendationCard';
 import EmptyState from '@/components/ui/EmptyState';
+import { ForkDot } from '@/components/ui/Logo';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
 
 interface CarouselRecipe {
@@ -291,6 +292,7 @@ export default function HomeScreen() {
 
         {followingCount === 0 ? (
           <View style={styles.promptCard}>
+            <ForkDot size={20} color="rgba(45,95,93,0.3)" />
             <Text style={styles.promptTitle}>Follow friends to see what they're cooking</Text>
             <Text style={styles.promptSubtitle}>
               Browse Discover to find people.
@@ -305,6 +307,7 @@ export default function HomeScreen() {
           </View>
         ) : feedItems.length === 0 ? (
           <View style={styles.promptCard}>
+            <ForkDot size={20} color="rgba(45,95,93,0.3)" />
             <Text style={styles.promptTitle}>Your friends haven't been cooking lately</Text>
             <Text style={styles.promptSubtitle}>
               Why not cook something yourself?
@@ -482,6 +485,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontWeight: '600',
     color: colors.text,
+    marginTop: spacing.md,
     marginBottom: spacing.xs,
     textAlign: 'center',
   },

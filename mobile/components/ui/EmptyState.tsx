@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors, spacing, fontFamily, typography } from '@/lib/theme';
+import { ForkDot } from '@/components/ui/Logo';
 
 interface Props {
   title: string;
@@ -12,8 +13,12 @@ interface Props {
 export default function EmptyState({ title, subtitle, icon }: Props) {
   return (
     <View style={styles.container}>
-      {icon && (
+      {icon ? (
         <FontAwesome name={icon} size={28} color={colors.accentWashIcon} style={styles.icon} />
+      ) : (
+        <View style={styles.icon}>
+          <ForkDot size={24} color="rgba(45,95,93,0.3)" />
+        </View>
       )}
       <Text style={styles.title}>{title}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}

@@ -224,79 +224,14 @@ export async function forkRecipe(recipeId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  // Fetch original recipe + ingredients
-  const { data: original } = await supabase
-    .from("recipes")
-    .select("*")
-    .eq("id", recipeId)
-    .single();
-  if (!original) return { error: "Recipe not found" };
-  if (original.visibility !== "public") return { error: "Can only fork public recipes" };
-  if (original.created_by === user.id) return { error: "Cannot fork your own recipe" };
-
-  const [{ data: ingredients }, { data: tags }] = await Promise.all([
-    supabase
-      .from("recipe_ingredients")
-      .select("*")
-      .eq("recipe_id", recipeId)
-      .order("order_index"),
-    supabase
-      .from("recipe_tags")
-      .select("tag")
-      .eq("recipe_id", recipeId),
-  ]);
-
-  // Create forked copy
-  const { data: fork, error } = await supabase
-    .from("recipes")
-    .insert({
-      title: original.title,
-      description: original.description,
-      instructions: original.instructions,
-      prep_time_minutes: original.prep_time_minutes,
-      cook_time_minutes: original.cook_time_minutes,
-      servings: original.servings,
-      image_url: original.image_url,
-      source_type: "fork",
-      created_by: user.id,
-      forked_from_id: recipeId,
-      visibility: "private",
-    })
-    .select("id")
-    .single();
-
-  if (error || !fork) return { error: error?.message || "Failed to fork" };
-
-  // Copy ingredients and tags, log analytics event
-  await supabase.from("recipe_analytics").insert({
-    recipe_id: recipeId,
-    event_type: "fork",
-    user_id: user.id,
+  const { data: newRecipeId, error } = await supabase.rpc("fork_recipe", {
+    source_recipe_id: recipeId,
   });
 
-  if (ingredients && ingredients.length > 0) {
-    await supabase.from("recipe_ingredients").insert(
-      ingredients.map((ing) => ({
-        recipe_id: fork.id,
-        ingredient_name: ing.ingredient_name,
-        quantity: ing.quantity,
-        unit: ing.unit,
-        notes: ing.notes,
-        order_index: ing.order_index,
-      }))
-    );
-  }
+  if (error) return { error: error.message };
+  if (!newRecipeId) return { error: "Failed to fork" };
 
-  if (tags && tags.length > 0) {
-    await supabase.from("recipe_tags").insert(
-      tags.map((t) => ({
-        recipe_id: fork.id,
-        tag: t.tag,
-      }))
-    );
-  }
-
-  redirect(`/recipes/${fork.id}`);
+  redirect(`/recipes/${newRecipeId}`);
 }
 
 export async function shareRecipe(recipeId: string, notes: string | null) {

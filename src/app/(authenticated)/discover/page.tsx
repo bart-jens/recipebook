@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { ForkDot } from "@/components/logo";
 import { DiscoverControls } from "./discover-controls";
 import { LoadMoreButton } from "./load-more";
 
@@ -133,8 +134,9 @@ export default async function DiscoverPage({
       </p>
 
       {enriched.length === 0 ? (
-        <div className="rounded-md border border-accent/20 bg-accent/5 p-8 text-center">
-          <p className="text-warm-gray">
+        <div className="flex flex-col items-center rounded-md border border-accent/20 bg-accent/5 p-8">
+          <ForkDot size={24} color="rgba(45,95,93,0.3)" />
+          <p className="mt-3 text-warm-gray">
             {q ? "No recipes match your search." : "No published recipes yet. Be the first!"}
           </p>
         </div>
@@ -167,9 +169,7 @@ export default async function DiscoverPage({
                   </div>
                 ) : (
                   <div className="flex aspect-[16/10] items-center justify-center bg-accent/5">
-                    <span className="text-2xl font-sans font-medium text-accent/40">
-                      {recipe.title.slice(0, 1)}
-                    </span>
+                    <ForkDot size={24} color="rgba(45,95,93,0.2)" />
                   </div>
                 )}
                 <div className="p-4">

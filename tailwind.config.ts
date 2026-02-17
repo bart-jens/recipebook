@@ -18,7 +18,7 @@ const config: Config = {
           "Roboto",
           "sans-serif",
         ],
-        logo: ["Fraunces", "Georgia", "serif"],
+        logo: ["Outfit", "DM Sans", "sans-serif"],
       },
       keyframes: {
         fadeInUp: {
