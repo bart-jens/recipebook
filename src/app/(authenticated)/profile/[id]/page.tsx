@@ -4,6 +4,28 @@ import { createClient } from "@/lib/supabase/server";
 import { FollowButton } from "./follow-button";
 import { ProfileTabs } from "./profile-tabs";
 
+interface ChefProfileData {
+  profile: {
+    display_name: string;
+    avatar_url: string | null;
+    bio: string | null;
+    role: string;
+    is_private: boolean;
+  };
+  stats: {
+    recipe_count: number;
+    cook_count: number;
+    follower_count: number;
+    following_count: number;
+  };
+  is_following: boolean;
+  can_view: boolean;
+  activity: Array<{ recipe_id: string; recipe_title: string; cooked_at: string; notes: string | null }>;
+  favorites: Array<{ recipe_id: string; recipe_title: string; recipe_image_url: string | null; created_at: string }>;
+  published: Array<{ id: string; title: string; description: string | null; image_url: string | null; published_at: string }>;
+  recommendations: Array<{ recipe_id: string; title: string; source_name: string | null; shared_at: string; notes: string | null }>;
+}
+
 export default async function PublicProfilePage({
   params,
 }: {
@@ -26,13 +48,14 @@ export default async function PublicProfilePage({
 
   if (!chefData) notFound();
 
-  const profile = chefData.profile;
-  const stats = chefData.stats;
-  const canView = chefData.can_view;
+  const data = chefData as unknown as ChefProfileData;
+  const profile = data.profile;
+  const stats = data.stats;
+  const canView = data.can_view;
 
   // Determine follow state
   let followState: "not_following" | "following" | "requested" = "not_following";
-  if (chefData.is_following) {
+  if (data.is_following) {
     followState = "following";
   } else if (user) {
     // Check for pending request (not included in RPC)
@@ -125,10 +148,10 @@ export default async function PublicProfilePage({
         </div>
       ) : (
         <ProfileTabs
-          activity={chefData.activity || []}
-          favorites={chefData.favorites || []}
-          published={chefData.published || []}
-          recommendations={chefData.recommendations || []}
+          activity={data.activity || []}
+          favorites={data.favorites || []}
+          published={data.published || []}
+          recommendations={data.recommendations || []}
           profileName={profile.display_name}
           profileAvatarUrl={profile.avatar_url}
           profileId={params.id}
