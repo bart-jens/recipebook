@@ -21,7 +21,7 @@ interface ChefProfileData {
   is_following: boolean;
   can_view: boolean;
   activity: Array<{ recipe_id: string; recipe_title: string; cooked_at: string; notes: string | null }>;
-  favorites: Array<{ recipe_id: string; recipe_title: string; recipe_image_url: string | null; created_at: string }>;
+  favorites: Array<{ recipe_id: string; recipe_title: string; recipe_image_url: string | null; favorited_at: string; rating: number | null }>;
   published: Array<{ id: string; title: string; description: string | null; image_url: string | null; published_at: string }>;
   recommendations: Array<{ recipe_id: string; title: string; source_name: string | null; shared_at: string; notes: string | null }>;
 }
