@@ -72,7 +72,6 @@ export function RecipeDetail({
   isFavorited,
   isSaved,
   isOwner,
-  forkedFrom,
   creatorName,
   creatorId,
   publishCount,
