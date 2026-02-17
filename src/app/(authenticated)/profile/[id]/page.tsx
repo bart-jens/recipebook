@@ -75,11 +75,11 @@ export default async function PublicProfilePage({
   }
 
   // Use the get_chef_profile RPC for all data in one call
-  const { data: chefData } = await supabase.rpc("get_chef_profile", {
+  const { data: chefData, error } = await supabase.rpc("get_chef_profile", {
     p_chef_id: params.id,
   });
 
-  if (!chefData) notFound();
+  if (error || !chefData) notFound();
 
   const data = chefData as unknown as ChefProfileData;
   const profile = data.profile;
