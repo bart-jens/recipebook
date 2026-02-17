@@ -22,7 +22,13 @@ export default async function AuthenticatedLayout({
     .eq("id", user.id)
     .single();
 
+  const { data: newFollowerCount } = await supabase
+    .rpc("get_new_follower_count", { p_user_id: user.id });
+
   const displayName = profile?.display_name || user.email?.split("@")[0] || "User";
+  const followerBadge = newFollowerCount && newFollowerCount > 0
+    ? newFollowerCount > 9 ? "9+" : String(newFollowerCount)
+    : null;
 
   return (
     <div className="min-h-screen">
@@ -37,8 +43,13 @@ export default async function AuthenticatedLayout({
                 href="/profile"
                 className="flex items-center gap-2 rounded-md px-2 py-1 text-sm text-warm-gray hover:text-[#111111]"
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-warm-tag text-xs font-semibold text-[#111111]">
+                <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-warm-tag text-xs font-semibold text-[#111111]">
                   {displayName[0].toUpperCase()}
+                  {followerBadge && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold leading-none text-white">
+                      {followerBadge}
+                    </span>
+                  )}
                 </span>
                 <span className="hidden sm:inline">{displayName}</span>
               </Link>

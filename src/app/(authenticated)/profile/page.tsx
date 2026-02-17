@@ -46,6 +46,10 @@ export default async function ProfilePage() {
     pendingRequestCount = count || 0;
   }
 
+  // Count new followers since last seen
+  const { data: newFollowerCount } = await supabase
+    .rpc("get_new_follower_count", { p_user_id: user.id });
+
   const publicCount = (recipes || []).filter((r) => r.visibility === "public").length;
   const totalRecipes = (recipes || []).length;
   const timesCooked = (ratings || []).length;
@@ -112,6 +116,18 @@ export default async function ProfilePage() {
           <span className="text-sm font-medium">Follow requests</span>
           <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-accent px-2 text-xs font-medium text-white">
             {pendingRequestCount}
+          </span>
+        </Link>
+      )}
+
+      {(newFollowerCount ?? 0) > 0 && (
+        <Link
+          href="/profile/new-followers"
+          className="mb-6 flex items-center justify-between rounded-md border border-accent/20 bg-accent/5 p-3"
+        >
+          <span className="text-sm font-medium">New followers</span>
+          <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-accent px-2 text-xs font-medium text-white">
+            {newFollowerCount! > 9 ? "9+" : newFollowerCount}
           </span>
         </Link>
       )}

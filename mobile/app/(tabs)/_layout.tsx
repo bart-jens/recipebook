@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Redirect, Tabs } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
+import { supabase } from '@/lib/supabase';
 import { ActivityIndicator, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -50,8 +51,28 @@ function AnimatedTabBarIcon({
   );
 }
 
+function useNewFollowerCount(userId: string | undefined) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    async function fetch() {
+      const { data } = await supabase.rpc('get_new_follower_count', { p_user_id: userId });
+      setCount(data ?? 0);
+    }
+
+    fetch();
+    const interval = setInterval(fetch, 60_000);
+    return () => clearInterval(interval);
+  }, [userId]);
+
+  return count;
+}
+
 export default function TabLayout() {
   const { session, loading } = useAuth();
+  const newFollowerCount = useNewFollowerCount(session?.user?.id);
 
   if (loading) {
     return (
@@ -110,6 +131,8 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="user" color={color} focused={focused} />,
+          tabBarBadge: newFollowerCount > 0 ? (newFollowerCount > 9 ? '9+' : newFollowerCount) : undefined,
+          tabBarBadgeStyle: newFollowerCount > 0 ? { backgroundColor: colors.primary, fontSize: 10 } : undefined,
         }}
       />
     </Tabs>

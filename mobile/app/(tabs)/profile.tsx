@@ -36,6 +36,7 @@ export default function ProfileScreen() {
   const [stats, setStats] = useState({ recipes: 0, published: 0, cooked: 0, followers: 0, following: 0 });
   const [recentRecipes, setRecentRecipes] = useState<RecentRecipe[]>([]);
   const [pendingRequests, setPendingRequests] = useState(0);
+  const [newFollowerCount, setNewFollowerCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
@@ -94,6 +95,12 @@ export default function ProfileScreen() {
         } else {
           setPendingRequests(0);
         }
+
+        // Count new followers since last seen
+        const { data: followerCount } = await supabase.rpc('get_new_follower_count', {
+          p_user_id: user!.id,
+        });
+        setNewFollowerCount(followerCount ?? 0);
 
         setLoading(false);
       }
@@ -159,6 +166,21 @@ export default function ProfileScreen() {
           <Text style={styles.requestsText}>Follow requests</Text>
           <View style={styles.requestsBadge}>
             <Text style={styles.requestsBadgeText}>{pendingRequests}</Text>
+          </View>
+        </TouchableOpacity>
+      )}
+
+      {newFollowerCount > 0 && (
+        <TouchableOpacity
+          style={styles.requestsBanner}
+          onPress={() => router.push('/profile/new-followers')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.requestsText}>New followers</Text>
+          <View style={styles.requestsBadge}>
+            <Text style={styles.requestsBadgeText}>
+              {newFollowerCount > 9 ? '9+' : newFollowerCount}
+            </Text>
           </View>
         </TouchableOpacity>
       )}

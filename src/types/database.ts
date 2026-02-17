@@ -437,6 +437,7 @@ export type Database = {
           role: string
           plan: string
           is_private: boolean
+          last_seen_followers_at: string
           created_at: string
           updated_at: string
         }
@@ -448,6 +449,7 @@ export type Database = {
           role?: string
           plan?: string
           is_private?: boolean
+          last_seen_followers_at?: string
           created_at?: string
           updated_at?: string
         }
@@ -459,6 +461,7 @@ export type Database = {
           role?: string
           plan?: string
           is_private?: boolean
+          last_seen_followers_at?: string
           created_at?: string
           updated_at?: string
         }
@@ -666,6 +669,27 @@ export type Database = {
           p_chef_id: string
         }
         Returns: Json
+      }
+      get_new_follower_count: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: number
+      }
+      get_new_followers: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: {
+          follower_id: string
+          display_name: string
+          avatar_url: string | null
+          followed_at: string
+        }[]
+      }
+      mark_followers_seen: {
+        Args: Record<string, never>
+        Returns: undefined
       }
     }
     Enums: {
