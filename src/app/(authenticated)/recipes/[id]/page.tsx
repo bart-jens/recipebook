@@ -89,29 +89,6 @@ export default async function RecipeDetailPage({
       imageType: img.image_type,
     }));
 
-  // Fetch fork source info if this is a fork
-  let forkedFrom: { id: string; title: string; creator_name: string; creator_id: string } | null = null;
-  if (recipe.forked_from_id) {
-    const { data: original } = await supabase
-      .from("recipes")
-      .select("id, title, created_by")
-      .eq("id", recipe.forked_from_id)
-      .single();
-    if (original) {
-      const { data: creator } = await supabase
-        .from("user_profiles")
-        .select("display_name")
-        .eq("id", original.created_by)
-        .single();
-      forkedFrom = {
-        id: original.id,
-        title: original.title,
-        creator_name: creator?.display_name || "Unknown",
-        creator_id: original.created_by,
-      };
-    }
-  }
-
   // Fetch creator info for public recipes
   let creatorName: string | null = null;
   let creatorId: string | null = null;
@@ -154,7 +131,6 @@ export default async function RecipeDetailPage({
       isFavorited={!!favoriteEntry}
       isSaved={!!savedEntry}
       isOwner={isOwner}
-      forkedFrom={forkedFrom}
       creatorName={creatorName}
       creatorId={creatorId}
       publishCount={publishCount}

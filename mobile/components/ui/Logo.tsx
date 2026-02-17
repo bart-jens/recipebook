@@ -23,7 +23,7 @@ export function ForkDot({ size, color = colors.primary }: { size: number; color?
 }
 
 export function Logo({ height = 24 }: LogoProps) {
-  const dotSize = Math.max(6, Math.round(height * 0.38));
+  const dotSize = Math.max(6, Math.round(height * 0.55));
   const gap = Math.max(2, Math.round(height * 0.12));
 
   return (

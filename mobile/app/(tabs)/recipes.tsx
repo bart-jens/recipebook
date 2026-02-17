@@ -66,8 +66,6 @@ export default function RecipesScreen() {
   const [sort, setSort] = useState<SortOption>('updated');
   const [activeFilter, setActiveFilter] = useState<FilterOption>('');
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [allTags, setAllTags] = useState<string[]>([]);
   const [showImportMenu, setShowImportMenu] = useState(false);
   const [collections, setCollections] = useState<{ id: string; name: string; description: string | null; recipe_count: number; cover_url: string | null }[]>([]);
   const [collectionPlan, setCollectionPlan] = useState('free');
@@ -174,7 +172,35 @@ export default function RecipesScreen() {
       savedRecipes = data;
     }
 
-    const recipeList = [...(ownedData || []), ...(savedRecipes || [])];
+    const titleMatched = [...(ownedData || []), ...(savedRecipes || [])];
+    const titleMatchedIds = new Set(titleMatched.map((r) => r.id));
+
+    // When searching, also find recipes matching by ingredient or tag
+    let extraRecipes: typeof titleMatched = [];
+    if (search) {
+      const [{ data: ingMatches }, { data: tagMatches }, { data: allOwnedIdRows }] = await Promise.all([
+        supabase.from('recipe_ingredients').select('recipe_id').ilike('ingredient_name', `%${search}%`),
+        supabase.from('recipe_tags').select('recipe_id').ilike('tag', `%${search}%`),
+        supabase.from('recipes').select('id').eq('created_by', user.id),
+      ]);
+      const allOwnedIds = new Set((allOwnedIdRows || []).map((r) => r.id));
+      const extraIds = new Set<string>();
+      for (const m of [...(ingMatches || []), ...(tagMatches || [])]) {
+        const id = m.recipe_id;
+        if (!titleMatchedIds.has(id) && (allOwnedIds.has(id) || savedRecipeIds.has(id))) {
+          extraIds.add(id);
+        }
+      }
+      if (extraIds.size > 0) {
+        const { data: extraData } = await supabase
+          .from('recipes')
+          .select(selectFields)
+          .in('id', Array.from(extraIds));
+        extraRecipes = extraData || [];
+      }
+    }
+
+    const recipeList = [...titleMatched, ...extraRecipes];
 
     // Batch fetch ratings for all recipes
     const ratingMap = new Map<string, { total: number; count: number }>();
@@ -204,24 +230,10 @@ export default function RecipesScreen() {
       };
     });
 
-    // Collect all unique tags (before filtering)
-    const tagSet = new Set<string>();
-    for (const r of enriched) {
-      for (const t of r.tags) tagSet.add(t);
-    }
-    setAllTags(Array.from(tagSet).sort());
-
     // Filter by course
     if (selectedCourse) {
       enriched = enriched.filter((r) =>
         r.tags.some((t) => t.toLowerCase() === selectedCourse.toLowerCase())
-      );
-    }
-
-    // Filter by tag
-    if (selectedTag) {
-      enriched = enriched.filter((r) =>
-        r.tags.some((t) => t.toLowerCase() === selectedTag.toLowerCase())
       );
     }
 
@@ -242,7 +254,7 @@ export default function RecipesScreen() {
 
     setRecipes(enriched);
     setLoading(false);
-  }, [user, search, sort, activeFilter, selectedCourse, selectedTag]);
+  }, [user, search, sort, activeFilter, selectedCourse]);
 
   useFocusEffect(
     useCallback(() => {
@@ -256,7 +268,7 @@ export default function RecipesScreen() {
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search your recipes..."
+          placeholder="Search recipes, ingredients, tags..."
           placeholderTextColor={colors.textMuted}
           value={search}
           onChangeText={setSearch}
@@ -351,35 +363,6 @@ export default function RecipesScreen() {
           ))}
         </ScrollView>
 
-        {allTags.length > 0 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.tagRow}
-          >
-            {selectedTag && (
-              <TouchableOpacity
-                style={styles.clearPill}
-                onPress={() => setSelectedTag(null)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.clearPillText}>Clear</Text>
-              </TouchableOpacity>
-            )}
-            {allTags.map((t) => (
-              <TouchableOpacity
-                key={t}
-                style={[styles.tagPill, selectedTag === t && styles.tagPillActive]}
-                onPress={() => setSelectedTag(selectedTag === t ? null : t)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.tagPillText, selectedTag === t && styles.tagPillTextActive]}>
-                  {t}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
       </View>
 
       <CollectionsSection
@@ -521,28 +504,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   coursePillTextActive: {
-    color: colors.text,
-    fontWeight: '600',
-  },
-  tagRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    paddingRight: spacing.lg,
-    paddingBottom: spacing.sm,
-  },
-  tagPill: {
-    paddingBottom: spacing.xs,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tagPillActive: {
-    borderBottomColor: colors.primary,
-  },
-  tagPillText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  tagPillTextActive: {
     color: colors.text,
     fontWeight: '600',
   },

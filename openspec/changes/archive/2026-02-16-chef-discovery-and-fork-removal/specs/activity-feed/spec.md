@@ -1,10 +1,4 @@
-# Activity Feed
-
-The activity feed shows recent cooking and publishing activity from users you follow. It is the primary social surface on the home screen, encouraging users to cook and share.
-
----
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Activity feed view
 The database SHALL have a view `activity_feed_view` that returns a unified feed of social events. The view SHALL UNION two event types: cook events (from cook_log) and publish events (from recipes where published_at IS NOT NULL). Each row SHALL include: event_type ('cooked', 'published'), user_id, recipe_id, event_at (timestamp of the event), and notes (for cook events only).
@@ -16,42 +10,6 @@ The database SHALL have a view `activity_feed_view` that returns a unified feed 
 #### Scenario: Publish event in feed
 - **GIVEN** user B published recipe X at 2026-02-14 12:00
 - **THEN** the activity_feed_view SHALL contain a row with event_type = 'published', user_id = B, recipe_id = X, event_at = 2026-02-14 12:00
-
-### Requirement: Feed query scoped to followed users
-The application SHALL query the activity feed filtered to users that the current user follows. Only events from followed users SHALL appear. The feed SHALL be ordered by event_at descending (newest first).
-
-#### Scenario: Feed shows followed user's activity
-- **GIVEN** user A follows user B
-- **WHEN** user A queries the activity feed
-- **THEN** events from user B SHALL appear in the feed
-
-#### Scenario: Feed excludes unfollowed users
-- **GIVEN** user A does not follow user C
-- **WHEN** user A queries the activity feed
-- **THEN** events from user C SHALL NOT appear
-
-#### Scenario: Feed ordering
-- **GIVEN** user B cooked at 18:00 and user D published at 17:00
-- **AND** user A follows both B and D
-- **WHEN** user A queries the feed
-- **THEN** B's cook event SHALL appear before D's publish event
-
-### Requirement: Feed pagination
-The feed SHALL support cursor-based pagination using the event_at timestamp. The client SHALL pass a `before` timestamp to fetch older events. Each page SHALL return up to 20 items.
-
-#### Scenario: First page
-- **WHEN** user A loads the feed without a cursor
-- **THEN** the 20 most recent events from followed users SHALL be returned
-
-#### Scenario: Next page
-- **GIVEN** the last event on page 1 has event_at = 2026-02-10 12:00
-- **WHEN** user A loads the next page with before = 2026-02-10 12:00
-- **THEN** the next 20 events older than that timestamp SHALL be returned
-
-#### Scenario: End of feed
-- **WHEN** fewer than 20 events exist after the cursor
-- **THEN** all remaining events SHALL be returned
-- **AND** the client SHALL know there are no more pages
 
 ### Requirement: Feed UI on home screen (web)
 The web home dashboard SHALL include a "Your Chefs" section showing the activity feed. Each feed item SHALL display: user avatar and display_name (linked to profile), action verb ("cooked" / "published"), recipe title and thumbnail (linked to recipe detail), relative timestamp ("2h ago", "yesterday"), and for cook events: the notes if present.
@@ -102,3 +60,13 @@ The feed SHALL handle two empty states with distinct messages and calls to actio
 - **WHEN** user A views the feed
 - **THEN** a message SHALL be shown: "Your Chefs haven't been cooking lately"
 - **AND** a link to the user's recipe collection SHALL be provided
+
+## REMOVED Requirements
+
+### Requirement: Fork event in feed
+**Reason**: Fork functionality is being removed from the platform. Fork events are no longer generated or displayed.
+**Migration**: The 'forked' UNION is removed from `activity_feed_view`. The `get_activity_feed` RPC no longer returns fork events. Feed UI no longer handles event_type = 'forked'.
+
+### Requirement: Fork event display
+**Reason**: Fork functionality is being removed. No fork events to display.
+**Migration**: Remove fork event rendering from activity feed components on both web and mobile.

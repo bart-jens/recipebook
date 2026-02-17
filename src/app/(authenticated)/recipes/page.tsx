@@ -36,7 +36,7 @@ interface EnrichedRecipe extends RecipeRow {
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: { q?: string; sort?: string; tag?: string; course?: string; filter?: string };
+  searchParams: { q?: string; sort?: string; course?: string; filter?: string };
 }) {
   const supabase = createClient();
   const {
@@ -44,7 +44,6 @@ export default async function RecipesPage({
   } = await supabase.auth.getUser();
   const q = searchParams.q || "";
   const sort = searchParams.sort || "updated";
-  const tag = searchParams.tag || "";
   const course = searchParams.course || "";
   const filter = searchParams.filter || "";
 
@@ -90,18 +89,39 @@ export default async function RecipesPage({
     savedRecipes = data;
   }
 
-  // Merge owned + saved
-  let merged = [
+  // Merge owned + saved (title-matched)
+  const titleMatched = [
     ...(ownedRecipes || []),
     ...(savedRecipes || []),
   ] as unknown as RecipeRow[];
+  const titleMatchedIds = new Set(titleMatched.map((r) => r.id));
 
-  // Filter by tag
-  if (tag) {
-    merged = merged.filter(
-      (r) => r.recipe_tags && r.recipe_tags.some((t) => t.tag === tag)
-    );
+  // When searching, also find recipes matching by ingredient or tag
+  let extraRecipes: RecipeRow[] = [];
+  if (q) {
+    const [{ data: ingMatches }, { data: tagMatches }, { data: allOwnedIdRows }] = await Promise.all([
+      supabase.from("recipe_ingredients").select("recipe_id").ilike("ingredient_name", `%${q}%`),
+      supabase.from("recipe_tags").select("recipe_id").ilike("tag", `%${q}%`),
+      supabase.from("recipes").select("id").eq("created_by", user!.id),
+    ]);
+    const allOwnedIds = new Set((allOwnedIdRows || []).map((r) => r.id));
+    const extraIds = new Set<string>();
+    for (const m of [...(ingMatches || []), ...(tagMatches || [])]) {
+      const id = m.recipe_id;
+      if (!titleMatchedIds.has(id) && (allOwnedIds.has(id) || savedRecipeIds.has(id))) {
+        extraIds.add(id);
+      }
+    }
+    if (extraIds.size > 0) {
+      const { data: extraData } = await supabase
+        .from("recipes")
+        .select(selectFields)
+        .in("id", Array.from(extraIds));
+      extraRecipes = (extraData || []) as unknown as RecipeRow[];
+    }
   }
+
+  let merged = [...titleMatched, ...extraRecipes] as RecipeRow[];
 
   // Filter by course
   if (course) {

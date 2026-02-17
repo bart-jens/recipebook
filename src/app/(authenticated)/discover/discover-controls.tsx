@@ -6,7 +6,12 @@ import { useRef, useTransition } from "react";
 const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
   { value: "rating", label: "Highest rated" },
-  { value: "popular", label: "Most forked" },
+  { value: "popular", label: "Most popular" },
+];
+
+const TABS = [
+  { value: "recipes", label: "Recipes" },
+  { value: "chefs", label: "Chefs" },
 ];
 
 export function DiscoverControls() {
@@ -15,6 +20,7 @@ export function DiscoverControls() {
   const [isPending, startTransition] = useTransition();
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
+  const tab = searchParams.get("tab") || "recipes";
   const q = searchParams.get("q") || "";
   const sort = searchParams.get("sort") || "newest";
   const tag = searchParams.get("tag") || "";
@@ -41,54 +47,76 @@ export function DiscoverControls() {
   }
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div className="relative flex-1">
-        <input
-          type="search"
-          placeholder="Search published recipes..."
-          defaultValue={q}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="w-full rounded-md bg-warm-tag px-3 py-2 pl-9 text-sm placeholder:text-warm-gray/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-        />
-        <svg
-          className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-gray/50"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-        {isPending && (
-          <div className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-warm-border border-t-accent" />
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        {tag && (
+    <div className="flex flex-col gap-4">
+      {/* Tab segmented control */}
+      <div className="flex gap-1 rounded-md bg-warm-tag p-1">
+        {TABS.map((t) => (
           <button
-            onClick={() => updateParams({ tag: "" })}
-            className="flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent"
+            key={t.value}
+            onClick={() => updateParams({ tab: t.value === "recipes" ? "" : t.value })}
+            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+              tab === t.value
+                ? "bg-white text-foreground shadow-sm"
+                : "text-warm-gray hover:text-foreground"
+            }`}
           >
-            {tag}
-            <span className="ml-0.5">&times;</span>
+            {t.label}
           </button>
-        )}
-        <select
-          value={sort}
-          onChange={(e) => updateParams({ sort: e.target.value })}
-          className="rounded-md bg-warm-tag px-3 py-2 text-sm text-warm-gray focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-        >
-          {SORT_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        ))}
       </div>
+
+      {/* Recipe-specific controls (only show on recipes tab) */}
+      {tab === "recipes" && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <input
+              type="search"
+              placeholder="Search recipes, ingredients, tags..."
+              defaultValue={q}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full rounded-md bg-warm-tag px-3 py-2 pl-9 text-sm placeholder:text-warm-gray/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+            />
+            <svg
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-gray/50"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            {isPending && (
+              <div className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-warm-border border-t-accent" />
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {tag && (
+              <button
+                onClick={() => updateParams({ tag: "" })}
+                className="flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent"
+              >
+                {tag}
+                <span className="ml-0.5">&times;</span>
+              </button>
+            )}
+            <select
+              value={sort}
+              onChange={(e) => updateParams({ sort: e.target.value })}
+              className="rounded-md bg-warm-tag px-3 py-2 text-sm text-warm-gray focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

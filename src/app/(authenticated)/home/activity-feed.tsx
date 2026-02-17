@@ -5,7 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 interface FeedItem {
-  event_type: "cooked" | "published" | "forked";
+  event_type: "cooked" | "published";
   user_id: string;
   recipe_id: string;
   event_at: string;
@@ -31,7 +31,6 @@ function actionVerb(type: string): string {
   switch (type) {
     case "cooked": return " cooked ";
     case "published": return " published ";
-    case "forked": return " forked ";
     default: return " ";
   }
 }

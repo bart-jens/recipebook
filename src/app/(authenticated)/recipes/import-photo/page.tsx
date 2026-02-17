@@ -46,7 +46,7 @@ function resizeImage(file: File, maxSize: number): Promise<{ base64: string; med
 export default function ImportPhotoPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [importedData, setImportedData] = useState<RecipeFormData | null>(null);
+  const [importedData, setImportedData] = useState<(RecipeFormData & { tags?: string[] }) | null>(null);
   const [sourceName, setSourceName] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
 
@@ -90,6 +90,7 @@ export default function ImportPhotoPage() {
             unit: ing.unit,
             notes: ing.notes,
           })),
+          tags: result.data.tags || [],
         });
       }
     } catch {
@@ -103,6 +104,9 @@ export default function ImportPhotoPage() {
     formData.set("source_type", "photo");
     if (sourceName.trim()) {
       formData.set("source_name", sourceName.trim());
+    }
+    if (importedData?.tags && importedData.tags.length > 0) {
+      formData.set("tags", JSON.stringify(importedData.tags));
     }
     return createRecipe(formData);
   }

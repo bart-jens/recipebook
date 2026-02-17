@@ -15,7 +15,7 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, typography, radii } from '@/lib/theme';
-import EmptyState from './EmptyState';
+
 
 interface Collection {
   id: string;
@@ -96,15 +96,7 @@ export default function CollectionsSection({ collections, userPlan, onRefresh }:
         )}
       </View>
 
-      {collections.length === 0 ? (
-        <TouchableOpacity
-          style={styles.emptyCard}
-          onPress={() => setShowCreate(true)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.emptyText}>Create your first collection</Text>
-        </TouchableOpacity>
-      ) : (
+      {collections.length > 0 && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -266,19 +258,6 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
     marginTop: 2,
-  },
-  emptyCard: {
-    marginHorizontal: spacing.pagePadding,
-    padding: spacing.lg,
-    borderRadius: radii.md,
-    backgroundColor: colors.accentWash,
-    borderWidth: 1,
-    borderColor: colors.accentWashBorder,
-    alignItems: 'center',
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.textSecondary,
   },
   modalOverlay: {
     flex: 1,

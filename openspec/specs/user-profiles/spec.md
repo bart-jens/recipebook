@@ -44,25 +44,26 @@ The system SHALL allow users to set their profile to public or private via an `i
 - **THEN** their profile SHALL have is_private = false (public by default)
 
 ### Requirement: Public profile page
-The system SHALL provide a public profile page at `/profile/[userId]` displaying: display_name, avatar, bio, and stats (recipes published, times cooked, followers count, following count). For public profiles, the page SHALL also show a grid of the user's public recipes.
+The system SHALL provide a public profile page at `/profile/[userId]` displaying: display_name, avatar, bio, and stats (recipes count, times cooked, followers count, following count). Below the stats and follow button, the page SHALL display content in horizontal tabs: Activity, Favorites, Published, Recommendations. For public profiles, tab content SHALL be visible to all authenticated users. For private profiles, tab content SHALL only be visible to approved followers and the profile owner.
 
 #### Scenario: Viewing a public profile
 - **WHEN** any authenticated user visits `/profile/[userId]` for a public user
-- **THEN** the page SHALL display display_name, avatar, bio, stats, and public recipes
+- **THEN** the page SHALL display display_name, avatar, bio, stats, follow button, and tabbed content sections
 
 #### Scenario: Viewing a private profile as non-follower
 - **WHEN** user A (not a follower) visits `/profile/[userId]` for a private user B
 - **THEN** the page SHALL display display_name, avatar, bio, and follower/following counts
-- **AND** recipes and cooking activity SHALL be hidden
+- **AND** tabs SHALL NOT be displayed
+- **AND** a "This account is private" message SHALL be shown
 - **AND** a "Request to Follow" button SHALL be shown
 
 #### Scenario: Viewing a private profile as approved follower
 - **WHEN** user A (an approved follower) visits `/profile/[userId]` for private user B
-- **THEN** the page SHALL display the full profile including recipes and activity (same as public)
+- **THEN** the page SHALL display the full profile including all tabs (same as public)
 
 #### Scenario: Viewing own profile
 - **WHEN** a user visits their own profile page
-- **THEN** the page SHALL display the full profile with an "Edit Profile" button
+- **THEN** the page SHALL display the full profile with all tabs and an "Edit Profile" button
 
 ### Requirement: Avatar upload
 The system SHALL allow users to upload a profile picture. Avatars SHALL be stored in Supabase Storage bucket `avatars` at path `{userId}/{timestamp}.{ext}`. The client SHALL crop images to square (1:1) and resize to max 512x512 before upload. After upload, the `user_profiles.avatar_url` SHALL be updated with the public storage URL.
@@ -130,13 +131,13 @@ The system SHALL show a follow action button on profile pages. The button behavi
 - **AND** the button SHALL revert to "Follow" or "Request to Follow" depending on B's privacy setting
 
 ### Requirement: Profile stats
-The profile page SHALL display stats calculated on demand: recipes published (count of user's public recipes), times cooked (count of user's recipe_ratings), followers (count of user_follows where following_id = user), following (count of user_follows where follower_id = user).
+The profile page SHALL display stats calculated on demand: recipes (count of user's total recipes), times cooked (count of user's cook_log entries), followers (count of user_follows where following_id = user), following (count of user_follows where follower_id = user).
 
 #### Scenario: Stats on a public profile
-- **GIVEN** user B has 5 public recipes, 12 ratings, 8 followers, and follows 3 users
+- **GIVEN** user B has 5 recipes total, 12 cook_log entries, 8 followers, and follows 3 users
 - **THEN** user B's profile SHALL display: "5 recipes", "12 cooked", "8 followers", "3 following"
 
 #### Scenario: Stats on a private profile viewed by non-follower
 - **WHEN** non-follower views private user B's profile
 - **THEN** followers and following counts SHALL still be visible
-- **AND** recipes published and times cooked SHALL be hidden
+- **AND** recipes count and times cooked SHALL be hidden

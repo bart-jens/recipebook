@@ -219,21 +219,6 @@ export async function unpublishRecipe(recipeId: string) {
   revalidatePath("/discover");
 }
 
-export async function forkRecipe(recipeId: string) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Not authenticated" };
-
-  const { data: newRecipeId, error } = await supabase.rpc("fork_recipe", {
-    source_recipe_id: recipeId,
-  });
-
-  if (error) return { error: error.message };
-  if (!newRecipeId) return { error: "Failed to fork" };
-
-  redirect(`/recipes/${newRecipeId}`);
-}
-
 export async function shareRecipe(recipeId: string, notes: string | null) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();

@@ -661,11 +661,11 @@ export type Database = {
           recipe_image_url: string | null
         }[]
       }
-      fork_recipe: {
+      get_chef_profile: {
         Args: {
-          source_recipe_id: string
+          p_chef_id: string
         }
-        Returns: string
+        Returns: Json
       }
     }
     Enums: {

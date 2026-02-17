@@ -19,7 +19,6 @@ interface RecipeData {
   creatorName?: string;
   avgRating?: number | null;
   ratingCount?: number;
-  forkCount?: number;
   isFavorited?: boolean;
 }
 
@@ -98,11 +97,6 @@ export default function RecipeCard({ recipe, onPress, onLongPress, variant = 'de
                 <Text style={styles.metaText}>({recipe.ratingCount})</Text>
               )}
             </View>
-          )}
-          {recipe.forkCount != null && recipe.forkCount > 0 && (
-            <Text style={styles.metaText}>
-              {recipe.forkCount} fork{recipe.forkCount !== 1 ? 's' : ''}
-            </Text>
           )}
           {cookTime != null && (
             <Text style={styles.metaText}>{cookTime} min</Text>

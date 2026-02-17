@@ -1,32 +1,4 @@
-# Social Platform
-
-The social layer of EefEats connects Chefs through follows, ratings, and an activity feed. Users discover public recipes, follow Chefs, rate recipes they have cooked, and see what the Chefs they follow are up to.
-
----
-
-## Requirements
-
-### Requirement: Public ratings on canonical recipes
-The existing `recipe_ratings` table SHALL work for both personal and canonical recipes. When a recipe is public, all ratings from all users are visible. The recipe card and detail page SHALL show the aggregate average and count. **A user SHALL NOT be able to insert a rating unless they have at least one cook_log entry for that recipe.** This gate SHALL be enforced via RLS policy on insert.
-
-#### Scenario: Aggregate rating display
-- **GIVEN** recipe X has ratings of 4, 5, 3 from three users
-- **THEN** the displayed average SHALL be 4.0 with count "3 ratings"
-
-#### Scenario: Rating a public recipe after cooking
-- **GIVEN** user A has at least one cook_log entry for public recipe X
-- **WHEN** user A rates public recipe X with 4 stars and a note
-- **THEN** the rating SHALL be visible to all users viewing recipe X
-
-#### Scenario: Rating a public recipe without cooking
-- **GIVEN** user A has no cook_log entries for public recipe X
-- **WHEN** user A attempts to rate public recipe X
-- **THEN** the insert SHALL be rejected by the RLS policy
-
-#### Scenario: Rating own recipe after cooking
-- **GIVEN** user A has at least one cook_log entry for their own recipe X
-- **WHEN** user A rates recipe X with 5 stars
-- **THEN** the rating SHALL be inserted
+## MODIFIED Requirements
 
 ### Requirement: Recipe discovery
 The system SHALL provide a public discovery page where users can browse canonical (public) recipes. Discovery SHALL support: search by title (case-insensitive ILIKE), filter by tags, sort by newest (published_at desc), highest rated (avg rating desc), most popular (rating count desc). Discovery only shows public recipes, never private or subscribers-only.
@@ -109,3 +81,13 @@ The home screen SHALL contain three sections in order: (1) greeting with the use
 - **GIVEN** user follows Chefs but none have recent activity
 - **WHEN** user views the home screen
 - **THEN** the Your Chefs section SHALL show "Your Chefs haven't been cooking lately"
+
+## REMOVED Requirements
+
+### Requirement: Sort by most forked
+**Reason**: Fork functionality is being removed from the platform. Fork count is no longer a meaningful discovery signal.
+**Migration**: The "Most Forked" sort option is removed from the Discover page. Replaced by existing "Most Popular" (rating count) sort.
+
+### Requirement: Fork count on recipe card
+**Reason**: Fork functionality is being removed. Fork counts are no longer displayed.
+**Migration**: Remove fork count from recipe card components on Discover and profile pages. No replacement needed.

@@ -46,7 +46,29 @@ export function LoadMoreButton({
     }
 
     const { data } = await query;
-    const newRecipes = (data || []) as { id: string; title: string; description: string | null; image_url: string | null; prep_time_minutes: number | null; cook_time_minutes: number | null; created_by: string }[];
+    let newRecipes = (data || []) as { id: string; title: string; description: string | null; image_url: string | null; prep_time_minutes: number | null; cook_time_minutes: number | null; created_by: string }[];
+
+    // Also find public recipes matching by ingredient or tag
+    if (searchQuery) {
+      const titleIds = new Set(newRecipes.map((r) => r.id));
+      const allLoadedIds = new Set([...recipes.map((r) => r.id), ...Array.from(titleIds)]);
+      const [{ data: ingMatches }, { data: tagMatches }] = await Promise.all([
+        supabase.from("recipe_ingredients").select("recipe_id").ilike("ingredient_name", `%${searchQuery}%`),
+        supabase.from("recipe_tags").select("recipe_id").ilike("tag", `%${searchQuery}%`),
+      ]);
+      const extraIds = new Set<string>();
+      for (const m of [...(ingMatches || []), ...(tagMatches || [])]) {
+        if (!allLoadedIds.has(m.recipe_id)) extraIds.add(m.recipe_id);
+      }
+      if (extraIds.size > 0) {
+        const { data: extraData } = await supabase
+          .from("recipes")
+          .select("id, title, description, image_url, prep_time_minutes, cook_time_minutes, created_by")
+          .eq("visibility", "public")
+          .in("id", Array.from(extraIds));
+        newRecipes = [...newRecipes, ...(extraData || []) as typeof newRecipes];
+      }
+    }
 
     if (newRecipes.length < pageSize) {
       setHasMore(false);

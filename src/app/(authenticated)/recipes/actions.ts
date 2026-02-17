@@ -40,6 +40,19 @@ export async function createRecipe(formData: FormData) {
 
   if (error) return { error: error.message };
 
+  // Save tags
+  const tagsJson = formData.get("tags") as string;
+  const tags: string[] = JSON.parse(tagsJson || "[]");
+  if (tags.length > 0) {
+    const tagRows = tags
+      .map((t) => t.toLowerCase().trim())
+      .filter((t) => t)
+      .map((t) => ({ recipe_id: recipe.id, tag: t }));
+    if (tagRows.length > 0) {
+      await supabase.from("recipe_tags").insert(tagRows);
+    }
+  }
+
   const ingredients = JSON.parse(ingredientsJson || "[]");
   if (ingredients.length > 0) {
     const rows = ingredients

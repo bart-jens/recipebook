@@ -61,7 +61,6 @@ interface Recipe {
   image_url: string | null;
   visibility: string;
   created_by: string;
-  forked_from_id: string | null;
 }
 
 interface Ingredient {
@@ -96,7 +95,6 @@ export default function RecipeDetailScreen() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [ratings, setRatings] = useState<RatingEntry[]>([]);
   const [creatorName, setCreatorName] = useState<string | null>(null);
-  const [forkedFrom, setForkedFrom] = useState<{ id: string; title: string; creatorName: string; creatorId: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [cookEntries, setCookEntries] = useState<{ id: string; cooked_at: string; notes: string | null }[]>([]);
@@ -193,32 +191,6 @@ export default function RecipeDetailScreen() {
       setCreatorName(creator?.display_name || null);
     }
 
-    // Fetch fork attribution info
-    if (recipeData?.forked_from_id) {
-      const { data: original } = await supabase
-        .from('recipes')
-        .select('id, title, created_by')
-        .eq('id', recipeData.forked_from_id)
-        .single();
-      if (original) {
-        const { data: origCreator } = await supabase
-          .from('user_profiles')
-          .select('display_name')
-          .eq('id', original.created_by)
-          .single();
-        setForkedFrom({
-          id: original.id,
-          title: original.title,
-          creatorName: origCreator?.display_name || 'Unknown',
-          creatorId: original.created_by,
-        });
-      } else {
-        setForkedFrom(null);
-      }
-    } else {
-      setForkedFrom(null);
-    }
-
     // Owner-specific data
     if (recipeData && recipeData.created_by === user?.id) {
       // Fetch publish count and user plan
@@ -230,7 +202,7 @@ export default function RecipeDetailScreen() {
       setPublishCount(count || 0);
 
       // Check share status for imported recipes
-      if (recipeData.source_type !== 'manual' && !recipeData.forked_from_id) {
+      if (recipeData.source_type !== 'manual') {
         const { data: share } = await supabase
           .from('recipe_shares')
           .select('notes')
@@ -336,24 +308,6 @@ export default function RecipeDetailScreen() {
         },
       ]
     );
-  };
-
-  const forkRecipe = async () => {
-    if (!recipe || !user) return;
-    const { data: newRecipeId, error } = await supabase.rpc('fork_recipe', {
-      source_recipe_id: recipe.id,
-    });
-
-    if (error || !newRecipeId) {
-      Alert.alert('Error', error?.message || 'Could not fork recipe');
-      return;
-    }
-
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Alert.alert('Forked!', 'Recipe added to your collection', [
-      { text: 'View', onPress: () => router.replace(`/recipe/${newRecipeId}`) },
-      { text: 'OK' },
-    ]);
   };
 
   const handleShare = () => {
@@ -682,25 +636,6 @@ export default function RecipeDetailScreen() {
               </TouchableOpacity>
             )}
 
-            {/* Fork attribution */}
-            {forkedFrom ? (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => router.push(`/recipe/${forkedFrom.id}`)}
-                style={{ marginBottom: spacing.xs }}
-              >
-                <Text style={styles.forkAttribution}>
-                  Forked from{' '}
-                  <Text style={styles.forkAttributionLink}>{forkedFrom.title}</Text>
-                  {' '}by {forkedFrom.creatorName}
-                </Text>
-              </TouchableOpacity>
-            ) : recipe.source_type === 'fork' ? (
-              <Text style={[styles.forkAttribution, { marginBottom: spacing.xs }]}>
-                Forked from a recipe that is no longer available
-              </Text>
-            ) : null}
-
             {/* Aggregate rating for public recipes */}
             {recipe.visibility === 'public' && !isOwner && ratings.length > 0 && (() => {
               const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
@@ -757,7 +692,7 @@ export default function RecipeDetailScreen() {
                   size="sm"
                   onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
                 />
-                {(recipe.source_type === 'manual' || recipe.source_type === 'fork') ? (
+                {recipe.source_type === 'manual' ? (
                   recipe.visibility === 'public' ? (
                     <TouchableOpacity
                       activeOpacity={0.7}
@@ -802,13 +737,13 @@ export default function RecipeDetailScreen() {
             )}
 
             {/* Publish limit indicator for free users */}
-            {isOwner && userPlan === 'free' && (recipe.source_type === 'manual' || recipe.source_type === 'fork') && (
+            {isOwner && userPlan === 'free' && recipe.source_type === 'manual' && (
               <Text style={styles.publishLimitText}>
                 {publishCount}/{publishLimit} published (free plan)
               </Text>
             )}
 
-            {/* Non-owner: save + fork */}
+            {/* Non-owner: save */}
             {!isOwner && recipe.visibility === 'public' && (
               <Animated.View entering={FadeInDown.delay(animation.staggerDelay).duration(300)} style={styles.ownerActions}>
                 <Button
@@ -816,12 +751,6 @@ export default function RecipeDetailScreen() {
                   variant={isSaved ? 'primary' : 'secondary'}
                   size="md"
                   onPress={toggleSave}
-                />
-                <Button
-                  title="Fork"
-                  variant="secondary"
-                  size="md"
-                  onPress={forkRecipe}
                 />
               </Animated.View>
             )}
@@ -1377,8 +1306,6 @@ const styles = StyleSheet.create({
 
   // Creator & source
   creatorLink: { ...typography.bodySmall, color: colors.primary, fontWeight: '500' },
-  forkAttribution: { ...typography.bodySmall, color: colors.textSecondary },
-  forkAttributionLink: { color: colors.primary },
   aggregateRating: {
     flexDirection: 'row',
     alignItems: 'center',

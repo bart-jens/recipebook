@@ -4,130 +4,104 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, Stack, useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
 import Avatar from '@/components/ui/Avatar';
-import SectionHeader from '@/components/ui/SectionHeader';
 import RecipeCard from '@/components/ui/RecipeCard';
 import RecommendationCard from '@/components/ui/RecommendationCard';
 import Button from '@/components/ui/Button';
+import { ForkDot } from '@/components/ui/Logo';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
 
 type FollowState = 'not_following' | 'following' | 'requested';
+type TabId = 'activity' | 'favorites' | 'published' | 'recommendations';
 
-interface Profile {
-  id: string;
-  display_name: string;
-  bio: string | null;
-  is_private: boolean;
-  avatar_url: string | null;
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'activity', label: 'Activity' },
+  { id: 'favorites', label: 'Favorites' },
+  { id: 'published', label: 'Published' },
+  { id: 'recommendations', label: 'Recs' },
+];
+
+interface ChefProfile {
+  profile: {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+    bio: string | null;
+    is_private: boolean;
+    role: string;
+  };
+  stats: {
+    recipe_count: number;
+    cook_count: number;
+    follower_count: number;
+    following_count: number;
+  };
+  is_following: boolean;
+  is_owner: boolean;
+  can_view: boolean;
+  activity: { recipe_id: string; recipe_title: string; cooked_at: string; notes: string | null }[];
+  favorites: { recipe_id: string; recipe_title: string; recipe_image_url: string | null; favorited_at: string }[];
+  published: { id: string; title: string; description: string | null; image_url: string | null; published_at: string }[];
+  recommendations: { share_id: string; title: string; source_url: string | null; source_name: string | null; source_type: string; image_url: string | null; tags: string[] | null; user_rating: number | null; share_notes: string | null; shared_at: string; recipe_id: string }[];
 }
 
-interface PublicRecipe {
-  id: string;
-  title: string;
-  description: string | null;
-  image_url: string | null;
-  prep_time_minutes: number | null;
-  cook_time_minutes: number | null;
-}
-
-interface ShareCard {
-  share_id: string;
-  user_id: string;
-  recipe_id: string;
-  share_notes: string | null;
-  shared_at: string;
-  title: string;
-  source_url: string | null;
-  source_name: string | null;
-  source_type: string;
-  image_url: string | null;
-  tags: string[] | null;
-  user_rating: number | null;
+function formatDate(timestamp: string): string {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days} days ago`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 export default function PublicProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
 
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [recipes, setRecipes] = useState<PublicRecipe[]>([]);
-  const [shareCards, setShareCards] = useState<ShareCard[]>([]);
+  const [chefData, setChefData] = useState<ChefProfile | null>(null);
   const [followState, setFollowState] = useState<FollowState>('not_following');
   const [followerCount, setFollowerCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('activity');
 
   useFocusEffect(
     useCallback(() => {
       if (!id) return;
 
       async function load() {
-        const [
-          { data: profileData },
-          { data: publicRecipes },
-          { data: followers },
-          { data: following },
-          { data: shareData },
-        ] = await Promise.all([
-          supabase
-            .from('user_profiles')
-            .select('id, display_name, bio, is_private, avatar_url')
-            .eq('id', id!)
-            .single(),
-          supabase
-            .from('recipes')
-            .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes')
-            .eq('created_by', id!)
-            .eq('visibility', 'public')
-            .order('published_at', { ascending: false }),
-          supabase
-            .from('user_follows')
-            .select('id')
-            .eq('following_id', id!),
-          supabase
-            .from('user_follows')
-            .select('id')
-            .eq('follower_id', id!),
-          supabase
-            .from('recipe_share_cards')
-            .select('*')
-            .eq('user_id', id!)
-            .order('shared_at', { ascending: false }),
-        ]);
+        const { data } = await supabase.rpc('get_chef_profile', {
+          p_chef_id: id!,
+        });
 
-        setProfile(profileData);
-        setRecipes(publicRecipes || []);
-        setShareCards((shareData || []) as ShareCard[]);
-        setFollowerCount((followers || []).length);
-        setFollowingCount((following || []).length);
+        if (!data) {
+          setLoading(false);
+          return;
+        }
 
-        // Check follow state
-        if (user && user.id !== id) {
-          const { data: followCheck } = await supabase
-            .from('user_follows')
+        setChefData(data as ChefProfile);
+        setFollowerCount(data.stats.follower_count);
+
+        // Determine follow state
+        if (data.is_following) {
+          setFollowState('following');
+        } else if (user && user.id !== id) {
+          const { data: requestCheck } = await supabase
+            .from('follow_requests')
             .select('id')
-            .eq('follower_id', user.id)
-            .eq('following_id', id!)
+            .eq('requester_id', user.id)
+            .eq('target_id', id!)
             .single();
-
-          if (followCheck) {
-            setFollowState('following');
-          } else {
-            // Check for pending request
-            const { data: requestCheck } = await supabase
-              .from('follow_requests')
-              .select('id')
-              .eq('requester_id', user.id)
-              .eq('target_id', id!)
-              .single();
-            setFollowState(requestCheck ? 'requested' : 'not_following');
-          }
+          setFollowState(requestCheck ? 'requested' : 'not_following');
         }
 
         setLoading(false);
@@ -138,12 +112,11 @@ export default function PublicProfileScreen() {
   );
 
   const handleFollowAction = async () => {
-    if (!user || !id || user.id === id || actionLoading) return;
+    if (!user || !id || user.id === id || actionLoading || !chefData) return;
 
     setActionLoading(true);
     try {
       if (followState === 'following') {
-        // Unfollow
         await supabase
           .from('user_follows')
           .delete()
@@ -152,7 +125,6 @@ export default function PublicProfileScreen() {
         setFollowState('not_following');
         setFollowerCount((c) => Math.max(0, c - 1));
       } else if (followState === 'requested') {
-        // Cancel request
         await supabase
           .from('follow_requests')
           .delete()
@@ -160,8 +132,7 @@ export default function PublicProfileScreen() {
           .eq('target_id', id);
         setFollowState('not_following');
       } else {
-        // Follow or request
-        if (profile?.is_private) {
+        if (chefData.profile.is_private) {
           await supabase
             .from('follow_requests')
             .insert({ requester_id: user.id, target_id: id });
@@ -189,7 +160,7 @@ export default function PublicProfileScreen() {
     );
   }
 
-  if (!profile) {
+  if (!chefData) {
     return (
       <>
         <Stack.Screen options={{ headerTitle: 'Profile' }} />
@@ -200,8 +171,8 @@ export default function PublicProfileScreen() {
     );
   }
 
+  const { profile, stats, can_view: canView } = chefData;
   const isOwnProfile = user?.id === id;
-  const canViewContent = !profile.is_private || followState === 'following' || isOwnProfile;
 
   const followButtonTitle = {
     following: 'Following',
@@ -225,16 +196,24 @@ export default function PublicProfileScreen() {
         </View>
 
         <View style={styles.statsRow}>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>{canViewContent ? recipes.length : '-'}</Text>
-            <Text style={styles.statLabel}>recipes</Text>
-          </View>
+          {canView && (
+            <>
+              <View style={styles.stat}>
+                <Text style={styles.statNumber}>{stats.recipe_count}</Text>
+                <Text style={styles.statLabel}>recipes</Text>
+              </View>
+              <View style={styles.stat}>
+                <Text style={styles.statNumber}>{stats.cook_count}</Text>
+                <Text style={styles.statLabel}>cooked</Text>
+              </View>
+            </>
+          )}
           <View style={styles.stat}>
             <Text style={styles.statNumber}>{followerCount}</Text>
             <Text style={styles.statLabel}>followers</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statNumber}>{followingCount}</Text>
+            <Text style={styles.statNumber}>{stats.following_count}</Text>
             <Text style={styles.statLabel}>following</Text>
           </View>
         </View>
@@ -251,53 +230,141 @@ export default function PublicProfileScreen() {
           </View>
         )}
 
-        {canViewContent ? (
+        {canView ? (
           <>
-            <View style={styles.section}>
-              <SectionHeader title="PUBLIC RECIPES" />
-              {recipes.length === 0 ? (
-                <Text style={styles.emptyRecipesText}>No published recipes yet.</Text>
-              ) : (
-                <View style={styles.recipeList}>
-                  {recipes.map((recipe) => (
-                    <RecipeCard
-                      key={recipe.id}
-                      recipe={{
-                        ...recipe,
-                        creatorName: profile?.display_name,
-                      }}
-                      variant="compact"
-                      onPress={() => router.push(`/recipe/${recipe.id}`)}
-                    />
-                  ))}
-                </View>
-              )}
+            {/* Tab bar */}
+            <View style={styles.tabBar}>
+              {TABS.map((tab) => (
+                <TouchableOpacity
+                  key={tab.id}
+                  style={[styles.tab, activeTab === tab.id && styles.tabActive]}
+                  onPress={() => setActiveTab(tab.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}>
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
-            {shareCards.length > 0 && (
-              <View style={styles.section}>
-                <SectionHeader title="RECOMMENDATIONS" />
-                <View style={styles.recipeList}>
-                  {shareCards.map((card) => (
-                    <RecommendationCard
-                      key={card.share_id}
-                      shareId={card.share_id}
-                      title={card.title}
-                      sourceUrl={card.source_url}
-                      sourceName={card.source_name}
-                      sourceType={card.source_type}
-                      imageUrl={card.image_url}
-                      tags={card.tags}
-                      userRating={card.user_rating}
-                      shareNotes={card.share_notes}
-                      sharedAt={card.shared_at}
-                      sharerName={profile.display_name}
-                      sharerAvatarUrl={profile.avatar_url}
-                      sharerId={id!}
-                      recipeId={card.recipe_id}
-                    />
-                  ))}
-                </View>
+            {/* Tab content */}
+            {activeTab === 'activity' && (
+              <View style={styles.tabContent}>
+                {(chefData.activity || []).length === 0 ? (
+                  <EmptyTab message="No cooking activity yet" />
+                ) : (
+                  <View style={styles.itemList}>
+                    {chefData.activity.map((item, i) => (
+                      <TouchableOpacity
+                        key={`${item.recipe_id}-${item.cooked_at}-${i}`}
+                        style={styles.activityItem}
+                        activeOpacity={0.7}
+                        onPress={() => router.push(`/recipe/${item.recipe_id}`)}
+                      >
+                        <View style={styles.activityRow}>
+                          <Text style={styles.activityTitle} numberOfLines={1}>{item.recipe_title}</Text>
+                          <Text style={styles.activityDate}>{formatDate(item.cooked_at)}</Text>
+                        </View>
+                        {item.notes && (
+                          <Text style={styles.activityNotes} numberOfLines={2}>
+                            {'\u201C'}{item.notes}{'\u201D'}
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {activeTab === 'favorites' && (
+              <View style={styles.tabContent}>
+                {(chefData.favorites || []).length === 0 ? (
+                  <EmptyTab message="No favorite recipes yet" />
+                ) : (
+                  <View style={styles.itemList}>
+                    {chefData.favorites.map((item) => (
+                      <TouchableOpacity
+                        key={item.recipe_id}
+                        style={styles.favoriteItem}
+                        activeOpacity={0.7}
+                        onPress={() => router.push(`/recipe/${item.recipe_id}`)}
+                      >
+                        {item.recipe_image_url ? (
+                          <Image
+                            source={{ uri: item.recipe_image_url }}
+                            style={styles.favImage}
+                            contentFit="cover"
+                          />
+                        ) : (
+                          <View style={styles.favPlaceholder}>
+                            <ForkDot size={14} color="rgba(45,95,93,0.2)" />
+                          </View>
+                        )}
+                        <View style={styles.favInfo}>
+                          <Text style={styles.favTitle} numberOfLines={1}>{item.recipe_title}</Text>
+                          <Text style={styles.favDate}>Saved {formatDate(item.favorited_at)}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {activeTab === 'published' && (
+              <View style={styles.tabContent}>
+                {(chefData.published || []).length === 0 ? (
+                  <EmptyTab message="No published recipes yet" />
+                ) : (
+                  <View style={styles.itemList}>
+                    {chefData.published.map((recipe) => (
+                      <RecipeCard
+                        key={recipe.id}
+                        recipe={{
+                          id: recipe.id,
+                          title: recipe.title,
+                          description: recipe.description,
+                          image_url: recipe.image_url,
+                          creatorName: profile.display_name,
+                        }}
+                        variant="compact"
+                        onPress={() => router.push(`/recipe/${recipe.id}`)}
+                      />
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {activeTab === 'recommendations' && (
+              <View style={styles.tabContent}>
+                {(chefData.recommendations || []).length === 0 ? (
+                  <EmptyTab message="No recommendations yet" />
+                ) : (
+                  <View style={styles.itemList}>
+                    {chefData.recommendations.map((card) => (
+                      <RecommendationCard
+                        key={card.share_id}
+                        shareId={card.share_id}
+                        title={card.title}
+                        sourceUrl={card.source_url}
+                        sourceName={card.source_name}
+                        sourceType={card.source_type}
+                        imageUrl={card.image_url}
+                        tags={card.tags}
+                        userRating={card.user_rating}
+                        shareNotes={card.share_notes}
+                        sharedAt={card.shared_at}
+                        sharerName={profile.display_name}
+                        sharerAvatarUrl={profile.avatar_url}
+                        sharerId={id!}
+                        recipeId={card.recipe_id}
+                      />
+                    ))}
+                  </View>
+                )}
               </View>
             )}
           </>
@@ -311,6 +378,15 @@ export default function PublicProfileScreen() {
         )}
       </ScrollView>
     </>
+  );
+}
+
+function EmptyTab({ message }: { message: string }) {
+  return (
+    <View style={styles.emptyTab}>
+      <ForkDot size={20} color="rgba(45,95,93,0.3)" />
+      <Text style={styles.emptyTabText}>{message}</Text>
+    </View>
   );
 }
 
@@ -355,12 +431,125 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxl,
   },
 
-  section: { marginBottom: spacing.xl },
-  emptyText: { ...typography.bodySmall, color: colors.textSecondary },
-  emptyRecipesText: { ...typography.bodySmall, color: colors.textMuted, fontStyle: 'italic' },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: 3,
+    marginBottom: spacing.lg,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.md - 2,
+    alignItems: 'center',
+  },
+  tabActive: {
+    backgroundColor: colors.card,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  tabText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  tabTextActive: {
+    color: colors.text,
+    fontWeight: '600',
+  },
 
-  recipeList: {
+  tabContent: {
+    marginBottom: spacing.xl,
+  },
+  itemList: {
     gap: spacing.md,
+  },
+
+  activityItem: {
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+    padding: spacing.lg,
+  },
+  activityRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  activityTitle: {
+    ...typography.body,
+    fontWeight: '600',
+    color: colors.text,
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  activityDate: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  activityNotes: {
+    ...typography.bodySmall,
+    color: colors.textMuted,
+    fontStyle: 'italic',
+    marginTop: spacing.xs,
+  },
+
+  favoriteItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+    padding: spacing.md,
+  },
+  favImage: {
+    width: 48,
+    height: 48,
+    borderRadius: radii.md,
+  },
+  favPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: radii.md,
+    backgroundColor: colors.accentWash,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  favInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  favTitle: {
+    ...typography.body,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  favDate: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+
+  emptyText: { ...typography.bodySmall, color: colors.textSecondary },
+  emptyTab: {
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.accentWashBorder,
+    backgroundColor: colors.accentWash,
+    padding: spacing.xl,
+    alignItems: 'center',
+  },
+  emptyTabText: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginTop: spacing.md,
   },
 
   privateMessage: {

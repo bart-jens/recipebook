@@ -16,7 +16,6 @@ import { useAuth } from '@/contexts/auth';
 import { colors, spacing, typography, fontFamily, radii, animation } from '@/lib/theme';
 import Avatar from '@/components/ui/Avatar';
 import HorizontalCarousel from '@/components/ui/HorizontalCarousel';
-import RecommendationCard from '@/components/ui/RecommendationCard';
 import EmptyState from '@/components/ui/EmptyState';
 import { ForkDot } from '@/components/ui/Logo';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
@@ -27,28 +26,8 @@ interface CarouselRecipe {
   image_url: string | null;
 }
 
-interface ShareCard {
-  share_id: string;
-  user_id: string;
-  recipe_id: string;
-  share_notes: string | null;
-  shared_at: string;
-  title: string;
-  source_url: string | null;
-  source_name: string | null;
-  source_type: string;
-  image_url: string | null;
-  tags: string[] | null;
-  user_rating: number | null;
-}
-
-interface SharerProfile {
-  display_name: string;
-  avatar_url: string | null;
-}
-
 interface FeedItem {
-  event_type: 'cooked' | 'published' | 'forked';
+  event_type: 'cooked' | 'published';
   user_id: string;
   recipe_id: string;
   event_at: string;
@@ -63,10 +42,7 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const [displayName, setDisplayName] = useState('');
   const [recentRecipes, setRecentRecipes] = useState<CarouselRecipe[]>([]);
-  const [trendingRecipes, setTrendingRecipes] = useState<CarouselRecipe[]>([]);
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
-  const [shareCards, setShareCards] = useState<ShareCard[]>([]);
-  const [sharerProfiles, setSharerProfiles] = useState<Map<string, SharerProfile>>(new Map());
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -80,7 +56,6 @@ export default function HomeScreen() {
     const [
       { data: profile },
       { data: recent },
-      { data: trending },
       { data: following },
     ] = await Promise.all([
       supabase
@@ -95,12 +70,6 @@ export default function HomeScreen() {
         .order('updated_at', { ascending: false })
         .limit(10),
       supabase
-        .from('recipes')
-        .select('id, title, image_url')
-        .eq('visibility', 'public')
-        .order('published_at', { ascending: false })
-        .limit(10),
-      supabase
         .from('user_follows')
         .select('following_id')
         .eq('follower_id', user.id),
@@ -108,7 +77,6 @@ export default function HomeScreen() {
 
     setDisplayName(profile?.display_name || '');
     setRecentRecipes(recent || []);
-    setTrendingRecipes(trending || []);
 
     const followedIds = (following || []).map((f) => f.following_id);
     setFollowingCount(followedIds.length);
@@ -128,36 +96,8 @@ export default function HomeScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       previousFeedCount.current = items.length;
-
-      // Recommendation cards
-      const { data: cards } = await supabase
-        .from('recipe_share_cards')
-        .select('*')
-        .in('user_id', followedIds)
-        .order('shared_at', { ascending: false })
-        .limit(10);
-
-      const typedCards = (cards || []) as ShareCard[];
-      setShareCards(typedCards);
-
-      if (typedCards.length > 0) {
-        const sharerIds = Array.from(new Set(typedCards.map((c) => c.user_id)));
-        const { data: sharerData } = await supabase
-          .from('user_profiles')
-          .select('id, display_name, avatar_url')
-          .in('id', sharerIds);
-        setSharerProfiles(
-          new Map(
-            (sharerData || []).map((p) => [
-              p.id,
-              { display_name: p.display_name, avatar_url: p.avatar_url },
-            ])
-          )
-        );
-      }
     } else {
       setFeedItems([]);
-      setShareCards([]);
       setHasMoreFeed(false);
     }
 
@@ -221,7 +161,6 @@ export default function HomeScreen() {
     switch (type) {
       case 'cooked': return ' cooked ';
       case 'published': return ' published ';
-      case 'forked': return ' forked ';
       default: return ' ';
     }
   };
@@ -287,28 +226,28 @@ export default function HomeScreen() {
       {/* Feed section header */}
       <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Friends are cooking</Text>
+          <Text style={styles.sectionTitle}>Your Chefs</Text>
         </View>
 
         {followingCount === 0 ? (
           <View style={styles.promptCard}>
             <ForkDot size={20} color="rgba(45,95,93,0.3)" />
-            <Text style={styles.promptTitle}>Follow friends to see what they're cooking</Text>
+            <Text style={styles.promptTitle}>Find Chefs to follow</Text>
             <Text style={styles.promptSubtitle}>
-              Browse Discover to find people.
+              See what other Chefs are cooking, their favorites, and recommendations
             </Text>
             <TouchableOpacity
               style={styles.promptButton}
               activeOpacity={0.7}
               onPress={() => router.push('/(tabs)/discover')}
             >
-              <Text style={styles.promptButtonText}>Discover</Text>
+              <Text style={styles.promptButtonText}>Discover Chefs</Text>
             </TouchableOpacity>
           </View>
         ) : feedItems.length === 0 ? (
           <View style={styles.promptCard}>
             <ForkDot size={20} color="rgba(45,95,93,0.3)" />
-            <Text style={styles.promptTitle}>Your friends haven't been cooking lately</Text>
+            <Text style={styles.promptTitle}>Your Chefs haven't been cooking lately</Text>
             <Text style={styles.promptSubtitle}>
               Why not cook something yourself?
             </Text>
@@ -332,52 +271,6 @@ export default function HomeScreen() {
           <ActivityIndicator size="small" color={colors.textMuted} />
         </View>
       )}
-
-      {/* Friend Recommendations */}
-      {shareCards.length > 0 && (
-        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2.5).duration(400)}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Friend Recommendations</Text>
-          </View>
-          <View style={styles.recommendationList}>
-            {shareCards.map((card) => {
-              const sharer = sharerProfiles.get(card.user_id);
-              return (
-                <RecommendationCard
-                  key={card.share_id}
-                  shareId={card.share_id}
-                  title={card.title}
-                  sourceUrl={card.source_url}
-                  sourceName={card.source_name}
-                  sourceType={card.source_type}
-                  imageUrl={card.image_url}
-                  tags={card.tags}
-                  userRating={card.user_rating}
-                  shareNotes={card.share_notes}
-                  sharedAt={card.shared_at}
-                  sharerName={sharer?.display_name || 'Unknown'}
-                  sharerAvatarUrl={sharer?.avatar_url || null}
-                  sharerId={card.user_id}
-                  recipeId={card.recipe_id}
-                />
-              );
-            })}
-          </View>
-        </Animated.View>
-      )}
-
-      {trendingRecipes.length > 0 && (
-        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}>
-          <HorizontalCarousel
-            title="Discover"
-            seeAllLabel="Browse"
-            onSeeAll={() => router.push('/(tabs)/discover')}
-            items={trendingRecipes}
-            onItemPress={(id) => router.push(`/recipe/${id}`)}
-          />
-        </Animated.View>
-      )}
-
       <View style={{ height: spacing.xxxl }} />
     </View>
   );
@@ -425,11 +318,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...typography.sectionTitle,
     color: colors.text,
-  },
-  recommendationList: {
-    paddingHorizontal: spacing.pagePadding,
-    gap: spacing.md,
-    marginBottom: spacing.sectionGap,
   },
   feedItem: {
     flexDirection: 'row',

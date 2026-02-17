@@ -36,7 +36,6 @@ export function RecipeListControls() {
 
   const q = searchParams.get("q") || "";
   const sort = searchParams.get("sort") || "updated";
-  const tag = searchParams.get("tag") || "";
   const course = searchParams.get("course") || "";
   const filter = searchParams.get("filter") || "";
 
@@ -66,7 +65,7 @@ export function RecipeListControls() {
       <div className="relative flex-1">
         <input
           type="search"
-          placeholder="Search recipes..."
+          placeholder="Search recipes, ingredients, tags..."
           defaultValue={q}
           onChange={(e) => handleSearch(e.target.value)}
           className="w-full rounded-md bg-warm-tag px-3 py-2 pl-9 text-sm placeholder:text-warm-gray/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
@@ -89,15 +88,6 @@ export function RecipeListControls() {
         )}
       </div>
       <div className="flex items-center gap-2">
-        {tag && (
-          <button
-            onClick={() => updateParams({ tag: "" })}
-            className="flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent"
-          >
-            {tag}
-            <span className="ml-0.5">&times;</span>
-          </button>
-        )}
         <select
           value={filter}
           onChange={(e) => updateParams({ filter: e.target.value })}

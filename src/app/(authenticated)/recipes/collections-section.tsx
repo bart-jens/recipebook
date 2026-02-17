@@ -129,17 +129,7 @@ export function CollectionsSection({
         </form>
       )}
 
-      {collections.length === 0 && !showCreate ? (
-        <div className="rounded-md border border-accent/20 bg-accent/5 p-6 text-center">
-          <p className="text-sm text-warm-gray">Create your first collection to organize your recipes</p>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="mt-2 text-sm font-medium text-accent hover:underline"
-          >
-            New Collection
-          </button>
-        </div>
-      ) : (
+      {collections.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {collections.map((collection) => (
             <div key={collection.id} className="group relative">

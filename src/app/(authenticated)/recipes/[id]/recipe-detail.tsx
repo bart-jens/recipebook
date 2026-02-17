@@ -11,7 +11,6 @@ import { FavoriteButton } from "./favorite-button";
 import { CookingLog } from "./cooking-log";
 import { PublishButton } from "./publish-button";
 import { ShareButton } from "./share-button";
-import { ForkButton } from "./fork-button";
 import { SaveButton } from "./save-button";
 import { PhotoCarousel } from "./photo-carousel";
 import { CollectionPicker } from "./collection-picker";
@@ -58,13 +57,6 @@ interface RatingEntry {
   created_at: string;
 }
 
-interface ForkedFrom {
-  id: string;
-  title: string;
-  creator_name: string;
-  creator_id: string;
-}
-
 function formatInstructions(text: string): string[] {
   const lines = text.split(/\n/).map((l) => l.trim()).filter(Boolean);
   if (lines.length > 1) return lines;
@@ -97,7 +89,6 @@ export function RecipeDetail({
   isFavorited: boolean;
   isSaved: boolean;
   isOwner: boolean;
-  forkedFrom: ForkedFrom | null;
   creatorName: string | null;
   creatorId: string | null;
   publishCount?: number;
@@ -130,23 +121,6 @@ export function RecipeDetail({
             alt={recipe.title}
             className="h-full w-full object-cover"
           />
-        </div>
-      ) : null}
-
-      {forkedFrom ? (
-        <div className="mb-3 text-sm text-warm-gray">
-          Forked from{" "}
-          <Link href={`/recipes/${forkedFrom.id}`} className="text-accent hover:underline">
-            {forkedFrom.title}
-          </Link>{" "}
-          by{" "}
-          <Link href={`/profile/${forkedFrom.creator_id}`} className="text-accent hover:underline">
-            {forkedFrom.creator_name}
-          </Link>
-        </div>
-      ) : recipe.source_type === "fork" ? (
-        <div className="mb-3 text-sm text-warm-gray">
-          Forked from a recipe that is no longer available
         </div>
       ) : null}
 
@@ -195,7 +169,7 @@ export function RecipeDetail({
           {isOwner ? (
             <>
               <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
-              {(recipe.source_type === "manual" || recipe.source_type === "fork") ? (
+              {recipe.source_type === "manual" ? (
                 <PublishButton
                   recipeId={recipe.id}
                   isPublic={recipe.visibility === "public"}
@@ -221,9 +195,6 @@ export function RecipeDetail({
             <>
               <SaveButton recipeId={recipe.id} isSaved={isSaved} />
               <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
-              {recipe.visibility === "public" && (
-                <ForkButton recipeId={recipe.id} />
-              )}
             </>
           )}
         </div>
