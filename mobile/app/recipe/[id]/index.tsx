@@ -66,7 +66,7 @@ interface Recipe {
   source_url: string | null;
   source_name: string | null;
   source_type: string;
-  language: string | null;
+  language?: string | null;
   image_url: string | null;
   visibility: string;
   created_by: string;
