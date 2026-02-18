@@ -27,8 +27,6 @@ interface Invite {
 
 export default function InvitesScreen() {
   const [invites, setInvites] = useState<Invite[]>([]);
-  const [limit, setLimit] = useState<number | 'unlimited'>(5);
-  const [used, setUsed] = useState(0);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [creating, setCreating] = useState(false);
@@ -46,8 +44,6 @@ export default function InvitesScreen() {
       const data = await response.json();
       if (response.ok) {
         setInvites(data.invites || []);
-        setLimit(data.limit === 'unlimited' ? 'unlimited' : data.limit);
-        setUsed(data.used || 0);
       }
     } catch {
       // Silently fail on load
@@ -111,10 +107,6 @@ export default function InvitesScreen() {
     }
   };
 
-  const limitText = limit === 'unlimited'
-    ? 'Unlimited invites'
-    : `${used}/${limit} invites used`;
-
   return (
     <>
       <Stack.Screen options={{ headerTitle: 'Invite Friends' }} />
@@ -123,7 +115,6 @@ export default function InvitesScreen() {
           <Text style={styles.subtitle}>
             EefEats is invite-only. Share codes with friends to let them join.
           </Text>
-          <Text style={styles.limitText}>{limitText}</Text>
         </View>
 
         <View style={styles.formRow}>
@@ -208,7 +199,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: { padding: spacing.xl, paddingBottom: spacing.md },
   subtitle: { ...typography.body, color: colors.textSecondary },
-  limitText: { ...typography.bodySmall, color: colors.text, fontWeight: '600', marginTop: spacing.xs },
 
   formRow: {
     flexDirection: 'row',

@@ -4,12 +4,6 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendInviteEmail } from "@/lib/email";
 
-const INVITE_LIMITS: Record<string, number> = {
-  free: 5,
-  premium: 20,
-  creator: 999999,
-};
-
 function generateCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
@@ -26,27 +20,11 @@ export async function createInvite(email: string) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  // Check plan limits
   const { data: profile } = await supabase
     .from("user_profiles")
-    .select("plan, role, display_name")
+    .select("display_name")
     .eq("id", user.id)
     .single();
-
-  const limit = profile?.role === "creator"
-    ? INVITE_LIMITS.creator
-    : INVITE_LIMITS[profile?.plan || "free"];
-
-  const { count } = await supabase
-    .from("invites")
-    .select("id", { count: "exact", head: true })
-    .eq("invited_by", user.id);
-
-  if ((count || 0) >= limit) {
-    return {
-      error: `You've used all ${limit} invite codes. ${profile?.plan === "free" ? "Upgrade to premium for more." : ""}`,
-    };
-  }
 
   const code = generateCode();
 

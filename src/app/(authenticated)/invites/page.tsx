@@ -9,30 +9,17 @@ export default async function InvitesPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("user_profiles")
-    .select("plan, role")
-    .eq("id", user.id)
-    .single();
-
   const { data: invites } = await supabase
     .from("invites")
     .select("*")
     .eq("invited_by", user.id)
     .order("created_at", { ascending: false });
 
-  const limit =
-    profile?.role === "creator" ? "unlimited" : profile?.plan === "premium" ? 20 : 5;
-  const used = (invites || []).length;
-
   return (
     <div className="max-w-2xl">
       <h1 className="mb-2 text-2xl font-semibold">Invite Friends</h1>
       <p className="mb-6 text-sm text-warm-gray">
         EefEats is invite-only. Share codes with friends to let them join.
-        <span className="ml-1 font-medium">
-          {limit === "unlimited" ? "Unlimited invites" : `${used}/${limit} invites used`}
-        </span>
       </p>
 
       <div className="mb-8">
