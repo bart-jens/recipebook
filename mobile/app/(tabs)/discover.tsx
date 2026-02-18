@@ -398,7 +398,7 @@ export default function DiscoverScreen() {
           <View style={styles.allFollowedCard}>
             <ForkDot size={20} color="rgba(45,95,93,0.3)" />
             <Text style={styles.allFollowedTitle}>You follow all Chefs!</Text>
-            <Link href="/invite" asChild>
+            <Link href="/invites" asChild>
               <Text style={[styles.allFollowedSubtitle, { color: colors.primary }]}>Invite more friends to join EefEats</Text>
             </Link>
           </View>
