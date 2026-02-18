@@ -11,7 +11,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { Link, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
@@ -369,6 +369,8 @@ export default function DiscoverScreen() {
           icon="users"
           title="No Chefs found yet"
           subtitle="Invite friends to join EefEats!"
+          onAction={() => router.push('/invites')}
+          actionLabel="Send Invites"
         />
       );
     }
@@ -396,7 +398,9 @@ export default function DiscoverScreen() {
           <View style={styles.allFollowedCard}>
             <ForkDot size={20} color="rgba(45,95,93,0.3)" />
             <Text style={styles.allFollowedTitle}>You follow all Chefs!</Text>
-            <Text style={styles.allFollowedSubtitle}>Invite more friends to join EefEats</Text>
+            <Link href="/invite" asChild>
+              <Text style={[styles.allFollowedSubtitle, { color: colors.primary }]}>Invite more friends to join EefEats</Text>
+            </Link>
           </View>
           <Text style={styles.chefSectionTitle}>Following</Text>
           {followedChefs.map((chef, index) => (
@@ -473,10 +477,10 @@ export default function DiscoverScreen() {
             ))}
           </>
         )}
-        <View style={styles.inviteCard}>
+        <TouchableOpacity style={styles.inviteCard} activeOpacity={0.7} onPress={() => router.push('/invites')}>
           <Text style={styles.inviteTitle}>Know someone who loves cooking?</Text>
-          <Text style={styles.inviteSubtitle}>Invite them to join EefEats</Text>
-        </View>
+          <Text style={[styles.inviteSubtitle, { color: colors.primary }]}>Invite them to join EefEats</Text>
+        </TouchableOpacity>
       </ScrollView>
     );
   };

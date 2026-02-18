@@ -46,7 +46,7 @@ function resizeImage(file: File, maxSize: number): Promise<{ base64: string; med
 export default function ImportPhotoPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [importedData, setImportedData] = useState<(RecipeFormData & { tags?: string[] }) | null>(null);
+  const [importedData, setImportedData] = useState<(RecipeFormData & { tags?: string[]; language?: string | null }) | null>(null);
   const [sourceName, setSourceName] = useState("");
   const [sourceSkipped, setSourceSkipped] = useState(false);
   const [scanningCover, setScanningCover] = useState(false);
@@ -124,6 +124,7 @@ export default function ImportPhotoPage() {
             notes: ing.notes,
           })),
           tags: result.data.tags || [],
+          language: result.data.language || null,
         });
       }
     } catch {
@@ -140,6 +141,9 @@ export default function ImportPhotoPage() {
     }
     if (importedData?.tags && importedData.tags.length > 0) {
       formData.set("tags", JSON.stringify(importedData.tags));
+    }
+    if (importedData?.language) {
+      formData.set("language", importedData.language);
     }
     return createRecipe(formData);
   }

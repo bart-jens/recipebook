@@ -11,6 +11,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no code fences, n
   "prep_time_minutes": null or number,
   "cook_time_minutes": null or number,
   "servings": null or number,
+  "language": "ISO 639-1 code (e.g. en, nl, fr, es, ja, zh, de, it, pt, ko, th, vi, ar)",
   "tags": ["tag1", "tag2"],
   "ingredients": [
     {
@@ -26,6 +27,7 @@ Important guidelines:
 - For prep_time_minutes and cook_time_minutes: extract if stated. If not stated, estimate reasonable times based on the recipe steps and ingredients. A simple salad might be 10 min prep / 0 cook; a slow braise might be 15 min prep / 180 min cook.
 - For servings: extract if stated, otherwise estimate based on ingredient quantities.
 - For tags: include 2-5 lowercase tags covering cuisine (e.g. "italian", "thai"), meal type (e.g. "dinner", "dessert", "snack"), dietary info (e.g. "vegetarian", "gluten-free"), and cooking method (e.g. "baked", "grilled", "one-pot"). Only include tags that clearly apply. You may use hashtags from the original text as hints for tags, but clean them up (lowercase, no # symbol).
+- For language: detect the language of the recipe text and return the ISO 639-1 two-letter code. Common codes: en (English), nl (Dutch), fr (French), de (German), es (Spanish), it (Italian), pt (Portuguese), ja (Japanese), zh (Chinese), ko (Korean), th (Thai), vi (Vietnamese), ar (Arabic).
 
 If no recipe is found, return: {"error": "no_recipe"}
 

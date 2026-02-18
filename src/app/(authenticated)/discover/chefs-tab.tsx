@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 import { ChefCard } from "./chef-card";
 import { ForkDot } from "@/components/logo";
 
@@ -130,9 +131,9 @@ export function ChefsTab() {
       <div className="flex flex-col items-center rounded-md border border-accent/20 bg-accent/5 p-8">
         <ForkDot size={24} color="rgba(45,95,93,0.3)" />
         <p className="mt-3 text-warm-gray">No Chefs found yet.</p>
-        <p className="mt-1 text-sm text-warm-gray">
+        <Link href="/invite" className="mt-1 text-sm text-accent hover:underline">
           Invite friends to join EefEats!
-        </p>
+        </Link>
       </div>
     );
   }
@@ -143,9 +144,9 @@ export function ChefsTab() {
         <div className="flex flex-col items-center rounded-md border border-accent/20 bg-accent/5 p-8">
           <ForkDot size={24} color="rgba(45,95,93,0.3)" />
           <p className="mt-3 font-medium">You follow all Chefs!</p>
-          <p className="mt-1 text-sm text-warm-gray">
+          <Link href="/invite" className="mt-1 text-sm text-accent hover:underline">
             Invite more friends to join EefEats
-          </p>
+          </Link>
         </div>
         {followedChefs.length > 0 && (
           <div className="mt-6">
@@ -207,12 +208,12 @@ export function ChefsTab() {
         </div>
       )}
 
-      <div className="mt-6 flex flex-col items-center rounded-md border border-warm-border bg-warm-tag p-6">
+      <Link href="/invite" className="mt-6 flex flex-col items-center rounded-md border border-warm-border bg-warm-tag p-6 transition-all hover:-translate-y-px hover:shadow-sm">
         <p className="font-medium">Know someone who loves cooking?</p>
-        <p className="mt-1 text-sm text-warm-gray">
+        <p className="mt-1 text-sm text-accent">
           Invite them to join EefEats
         </p>
-      </div>
+      </Link>
     </div>
   );
 }

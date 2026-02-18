@@ -45,6 +45,7 @@ export default function ImportPhotoScreen() {
   const [extracting, setExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<RecipeFormData | null>(null);
   const [extractedTags, setExtractedTags] = useState<string[]>([]);
+  const [extractedLanguage, setExtractedLanguage] = useState<string | null>(null);
   const [sourceName, setSourceName] = useState('');
   const [sourceSkipped, setSourceSkipped] = useState(false);
   const [scanningCover, setScanningCover] = useState(false);
@@ -163,6 +164,9 @@ export default function ImportPhotoScreen() {
       if (data.tags && Array.isArray(data.tags)) {
         setExtractedTags(data.tags);
       }
+      if (data.language) {
+        setExtractedLanguage(data.language);
+      }
     } catch {
       Alert.alert('Error', 'Could not connect to the server. Please check your connection.');
     }
@@ -185,6 +189,7 @@ export default function ImportPhotoScreen() {
         servings: data.servings ? parseInt(data.servings) : null,
         source_type: 'photo',
         source_name: sourceName.trim() || null,
+        language: extractedLanguage,
         created_by: user.id,
       })
       .select('id')

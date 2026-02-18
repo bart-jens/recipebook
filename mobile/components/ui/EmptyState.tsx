@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 import { ForkDot } from '@/components/ui/Logo';
@@ -8,9 +8,11 @@ interface Props {
   title: string;
   subtitle?: string;
   icon?: React.ComponentProps<typeof FontAwesome>['name'];
+  onAction?: () => void;
+  actionLabel?: string;
 }
 
-export default function EmptyState({ title, subtitle, icon }: Props) {
+export default function EmptyState({ title, subtitle, icon, onAction, actionLabel }: Props) {
   return (
     <View style={styles.container}>
       {icon ? (
@@ -22,6 +24,11 @@ export default function EmptyState({ title, subtitle, icon }: Props) {
       )}
       <Text style={styles.title}>{title}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+      {onAction && actionLabel && (
+        <TouchableOpacity style={styles.actionButton} activeOpacity={0.7} onPress={onAction}>
+          <Text style={styles.actionLabel}>{actionLabel}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -52,5 +59,17 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     maxWidth: 260,
+  },
+  actionButton: {
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+  },
+  actionLabel: {
+    fontFamily: fontFamily.sansMedium,
+    fontSize: 14,
+    color: colors.card,
   },
 });

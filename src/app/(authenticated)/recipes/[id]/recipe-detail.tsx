@@ -15,6 +15,14 @@ import { SaveButton } from "./save-button";
 import { PhotoCarousel } from "./photo-carousel";
 import { CollectionPicker } from "./collection-picker";
 
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: "English", nl: "Dutch", fr: "French", de: "German", es: "Spanish",
+  it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Chinese", ko: "Korean",
+  th: "Thai", vi: "Vietnamese", ar: "Arabic", ru: "Russian", pl: "Polish",
+  sv: "Swedish", da: "Danish", no: "Norwegian", fi: "Finnish", tr: "Turkish",
+  el: "Greek", hi: "Hindi", id: "Indonesian", ms: "Malay", he: "Hebrew",
+};
+
 interface Ingredient {
   id: string;
   quantity: number | null;
@@ -41,6 +49,7 @@ interface Recipe {
   source_url: string | null;
   source_name: string | null;
   source_type: string;
+  language: string | null;
   visibility: string;
 }
 
@@ -205,11 +214,9 @@ export function RecipeDetail({
         </div>
       )}
 
-      {isOwner && (
-        <div className="mb-4">
-          <CollectionPicker recipeId={recipe.id} />
-        </div>
-      )}
+      <div className="mb-4">
+        <CollectionPicker recipeId={recipe.id} />
+      </div>
 
       {!isOwner && tags.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
@@ -256,6 +263,11 @@ export function RecipeDetail({
         {recipe.cook_time_minutes && (
           <span className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
             Cook: {recipe.cook_time_minutes} min
+          </span>
+        )}
+        {recipe.language && (
+          <span className="rounded-full bg-accent/10 px-3 py-1 text-sm text-accent">
+            {LANGUAGE_NAMES[recipe.language] || recipe.language.toUpperCase()}
           </span>
         )}
         {recipe.servings && (

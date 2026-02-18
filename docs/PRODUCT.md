@@ -1,7 +1,7 @@
 # EefEats — Product Features & Ideas
 
 > Actively maintained. Claude updates this as features ship and ideas emerge.
-> Last updated: 2026-02-15
+> Last updated: 2026-02-17
 
 ---
 
@@ -55,9 +55,6 @@
 - **Auto profile creation** — Trigger creates profile on signup
 - **RLS policies** — Row-level security on all tables, scoped to auth.uid()
 - **API routes for mobile** — Extract endpoints (URL, Instagram, Photo), invites endpoint — mobile calls these with Supabase auth tokens
-
-### Seed Data
-- **15 realistic test recipes** with Unsplash images, full ingredients, tags, and ratings for development/testing
 
 ---
 
@@ -149,7 +146,7 @@
 - **Ingredient substitution** — AI-powered suggestions for ingredient swaps (dietary, availability)
 - **Community challenges** — Weekly cooking challenges with a specific ingredient or theme
 - **Restaurant-to-recipe** — Recreate restaurant dishes: describe what you ate, get a recipe attempt
-- **Multi-language recipes** — Translation support for international recipe sharing
+- **Multi-language recipes** — Store original language on recipes, display language badge. Auto-translation as premium feature (AI-powered, preserving cooking terminology). See `openspec/changes/recipe-language-translation/`
 - **Video recipes** — Short cooking videos attached to recipes (creator feature)
 
 ---
@@ -170,6 +167,7 @@
 | Cooking analytics | Basic | Detailed |
 | Collections | Limited count | Unlimited |
 | Groups | Small (2-3 members) | Larger groups |
+| Auto-translation | No | Yes |
 | Offline caching | Limited | Full library |
 | Creator features | Apply to become creator | -- |
 | Subscribers-only recipes | Subscribe to creators | -- |

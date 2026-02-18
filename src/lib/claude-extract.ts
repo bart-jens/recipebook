@@ -5,6 +5,7 @@ export interface ExtractedRecipe {
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   servings: number | null;
+  language: string | null;
   tags: string[];
   ingredients: {
     ingredient_name: string;
@@ -23,6 +24,7 @@ const RECIPE_PROMPT = `Extract the recipe from this image. Return ONLY valid JSO
   "prep_time_minutes": null or number,
   "cook_time_minutes": null or number,
   "servings": null or number,
+  "language": "ISO 639-1 code (e.g. en, nl, fr, es, ja, zh, de, it, pt, ko, th, vi, ar)",
   "tags": ["tag1", "tag2"],
   "ingredients": [
     {
@@ -38,6 +40,7 @@ Important guidelines:
 - For prep_time_minutes and cook_time_minutes: extract if stated. If not stated, estimate reasonable times based on the recipe steps and ingredients. A simple salad might be 10 min prep / 0 cook; a slow braise might be 15 min prep / 180 min cook.
 - For servings: extract if stated, otherwise estimate based on ingredient quantities.
 - For tags: include 2-5 lowercase tags covering cuisine (e.g. "italian", "thai"), meal type (e.g. "dinner", "dessert", "snack"), dietary info (e.g. "vegetarian", "gluten-free"), and cooking method (e.g. "baked", "grilled", "one-pot"). Only include tags that clearly apply.
+- For language: detect the language of the recipe text and return the ISO 639-1 two-letter code. Common codes: en (English), nl (Dutch), fr (French), de (German), es (Spanish), it (Italian), pt (Portuguese), ja (Japanese), zh (Chinese), ko (Korean), th (Thai), vi (Vietnamese), ar (Arabic).
 
 If no recipe is found in the image, return: {"error": "no_recipe"}`;
 

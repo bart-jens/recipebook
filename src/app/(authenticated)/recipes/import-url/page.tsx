@@ -16,7 +16,7 @@ export default function ImportUrlPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sourceType, setSourceType] = useState<"url" | "instagram">("url");
-  const [importedData, setImportedData] = useState<RecipeFormData & { source_url: string; source_name: string; image_url: string | null; tags?: string[] } | null>(null);
+  const [importedData, setImportedData] = useState<RecipeFormData & { source_url: string; source_name: string; image_url: string | null; tags?: string[]; language?: string | null } | null>(null);
 
   async function handleFetch(e: React.FormEvent) {
     e.preventDefault();
@@ -51,6 +51,7 @@ export default function ImportUrlPage() {
           source_name: result.data.source_name,
           image_url: null,
           tags: result.data.tags || [],
+          language: result.data.language || null,
         });
       }
     } else {
@@ -78,6 +79,7 @@ export default function ImportUrlPage() {
           source_name: result.data.source_name,
           image_url: result.data.imageUrl || null,
           tags: result.data.tags || [],
+          language: result.data.language || null,
         });
       }
     }
@@ -94,6 +96,9 @@ export default function ImportUrlPage() {
       }
       if (importedData.tags && importedData.tags.length > 0) {
         formData.set("tags", JSON.stringify(importedData.tags));
+      }
+      if (importedData.language) {
+        formData.set("language", importedData.language);
       }
     }
     return createRecipe(formData);

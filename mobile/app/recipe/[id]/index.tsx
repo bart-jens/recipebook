@@ -44,6 +44,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English', nl: 'Dutch', fr: 'French', de: 'German', es: 'Spanish',
+  it: 'Italian', pt: 'Portuguese', ja: 'Japanese', zh: 'Chinese', ko: 'Korean',
+  th: 'Thai', vi: 'Vietnamese', ar: 'Arabic', ru: 'Russian', pl: 'Polish',
+  sv: 'Swedish', da: 'Danish', no: 'Norwegian', fi: 'Finnish', tr: 'Turkish',
+  el: 'Greek', hi: 'Hindi', id: 'Indonesian', ms: 'Malay', he: 'Hebrew',
+};
 const HERO_HEIGHT = Math.min(280, SCREEN_HEIGHT * 0.4);
 const HEADER_HEIGHT = 56;
 
@@ -58,6 +66,7 @@ interface Recipe {
   source_url: string | null;
   source_name: string | null;
   source_type: string;
+  language: string | null;
   image_url: string | null;
   visibility: string;
   created_by: string;
@@ -863,6 +872,13 @@ export default function RecipeDetailScreen() {
                       <Text style={styles.servingsReset}>reset</Text>
                     </TouchableOpacity>
                   )}
+                </View>
+              )}
+              {recipe.language && (
+                <View style={[styles.metaPill, { backgroundColor: 'rgba(45,95,93,0.1)' }]}>
+                  <Text style={[styles.metaText, { color: colors.primary }]}>
+                    {LANGUAGE_NAMES[recipe.language] || recipe.language.toUpperCase()}
+                  </Text>
                 </View>
               )}
               {recipe.prep_time_minutes && recipe.cook_time_minutes && (

@@ -19,6 +19,7 @@ export async function createRecipe(formData: FormData) {
   const externalImageUrl = (formData.get("image_url") as string) || null;
 
   const sourceName = (formData.get("source_name") as string) || null;
+  const language = (formData.get("language") as string) || null;
 
   const { data: recipe, error } = await supabase
     .from("recipes")
@@ -32,6 +33,7 @@ export async function createRecipe(formData: FormData) {
       source_type: (formData.get("source_type") as string) || "manual",
       source_url: (formData.get("source_url") as string) || null,
       source_name: sourceName,
+      language,
       image_url: externalImageUrl,
       created_by: user.id,
     })
