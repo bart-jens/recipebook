@@ -67,12 +67,14 @@
 - **Free vs premium limit** — Free users can publish up to 10 recipes, premium unlimited
 - See `openspec/changes/recipe-publishing/`
 
-### Social Login
+### Social Login (code ready, needs provider config)
 - **Google OAuth** — Sign in with Google on web and mobile
 - **Apple OAuth** — Sign in with Apple on web and mobile (required for App Store)
 - **Invite code enforcement** — Social signups still require invite code
 - **Account linking** — Email + social login auto-link on matching email
-- See `openspec/changes/social-login/`
+- **Status:** Backend code, auth context, callback route, and DB trigger all implemented. UI buttons hidden until OAuth providers are configured in Supabase Dashboard.
+- **TODO:** Configure Google Cloud Console OAuth credentials + Apple Developer Services ID, add to Supabase Auth providers, then re-enable buttons on login screens.
+- See `openspec/changes/archive/2026-02-17-social-login/`
 
 ---
 
