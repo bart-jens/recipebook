@@ -18,7 +18,7 @@ export default async function AuthenticatedLayout({
 
   const { data: profile } = await supabase
     .from("user_profiles")
-    .select("display_name")
+    .select("display_name, role")
     .eq("id", user.id)
     .single();
 
@@ -76,6 +76,11 @@ export default async function AuthenticatedLayout({
             <Link href="/invites" className="shrink-0 border-b-2 border-transparent px-3 py-2 text-sm text-warm-gray hover:text-[#111111]">
               Invites
             </Link>
+            {profile?.role === "admin" && (
+              <Link href="/admin" className="shrink-0 border-b-2 border-transparent px-3 py-2 text-sm font-medium text-accent hover:text-accent">
+                Admin
+              </Link>
+            )}
           </nav>
         </div>
       </header>
