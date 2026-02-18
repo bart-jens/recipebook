@@ -73,6 +73,10 @@ export default function RootLayout() {
           options={{ headerShown: true, headerTitle: 'Import from Photo', ...headerDefaults }}
         />
         <Stack.Screen
+          name="onboarding"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="invites"
           options={{ headerShown: true, headerTitle: 'Invite Friends', ...headerDefaults }}
         />

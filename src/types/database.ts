@@ -432,11 +432,13 @@ export type Database = {
         Row: {
           id: string
           display_name: string
+          username: string | null
           avatar_url: string | null
           bio: string | null
           role: string
           plan: string
           is_private: boolean
+          onboarded_at: string | null
           last_seen_followers_at: string
           created_at: string
           updated_at: string
@@ -444,11 +446,13 @@ export type Database = {
         Insert: {
           id: string
           display_name: string
+          username?: string | null
           avatar_url?: string | null
           bio?: string | null
           role?: string
           plan?: string
           is_private?: boolean
+          onboarded_at?: string | null
           last_seen_followers_at?: string
           created_at?: string
           updated_at?: string
@@ -456,11 +460,13 @@ export type Database = {
         Update: {
           id?: string
           display_name?: string
+          username?: string | null
           avatar_url?: string | null
           bio?: string | null
           role?: string
           plan?: string
           is_private?: boolean
+          onboarded_at?: string | null
           last_seen_followers_at?: string
           created_at?: string
           updated_at?: string

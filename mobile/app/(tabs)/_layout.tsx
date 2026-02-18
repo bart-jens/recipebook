@@ -70,11 +70,32 @@ function useNewFollowerCount(userId: string | undefined) {
   return count;
 }
 
+function useOnboardingCheck(userId: string | undefined) {
+  const [checked, setChecked] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from('user_profiles')
+      .select('onboarded_at')
+      .eq('id', userId)
+      .single()
+      .then(({ data }) => {
+        setNeedsOnboarding(!data?.onboarded_at);
+        setChecked(true);
+      });
+  }, [userId]);
+
+  return { checked, needsOnboarding };
+}
+
 export default function TabLayout() {
   const { session, loading } = useAuth();
   const newFollowerCount = useNewFollowerCount(session?.user?.id);
+  const { checked, needsOnboarding } = useOnboardingCheck(session?.user?.id);
 
-  if (loading) {
+  if (loading || (session && !checked)) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -84,6 +105,10 @@ export default function TabLayout() {
 
   if (!session) {
     return <Redirect href="/(auth)/login" />;
+  }
+
+  if (needsOnboarding) {
+    return <Redirect href="/onboarding" />;
   }
 
   return (

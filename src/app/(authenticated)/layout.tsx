@@ -18,9 +18,13 @@ export default async function AuthenticatedLayout({
 
   const { data: profile } = await supabase
     .from("user_profiles")
-    .select("display_name, role")
+    .select("display_name, role, onboarded_at")
     .eq("id", user.id)
     .single();
+
+  if (!profile?.onboarded_at) {
+    redirect("/onboarding");
+  }
 
   const { data: newFollowerCount } = await supabase
     .rpc("get_new_follower_count", { p_user_id: user.id });
