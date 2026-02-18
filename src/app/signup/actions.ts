@@ -26,7 +26,7 @@ export async function signup(formData: FormData) {
   if (invite.used_at) return { error: "This invite code has already been used" };
 
   // Create user with admin API — auto-confirms email since invite code is the verification
-  const { data: userData, error: createError } =
+  const { error: createError } =
     await adminClient.auth.admin.createUser({
       email,
       password,
