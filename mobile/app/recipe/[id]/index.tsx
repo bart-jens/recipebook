@@ -131,6 +131,8 @@ export default function RecipeDetailScreen() {
   const [adjustedServings, setAdjustedServings] = useState<number | null>(null);
   const [unitSystem, setUnitSystem] = useState<UnitSystem>('metric');
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
+  const [addingToList, setAddingToList] = useState(false);
+  const [addedToList, setAddedToList] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem('unit_system').then((stored) => {
@@ -535,6 +537,54 @@ export default function RecipeDetailScreen() {
       Alert.alert('Error', 'Could not upload image');
     }
     setUploading(false);
+  };
+
+  const addToShoppingList = async () => {
+    if (!recipe || !user || ingredients.length === 0) {
+      if (ingredients.length === 0) {
+        Alert.alert('No ingredients', 'This recipe has no ingredients to add.');
+      }
+      return;
+    }
+    setAddingToList(true);
+
+    // Get or create default shopping list
+    let { data: list } = await supabase
+      .from('shopping_lists')
+      .select('id')
+      .eq('user_id', user.id)
+      .order('created_at')
+      .limit(1)
+      .maybeSingle();
+
+    if (!list) {
+      const { data: newList } = await supabase
+        .from('shopping_lists')
+        .insert({ user_id: user.id })
+        .select('id')
+        .single();
+      list = newList;
+    }
+
+    if (!list) {
+      Alert.alert('Error', 'Could not create shopping list');
+      setAddingToList(false);
+      return;
+    }
+
+    const { error } = await supabase.rpc('add_recipe_to_shopping_list', {
+      p_shopping_list_id: list.id,
+      p_recipe_id: recipe.id,
+    });
+
+    setAddingToList(false);
+    if (error) {
+      Alert.alert('Error', 'Could not add ingredients');
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setAddedToList(true);
+      setTimeout(() => setAddedToList(false), 3000);
+    }
   };
 
   // Parallax animated styles
@@ -978,6 +1028,29 @@ export default function RecipeDetailScreen() {
                   </View>
                   );
                 })}
+                <TouchableOpacity
+                  style={[styles.addToListButton, addedToList && styles.addToListButtonDone]}
+                  onPress={addToShoppingList}
+                  disabled={addingToList || addedToList}
+                  activeOpacity={0.7}
+                >
+                  {addingToList ? (
+                    <ActivityIndicator size="small" color={colors.primary} />
+                  ) : (
+                    <>
+                      <FontAwesome
+                        name={addedToList ? 'check' : 'shopping-cart'}
+                        size={14}
+                        color={addedToList ? colors.success : colors.primary}
+                      />
+                      <Text style={[styles.addToListText, addedToList && styles.addToListTextDone]}>
+                        {addedToList
+                          ? `Added ${ingredients.length} ingredient${ingredients.length !== 1 ? 's' : ''}`
+                          : 'Add to Shopping List'}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
               </Animated.View>
             )}
 
@@ -1271,10 +1344,10 @@ const styles = StyleSheet.create({
   centered: { justifyContent: 'center', alignItems: 'center' },
   scrollContent: { paddingBottom: spacing.xxxl },
   content: { padding: spacing.pagePadding, backgroundColor: colors.background },
-  emptyText: { fontSize: 16, color: colors.textSecondary, fontFamily: fontFamily.medium },
+  emptyText: { fontSize: 16, color: colors.textSecondary, fontFamily: fontFamily.sansMedium },
   emptySubtext: { fontSize: 14, color: colors.textSecondary, marginTop: spacing.xs, textAlign: 'center' as const },
   backLink: { marginTop: spacing.md },
-  backLinkText: { fontSize: 14, color: colors.accent, fontFamily: fontFamily.medium },
+  backLinkText: { fontSize: 14, color: colors.primary, fontFamily: fontFamily.sansMedium },
 
   // Parallax hero
   heroContainer: {
@@ -1637,4 +1710,29 @@ const styles = StyleSheet.create({
   logEntryHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   logDate: { ...typography.label, color: colors.text },
   logNotes: { ...typography.label, color: colors.textSecondary, marginTop: spacing.sm - 2, lineHeight: 18 },
+
+  // Add to shopping list
+  addToListButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm + 2,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: radii.md,
+  },
+  addToListButtonDone: {
+    borderColor: colors.success,
+    backgroundColor: colors.successBg,
+  },
+  addToListText: {
+    ...typography.label,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  addToListTextDone: {
+    color: colors.success,
+  },
 });

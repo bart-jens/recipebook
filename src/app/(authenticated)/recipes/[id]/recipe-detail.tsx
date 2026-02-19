@@ -15,6 +15,8 @@ import { ShareLinkButton } from "./share-link-button";
 import { SaveButton } from "./save-button";
 import { PhotoCarousel } from "./photo-carousel";
 import { CollectionPicker } from "./collection-picker";
+import { AddToShoppingListButton } from "./add-to-shopping-list-button";
+import { addRecipeToDefaultShoppingList } from "@/app/(authenticated)/shopping-list/actions";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English", nl: "Dutch", fr: "French", de: "German", es: "Spanish",
@@ -332,6 +334,13 @@ export function RecipeDetail({
               );
             })}
           </ul>
+          <div className="mt-4">
+            <AddToShoppingListButton
+              recipeId={recipe.id}
+              ingredientCount={ingredients.length}
+              onAdd={addRecipeToDefaultShoppingList}
+            />
+          </div>
         </div>
       )}
 

@@ -566,6 +566,71 @@ export type Database = {
           },
         ]
       }
+      shopping_list_items: {
+        Row: {
+          created_at: string
+          id: string
+          ingredient_name: string
+          is_checked: boolean
+          quantity: number | null
+          recipe_ids: string[]
+          shopping_list_id: string
+          unit: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ingredient_name: string
+          is_checked?: boolean
+          quantity?: number | null
+          recipe_ids?: string[]
+          shopping_list_id: string
+          unit?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ingredient_name?: string
+          is_checked?: boolean
+          quantity?: number | null
+          recipe_ids?: string[]
+          shopping_list_id?: string
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_list_items_shopping_list_id_fkey"
+            columns: ["shopping_list_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_lists: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_recipes: {
         Row: {
           created_at: string
@@ -700,6 +765,27 @@ export type Database = {
       }
     }
     Functions: {
+      add_recipe_to_shopping_list: {
+        Args: { p_recipe_id: string; p_shopping_list_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          ingredient_name: string
+          is_checked: boolean
+          quantity: number | null
+          recipe_ids: string[]
+          shopping_list_id: string
+          unit: string | null
+        }[]
+      }
+      clear_checked_items: {
+        Args: { p_shopping_list_id: string }
+        Returns: undefined
+      }
+      recipe_exists: {
+        Args: { p_recipe_id: string }
+        Returns: boolean
+      }
       get_activity_feed: {
         Args: { p_before?: string; p_limit?: number; p_user_id: string }
         Returns: {
