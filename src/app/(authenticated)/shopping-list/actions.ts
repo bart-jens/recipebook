@@ -81,6 +81,49 @@ export async function addRecipeToShoppingList(listId: string, recipeId: string) 
   revalidatePath("/shopping-list");
 }
 
+export async function addIngredientToDefaultShoppingList(
+  ingredientName: string,
+  quantity: number | null,
+  unit: string | null,
+) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  let { data: list } = await supabase
+    .from("shopping_lists")
+    .select("id")
+    .eq("user_id", user.id)
+    .order("created_at")
+    .limit(1)
+    .maybeSingle();
+
+  if (!list) {
+    const { data: newList, error: createError } = await supabase
+      .from("shopping_lists")
+      .insert({ user_id: user.id })
+      .select("id")
+      .single();
+    if (createError) return { error: createError.message };
+    list = newList;
+  }
+
+  if (!list) return { error: "Failed to create shopping list" };
+
+  const { error } = await supabase
+    .from("shopping_list_items")
+    .insert({
+      shopping_list_id: list.id,
+      ingredient_name: ingredientName,
+      quantity,
+      unit,
+    });
+
+  if (error) return { error: error.message };
+  revalidatePath("/shopping-list");
+  return {};
+}
+
 export async function addRecipeToDefaultShoppingList(recipeId: string) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();

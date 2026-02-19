@@ -15,8 +15,7 @@ import { ShareLinkButton } from "./share-link-button";
 import { SaveButton } from "./save-button";
 import { PhotoCarousel } from "./photo-carousel";
 import { CollectionPicker } from "./collection-picker";
-import { AddToShoppingListButton } from "./add-to-shopping-list-button";
-import { addRecipeToDefaultShoppingList } from "@/app/(authenticated)/shopping-list/actions";
+import { addRecipeToDefaultShoppingList, addIngredientToDefaultShoppingList } from "@/app/(authenticated)/shopping-list/actions";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English", nl: "Dutch", fr: "French", de: "German", es: "Spanish",
@@ -112,6 +111,10 @@ export function RecipeDetail({
   const hasCooked = cookEntries.length > 0;
   const [unitSystem, setUnitSystem] = useUnitSystem();
   const [servings, setServings] = useState(recipe.servings ?? 0);
+  const [addedIngredients, setAddedIngredients] = useState<Set<string>>(new Set());
+  const [addingIngredient, setAddingIngredient] = useState<string | null>(null);
+  const [addedAll, setAddedAll] = useState(false);
+  const [addingAll, setAddingAll] = useState(false);
   const scaleFactor = recipe.servings ? servings / recipe.servings : 1;
 
   const instructions = recipe.instructions ? formatInstructions(recipe.instructions) : [];
@@ -323,23 +326,74 @@ export function RecipeDetail({
             {ingredients.map((ing) => {
               const scaledQty = ing.quantity != null ? ing.quantity * scaleFactor : null;
               const converted = convertIngredient(scaledQty, ing.unit || "", unitSystem);
+              const isAdded = addedIngredients.has(ing.id) || addedAll;
+              const isAdding = addingIngredient === ing.id;
               return (
-                <li key={ing.id} className="flex items-baseline gap-2 border-b border-warm-divider pb-2">
+                <li key={ing.id} className="flex items-center gap-2 border-b border-warm-divider pb-2">
                   <span className="min-w-[4rem] text-right font-medium">
                     {formatQuantity(converted.quantity)} {converted.unit}
                   </span>
-                  <span className="text-warm-gray">{ing.ingredient_name}</span>
-                  {ing.notes && <span className="text-sm text-warm-gray/60">({ing.notes})</span>}
+                  <span className="flex-1 text-warm-gray">
+                    {ing.ingredient_name}
+                    {ing.notes && <span className="text-sm text-warm-gray/60"> ({ing.notes})</span>}
+                  </span>
+                  <button
+                    onClick={async () => {
+                      if (isAdded) return;
+                      setAddingIngredient(ing.id);
+                      const result = await addIngredientToDefaultShoppingList(
+                        ing.ingredient_name,
+                        ing.quantity,
+                        ing.unit,
+                      );
+                      setAddingIngredient(null);
+                      if (!result?.error) {
+                        setAddedIngredients((prev) => new Set(prev).add(ing.id));
+                      }
+                    }}
+                    disabled={isAdded || isAdding}
+                    className={`shrink-0 flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                      isAdded
+                        ? "bg-accent/10 text-accent"
+                        : "text-warm-gray/40 hover:bg-accent/10 hover:text-accent"
+                    }`}
+                    aria-label={isAdded ? "Added to list" : `Add ${ing.ingredient_name} to shopping list`}
+                  >
+                    {isAdding ? (
+                      <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                        <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75" />
+                      </svg>
+                    ) : isAdded ? (
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                    ) : (
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                    )}
+                  </button>
                 </li>
               );
             })}
           </ul>
           <div className="mt-4">
-            <AddToShoppingListButton
-              recipeId={recipe.id}
-              ingredientCount={ingredients.length}
-              onAdd={addRecipeToDefaultShoppingList}
-            />
+            <button
+              onClick={async () => {
+                setAddingAll(true);
+                const result = await addRecipeToDefaultShoppingList(recipe.id);
+                setAddingAll(false);
+                if (!result?.error) {
+                  setAddedAll(true);
+                  setTimeout(() => setAddedAll(false), 3000);
+                }
+              }}
+              disabled={addingAll || addedAll}
+              className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border disabled:opacity-50"
+            >
+              {addedAll ? `Added all ${ingredients.length} items` : addingAll ? "Adding..." : "Add all to Shopping List"}
+            </button>
           </div>
         </div>
       )}

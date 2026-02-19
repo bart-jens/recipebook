@@ -133,6 +133,8 @@ export default function RecipeDetailScreen() {
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
   const [addingToList, setAddingToList] = useState(false);
   const [addedToList, setAddedToList] = useState(false);
+  const [addedIngredients, setAddedIngredients] = useState<Set<string>>(new Set());
+  const [addingIngredientId, setAddingIngredientId] = useState<string | null>(null);
 
   useEffect(() => {
     AsyncStorage.getItem('unit_system').then((stored) => {
@@ -587,6 +589,49 @@ export default function RecipeDetailScreen() {
     }
   };
 
+  const addSingleIngredient = async (ing: Ingredient) => {
+    if (!user) return;
+    setAddingIngredientId(ing.id);
+
+    // Get or create default shopping list
+    let { data: list } = await supabase
+      .from('shopping_lists')
+      .select('id')
+      .eq('user_id', user.id)
+      .order('created_at')
+      .limit(1)
+      .maybeSingle();
+
+    if (!list) {
+      const { data: newList } = await supabase
+        .from('shopping_lists')
+        .insert({ user_id: user.id })
+        .select('id')
+        .single();
+      list = newList;
+    }
+
+    if (!list) {
+      setAddingIngredientId(null);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('shopping_list_items')
+      .insert({
+        shopping_list_id: list.id,
+        ingredient_name: ing.ingredient_name,
+        quantity: ing.quantity,
+        unit: ing.unit,
+      });
+
+    setAddingIngredientId(null);
+    if (!error) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setAddedIngredients((prev) => new Set(prev).add(ing.id));
+    }
+  };
+
   // Parallax animated styles
   const heroAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: interpolate(scrollY.value, [0, HERO_HEIGHT], [0, HERO_HEIGHT * 0.5], Extrapolation.CLAMP) }],
@@ -1016,6 +1061,8 @@ export default function RecipeDetailScreen() {
                 {ingredients.map((ing) => {
                   const scaledQty = ing.quantity != null ? ing.quantity * scaleFactor : null;
                   const converted = convertIngredient(scaledQty, ing.unit || '', unitSystem);
+                  const isIngAdded = addedIngredients.has(ing.id) || addedToList;
+                  const isIngAdding = addingIngredientId === ing.id;
                   return (
                   <View key={ing.id} style={styles.ingredientRow}>
                     <Text style={styles.ingredientQty}>
@@ -1025,6 +1072,22 @@ export default function RecipeDetailScreen() {
                       <Text style={styles.ingredientName}>{ing.ingredient_name}</Text>
                       {ing.notes && <Text style={styles.ingredientNotes}>({ing.notes})</Text>}
                     </View>
+                    <TouchableOpacity
+                      onPress={() => !isIngAdded && addSingleIngredient(ing)}
+                      disabled={isIngAdded || isIngAdding}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      style={[styles.ingredientAddButton, isIngAdded && styles.ingredientAddButtonDone]}
+                    >
+                      {isIngAdding ? (
+                        <ActivityIndicator size="small" color={colors.primary} />
+                      ) : (
+                        <FontAwesome
+                          name={isIngAdded ? 'check' : 'plus'}
+                          size={12}
+                          color={isIngAdded ? colors.success : colors.primary}
+                        />
+                      )}
+                    </TouchableOpacity>
                   </View>
                   );
                 })}
@@ -1045,8 +1108,8 @@ export default function RecipeDetailScreen() {
                       />
                       <Text style={[styles.addToListText, addedToList && styles.addToListTextDone]}>
                         {addedToList
-                          ? `Added ${ingredients.length} ingredient${ingredients.length !== 1 ? 's' : ''}`
-                          : 'Add to Shopping List'}
+                          ? `Added all ${ingredients.length}`
+                          : 'Add all to list'}
                       </Text>
                     </>
                   )}
@@ -1712,6 +1775,16 @@ const styles = StyleSheet.create({
   logNotes: { ...typography.label, color: colors.textSecondary, marginTop: spacing.sm - 2, lineHeight: 18 },
 
   // Add to shopping list
+  ingredientAddButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  ingredientAddButtonDone: {
+    backgroundColor: colors.successBg,
+  },
   addToListButton: {
     flexDirection: 'row',
     alignItems: 'center',

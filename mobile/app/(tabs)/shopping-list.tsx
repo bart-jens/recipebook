@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  FlatList,
+  ScrollView,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect } from 'expo-router';
@@ -15,7 +15,7 @@ import Animated, { FadeInDown, FadeOut, Layout } from 'react-native-reanimated';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
+import { colors, spacing, fontFamily, radii } from '@/lib/theme';
 
 interface ShoppingItem {
   id: string;
@@ -34,11 +34,11 @@ export default function ShoppingListScreen() {
   const [recipeTitles, setRecipeTitles] = useState<Record<string, string>>({});
   const [newItem, setNewItem] = useState('');
   const [loading, setLoading] = useState(true);
+  const [checkedExpanded, setCheckedExpanded] = useState(false);
 
   const fetchList = useCallback(async () => {
     if (!user) return;
 
-    // Get or create shopping list
     let { data: list } = await supabase
       .from('shopping_lists')
       .select('id')
@@ -69,7 +69,6 @@ export default function ShoppingListScreen() {
     const fetchedItems = itemData || [];
     setItems(fetchedItems);
 
-    // Fetch recipe titles
     const allIds = fetchedItems.flatMap((i) => i.recipe_ids || []);
     const uniqueIds = Array.from(new Set(allIds));
     if (uniqueIds.length > 0) {
@@ -132,6 +131,7 @@ export default function ShoppingListScreen() {
     if (!listId) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setItems((prev) => prev.filter((i) => !i.is_checked));
+    setCheckedExpanded(false);
     await supabase.rpc('clear_checked_items', { p_shopping_list_id: listId });
   };
 
@@ -166,48 +166,6 @@ export default function ShoppingListScreen() {
   const unchecked = items.filter((i) => !i.is_checked);
   const checked = items.filter((i) => i.is_checked);
 
-  const renderItem = ({ item }: { item: ShoppingItem }) => {
-    const attribution = getAttribution(item.recipe_ids);
-    return (
-      <Animated.View
-        entering={FadeInDown.duration(200)}
-        exiting={FadeOut.duration(150)}
-        layout={Layout.springify()}
-      >
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => toggleItem(item.id)}
-          onLongPress={() => deleteItem(item.id)}
-          style={styles.itemRow}
-        >
-          <View style={[styles.checkbox, item.is_checked && styles.checkboxChecked]}>
-            {item.is_checked && (
-              <FontAwesome name="check" size={12} color={colors.background} />
-            )}
-          </View>
-          <View style={styles.itemContent}>
-            <Text style={[styles.itemText, item.is_checked && styles.itemTextChecked]}>
-              {item.quantity !== null && `${formatQty(item.quantity)} `}
-              {item.unit && `${item.unit} `}
-              {item.ingredient_name}
-            </Text>
-            {attribution && (
-              <Text style={styles.attributionText} numberOfLines={1}>
-                from {attribution}
-              </Text>
-            )}
-          </View>
-          <TouchableOpacity
-            onPress={() => deleteItem(item.id)}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <FontAwesome name="times" size={14} color={colors.textMuted} />
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  };
-
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
@@ -235,33 +193,120 @@ export default function ShoppingListScreen() {
         <View style={styles.centered}>
           <Text style={styles.emptyText}>Your shopping list is empty</Text>
           <Text style={styles.emptySubtext}>
-            Add items above or use &quot;Add to Shopping List&quot; on any recipe
+            Add items above or tap + on recipe ingredients
           </Text>
         </View>
       ) : (
-        <FlatList
-          data={[...unchecked, ...checked]}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
+        <ScrollView
           contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}
-          ListHeaderComponent={
-            (checked.length > 0 || unchecked.length > 0) ? (
-              <View style={styles.actions}>
-                {checked.length > 0 && (
-                  <TouchableOpacity onPress={clearChecked} style={styles.actionButton}>
-                    <Text style={styles.actionText}>Clear checked ({checked.length})</Text>
+        >
+          {/* Header with clear all */}
+          {items.length > 0 && (
+            <View style={styles.headerRow}>
+              <Text style={styles.headerCount}>
+                {unchecked.length} {unchecked.length === 1 ? 'item' : 'items'}
+              </Text>
+              <TouchableOpacity onPress={clearAll}>
+                <Text style={styles.clearAllText}>Clear all</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Unchecked items */}
+          {unchecked.map((item) => {
+            const attribution = getAttribution(item.recipe_ids);
+            return (
+              <Animated.View
+                key={item.id}
+                entering={FadeInDown.duration(200)}
+                exiting={FadeOut.duration(150)}
+                layout={Layout.springify()}
+              >
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => toggleItem(item.id)}
+                  onLongPress={() => deleteItem(item.id)}
+                  style={styles.itemRow}
+                >
+                  <View style={styles.checkbox}>
+                  </View>
+                  <View style={styles.itemContent}>
+                    <Text style={styles.itemText}>
+                      {item.quantity !== null && `${formatQty(item.quantity)} `}
+                      {item.unit && `${item.unit} `}
+                      {item.ingredient_name}
+                    </Text>
+                    {attribution && (
+                      <Text style={styles.attributionText} numberOfLines={1}>
+                        from {attribution}
+                      </Text>
+                    )}
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => deleteItem(item.id)}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  >
+                    <FontAwesome name="times" size={14} color={colors.textMuted} />
                   </TouchableOpacity>
-                )}
-                {items.length > 0 && (
-                  <TouchableOpacity onPress={clearAll} style={styles.actionButtonDanger}>
-                    <Text style={styles.actionTextDanger}>Clear all</Text>
+                </TouchableOpacity>
+                <View style={styles.separator} />
+              </Animated.View>
+            );
+          })}
+
+          {/* All done message */}
+          {unchecked.length === 0 && checked.length > 0 && (
+            <View style={styles.allDone}>
+              <Text style={styles.allDoneText}>All done!</Text>
+            </View>
+          )}
+
+          {/* Collapsible checked section */}
+          {checked.length > 0 && (
+            <View style={styles.checkedSection}>
+              <TouchableOpacity
+                style={styles.checkedHeader}
+                onPress={() => setCheckedExpanded(!checkedExpanded)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.checkedHeaderText}>
+                  {checked.length} checked {checked.length === 1 ? 'item' : 'items'}
+                </Text>
+                <FontAwesome
+                  name={checkedExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={12}
+                  color={colors.textMuted}
+                />
+              </TouchableOpacity>
+
+              {checkedExpanded && (
+                <View style={styles.checkedContent}>
+                  {checked.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      activeOpacity={0.7}
+                      onPress={() => toggleItem(item.id)}
+                      onLongPress={() => deleteItem(item.id)}
+                      style={styles.checkedItemRow}
+                    >
+                      <View style={[styles.checkbox, styles.checkboxChecked]}>
+                        <FontAwesome name="check" size={12} color={colors.background} />
+                      </View>
+                      <Text style={styles.checkedItemText} numberOfLines={1}>
+                        {item.quantity !== null && `${formatQty(item.quantity)} `}
+                        {item.unit && `${item.unit} `}
+                        {item.ingredient_name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                  <TouchableOpacity onPress={clearChecked} style={styles.clearCheckedButton}>
+                    <Text style={styles.clearCheckedText}>Clear all checked</Text>
                   </TouchableOpacity>
-                )}
-              </View>
-            ) : null
-          }
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-        />
+                </View>
+              )}
+            </View>
+          )}
+        </ScrollView>
       )}
     </View>
   );
@@ -283,28 +328,15 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.sans,
     color: colors.text,
   },
-  actions: {
+  headerRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: spacing.sm,
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  actionButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-  },
-  actionText: { fontSize: 13, color: colors.textSecondary, fontFamily: fontFamily.sansMedium },
-  actionButtonDanger: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderWidth: 1,
-    borderColor: colors.danger,
-    borderRadius: radii.md,
-  },
-  actionTextDanger: { fontSize: 13, color: colors.danger, fontFamily: fontFamily.sansMedium },
+  headerCount: { fontSize: 13, color: colors.textMuted, fontFamily: fontFamily.sansMedium },
+  clearAllText: { fontSize: 13, color: colors.danger, fontFamily: fontFamily.sansMedium },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -315,7 +347,7 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 28,
     height: 28,
-    borderRadius: radii.sm,
+    borderRadius: 14,
     borderWidth: 2,
     borderColor: colors.border,
     justifyContent: 'center',
@@ -327,7 +359,48 @@ const styles = StyleSheet.create({
   },
   itemContent: { flex: 1 },
   itemText: { fontSize: 15, color: colors.text, fontFamily: fontFamily.sans },
-  itemTextChecked: { textDecorationLine: 'line-through', color: colors.textMuted },
   attributionText: { fontSize: 12, color: colors.textMuted, marginTop: 2, fontFamily: fontFamily.sans },
   separator: { height: 1, backgroundColor: colors.border, marginLeft: spacing.md + 28 + spacing.md },
+  allDone: { paddingVertical: spacing.xxl, alignItems: 'center' },
+  allDoneText: { fontSize: 16, color: colors.textSecondary, fontFamily: fontFamily.sansMedium },
+  checkedSection: {
+    marginTop: spacing.md,
+    marginHorizontal: spacing.md,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+  },
+  checkedHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
+  },
+  checkedHeaderText: { fontSize: 14, color: colors.textMuted, fontFamily: fontFamily.sansMedium },
+  checkedContent: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingVertical: spacing.xs,
+  },
+  checkedItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    gap: spacing.md,
+  },
+  checkedItemText: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.textMuted,
+    fontFamily: fontFamily.sans,
+    textDecorationLine: 'line-through',
+  },
+  clearCheckedButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  clearCheckedText: { fontSize: 12, color: colors.danger, fontFamily: fontFamily.sansMedium },
 });
