@@ -1,5 +1,6 @@
-import { notFound } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { RecipeDetail } from "./recipe-detail";
 
 export default async function RecipeDetailPage({
@@ -19,7 +20,44 @@ export default async function RecipeDetailPage({
     .eq("id", params.id)
     .single();
 
-  if (!recipe) notFound();
+  if (!recipe) {
+    // Check if recipe exists but is private (RLS blocked it)
+    const admin = createAdminClient();
+    const { data: exists } = await admin
+      .from("recipes")
+      .select("id")
+      .eq("id", params.id)
+      .single();
+
+    if (exists) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <p className="text-lg font-medium">This recipe is private</p>
+          <p className="mt-1 text-sm text-warm-gray">
+            The owner hasn&apos;t made this recipe public yet.
+          </p>
+          <Link
+            href="/recipes"
+            className="mt-4 text-sm text-accent hover:underline"
+          >
+            Back to my recipes
+          </Link>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <p className="text-lg font-medium">Recipe not found</p>
+        <Link
+          href="/recipes"
+          className="mt-4 text-sm text-accent hover:underline"
+        >
+          Back to my recipes
+        </Link>
+      </div>
+    );
+  }
 
   const [
     { data: ingredients },

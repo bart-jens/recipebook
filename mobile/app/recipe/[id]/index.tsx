@@ -105,6 +105,7 @@ export default function RecipeDetailScreen() {
   const [ratings, setRatings] = useState<RatingEntry[]>([]);
   const [creatorName, setCreatorName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPrivate, setIsPrivate] = useState(false);
 
   const [cookEntries, setCookEntries] = useState<{ id: string; cooked_at: string; notes: string | null }[]>([]);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -171,6 +172,14 @@ export default function RecipeDetailScreen() {
           .eq('recipe_id', id)
           .order('created_at'),
       ]);
+
+    if (!recipeData) {
+      // Check if recipe exists but is private (RLS blocked it)
+      const { data: exists } = await supabase.rpc('recipe_exists', { p_recipe_id: id });
+      setIsPrivate(!!exists);
+      setLoading(false);
+      return;
+    }
 
     setRecipe(recipeData);
     setIngredients(ingredientData || []);
@@ -565,7 +574,17 @@ export default function RecipeDetailScreen() {
       <>
         <Stack.Screen options={{ headerShown: true, headerTitle: 'Recipe' }} />
         <View style={[styles.container, styles.centered]}>
-          <Text style={styles.emptyText}>Recipe not found</Text>
+          {isPrivate ? (
+            <>
+              <Text style={styles.emptyText}>This recipe is private</Text>
+              <Text style={styles.emptySubtext}>The owner hasn't made this recipe public yet.</Text>
+            </>
+          ) : (
+            <Text style={styles.emptyText}>Recipe not found</Text>
+          )}
+          <TouchableOpacity onPress={() => router.back()} style={styles.backLink}>
+            <Text style={styles.backLinkText}>Go back</Text>
+          </TouchableOpacity>
         </View>
       </>
     );
@@ -1224,7 +1243,10 @@ const styles = StyleSheet.create({
   centered: { justifyContent: 'center', alignItems: 'center' },
   scrollContent: { paddingBottom: spacing.xxxl },
   content: { padding: spacing.pagePadding, backgroundColor: colors.background },
-  emptyText: { fontSize: 16, color: colors.textSecondary },
+  emptyText: { fontSize: 16, color: colors.textSecondary, fontFamily: fontFamily.medium },
+  emptySubtext: { fontSize: 14, color: colors.textSecondary, marginTop: spacing.xs, textAlign: 'center' as const },
+  backLink: { marginTop: spacing.md },
+  backLinkText: { fontSize: 14, color: colors.accent, fontFamily: fontFamily.medium },
 
   // Parallax hero
   heroContainer: {

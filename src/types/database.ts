@@ -7,67 +7,31 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
-      collections: {
-        Row: {
-          id: string
-          user_id: string
-          name: string
-          description: string | null
-          cover_image_url: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          name: string
-          description?: string | null
-          cover_image_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          name?: string
-          description?: string | null
-          cover_image_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "collections_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       collection_recipes: {
         Row: {
-          id: string
-          collection_id: string
-          recipe_id: string
           added_at: string
+          collection_id: string
+          id: string
+          recipe_id: string
         }
         Insert: {
-          id?: string
-          collection_id: string
-          recipe_id: string
           added_at?: string
+          collection_id: string
+          id?: string
+          recipe_id: string
         }
         Update: {
-          id?: string
-          collection_id?: string
-          recipe_id?: string
           added_at?: string
+          collection_id?: string
+          id?: string
+          recipe_id?: string
         }
         Relationships: [
           {
@@ -86,30 +50,60 @@ export type Database = {
           },
         ]
       }
-      cook_log: {
+      collections: {
         Row: {
-          id: string
-          user_id: string
-          recipe_id: string
-          cooked_at: string
-          notes: string | null
+          cover_image_url: string | null
           created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          recipe_id: string
-          cooked_at?: string
-          notes?: string | null
+          cover_image_url?: string | null
           created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          recipe_id?: string
-          cooked_at?: string
-          notes?: string | null
+          cover_image_url?: string | null
           created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cook_log: {
+        Row: {
+          cooked_at: string
+          created_at: string
+          id: string
+          notes: string | null
+          recipe_id: string
+          user_id: string
+        }
+        Insert: {
+          cooked_at?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recipe_id: string
+          user_id: string
+        }
+        Update: {
+          cooked_at?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recipe_id?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -121,28 +115,172 @@ export type Database = {
           },
         ]
       }
-      saved_recipes: {
+      creator_profiles: {
         Row: {
-          id: string
-          user_id: string
-          recipe_id: string
           created_at: string
+          id: string
+          is_verified: boolean
+          social_links: Json
+          subscriber_count: number
+          tagline: string | null
+          website_url: string | null
         }
         Insert: {
-          id?: string
-          user_id: string
-          recipe_id: string
           created_at?: string
+          id: string
+          is_verified?: boolean
+          social_links?: Json
+          subscriber_count?: number
+          tagline?: string | null
+          website_url?: string | null
         }
         Update: {
-          id?: string
-          user_id?: string
-          recipe_id?: string
           created_at?: string
+          id?: string
+          is_verified?: boolean
+          social_links?: Json
+          subscriber_count?: number
+          tagline?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      creator_subscriptions: {
+        Row: {
+          creator_id: string
+          expires_at: string | null
+          id: string
+          started_at: string
+          status: string
+          subscriber_id: string
+        }
+        Insert: {
+          creator_id: string
+          expires_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          subscriber_id: string
+        }
+        Update: {
+          creator_id?: string
+          expires_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          subscriber_id?: string
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          app_version: string | null
+          created_at: string
+          id: string
+          message: string
+          metadata: Json
+          platform: string
+          source_screen: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          app_version?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json
+          platform: string
+          source_screen?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          app_version?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json
+          platform?: string
+          source_screen?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      follow_requests: {
+        Row: {
+          created_at: string
+          id: string
+          requester_id: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          requester_id: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          requester_id?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
+      invites: {
+        Row: {
+          code: string
+          created_at: string
+          email: string
+          id: string
+          invited_by: string
+          used_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          email: string
+          id?: string
+          invited_by: string
+          used_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          email?: string
+          id?: string
+          invited_by?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
+      recipe_analytics: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          recipe_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          recipe_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          recipe_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "saved_recipes_recipe_id_fkey"
+            foreignKeyName: "recipe_analytics_recipe_id_fkey"
             columns: ["recipe_id"]
             isOneToOne: false
             referencedRelation: "recipes"
@@ -152,22 +290,22 @@ export type Database = {
       }
       recipe_favorites: {
         Row: {
-          id: string
-          user_id: string
-          recipe_id: string
           created_at: string
+          id: string
+          recipe_id: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          recipe_id: string
           created_at?: string
+          id?: string
+          recipe_id: string
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          recipe_id?: string
           created_at?: string
+          id?: string
+          recipe_id?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -290,6 +428,38 @@ export type Database = {
           },
         ]
       }
+      recipe_shares: {
+        Row: {
+          id: string
+          notes: string | null
+          recipe_id: string
+          shared_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          notes?: string | null
+          recipe_id: string
+          shared_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          notes?: string | null
+          recipe_id?: string
+          shared_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_shares_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipe_tags: {
         Row: {
           id: string
@@ -316,38 +486,6 @@ export type Database = {
           },
         ]
       }
-      recipe_shares: {
-        Row: {
-          id: string
-          user_id: string
-          recipe_id: string
-          notes: string | null
-          shared_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          recipe_id: string
-          notes?: string | null
-          shared_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          recipe_id?: string
-          notes?: string | null
-          shared_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "recipe_shares_recipe_id_fkey"
-            columns: ["recipe_id"]
-            isOneToOne: false
-            referencedRelation: "recipes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       recipes: {
         Row: {
           cook_time_minutes: number | null
@@ -358,7 +496,7 @@ export type Database = {
           id: string
           image_url: string | null
           instructions: string | null
-
+          language: string | null
           prep_time_minutes: number | null
           published_at: string | null
           servings: number | null
@@ -366,8 +504,8 @@ export type Database = {
           source_name: string | null
           source_type: string
           source_url: string | null
-          sponsored: boolean
           sponsor_metadata: Json | null
+          sponsored: boolean
           title: string
           updated_at: string
           visibility: string
@@ -381,7 +519,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructions?: string | null
-
+          language?: string | null
           prep_time_minutes?: number | null
           published_at?: string | null
           servings?: number | null
@@ -389,8 +527,8 @@ export type Database = {
           source_name?: string | null
           source_type?: string
           source_url?: string | null
-          sponsored?: boolean
           sponsor_metadata?: Json | null
+          sponsored?: boolean
           title: string
           updated_at?: string
           visibility?: string
@@ -404,7 +542,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructions?: string | null
-
+          language?: string | null
           prep_time_minutes?: number | null
           published_at?: string | null
           servings?: number | null
@@ -412,8 +550,8 @@ export type Database = {
           source_name?: string | null
           source_type?: string
           source_url?: string | null
-          sponsored?: boolean
           sponsor_metadata?: Json | null
+          sponsored?: boolean
           title?: string
           updated_at?: string
           visibility?: string
@@ -428,202 +566,131 @@ export type Database = {
           },
         ]
       }
-      user_profiles: {
+      saved_recipes: {
         Row: {
-          id: string
-          display_name: string
-          username: string | null
-          avatar_url: string | null
-          bio: string | null
-          role: string
-          plan: string
-          is_private: boolean
-          onboarded_at: string | null
-          last_seen_followers_at: string
           created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          display_name: string
-          username?: string | null
-          avatar_url?: string | null
-          bio?: string | null
-          role?: string
-          plan?: string
-          is_private?: boolean
-          onboarded_at?: string | null
-          last_seen_followers_at?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          display_name?: string
-          username?: string | null
-          avatar_url?: string | null
-          bio?: string | null
-          role?: string
-          plan?: string
-          is_private?: boolean
-          onboarded_at?: string | null
-          last_seen_followers_at?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      creator_profiles: {
-        Row: {
-          id: string
-          tagline: string | null
-          website_url: string | null
-          social_links: Json
-          is_verified: boolean
-          subscriber_count: number
-          created_at: string
-        }
-        Insert: {
-          id: string
-          tagline?: string | null
-          website_url?: string | null
-          social_links?: Json
-          is_verified?: boolean
-          subscriber_count?: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          tagline?: string | null
-          website_url?: string | null
-          social_links?: Json
-          is_verified?: boolean
-          subscriber_count?: number
-          created_at?: string
-        }
-        Relationships: []
-      }
-      follow_requests: {
-        Row: {
-          id: string
-          requester_id: string
-          target_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          requester_id: string
-          target_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          requester_id?: string
-          target_id?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
-      user_follows: {
-        Row: {
-          id: string
-          follower_id: string
-          following_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          follower_id: string
-          following_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          follower_id?: string
-          following_id?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
-      creator_subscriptions: {
-        Row: {
-          id: string
-          subscriber_id: string
-          creator_id: string
-          status: string
-          started_at: string
-          expires_at: string | null
-        }
-        Insert: {
-          id?: string
-          subscriber_id: string
-          creator_id: string
-          status?: string
-          started_at?: string
-          expires_at?: string | null
-        }
-        Update: {
-          id?: string
-          subscriber_id?: string
-          creator_id?: string
-          status?: string
-          started_at?: string
-          expires_at?: string | null
-        }
-        Relationships: []
-      }
-      invites: {
-        Row: {
-          id: string
-          invited_by: string
-          email: string
-          code: string
-          used_at: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          invited_by: string
-          email: string
-          code: string
-          used_at?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          invited_by?: string
-          email?: string
-          code?: string
-          used_at?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      recipe_analytics: {
-        Row: {
           id: string
           recipe_id: string
-          event_type: string
-          user_id: string | null
-          created_at: string
+          user_id: string
         }
         Insert: {
+          created_at?: string
           id?: string
           recipe_id: string
-          event_type: string
-          user_id?: string | null
-          created_at?: string
+          user_id: string
         }
         Update: {
+          created_at?: string
           id?: string
           recipe_id?: string
-          event_type?: string
-          user_id?: string | null
-          created_at?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "recipe_analytics_recipe_id_fkey"
+            foreignKeyName: "saved_recipes_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string
+          id: string
+          is_private: boolean
+          last_seen_followers_at: string
+          onboarded_at: string | null
+          plan: string
+          role: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name: string
+          id: string
+          is_private?: boolean
+          last_seen_followers_at?: string
+          onboarded_at?: string | null
+          plan?: string
+          role?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_private?: boolean
+          last_seen_followers_at?: string
+          onboarded_at?: string | null
+          plan?: string
+          role?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      activity_feed_view: {
+        Row: {
+          event_at: string | null
+          event_type: string | null
+          notes: string | null
+          recipe_id: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      recipe_share_cards: {
+        Row: {
+          image_url: string | null
+          recipe_id: string | null
+          share_id: string | null
+          share_notes: string | null
+          shared_at: string | null
+          source_name: string | null
+          source_type: string | null
+          source_url: string | null
+          tags: string[] | null
+          title: string | null
+          user_id: string | null
+          user_rating: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_shares_recipe_id_fkey"
             columns: ["recipe_id"]
             isOneToOne: false
             referencedRelation: "recipes"
@@ -632,71 +699,33 @@ export type Database = {
         ]
       }
     }
-    Views: {
-      recipe_share_cards: {
-        Row: {
-          share_id: string
-          user_id: string
-          recipe_id: string
-          share_notes: string | null
-          shared_at: string
-          title: string
-          source_url: string | null
-          source_name: string | null
-          source_type: string
-          image_url: string | null
-          tags: string[] | null
-          user_rating: number | null
-        }
-        Relationships: []
-      }
-    }
     Functions: {
       get_activity_feed: {
-        Args: {
-          p_user_id: string
-          p_before?: string
-          p_limit?: number
-        }
+        Args: { p_before?: string; p_limit?: number; p_user_id: string }
         Returns: {
-          event_type: string
-          user_id: string
-          recipe_id: string
-          event_at: string
-          notes: string | null
-          display_name: string | null
-          avatar_url: string | null
-          recipe_title: string | null
-          recipe_image_url: string | null
-        }[]
-      }
-      get_chef_profile: {
-        Args: {
-          p_chef_id: string
-        }
-        Returns: Json
-      }
-      get_new_follower_count: {
-        Args: {
-          p_user_id: string
-        }
-        Returns: number
-      }
-      get_new_followers: {
-        Args: {
-          p_user_id: string
-        }
-        Returns: {
-          follower_id: string
+          avatar_url: string
           display_name: string
-          avatar_url: string | null
-          followed_at: string
+          event_at: string
+          event_type: string
+          notes: string
+          recipe_id: string
+          recipe_image_url: string
+          recipe_title: string
+          user_id: string
         }[]
       }
-      mark_followers_seen: {
-        Args: Record<string, never>
-        Returns: undefined
+      get_chef_profile: { Args: { p_chef_id: string }; Returns: Json }
+      get_new_follower_count: { Args: { p_user_id: string }; Returns: number }
+      get_new_followers: {
+        Args: { p_user_id: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          followed_at: string
+          follower_id: string
+        }[]
       }
+      mark_followers_seen: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
