@@ -78,7 +78,7 @@ export default async function AuthenticatedLayout({
               Discover
             </Link>
             <Link href="/shopping-list" className="shrink-0 border-b-2 border-transparent px-3 py-2 text-sm text-warm-gray hover:text-[#111111]">
-              Shopping List
+              Grocery List
             </Link>
             <Link href="/invites" className="shrink-0 border-b-2 border-transparent px-3 py-2 text-sm text-warm-gray hover:text-[#111111]">
               Invites

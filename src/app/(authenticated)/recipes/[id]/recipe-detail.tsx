@@ -357,7 +357,7 @@ export function RecipeDetail({
                         ? "bg-accent/10 text-accent"
                         : "text-warm-gray/40 hover:bg-accent/10 hover:text-accent"
                     }`}
-                    aria-label={isAdded ? "Added to list" : `Add ${ing.ingredient_name} to shopping list`}
+                    aria-label={isAdded ? "Added to list" : `Add ${ing.ingredient_name} to grocery list`}
                   >
                     {isAdding ? (
                       <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -392,7 +392,7 @@ export function RecipeDetail({
               disabled={addingAll || addedAll}
               className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border disabled:opacity-50"
             >
-              {addedAll ? `Added all ${ingredients.length} items` : addingAll ? "Adding..." : "Add all to Shopping List"}
+              {addedAll ? `Added all ${ingredients.length} items` : addingAll ? "Adding..." : "Add all to Grocery List"}
             </button>
           </div>
         </div>

@@ -33,7 +33,7 @@ export function AddToShoppingListButton({
       disabled={adding}
       className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border disabled:opacity-50"
     >
-      {added ? `Added ${ingredientCount} items` : adding ? "Adding..." : "Add to Shopping List"}
+      {added ? `Added ${ingredientCount} items` : adding ? "Adding..." : "Add to Grocery List"}
     </button>
   );
 }

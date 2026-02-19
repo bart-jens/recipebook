@@ -71,7 +71,7 @@ export function ShoppingListView({
   }
 
   async function handleClearAll() {
-    if (!confirm("Clear all items from the shopping list?")) return;
+    if (!confirm("Clear all items from the grocery list?")) return;
     setItems([]);
     await clearAllItems(listId);
   }
@@ -203,7 +203,7 @@ export function ShoppingListView({
   return (
     <div className="max-w-2xl">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Shopping List</h1>
+        <h1 className="text-2xl font-semibold">Grocery List</h1>
         {items.length > 0 && (
           <button
             onClick={handleClearAll}
@@ -227,7 +227,7 @@ export function ShoppingListView({
 
       {items.length === 0 ? (
         <div className="py-16 text-center">
-          <p className="text-warm-gray">Your shopping list is empty</p>
+          <p className="text-warm-gray">Your grocery list is empty</p>
           <p className="mt-1 text-sm text-warm-gray/60">
             Add items above or use the + button on recipe ingredients
           </p>

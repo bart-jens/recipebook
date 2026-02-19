@@ -137,7 +137,7 @@ export default function ShoppingListScreen() {
 
   const clearAll = () => {
     if (!listId) return;
-    Alert.alert('Clear all items?', 'This will remove everything from your shopping list.', [
+    Alert.alert('Clear all items?', 'This will remove everything from your grocery list.', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Clear All',
@@ -191,7 +191,7 @@ export default function ShoppingListScreen() {
 
       {items.length === 0 ? (
         <View style={styles.centered}>
-          <Text style={styles.emptyText}>Your shopping list is empty</Text>
+          <Text style={styles.emptyText}>Your grocery list is empty</Text>
           <Text style={styles.emptySubtext}>
             Add items above or tap + on recipe ingredients
           </Text>

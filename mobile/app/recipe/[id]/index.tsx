@@ -569,7 +569,7 @@ export default function RecipeDetailScreen() {
     }
 
     if (!list) {
-      Alert.alert('Error', 'Could not create shopping list');
+      Alert.alert('Error', 'Could not create grocery list');
       setAddingToList(false);
       return;
     }
