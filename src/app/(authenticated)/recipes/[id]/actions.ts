@@ -66,8 +66,12 @@ export async function updateRecipe(recipeId: string, formData: FormData) {
 
 export async function deleteRecipe(recipeId: string) {
   const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
   const { error } = await supabase.from("recipes").delete().eq("id", recipeId);
   if (error) return { error: error.message };
+  revalidatePath("/recipes");
   redirect("/recipes");
 }
 
@@ -332,13 +336,15 @@ export async function saveRecommendation(data: {
   }
 
   // Fallback: create recipe from share card metadata only
+  // Always mark as 'url' — this is someone else's recipe saved via recommendation,
+  // never 'manual' (which would allow publishing it as original content)
   const { data: recipe, error } = await supabase
     .from("recipes")
     .insert({
       title: data.title,
       source_url: data.sourceUrl,
       source_name: data.sourceName,
-      source_type: data.sourceUrl ? "url" : "manual",
+      source_type: "url",
       image_url: data.imageUrl,
       created_by: user.id,
     })

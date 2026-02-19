@@ -49,6 +49,7 @@ interface Recipe {
   source_url: string | null;
   source_name: string | null;
   source_type: string;
+  forked_from_id: string | null;
   language?: string | null;
   visibility: string;
 }
@@ -177,7 +178,7 @@ export function RecipeDetail({
           {isOwner ? (
             <>
               <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
-              {recipe.source_type === "manual" ? (
+              {recipe.source_type === "manual" && !recipe.forked_from_id ? (
                 <PublishButton
                   recipeId={recipe.id}
                   isPublic={recipe.visibility === "public"}

@@ -66,6 +66,7 @@ interface Recipe {
   source_url: string | null;
   source_name: string | null;
   source_type: string;
+  forked_from_id: string | null;
   language?: string | null;
   image_url: string | null;
   visibility: string;
@@ -219,8 +220,8 @@ export default function RecipeDetailScreen() {
       setUserPlan(profileData?.plan || 'free');
       setPublishCount(count || 0);
 
-      // Check share status for imported recipes
-      if (recipeData.source_type !== 'manual') {
+      // Check share status for non-publishable recipes (imports and forks)
+      if (recipeData.source_type !== 'manual' || recipeData.forked_from_id) {
         const { data: share } = await supabase
           .from('recipe_shares')
           .select('notes')
@@ -720,7 +721,7 @@ export default function RecipeDetailScreen() {
                   size="sm"
                   onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
                 />
-                {recipe.source_type === 'manual' ? (
+                {recipe.source_type === 'manual' && !recipe.forked_from_id ? (
                   recipe.visibility === 'public' ? (
                     <TouchableOpacity
                       activeOpacity={0.7}
@@ -765,7 +766,7 @@ export default function RecipeDetailScreen() {
             )}
 
             {/* Publish limit indicator for free users */}
-            {isOwner && userPlan === 'free' && recipe.source_type === 'manual' && (
+            {isOwner && userPlan === 'free' && recipe.source_type === 'manual' && !recipe.forked_from_id && (
               <Text style={styles.publishLimitText}>
                 {publishCount}/{publishLimit} published (free plan)
               </Text>

@@ -131,7 +131,7 @@ export default function RecommendationCard({
           title,
           source_url: sourceUrl,
           source_name: sourceName,
-          source_type: sourceUrl ? 'url' : 'manual',
+          source_type: 'url',
           image_url: imageUrl,
           created_by: user.id,
         })
