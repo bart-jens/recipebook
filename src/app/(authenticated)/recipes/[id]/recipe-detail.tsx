@@ -11,6 +11,7 @@ import { FavoriteButton } from "./favorite-button";
 import { CookingLog } from "./cooking-log";
 import { PublishButton } from "./publish-button";
 import { ShareButton } from "./share-button";
+import { ShareLinkButton } from "./share-link-button";
 import { SaveButton } from "./save-button";
 import { PhotoCarousel } from "./photo-carousel";
 import { CollectionPicker } from "./collection-picker";
@@ -192,6 +193,9 @@ export function RecipeDetail({
                   existingNotes={shareNotes}
                 />
               )}
+              {recipe.visibility === "public" && (
+                <ShareLinkButton recipeId={recipe.id} title={recipe.title} />
+              )}
               <Link
                 href={`/recipes/${recipe.id}/edit`}
                 className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
@@ -204,6 +208,9 @@ export function RecipeDetail({
             <>
               <SaveButton recipeId={recipe.id} isSaved={isSaved} />
               <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
+              {recipe.visibility === "public" && (
+                <ShareLinkButton recipeId={recipe.id} title={recipe.title} />
+              )}
             </>
           )}
         </div>

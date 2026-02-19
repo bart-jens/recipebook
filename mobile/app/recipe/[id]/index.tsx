@@ -7,6 +7,7 @@ import {
   TextInput,
   Alert,
   Linking,
+  Share,
   ViewStyle,
   Dimensions,
   ScrollView,
@@ -373,6 +374,17 @@ export default function RecipeDetailScreen() {
         },
       },
     ]);
+  };
+
+  const shareLink = async () => {
+    if (!recipe) return;
+    try {
+      await Share.share({
+        message: `${recipe.title} — https://eefeats.com/r/${recipe.id}`,
+      });
+    } catch {
+      // User cancelled
+    }
   };
 
   const deleteRecipe = () => {
@@ -757,6 +769,14 @@ export default function RecipeDetailScreen() {
                     />
                   )
                 )}
+                {recipe.visibility === 'public' && (
+                  <Button
+                    title="Copy link"
+                    variant="secondary"
+                    size="sm"
+                    onPress={shareLink}
+                  />
+                )}
                 <Button
                   title="Delete"
                   variant="danger"
@@ -773,7 +793,7 @@ export default function RecipeDetailScreen() {
               </Text>
             )}
 
-            {/* Non-owner: save */}
+            {/* Non-owner: save + share link */}
             {!isOwner && recipe.visibility === 'public' && (
               <Animated.View entering={FadeInDown.delay(animation.staggerDelay).duration(300)} style={styles.ownerActions}>
                 <Button
@@ -781,6 +801,12 @@ export default function RecipeDetailScreen() {
                   variant={isSaved ? 'primary' : 'secondary'}
                   size="md"
                   onPress={toggleSave}
+                />
+                <Button
+                  title="Copy link"
+                  variant="secondary"
+                  size="md"
+                  onPress={shareLink}
                 />
               </Animated.View>
             )}
