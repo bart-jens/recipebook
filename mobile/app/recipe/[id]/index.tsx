@@ -383,10 +383,11 @@ export default function RecipeDetailScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          await supabase.from('recipe_ingredients').delete().eq('recipe_id', recipe.id);
-          await supabase.from('recipe_tags').delete().eq('recipe_id', recipe.id);
-          await supabase.from('recipe_ratings').delete().eq('recipe_id', recipe.id);
-          await supabase.from('recipes').delete().eq('id', recipe.id);
+          const { error } = await supabase.from('recipes').delete().eq('id', recipe.id);
+          if (error) {
+            Alert.alert('Error', 'Failed to delete recipe. Please try again.');
+            return;
+          }
           router.back();
         },
       },

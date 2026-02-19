@@ -8,6 +8,7 @@ export default async function AdminDashboard() {
     { count: recipeCount },
     { count: inviteCount },
     { count: pendingInviteCount },
+    { count: unreadFeedbackCount },
   ] = await Promise.all([
     admin.from("user_profiles").select("id", { count: "exact", head: true }),
     admin.from("recipes").select("id", { count: "exact", head: true }),
@@ -16,6 +17,10 @@ export default async function AdminDashboard() {
       .from("invites")
       .select("id", { count: "exact", head: true })
       .is("used_at", null),
+    admin
+      .from("feedback")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "new"),
   ]);
 
   const stats = [
@@ -23,6 +28,7 @@ export default async function AdminDashboard() {
     { label: "Recipes", value: recipeCount ?? 0 },
     { label: "Invites sent", value: inviteCount ?? 0 },
     { label: "Invites pending", value: pendingInviteCount ?? 0 },
+    { label: "Unread feedback", value: unreadFeedbackCount ?? 0 },
   ];
 
   return (

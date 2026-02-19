@@ -45,6 +45,12 @@ export default async function AdminLayout({
           >
             Invites
           </Link>
+          <Link
+            href="/admin/feedback"
+            className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag hover:text-[#111111]"
+          >
+            Feedback
+          </Link>
         </nav>
       </div>
       {children}

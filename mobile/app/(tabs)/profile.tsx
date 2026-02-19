@@ -13,6 +13,7 @@ import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
 import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
+import FeedbackModal from '@/components/FeedbackModal';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
 
 interface Profile {
@@ -38,6 +39,7 @@ export default function ProfileScreen() {
   const [pendingRequests, setPendingRequests] = useState(0);
   const [newFollowerCount, setNewFollowerCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -225,12 +227,24 @@ export default function ProfileScreen() {
           onPress={() => router.push('/invites')}
         />
         <Button
+          title="Send Feedback"
+          variant="secondary"
+          size="lg"
+          onPress={() => setFeedbackVisible(true)}
+        />
+        <Button
           title="Sign out"
           variant="ghost"
           size="lg"
           onPress={signOut}
         />
       </View>
+
+      <FeedbackModal
+        visible={feedbackVisible}
+        onClose={() => setFeedbackVisible(false)}
+        sourceScreen="profile"
+      />
     </ScrollView>
   );
 }

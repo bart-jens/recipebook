@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import FeedbackButton from "@/components/feedback-modal";
 
 export default async function ProfilePage() {
   const supabase = createClient();
@@ -96,12 +97,15 @@ export default async function ProfilePage() {
             )}
           </div>
         </div>
-        <Link
-          href="/profile/edit"
-          className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
-        >
-          Edit profile
-        </Link>
+        <div className="flex items-center gap-2">
+          <FeedbackButton sourceScreen="profile" />
+          <Link
+            href="/profile/edit"
+            className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
+          >
+            Edit profile
+          </Link>
+        </div>
       </div>
 
       {profile?.bio && (
