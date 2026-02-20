@@ -1,6 +1,6 @@
 # EefEats Platform Parity Report
 
-**Generated:** 2026-02-15
+**Generated:** 2026-02-20
 **Web:** Next.js 14 (App Router) + Tailwind CSS
 **Mobile:** React Native / Expo (Expo Router)
 **Backend:** Shared Supabase (PostgreSQL + RLS)
@@ -74,7 +74,8 @@ Both platforms share ~90% feature parity. Core functionality (CRUD, imports, dis
 | Creator name (public recipes) | Yes | Yes | MATCH |
 | Favorite button | Yes | Yes | MATCH |
 | Edit / Delete (owner) | Yes | Yes | MATCH |
-| Publish / Unpublish (owner) | Yes | Yes | MATCH |
+| Visibility toggle — Public/Private (manual, owner) | Yes | Yes | MATCH |
+| Recommended badge (imported/forked, owner) | Yes | Yes | MATCH |
 | Fork button (public, non-owner) | Yes | Yes | MATCH |
 | Photo carousel | Yes | Yes | MATCH |
 | Parallax hero image | No | Yes | MOBILE-ONLY |
@@ -154,16 +155,19 @@ Both platforms share ~90% feature parity. Core functionality (CRUD, imports, dis
 
 ---
 
-## 11. Home Dashboard
+## 11. Home — Social Hub
 
 | Feature | Web | Mobile | Status |
 |---------|-----|--------|--------|
 | Greeting with time of day | Yes | Yes | MATCH |
-| Stats summary | Yes | Yes | MATCH |
-| Recently updated recipes | Yes | Yes | MATCH |
-| Friend recommendations | Yes | Yes | MATCH |
-| Discover / trending section | Yes | Yes | MATCH |
-| Friend activity feed | Yes | Yes | MATCH |
+| Activity feed (4 event types: created, saved, cooked, rated) | Yes | Yes | MATCH |
+| Feed: saved events link to source URL | Yes | Yes | MATCH |
+| Feed: rated events show star rating | Yes | Yes | MATCH |
+| Feed: recipe thumbnails | Yes | Yes | MATCH |
+| "Looking for something to cook?" (favorites row) | Yes | Yes | MATCH |
+| "Your Recent Activity" (cook log, 3 items) | Yes | Yes | MATCH |
+| Feed empty state (no follows → Discover) | Yes | Yes | MATCH |
+| Pull to refresh | No | Yes | MOBILE-ONLY |
 
 ---
 
