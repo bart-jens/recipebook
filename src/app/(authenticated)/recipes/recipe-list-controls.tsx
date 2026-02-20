@@ -4,26 +4,26 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useTransition } from "react";
 
 const SORT_OPTIONS = [
-  { value: "updated", label: "Recently updated" },
-  { value: "alpha", label: "Alphabetical" },
-  { value: "rating", label: "Highest rated" },
-  { value: "prep", label: "Prep time" },
-  { value: "cook", label: "Cook time" },
+  { value: "updated", label: "Recent" },
+  { value: "alpha", label: "A-Z" },
+  { value: "rating", label: "Top Rated" },
+  { value: "prep", label: "Prep" },
+  { value: "cook", label: "Cook" },
 ];
 
 const FILTER_OPTIONS = [
-  { value: "", label: "All recipes" },
+  { value: "", label: "All" },
   { value: "favorited", label: "Favorited" },
   { value: "want-to-cook", label: "Want to Cook" },
 ];
 
 const COURSE_OPTIONS = [
-  { value: "", label: "All courses" },
+  { value: "", label: "All" },
   { value: "breakfast", label: "Breakfast" },
   { value: "lunch", label: "Lunch" },
   { value: "dinner", label: "Dinner" },
   { value: "appetizer", label: "Appetizer" },
-  { value: "side dish", label: "Side dish" },
+  { value: "side dish", label: "Side" },
   { value: "dessert", label: "Dessert" },
   { value: "snack", label: "Snack" },
 ];
@@ -61,66 +61,88 @@ export function RecipeListControls() {
   }
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div className="relative flex-1">
+    <div>
+      {/* Search — bottom-border style */}
+      <div className="flex items-center gap-2 pb-1.5 border-b-2 border-ink focus-within:border-accent transition-colors duration-300">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className="text-ink-muted shrink-0"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
         <input
           type="search"
           placeholder="Search recipes, ingredients, tags..."
           defaultValue={q}
           onChange={(e) => handleSearch(e.target.value)}
-          className="w-full rounded-md bg-warm-tag px-3 py-2 pl-9 text-sm placeholder:text-warm-gray/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+          className="flex-1 bg-transparent border-none outline-none font-body text-[15px] font-light text-ink placeholder:text-ink-muted"
         />
-        <svg
-          className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-gray/50"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
         {isPending && (
-          <div className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-warm-border border-t-accent" />
+          <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-accent" />
         )}
       </div>
-      <div className="flex items-center gap-2">
-        <select
-          value={filter}
-          onChange={(e) => updateParams({ filter: e.target.value })}
-          className="rounded-md bg-warm-tag px-3 py-2 text-sm text-warm-gray focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-        >
-          {FILTER_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={course}
-          onChange={(e) => updateParams({ course: e.target.value })}
-          className="rounded-md bg-warm-tag px-3 py-2 text-sm text-warm-gray focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-        >
-          {COURSE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={sort}
-          onChange={(e) => updateParams({ sort: e.target.value })}
-          className="rounded-md bg-warm-tag px-3 py-2 text-sm text-warm-gray focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-        >
-          {SORT_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+
+      {/* Sort tabs — mono uppercase with active underline */}
+      <div className="flex gap-0 border-b border-border mt-0">
+        {SORT_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => updateParams({ sort: opt.value })}
+            className={`relative font-mono text-[11px] uppercase tracking-[0.06em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
+              sort === opt.value
+                ? "text-ink"
+                : "text-ink-muted hover:text-ink"
+            }`}
+          >
+            {opt.label}
+            {sort === opt.value && (
+              <span className="absolute bottom-[-1px] left-0 right-[14px] h-0.5 bg-ink" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Filter + Course tabs */}
+      <div className="flex gap-0 border-b border-border">
+        {FILTER_OPTIONS.map((opt) => (
+          <button
+            key={`filter-${opt.value}`}
+            onClick={() => updateParams({ filter: opt.value })}
+            className={`relative font-mono text-[10px] uppercase tracking-[0.08em] bg-transparent border-none cursor-pointer px-0 pr-3 py-1.5 transition-colors ${
+              filter === opt.value
+                ? "text-ink"
+                : "text-ink-muted hover:text-ink"
+            }`}
+          >
+            {opt.label}
+            {filter === opt.value && (
+              <span className="absolute bottom-[-1px] left-0 right-[12px] h-[1.5px] bg-ink" />
+            )}
+          </button>
+        ))}
+        <span className="w-px bg-border mx-2 my-1" />
+        {COURSE_OPTIONS.map((opt) => (
+          <button
+            key={`course-${opt.value}`}
+            onClick={() => updateParams({ course: opt.value })}
+            className={`relative font-mono text-[10px] uppercase tracking-[0.08em] bg-transparent border-none cursor-pointer px-0 pr-3 py-1.5 transition-colors ${
+              course === opt.value
+                ? "text-accent"
+                : "text-ink-muted hover:text-ink"
+            }`}
+          >
+            {opt.label}
+            {course === opt.value && (
+              <span className="absolute bottom-[-1px] left-0 right-[12px] h-[1.5px] bg-accent" />
+            )}
+          </button>
+        ))}
       </div>
     </div>
   );

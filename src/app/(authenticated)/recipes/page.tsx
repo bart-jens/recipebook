@@ -33,6 +33,14 @@ interface EnrichedRecipe extends RecipeRow {
   hasCooked: boolean;
 }
 
+function formatTime(minutes: number | null): string | null {
+  if (!minutes) return null;
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
 export default async function RecipesPage({
   searchParams,
 }: {
@@ -182,19 +190,23 @@ export default async function RecipesPage({
 
   return (
     <div>
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Recipes</h1>
+      {/* Header: overline + serif title + action buttons */}
+      <div className="px-5 pt-4 animate-fade-in-up opacity-0 anim-delay-1">
+        <div className="mono-label mb-1">Your Library</div>
+        <div className="flex items-baseline justify-between mb-3.5">
+          <h1 className="font-display text-[32px] tracking-[-0.03em]">
+            Recipes
+          </h1>
           <div className="flex gap-2">
             <Link
               href="/recipes/import"
-              className="rounded-md bg-warm-tag px-4 py-2 text-sm font-medium text-warm-gray hover:bg-warm-border"
+              className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
             >
-              Import Recipe
+              Import
             </Link>
             <Link
               href="/recipes/new"
-              className="rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform"
+              className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 border border-ink bg-ink text-bg hover:bg-accent hover:border-accent transition-colors"
             >
               Create
             </Link>
@@ -202,40 +214,48 @@ export default async function RecipesPage({
         </div>
       </div>
 
-      <CollectionsSection
-        collections={collections}
-        userPlan={userPlan}
-        collectionCount={collections.length}
-      />
+      {/* Collections */}
+      <div className="px-5 animate-fade-in-up opacity-0 anim-delay-2">
+        <CollectionsSection
+          collections={collections}
+          userPlan={userPlan}
+          collectionCount={collections.length}
+        />
+      </div>
 
-      <div className="mb-6">
+      {/* Controls: Search + Sort/Filter tabs */}
+      <div className="px-5 animate-fade-in-up opacity-0 anim-delay-3">
         <RecipeListControls />
       </div>
 
-      <p className="mb-4 text-sm text-warm-gray">
-        {q
-          ? `${totalCount} result${totalCount !== 1 ? "s" : ""} for \u201c${q}\u201d`
-          : `${totalCount} recipe${totalCount !== 1 ? "s" : ""}`}
-      </p>
+      {/* Result count */}
+      <div className="px-5 pt-3 animate-fade-in-up opacity-0 anim-delay-4">
+        <p className="font-mono text-[11px] text-ink-muted">
+          {q
+            ? `${totalCount} result${totalCount !== 1 ? "s" : ""} for \u201c${q}\u201d`
+            : `${totalCount} recipe${totalCount !== 1 ? "s" : ""}`}
+        </p>
+      </div>
 
+      {/* Recipe list */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center rounded-md border border-accent/20 bg-accent/5 p-8">
-          <ForkDot size={24} color="rgba(45,95,93,0.3)" />
-          <p className="mt-3 text-warm-gray">
+        <div className="mx-5 mt-4 border-t border-border py-8 text-center animate-fade-in-up opacity-0 anim-delay-5">
+          <ForkDot size={24} color="rgba(139,69,19,0.2)" />
+          <p className="mt-3 text-[13px] font-light text-ink-secondary">
             {q ? "No recipes match your search." : "No recipes yet."}
           </p>
           {!q && (
             <div className="mt-2 flex gap-3 justify-center">
               <Link
                 href="/recipes/import"
-                className="text-sm font-medium text-accent underline"
+                className="font-mono text-[11px] uppercase tracking-[0.06em] text-accent hover:underline"
               >
                 Import a recipe
               </Link>
-              <span className="text-warm-border">or</span>
+              <span className="text-ink-muted">or</span>
               <Link
                 href="/recipes/new"
-                className="text-sm font-medium text-accent underline"
+                className="font-mono text-[11px] uppercase tracking-[0.06em] text-accent hover:underline"
               >
                 Create your own
               </Link>
@@ -243,71 +263,59 @@ export default async function RecipesPage({
           )}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="px-5 pb-24">
           {filtered.map((recipe, i) => {
-            const timeInfo = [
-              recipe.prep_time_minutes && `${recipe.prep_time_minutes} min prep`,
-              recipe.cook_time_minutes && `${recipe.cook_time_minutes} min cook`,
-            ]
-              .filter(Boolean)
-              .join(" · ");
-
+            const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
+            const timeStr = formatTime(totalTime);
             const tags: string[] = (recipe.recipe_tags || []).map((t) => t.tag);
 
             return (
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="block rounded-md bg-warm-tag p-4 border border-warm-border transition-all hover:-translate-y-px hover:shadow-sm animate-fade-in-up"
-                style={i < 10 ? { animationDelay: `${i * 30}ms`, animationFillMode: "backwards" } : undefined}
+                className="group flex gap-3 py-3.5 border-b border-border cursor-pointer transition-all duration-200 hover:bg-accent-light hover:-mx-2 hover:px-2 animate-fade-in-up opacity-0"
+                style={i < 10 ? { animationDelay: `${(i + 5) * 40}ms`, animationFillMode: "backwards" } : undefined}
               >
-                <div className="flex gap-4">
-                  {recipe.image_url && (
-                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md">
-                      <img
-                        src={recipe.image_url}
-                        alt={recipe.title}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-sans text-lg font-medium">{recipe.title}</h2>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {recipe.avgRating != null && (
-                      <span className="flex items-center gap-1 text-xs text-warm-gray">
-                        <svg className="h-3.5 w-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                        {recipe.avgRating.toFixed(1)}
-                      </span>
-                    )}
-                    {recipe.isFavorited && (
-                      <svg className="h-4 w-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                      </svg>
-                    )}
+                {recipe.image_url ? (
+                  <img
+                    src={recipe.image_url}
+                    alt={recipe.title}
+                    className="w-12 h-12 object-cover shrink-0 self-center transition-transform duration-300 group-hover:scale-[1.08]"
+                    style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+                  />
+                ) : (
+                  <div className="w-12 h-12 shrink-0 self-center bg-surface-alt flex items-center justify-center">
+                    <ForkDot size={14} color="rgba(139,69,19,0.15)" />
                   </div>
-                </div>
-                {recipe.description && (
-                  <p className="mt-1 text-sm text-warm-gray line-clamp-2">
-                    {recipe.description}
-                  </p>
                 )}
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {tags.map((t: string) => (
-                    <span
-                      key={t}
-                      className="rounded-full bg-warm-tag px-2 py-0.5 text-xs text-warm-gray"
-                    >
-                      {t}
-                    </span>
-                  ))}
-                  {timeInfo && (
-                    <span className="text-xs text-warm-gray">{timeInfo}</span>
-                  )}
-                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      {tags[0] && (
+                        <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-accent font-medium mb-0.5">
+                          {tags[0]}
+                        </div>
+                      )}
+                      <div className="font-display text-[20px] leading-[1.12] tracking-[-0.02em] text-ink transition-colors group-hover:text-accent truncate">
+                        {recipe.title}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 pt-1">
+                      {recipe.isFavorited && (
+                        <svg className="h-3.5 w-3.5 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <div className="font-mono text-[11px] text-ink-muted flex gap-2.5 mt-0.5">
+                    {timeStr && <span>{timeStr}</span>}
+                    {recipe.avgRating != null && (
+                      <span>{recipe.avgRating.toFixed(1)}</span>
+                    )}
+                    {tags.length > 1 && (
+                      <span>{tags.slice(1).join(", ")}</span>
+                    )}
                   </div>
                 </div>
               </Link>
