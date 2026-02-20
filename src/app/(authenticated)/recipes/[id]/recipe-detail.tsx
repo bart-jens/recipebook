@@ -9,8 +9,8 @@ import { convertIngredient, formatQuantity } from "@/lib/unit-conversion";
 import { TagEditor } from "./tag-editor";
 import { FavoriteButton } from "./favorite-button";
 import { CookingLog } from "./cooking-log";
-import { PublishButton } from "./publish-button";
-import { ShareButton } from "./share-button";
+import { VisibilityToggle } from "./visibility-toggle";
+import { RecommendedBadge } from "./recommended-badge";
 import { ShareLinkButton } from "./share-link-button";
 import { SaveButton } from "./save-button";
 import { PhotoCarousel } from "./photo-carousel";
@@ -86,10 +86,7 @@ export function RecipeDetail({
   isOwner,
   creatorName,
   creatorId,
-  publishCount,
-  userPlan,
   isShared,
-  shareNotes,
   photos,
 }: {
   recipe: Recipe;
@@ -102,10 +99,7 @@ export function RecipeDetail({
   isOwner: boolean;
   creatorName: string | null;
   creatorId: string | null;
-  publishCount?: number;
-  userPlan?: string;
   isShared?: boolean;
-  shareNotes?: string | null;
   photos?: { id: string; url: string; imageType: string }[];
 }) {
   const hasCooked = cookEntries.length > 0;
@@ -174,29 +168,15 @@ export function RecipeDetail({
       <div className="mb-3 flex items-start justify-between">
         <div className="flex-1">
           <h1 className="font-sans text-3xl font-semibold leading-tight">{recipe.title}</h1>
-          {recipe.visibility === "public" && isOwner && (
-            <span className="mt-1 inline-block rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
-              Published
-            </span>
-          )}
         </div>
         <div className="flex gap-2 pt-1">
           {isOwner ? (
             <>
               <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
               {recipe.source_type === "manual" && !recipe.forked_from_id ? (
-                <PublishButton
-                  recipeId={recipe.id}
-                  isPublic={recipe.visibility === "public"}
-                  publishCount={publishCount}
-                  userPlan={userPlan}
-                />
+                <VisibilityToggle recipeId={recipe.id} isPublic={recipe.visibility === "public"} />
               ) : (
-                <ShareButton
-                  recipeId={recipe.id}
-                  isShared={isShared ?? false}
-                  existingNotes={shareNotes}
-                />
+                <RecommendedBadge recipeId={recipe.id} isRecommended={isShared ?? false} />
               )}
               {recipe.visibility === "public" && (
                 <ShareLinkButton recipeId={recipe.id} title={recipe.title} />
