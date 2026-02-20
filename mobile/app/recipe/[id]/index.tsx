@@ -315,7 +315,7 @@ export default function RecipeDetailScreen() {
   const hasCooked = cookEntries.length > 0;
 
   const toggleFavorite = async () => {
-    if (!recipe || !user || !hasCooked) return;
+    if (!recipe || !user) return;
     const newVal = !isFavorited;
     setIsFavorited(newVal);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -531,6 +531,7 @@ export default function RecipeDetailScreen() {
     try {
       const publicUrl = await uploadRecipeImage(user.id, recipe.id, result.assets[0].uri);
       setRecipe({ ...recipe, image_url: publicUrl });
+      setPhotos((prev) => [...prev, { id: Date.now().toString(), url: publicUrl, imageType: 'user_upload' }]);
     } catch {
       Alert.alert('Error', 'Could not upload image');
     }
@@ -788,7 +789,6 @@ export default function RecipeDetailScreen() {
                 isFavorite={isFavorited}
                 onToggle={toggleFavorite}
                 size={24}
-                disabled={!hasCooked}
               />
             </Animated.View>
 

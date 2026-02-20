@@ -13,6 +13,7 @@ export function ImageUpload({
 }) {
   const [imageUrl, setImageUrl] = useState(currentImageUrl);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const supabase = createBrowserClient(
@@ -25,11 +26,13 @@ export function ImageUpload({
     if (!file) return;
 
     setUploading(true);
+    setError(null);
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
+      setError("Not authenticated");
       setUploading(false);
       return;
     }
@@ -46,6 +49,8 @@ export function ImageUpload({
       });
 
     if (uploadError) {
+      setError("Upload failed. Please try again.");
+      console.error("Storage upload failed:", uploadError);
       setUploading(false);
       return;
     }
@@ -56,16 +61,28 @@ export function ImageUpload({
 
     const publicUrl = urlData.publicUrl;
 
-    await supabase.from("recipe_images").insert({
+    const { error: insertError } = await supabase.from("recipe_images").insert({
       recipe_id: recipeId,
       storage_path: storagePath,
       is_primary: true,
+      image_type: "user_upload",
     });
 
-    await supabase
+    if (insertError) {
+      console.error("Failed to insert recipe_images:", insertError);
+    }
+
+    const { error: updateError } = await supabase
       .from("recipes")
       .update({ image_url: publicUrl })
       .eq("id", recipeId);
+
+    if (updateError) {
+      setError("Photo uploaded but failed to save. Please try again.");
+      console.error("Failed to update recipe image_url:", updateError);
+      setUploading(false);
+      return;
+    }
 
     setImageUrl(publicUrl);
     setUploading(false);
@@ -104,6 +121,7 @@ export function ImageUpload({
             ? "Change photo"
             : "Add photo"}
       </button>
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 }

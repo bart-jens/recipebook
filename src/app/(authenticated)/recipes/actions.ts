@@ -79,35 +79,42 @@ export async function createRecipe(formData: FormData) {
 
   // Upload user-provided image (from create form)
   if (imageBase64) {
-    try {
-      const buffer = Buffer.from(imageBase64, "base64");
-      const storagePath = `${user.id}/${recipe.id}/${crypto.randomUUID()}.jpg`;
+    const buffer = Buffer.from(imageBase64, "base64");
+    const storagePath = `${user.id}/${recipe.id}/${crypto.randomUUID()}.jpg`;
 
-      const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
+      .from("recipe-images")
+      .upload(storagePath, buffer, {
+        contentType: "image/jpeg",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("Storage upload failed:", uploadError);
+    } else {
+      const { data: urlData } = supabase.storage
         .from("recipe-images")
-        .upload(storagePath, buffer, {
-          contentType: "image/jpeg",
-          upsert: false,
-        });
+        .getPublicUrl(storagePath);
 
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage
-          .from("recipe-images")
-          .getPublicUrl(storagePath);
+      const { error: updateError } = await supabase
+        .from("recipes")
+        .update({ image_url: urlData.publicUrl })
+        .eq("id", recipe.id);
 
-        await supabase
-          .from("recipes")
-          .update({ image_url: urlData.publicUrl })
-          .eq("id", recipe.id);
-
-        await supabase.from("recipe_images").insert({
-          recipe_id: recipe.id,
-          storage_path: storagePath,
-          is_primary: true,
-        });
+      if (updateError) {
+        console.error("Failed to update recipe image_url:", updateError);
       }
-    } catch (e) {
-      console.error("Image upload failed:", e);
+
+      const { error: insertError } = await supabase.from("recipe_images").insert({
+        recipe_id: recipe.id,
+        storage_path: storagePath,
+        is_primary: true,
+        image_type: "user_upload",
+      });
+
+      if (insertError) {
+        console.error("Failed to insert recipe_images row:", insertError);
+      }
     }
   }
 
