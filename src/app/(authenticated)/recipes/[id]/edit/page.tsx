@@ -47,7 +47,7 @@ export default async function EditRecipePage({
   }
 
   return (
-    <div>
+    <div className="px-5 py-4 pb-24">
       <div className="mb-8">
         <Link href={`/recipes/${recipe.id}`} className="text-sm text-warm-gray hover:text-accent">
           &larr; Back to recipe
