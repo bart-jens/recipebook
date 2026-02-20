@@ -12,7 +12,7 @@ const config: Config = {
         body: ["Inter Tight", "system-ui", "sans-serif"],
         mono: ["Geist Mono", "monospace"],
         sans: ["Inter Tight", "system-ui", "sans-serif"],
-        // Backward-compat alias (logo.tsx still uses font-logo until Task 3 replaces it)
+        // Backward-compat alias (used by consumers that reference font-logo)
         logo: ["Inter Tight", "system-ui", "sans-serif"],
       },
       colors: {

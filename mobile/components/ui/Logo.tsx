@@ -1,50 +1,49 @@
 import { View, Text, StyleSheet } from 'react-native';
-import Svg, { Circle, Rect, Path, G } from 'react-native-svg';
+import Svg, { Defs, Mask, Rect, Circle, Line, Path } from 'react-native-svg';
 import { colors, fontFamily } from '@/lib/theme';
 
 interface LogoProps {
   height?: number;
 }
 
-export function ForkDot({ size, color = colors.primary }: { size: number; color?: string }) {
+let maskCounter = 0;
+
+function ForkMark({ size = 20, color = colors.ink }: { size?: number; color?: string }) {
+  const maskId = `fork-mask-${++maskCounter}`;
+
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Circle cx="12" cy="12" r="12" fill={color} />
-      <G fill="white">
-        <Rect x="7" y="5" width="1.5" height="7" rx="0.75" />
-        <Rect x="9.5" y="5" width="1.5" height="7" rx="0.75" />
-        <Rect x="12" y="5" width="1.5" height="7" rx="0.75" />
-        <Rect x="14.5" y="5" width="1.5" height="7" rx="0.75" />
-        <Path d="M7 10.5 h9 c0 2.5 -3 3.5 -5 3.5 h-4 Z" />
-        <Rect x="9" y="13" width="3" height="6.5" rx="1.5" />
-      </G>
+      <Defs>
+        <Mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+          <Rect width="24" height="24" fill="white" />
+          <Line x1="8.5" y1="5" x2="8.5" y2="10.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" />
+          <Line x1="10.8" y1="5" x2="10.8" y2="10.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" />
+          <Line x1="13.2" y1="5" x2="13.2" y2="10.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" />
+          <Line x1="15.5" y1="5" x2="15.5" y2="10.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" />
+          <Path d="M8.5 10.5 Q8.5 13 12 13 Q15.5 13 15.5 10.5" stroke="black" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+          <Line x1="12" y1="13" x2="12" y2="19.5" stroke="black" strokeWidth="1.8" strokeLinecap="round" />
+        </Mask>
+      </Defs>
+      <Circle cx="12" cy="12" r="11" fill={color} mask={`url(#${maskId})`} />
     </Svg>
   );
 }
 
-export function Logo({ height = 24 }: LogoProps) {
-  const dotSize = Math.max(6, Math.round(height * 0.55));
-  const gap = Math.max(2, Math.round(height * 0.12));
+export function ForkDot({ size, color }: { size: number; color?: string }) {
+  return <ForkMark size={size} color={color} />;
+}
 
+export function Logo({ height = 17 }: LogoProps) {
   return (
     <View style={styles.container} accessibilityLabel="EefEats" accessibilityRole="image">
-      <Text
-        style={[
-          styles.text,
-          { fontSize: height, lineHeight: height },
-        ]}
-      >
-        EefEats
-      </Text>
-      <View style={{ marginLeft: gap, alignSelf: 'flex-end', marginBottom: Math.round(height * 0.04) }}>
-        <ForkDot size={dotSize} />
-      </View>
+      <ForkMark size={20} color={colors.ink} />
+      <Text style={styles.text}>EefEats</Text>
     </View>
   );
 }
 
-export function LogoMark({ size = 24, color = colors.primary }: { size?: number; color?: string }) {
-  return <ForkDot size={size} color={color} />;
+export function LogoMark({ size = 24, color }: { size?: number; color?: string }) {
+  return <ForkMark size={size} color={color} />;
 }
 
 const styles = StyleSheet.create({
@@ -54,7 +53,10 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: fontFamily.logo,
-    color: colors.text,
-    letterSpacing: 0,
+    fontSize: 17,
+    lineHeight: 17,
+    letterSpacing: -0.03 * 17,
+    color: colors.ink,
+    marginLeft: 7,
   },
 });
