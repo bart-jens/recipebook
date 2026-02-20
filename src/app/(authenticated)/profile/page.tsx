@@ -126,22 +126,22 @@ export default async function ProfilePage() {
 
       {/* Stats Bar */}
       <div className="mx-5 mt-5 flex border-t-[3px] border-t-ink border-b border-b-ink animate-fade-in-up opacity-0 anim-delay-3">
-        <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+        <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
           <div className="font-display text-[22px] text-ink">{totalRecipes}</div>
           <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Recipes</div>
-        </div>
-        <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+        </Link>
+        <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
           <div className="font-display text-[22px] text-ink">{publicCount}</div>
           <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Published</div>
-        </div>
-        <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+        </Link>
+        <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
           <div className="font-display text-[22px] text-ink">{timesCooked}</div>
           <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Cooked</div>
-        </div>
-        <div className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
+        </Link>
+        <Link href="/profile/new-followers" className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
           <div className="font-display text-[22px] text-ink">{followerCount}</div>
           <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Followers</div>
-        </div>
+        </Link>
       </div>
 
       {/* Recipe List */}
