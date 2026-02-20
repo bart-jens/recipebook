@@ -207,45 +207,34 @@ export async function addRating(
   revalidatePath("/recipes");
 }
 
-export async function publishRecipe(recipeId: string) {
-  const supabase = createClient();
-  const { error } = await supabase
-    .from("recipes")
-    .update({ visibility: "public", published_at: new Date().toISOString() })
-    .eq("id", recipeId);
-  if (error) return { error: error.message };
-  revalidatePath(`/recipes/${recipeId}`);
-  revalidatePath("/recipes");
-  revalidatePath("/discover");
-}
-
-export async function unpublishRecipe(recipeId: string) {
-  const supabase = createClient();
-  const { error } = await supabase
-    .from("recipes")
-    .update({ visibility: "private", published_at: null })
-    .eq("id", recipeId);
-  if (error) return { error: error.message };
-  revalidatePath(`/recipes/${recipeId}`);
-  revalidatePath("/recipes");
-  revalidatePath("/discover");
-}
-
-export async function shareRecipe(recipeId: string, notes: string | null) {
+export async function toggleVisibility(recipeId: string) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const { error } = await supabase.from("recipe_shares").insert({
-    user_id: user.id,
-    recipe_id: recipeId,
-    notes,
-  });
+  const { data: recipe } = await supabase
+    .from("recipes")
+    .select("visibility")
+    .eq("id", recipeId)
+    .eq("created_by", user.id)
+    .single();
+
+  if (!recipe) return { error: "Recipe not found" };
+
+  const newVisibility = recipe.visibility === "public" ? "private" : "public";
+  const updates: Record<string, unknown> = { visibility: newVisibility };
+  if (newVisibility === "public") {
+    updates.published_at = new Date().toISOString();
+  }
+
+  const { error } = await supabase.from("recipes").update(updates).eq("id", recipeId);
   if (error) return { error: error.message };
   revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/recipes");
+  revalidatePath("/discover");
 }
 
-export async function unshareRecipe(recipeId: string) {
+export async function removeRecommendation(recipeId: string) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
@@ -255,6 +244,19 @@ export async function unshareRecipe(recipeId: string) {
     .delete()
     .eq("user_id", user.id)
     .eq("recipe_id", recipeId);
+  if (error) return { error: error.message };
+  revalidatePath(`/recipes/${recipeId}`);
+}
+
+export async function addRecommendation(recipeId: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase.from("recipe_shares").insert({
+    user_id: user.id,
+    recipe_id: recipeId,
+  });
   if (error) return { error: error.message };
   revalidatePath(`/recipes/${recipeId}`);
 }

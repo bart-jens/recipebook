@@ -1,7 +1,7 @@
 # EefEats — Product Features & Ideas
 
 > Actively maintained. Claude updates this as features ship and ideas emerge.
-> Last updated: 2026-02-17
+> Last updated: 2026-02-20
 
 ---
 
@@ -20,7 +20,7 @@
 - **Favorites** — Mark recipes as favorites (pinned to top of list)
 - **Tags** — Categorize recipes with custom tags, inline add/remove
 - **Unit conversion** — Toggle between metric and imperial units
-- **Home dashboard** — Personalized greeting, stats (recipes/favorites/times cooked), recently updated recipes, discover/trending section with creator names
+- **Home — social hub** — Activity feed (created/saved/cooked/rated events from followed chefs), "Looking for something to cook?" favorites row, "Your Recent Activity" cook log
 - **Discover page** — Browse public recipes from other users
 - **User profiles** — Profile editing (display name, bio, avatar upload), public profile pages
 - **Privacy settings** — Profile visibility (public/private), follow request approval
@@ -28,7 +28,7 @@
 - **Auth** — Supabase Auth with email/password, invite-code gated signup
 
 ### Mobile App (Expo / React Native)
-- **Tab navigation** — Home, Recipes, Discover, Profile tabs with custom icons
+- **Tab navigation** — Home, Discover, My Recipes, Grocery, Profile tabs with custom icons
 - **Recipe list** — Personal recipe collection with search, import menu (URL/Instagram/Photo)
 - **Recipe detail** — Parallax hero image, animated sections, haptic feedback, ingredient list, steps, ratings
 - **Recipe editing** — Edit recipes from mobile, inline tag add/remove (long-press to delete)
@@ -46,6 +46,14 @@
 - **Animations & polish** — Lottie loading states, skeleton screens, reanimated scroll animations, haptic feedback
 - **Auth** — Login/signup with invite code support
 
+### Social Defaults & Feed (Shipped 2026-02-20)
+- **Public by default** — Manual recipes are public when created, no publish button needed
+- **Auto-recommend imports** — Imported recipes automatically create recommendation cards for followers (non-copyrightable metadata only)
+- **Public/Private toggle** — Simple toggle on recipe detail replaces the old publish modal
+- **Enriched activity feed** — 4 event types: created, saved, cooked, rated. Saved events link to source. Rated events show stars.
+- **Home redesigned as social hub** — Activity feed (primary), "Looking for something to cook?" favorites row, "Your Recent Activity" cook log
+- **Publish limit removed** — During invite-only phase, no cap on published recipes
+
 ### Database / Backend
 - **Social data model** — User profiles (display_name, bio, avatar_url, privacy settings), recipe visibility, forking relationships, follows
 - **Follow system** — Followers/following with request-based approval for private profiles
@@ -59,13 +67,6 @@
 ---
 
 ## In Progress (Specced, Not Implemented)
-
-### Recipe Publishing
-- **Publish/unpublish flow** — Set recipe visibility to public, with confirmation
-- **Discovery enhancements** — Search by title, filter by tags, sort by rating/recency/popularity
-- **Creator attribution** — Show creator profile link on public recipe detail pages
-- **Free vs premium limit** — Free users can publish up to 10 recipes, premium unlimited
-- See `openspec/changes/recipe-publishing/`
 
 ### Social Login (code ready, needs provider config)
 - **Google OAuth** — Sign in with Google on web and mobile
@@ -88,7 +89,7 @@
   - **Favorited** — "This is a go-to recipe." Badge of honor. Gate: must have cooked at least once. Separate from saved — saved = "want to try", favorited = "love it, make it often".
   - **Published** — Share your original recipe publicly. Already exists via visibility column.
 - **Forking** — Fork a canonical recipe into a private copy, with attribution back to original
-- **Activity feed** — See what friends cooked, rated, published (what friends are cooking). Chronological from friends, curated for discovery.
+- **~~Activity feed~~** — Shipped: 4 event types (created, saved, cooked, rated) on both web and mobile. Future: curated/algorithmic feed.
 - **Invite system improvements** — Invite limits by plan, tracking who invited whom, referral chain
 
 ### Kitchen Experience
@@ -161,7 +162,7 @@
 | Recipe imports | Limited/month | Unlimited |
 | Public recipe browsing | Yes | Yes |
 | Forking public recipes | Yes | Yes |
-| Publishing recipes | Up to 10 | Unlimited |
+| Publishing recipes | Unlimited (invite-only phase) | Unlimited |
 | Following users | Yes | Yes |
 | Meal planning | No | Yes |
 | Advanced shopping lists | No | Yes |

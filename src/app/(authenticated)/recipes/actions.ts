@@ -20,6 +20,7 @@ export async function createRecipe(formData: FormData) {
 
   const sourceName = (formData.get("source_name") as string) || null;
   const language = (formData.get("language") as string) || null;
+  const sourceType = (formData.get("source_type") as string) || "manual";
 
   const { data: recipe, error } = await supabase
     .from("recipes")
@@ -30,12 +31,13 @@ export async function createRecipe(formData: FormData) {
       prep_time_minutes: prepTime ? parseInt(prepTime) : null,
       cook_time_minutes: cookTime ? parseInt(cookTime) : null,
       servings: servings ? parseInt(servings) : null,
-      source_type: (formData.get("source_type") as string) || "manual",
+      source_type: sourceType,
       source_url: (formData.get("source_url") as string) || null,
       source_name: sourceName,
       language,
       image_url: externalImageUrl,
       created_by: user.id,
+      ...(sourceType !== "manual" ? { visibility: "private" } : {}),
     })
     .select("id")
     .single();
@@ -86,6 +88,14 @@ export async function createRecipe(formData: FormData) {
       // Keep external URL as fallback — don't fail the recipe save
       console.error("Image rehost failed:", e);
     }
+  }
+
+  // Auto-share imported recipes (creates recommendation card for followers)
+  if (sourceType !== "manual") {
+    await supabase.from("recipe_shares").insert({
+      user_id: user.id,
+      recipe_id: recipe.id,
+    });
   }
 
   redirect(`/recipes/${recipe.id}`);

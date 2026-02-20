@@ -190,6 +190,7 @@ export default function ImportPhotoScreen() {
         source_type: 'photo',
         source_name: sourceName.trim() || null,
         language: extractedLanguage,
+        visibility: 'private',
         created_by: user.id,
       })
       .select('id')
@@ -224,6 +225,12 @@ export default function ImportPhotoScreen() {
         }))
       );
     }
+
+    // Auto-share imported recipe (recommendation card for followers)
+    await supabase.from('recipe_shares').insert({
+      user_id: user.id,
+      recipe_id: recipe.id,
+    });
 
     setSaving(false);
     router.replace(`/recipe/${recipe.id}`);

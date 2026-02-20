@@ -142,20 +142,17 @@ export default async function RecipeDetailPage({
 
   const isOwner = user?.id === recipe.created_by;
 
-  // Fetch publish count, user plan, and share status
-  let publishCount = 0;
-  let userPlan = "free";
-  let shareData: { isShared: boolean; notes: string | null } = { isShared: false, notes: null };
+  // Fetch share status for imported recipes
+  let shareData: { isShared: boolean } = { isShared: false };
   if (isOwner) {
-    const [{ data: profile }, { count }, { data: share }] = await Promise.all([
-      supabase.from("user_profiles").select("plan").eq("id", user!.id).single(),
-      supabase.from("recipes").select("id", { count: "exact", head: true }).eq("created_by", user!.id).eq("visibility", "public"),
-      supabase.from("recipe_shares").select("notes").eq("user_id", user!.id).eq("recipe_id", recipe.id).maybeSingle(),
-    ]);
-    userPlan = profile?.plan || "free";
-    publishCount = count || 0;
+    const { data: share } = await supabase
+      .from("recipe_shares")
+      .select("id")
+      .eq("user_id", user!.id)
+      .eq("recipe_id", recipe.id)
+      .maybeSingle();
     if (share) {
-      shareData = { isShared: true, notes: share.notes };
+      shareData = { isShared: true };
     }
   }
 
@@ -171,10 +168,7 @@ export default async function RecipeDetailPage({
       isOwner={isOwner}
       creatorName={creatorName}
       creatorId={creatorId}
-      publishCount={publishCount}
-      userPlan={userPlan}
       isShared={shareData.isShared}
-      shareNotes={shareData.notes}
       photos={recipePhotos}
     />
   );
