@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ForkDot } from "@/components/logo";
+import { SignOutButton } from "./sign-out-button";
 import FeedbackButton from "@/components/feedback-modal";
 
 export default async function ProfilePage() {
@@ -18,7 +20,7 @@ export default async function ProfilePage() {
 
   const { data: recipes } = await supabase
     .from("recipes")
-    .select("id, title, visibility, updated_at")
+    .select("id, title, visibility, image_url, updated_at")
     .eq("created_by", user.id)
     .order("updated_at", { ascending: false });
 
@@ -31,11 +33,6 @@ export default async function ProfilePage() {
     .from("user_follows")
     .select("id")
     .eq("following_id", user.id);
-
-  const { data: following } = await supabase
-    .from("user_follows")
-    .select("id")
-    .eq("follower_id", user.id);
 
   // Count pending follow requests (only for private profiles)
   let pendingRequestCount = 0;
@@ -54,134 +51,175 @@ export default async function ProfilePage() {
   const publicCount = (recipes || []).filter((r) => r.visibility === "public").length;
   const totalRecipes = (recipes || []).length;
   const timesCooked = (ratings || []).length;
+  const followerCount = (followers || []).length;
 
   return (
-    <div className="max-w-2xl">
-      <div className="mb-8">
-        <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
-          &larr; Back to recipes
-        </Link>
-      </div>
-
-      <div className="mb-6 flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          {profile?.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt={profile.display_name}
-              className="h-16 w-16 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-tag text-2xl font-semibold text-warm-gray">
-              {(profile?.display_name || "?")[0].toUpperCase()}
-            </div>
-          )}
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-semibold">
-                {profile?.display_name || "Anonymous"}
-              </h1>
-              <span
-                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  profile?.plan === "premium"
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-warm-tag text-warm-gray"
-                }`}
-              >
-                {profile?.plan === "premium" ? "Premium" : "Free"}
-              </span>
-            </div>
-            <p className="text-sm text-warm-gray">{user.email}</p>
-            {profile?.is_private && (
-              <span className="text-xs text-warm-gray">Private account</span>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <FeedbackButton sourceScreen="profile" />
-          <Link
-            href="/profile/edit"
-            className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
+    <div>
+      {/* Profile Top */}
+      <div className="px-5 pt-6 flex gap-4 items-start animate-fade-in-up opacity-0 anim-delay-1">
+        {profile?.avatar_url ? (
+          <img
+            src={profile.avatar_url}
+            alt={profile.display_name}
+            className="w-16 h-16 rounded-full object-cover shrink-0 transition-transform duration-300"
+            style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+          />
+        ) : (
+          <div
+            className="w-16 h-16 rounded-full bg-ink text-bg font-display text-[24px] flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-[1.08]"
+            style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
           >
-            Edit profile
-          </Link>
+            {(profile?.display_name || "?")[0].toUpperCase()}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-2">
+            <h1 className="font-display text-[28px] leading-none tracking-[-0.03em] text-ink">
+              {profile?.display_name || "Anonymous"}
+            </h1>
+            <span className="font-mono text-[9px] uppercase tracking-[0.06em] px-1 py-0.5 border border-border text-ink-muted">
+              {profile?.plan === "premium" ? "Premium" : "Free"}
+            </span>
+          </div>
+          {profile?.bio && (
+            <p className="mt-1 text-[13px] font-light text-ink-secondary leading-[1.45]">
+              {profile.bio}
+            </p>
+          )}
+          {profile?.is_private && (
+            <p className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">
+              Private account
+            </p>
+          )}
         </div>
       </div>
 
-      {profile?.bio && (
-        <p className="mb-6 text-warm-gray leading-relaxed">{profile.bio}</p>
-      )}
-
+      {/* Follow requests banner */}
       {pendingRequestCount > 0 && (
         <Link
           href="/profile/requests"
-          className="mb-6 flex items-center justify-between rounded-md border border-accent/20 bg-accent/5 p-3"
+          className="mx-5 mt-4 flex items-center justify-between border border-accent/20 bg-accent-light py-2.5 px-3 transition-colors hover:bg-accent/10 animate-fade-in-up opacity-0 anim-delay-2"
         >
-          <span className="text-sm font-medium">Follow requests</span>
-          <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-accent px-2 text-xs font-medium text-white">
+          <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink">
+            Follow requests
+          </span>
+          <span className="font-mono text-[11px] bg-accent text-white px-1.5 py-0.5 min-w-[20px] text-center">
             {pendingRequestCount}
           </span>
         </Link>
       )}
 
+      {/* New followers banner */}
       {(newFollowerCount ?? 0) > 0 && (
         <Link
           href="/profile/new-followers"
-          className="mb-6 flex items-center justify-between rounded-md border border-accent/20 bg-accent/5 p-3"
+          className="mx-5 mt-3 flex items-center justify-between border border-accent/20 bg-accent-light py-2.5 px-3 transition-colors hover:bg-accent/10 animate-fade-in-up opacity-0 anim-delay-2"
         >
-          <span className="text-sm font-medium">New followers</span>
-          <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-accent px-2 text-xs font-medium text-white">
+          <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink">
+            New followers
+          </span>
+          <span className="font-mono text-[11px] bg-accent text-white px-1.5 py-0.5 min-w-[20px] text-center">
             {newFollowerCount! > 9 ? "9+" : newFollowerCount}
           </span>
         </Link>
       )}
 
-      <div className="mb-8 flex gap-6">
-        <div className="text-center">
-          <p className="text-xl font-semibold">{totalRecipes}</p>
-          <p className="text-xs text-warm-gray">recipes</p>
+      {/* Stats Bar */}
+      <div className="mx-5 mt-5 flex border-t-[3px] border-t-ink border-b border-b-ink animate-fade-in-up opacity-0 anim-delay-3">
+        <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+          <div className="font-display text-[22px] text-ink">{totalRecipes}</div>
+          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Recipes</div>
         </div>
-        <div className="text-center">
-          <p className="text-xl font-semibold">{publicCount}</p>
-          <p className="text-xs text-warm-gray">published</p>
+        <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+          <div className="font-display text-[22px] text-ink">{publicCount}</div>
+          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Published</div>
         </div>
-        <div className="text-center">
-          <p className="text-xl font-semibold">{timesCooked}</p>
-          <p className="text-xs text-warm-gray">times cooked</p>
+        <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+          <div className="font-display text-[22px] text-ink">{timesCooked}</div>
+          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Cooked</div>
         </div>
-        <div className="text-center">
-          <p className="text-xl font-semibold">{(followers || []).length}</p>
-          <p className="text-xs text-warm-gray">followers</p>
-        </div>
-        <div className="text-center">
-          <p className="text-xl font-semibold">{(following || []).length}</p>
-          <p className="text-xs text-warm-gray">following</p>
+        <div className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
+          <div className="font-display text-[22px] text-ink">{followerCount}</div>
+          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Followers</div>
         </div>
       </div>
 
-      {(recipes || []).length > 0 && (
-        <div>
-          <div className="mb-4 border-b border-warm-divider pb-2">
-            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">
-              Your Recipes
-            </h2>
+      {/* Recipe List */}
+      <div className="px-5 pb-6 animate-fade-in-up opacity-0 anim-delay-4">
+        <div className="flex items-baseline justify-between py-3">
+          <h2 className="font-display text-[18px] tracking-[-0.02em]">Your Recipes</h2>
+          <span className="font-mono text-[11px] text-ink-muted">{totalRecipes} total</span>
+        </div>
+
+        {totalRecipes === 0 ? (
+          <div className="border-t border-border py-8 text-center">
+            <ForkDot size={24} color="rgba(139,69,19,0.2)" />
+            <p className="mt-3 text-[13px] font-light text-ink-secondary">
+              No recipes yet. Start building your collection!
+            </p>
           </div>
-          <div className="space-y-2">
-            {(recipes || []).slice(0, 10).map((recipe) => (
+        ) : (
+          <div>
+            {(recipes || []).map((recipe) => (
               <Link
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
-                className="flex items-center justify-between rounded-md bg-warm-tag px-4 py-3 border border-warm-border transition-all hover:-translate-y-px hover:shadow-sm"
+                className="group flex gap-3 py-3 border-b border-border items-center cursor-pointer transition-all duration-150 hover:pl-1"
               >
-                <span className="font-sans font-medium">{recipe.title}</span>
-                <span className="text-xs text-warm-gray">
-                  {recipe.visibility === "public" ? "Public" : "Private"}
-                </span>
+                {recipe.image_url ? (
+                  <img
+                    src={recipe.image_url}
+                    alt={recipe.title}
+                    className="w-12 h-12 object-cover shrink-0 transition-transform duration-300 group-hover:scale-[1.08]"
+                    style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+                  />
+                ) : (
+                  <div className="w-12 h-12 shrink-0 bg-surface-alt flex items-center justify-center">
+                    <ForkDot size={16} color="rgba(139,69,19,0.15)" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-display text-[17px] leading-[1.2] tracking-[-0.01em] text-ink">
+                    {recipe.title}
+                  </div>
+                  <div className="font-mono text-[11px] text-ink-muted flex gap-2 items-center mt-0.5">
+                    <span
+                      className={`font-mono text-[9px] uppercase tracking-[0.06em] px-1 py-0.5 border ${
+                        recipe.visibility === "public"
+                          ? "border-olive text-olive"
+                          : "border-border text-ink-muted"
+                      }`}
+                    >
+                      {recipe.visibility === "public" ? "Published" : "Private"}
+                    </span>
+                  </div>
+                </div>
               </Link>
             ))}
           </div>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div className="px-5 pb-12 flex flex-col gap-2 animate-fade-in-up opacity-0 anim-delay-5">
+        <hr className="rule-thin border-0 mb-2" />
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/profile/edit"
+            className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 border border-ink text-ink hover:bg-ink hover:text-bg transition-colors"
+          >
+            Edit Profile
+          </Link>
+          <Link
+            href="/invites"
+            className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
+          >
+            Invite Friends
+          </Link>
+          <FeedbackButton sourceScreen="profile" />
+          <SignOutButton />
         </div>
-      )}
+      </div>
     </div>
   );
 }
