@@ -14,7 +14,8 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, radii } from '@/lib/theme';
+import { colors, spacing, fontFamily } from '@/lib/theme';
+import { ForkDot } from './Logo';
 
 
 interface Collection {
@@ -83,17 +84,24 @@ export default function CollectionsSection({ collections, userPlan, onRefresh }:
     }, 'plain-text', currentName);
   }
 
+  if (collections.length === 0 && !showCreate) return null;
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.sectionTitle}>Collections</Text>
-        {atLimit ? (
-          <Text style={styles.limitText}>5/5</Text>
-        ) : (
-          <TouchableOpacity onPress={() => setShowCreate(true)} activeOpacity={0.7}>
-            <Text style={styles.newButton}>New</Text>
-          </TouchableOpacity>
-        )}
+        <View style={styles.headerRight}>
+          <Text style={styles.countText}>{collections.length} total</Text>
+          {atLimit ? (
+            <View style={styles.limitBadge}>
+              <Text style={styles.limitText}>5/5</Text>
+            </View>
+          ) : (
+            <Pressable onPress={() => setShowCreate(true)} style={styles.newButton}>
+              <Text style={styles.newButtonText}>NEW</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       {collections.length > 0 && (
@@ -124,9 +132,7 @@ export default function CollectionsSection({ collections, userPlan, onRefresh }:
                 />
               ) : (
                 <View style={styles.cardPlaceholder}>
-                  <Text style={styles.cardPlaceholderLetter}>
-                    {c.name.slice(0, 1)}
-                  </Text>
+                  <ForkDot size={14} color="rgba(139,69,19,0.15)" />
                 </View>
               )}
               <View style={styles.cardContent}>
@@ -149,39 +155,41 @@ export default function CollectionsSection({ collections, userPlan, onRefresh }:
         <Pressable style={styles.modalOverlay} onPress={() => setShowCreate(false)}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>New Collection</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Collection name"
-              placeholderTextColor={colors.textMuted}
-              value={newName}
-              onChangeText={setNewName}
-              autoFocus
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Description (optional)"
-              placeholderTextColor={colors.textMuted}
-              value={newDesc}
-              onChangeText={setNewDesc}
-            />
+            <View style={styles.inputWrap}>
+              <TextInput
+                style={styles.input}
+                placeholder="Collection name"
+                placeholderTextColor={colors.inkMuted}
+                value={newName}
+                onChangeText={setNewName}
+                autoFocus
+              />
+            </View>
+            <View style={styles.inputWrapSecondary}>
+              <TextInput
+                style={styles.inputSecondary}
+                placeholder="Description (optional)"
+                placeholderTextColor={colors.inkMuted}
+                value={newDesc}
+                onChangeText={setNewDesc}
+              />
+            </View>
             <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.createButton, (!newName.trim() || creating) && styles.buttonDisabled]}
+              <Pressable
+                style={[styles.createBtn, (!newName.trim() || creating) && styles.btnDisabled]}
                 onPress={handleCreate}
                 disabled={!newName.trim() || creating}
-                activeOpacity={0.7}
               >
-                <Text style={styles.createButtonText}>
-                  {creating ? 'Creating...' : 'Create'}
+                <Text style={styles.createBtnText}>
+                  {creating ? 'CREATING...' : 'CREATE'}
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
+              </Pressable>
+              <Pressable
+                style={styles.cancelBtn}
                 onPress={() => setShowCreate(false)}
-                activeOpacity={0.7}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
+                <Text style={styles.cancelBtnText}>CANCEL</Text>
+              </Pressable>
             </View>
           </View>
         </Pressable>
@@ -199,24 +207,51 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'baseline',
     paddingHorizontal: spacing.pagePadding,
     marginBottom: spacing.sm,
   },
   sectionTitle: {
-    ...typography.label,
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.display,
+    fontSize: 18,
+    letterSpacing: -0.4,
+    color: colors.ink,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  countText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.inkMuted,
   },
   newButton: {
-    ...typography.label,
-    color: colors.primary,
-    fontWeight: '600',
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  newButtonText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.66,
+    color: colors.inkMuted,
+  },
+  limitBadge: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
   },
   limitText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.mono,
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 0.66,
+    color: colors.inkMuted,
   },
   scrollContent: {
     paddingHorizontal: spacing.pagePadding,
@@ -224,10 +259,9 @@ const styles = StyleSheet.create({
   },
   card: {
     width: CARD_WIDTH,
-    borderRadius: radii.md,
-    backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
+    backgroundColor: colors.surface,
     overflow: 'hidden',
   },
   cardImage: {
@@ -237,26 +271,24 @@ const styles = StyleSheet.create({
   cardPlaceholder: {
     width: CARD_WIDTH,
     height: CARD_WIDTH * 0.625,
-    backgroundColor: colors.accentWash,
+    backgroundColor: colors.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardPlaceholderLetter: {
-    fontSize: 24,
-    fontWeight: '500',
-    color: colors.accentWashIcon,
-  },
   cardContent: {
-    padding: spacing.sm,
+    padding: 10,
   },
   cardName: {
-    ...typography.label,
-    color: colors.text,
-    fontWeight: '600',
+    fontFamily: fontFamily.display,
+    fontSize: 15,
+    lineHeight: 18,
+    letterSpacing: -0.2,
+    color: colors.ink,
   },
   cardCount: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    color: colors.inkMuted,
     marginTop: 2,
   },
   modalOverlay: {
@@ -265,53 +297,76 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: colors.card,
-    borderTopLeftRadius: radii.xl,
-    borderTopRightRadius: radii.xl,
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     padding: spacing.xl,
     paddingBottom: spacing.xxxl,
   },
   modalTitle: {
-    ...typography.h3,
-    color: colors.text,
+    fontFamily: fontFamily.display,
+    fontSize: 20,
+    lineHeight: 24,
+    color: colors.ink,
+    marginBottom: spacing.lg,
+  },
+  inputWrap: {
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    paddingBottom: 6,
     marginBottom: spacing.lg,
   },
   input: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    ...typography.body,
-    color: colors.text,
-    marginBottom: spacing.md,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 15,
+    color: colors.ink,
+    paddingVertical: 0,
+  },
+  inputWrapSecondary: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingBottom: 6,
+    marginBottom: spacing.lg,
+  },
+  inputSecondary: {
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.ink,
+    paddingVertical: 0,
   },
   modalButtons: {
     flexDirection: 'row',
     gap: spacing.sm,
     marginTop: spacing.sm,
   },
-  modalButton: {
+  createBtn: {
     flex: 1,
-    paddingVertical: spacing.md,
-    borderRadius: radii.md,
+    backgroundColor: colors.accent,
+    paddingVertical: 12,
     alignItems: 'center',
   },
-  createButton: {
-    backgroundColor: colors.primary,
-  },
-  createButtonText: {
-    ...typography.body,
-    fontWeight: '600',
+  createBtnText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.66,
     color: '#FFFFFF',
   },
-  cancelButton: {
-    backgroundColor: colors.surface,
+  cancelBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
-  cancelButtonText: {
-    ...typography.body,
-    color: colors.textSecondary,
+  cancelBtnText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.66,
+    color: colors.inkMuted,
   },
-  buttonDisabled: {
+  btnDisabled: {
     opacity: 0.5,
   },
 });
