@@ -78,19 +78,17 @@ export function CookingLog({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between border-b border-warm-divider pb-2">
-        <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">
-          Cooking Log
-        </h2>
+      <div className="flex items-center justify-between mono-label mb-2.5 pb-1.5 border-b border-border">
+        <span>Cooking Log</span>
         <div className="flex items-center gap-3">
           {cookEntries.length > 0 && (
-            <span className="text-sm text-warm-gray">
-              Cooked {cookEntries.length} time{cookEntries.length !== 1 ? "s" : ""}
+            <span className="font-mono text-[10px] text-ink-muted normal-case tracking-normal">
+              {cookEntries.length}x cooked
             </span>
           )}
           {avgRating != null && (
-            <span className="flex items-center gap-1 text-sm text-warm-gray">
-              <svg className="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+            <span className="flex items-center gap-1 font-mono text-[10px] text-ink-muted normal-case tracking-normal">
+              <svg className="h-3 w-3 text-accent" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
               {avgRating.toFixed(1)}
@@ -100,18 +98,18 @@ export function CookingLog({
       </div>
 
       {cookEntries.length === 0 && !showCookForm && (
-        <p className="mb-4 text-sm text-warm-gray/60">You haven&apos;t cooked this yet.</p>
+        <p className="mb-4 text-[13px] font-light text-ink-muted">You haven&apos;t cooked this yet.</p>
       )}
 
       {cookEntries.length > 0 && (
-        <div className="mb-4 space-y-2">
+        <div className="mb-4 space-y-1">
           {cookEntries.map((entry) => (
             <div
               key={entry.id}
-              className="flex items-start justify-between rounded-md bg-warm-tag p-3"
+              className="flex items-start justify-between py-2 border-b border-dotted border-border"
             >
               <div className="flex-1">
-                <span className="text-sm font-medium">
+                <span className="font-mono text-[11px] text-ink">
                   {new Date(entry.cooked_at).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -119,13 +117,13 @@ export function CookingLog({
                   })}
                 </span>
                 {entry.notes && (
-                  <p className="mt-0.5 text-sm text-warm-gray">{entry.notes}</p>
+                  <p className="mt-0.5 text-[13px] font-light text-ink-secondary">{entry.notes}</p>
                 )}
               </div>
               <button
                 onClick={() => handleDeleteCook(entry.id)}
                 disabled={isPending}
-                className="ml-2 text-xs text-warm-gray/40 hover:text-accent disabled:opacity-50"
+                className="ml-2 text-[10px] text-ink-muted/40 hover:text-accent disabled:opacity-50"
               >
                 &times;
               </button>
@@ -135,38 +133,38 @@ export function CookingLog({
       )}
 
       {showCookForm ? (
-        <form onSubmit={handleCookSubmit} className="mb-6 rounded-md bg-warm-tag p-4 space-y-3">
+        <form onSubmit={handleCookSubmit} className="mb-6 border border-border p-4 space-y-3">
           <div>
-            <label className="mb-1 block text-sm text-warm-gray">Date cooked</label>
+            <label className="mb-1 block font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted">Date cooked</label>
             <input
               type="date"
               value={cookDate}
               onChange={(e) => setCookDate(e.target.value)}
-              className="rounded-md bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+              className="bg-surface px-3 py-1.5 text-[13px] font-light text-ink border border-border focus:outline-none focus:border-accent"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-warm-gray">Notes (optional)</label>
+            <label className="mb-1 block font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted">Notes (optional)</label>
             <textarea
               value={cookNotes}
               onChange={(e) => setCookNotes(e.target.value)}
               rows={2}
               placeholder="How did it turn out?"
-              className="w-full rounded-md bg-white px-3 py-1.5 text-sm placeholder:text-warm-gray/40 focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full bg-surface px-3 py-1.5 text-[13px] font-light text-ink border border-border placeholder:text-ink-muted/40 focus:outline-none focus:border-accent"
             />
           </div>
           <div className="flex gap-2">
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-cta px-4 py-1.5 text-sm font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+              className="font-mono text-[10px] uppercase tracking-[0.06em] bg-ink text-bg px-4 py-2 hover:bg-ink/80 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               {isPending ? "Logging..." : "Log Cook"}
             </button>
             <button
               type="button"
               onClick={() => setShowCookForm(false)}
-              className="rounded-md bg-warm-tag px-4 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
+              className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink px-4 py-2 transition-colors"
             >
               Cancel
             </button>
@@ -175,38 +173,38 @@ export function CookingLog({
       ) : (
         <button
           onClick={() => setShowCookForm(true)}
-          className="mb-6 rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform"
+          className="mb-6 font-mono text-[10px] uppercase tracking-[0.06em] bg-ink text-bg px-4 py-2 hover:bg-ink/80 active:scale-[0.98] transition-all"
         >
           Cooked It
         </button>
       )}
 
-      <div className="border-t border-warm-divider pt-4">
-        <h3 className="mb-3 text-xs font-medium uppercase tracking-widest text-warm-gray">
+      <div className="border-t border-border pt-4">
+        <div className="mono-label mb-2.5 pb-1.5 border-b border-border">
           Ratings
-        </h3>
+        </div>
 
         {!hasCooked ? (
-          <p className="text-sm text-warm-gray/60">Cook this recipe to leave a rating.</p>
+          <p className="text-[13px] font-light text-ink-muted">Cook this recipe to leave a rating.</p>
         ) : (
           <>
             {ratings.length > 0 && (
-              <div className="mb-4 space-y-3">
+              <div className="mb-4 space-y-1">
                 {ratings.map((entry) => (
                   <div
                     key={entry.id}
-                    className="flex items-start justify-between rounded-md bg-warm-tag p-3"
+                    className="flex items-start justify-between py-2 border-b border-dotted border-border"
                   >
                     <div className="flex-1">
                       <StarRating value={entry.rating} readonly size="sm" />
                       {entry.notes && (
-                        <p className="mt-1 text-sm text-warm-gray">{entry.notes}</p>
+                        <p className="mt-1 text-[13px] font-light text-ink-secondary">{entry.notes}</p>
                       )}
                     </div>
                     <button
                       onClick={() => handleDeleteRating(entry.id)}
                       disabled={isPending}
-                      className="ml-2 text-xs text-warm-gray/40 hover:text-accent disabled:opacity-50"
+                      className="ml-2 text-[10px] text-ink-muted/40 hover:text-accent disabled:opacity-50"
                     >
                       &times;
                     </button>
@@ -216,33 +214,33 @@ export function CookingLog({
             )}
 
             {showRatingForm ? (
-              <form onSubmit={handleRatingSubmit} className="rounded-md bg-warm-tag p-4 space-y-3">
+              <form onSubmit={handleRatingSubmit} className="border border-border p-4 space-y-3">
                 <div>
-                  <label className="mb-1 block text-sm text-warm-gray">Rating</label>
+                  <label className="mb-1 block font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted">Rating</label>
                   <StarRating value={stars} onChange={setStars} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-warm-gray">Notes (optional)</label>
+                  <label className="mb-1 block font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted">Notes (optional)</label>
                   <textarea
                     value={ratingNotes}
                     onChange={(e) => setRatingNotes(e.target.value)}
                     rows={2}
                     placeholder="What did you think?"
-                    className="w-full rounded-md bg-white px-3 py-1.5 text-sm placeholder:text-warm-gray/40 focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-full bg-surface px-3 py-1.5 text-[13px] font-light text-ink border border-border placeholder:text-ink-muted/40 focus:outline-none focus:border-accent"
                   />
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="submit"
                     disabled={stars === 0 || isPending}
-                    className="rounded-md bg-cta px-4 py-1.5 text-sm font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+                    className="font-mono text-[10px] uppercase tracking-[0.06em] bg-ink text-bg px-4 py-2 hover:bg-ink/80 active:scale-[0.98] transition-all disabled:opacity-50"
                   >
                     {isPending ? "Saving..." : "Save Rating"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowRatingForm(false)}
-                    className="rounded-md bg-warm-tag px-4 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
+                    className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink px-4 py-2 transition-colors"
                   >
                     Cancel
                   </button>
@@ -251,7 +249,7 @@ export function CookingLog({
             ) : (
               <button
                 onClick={() => setShowRatingForm(true)}
-                className="rounded-md bg-warm-tag px-4 py-2 text-sm text-warm-gray hover:bg-warm-border"
+                className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink border border-border px-4 py-2 transition-colors"
               >
                 Add rating
               </button>

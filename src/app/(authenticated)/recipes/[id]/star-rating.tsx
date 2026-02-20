@@ -14,7 +14,7 @@ export function StarRating({
   size?: "sm" | "md";
 }) {
   const [hovered, setHovered] = useState(0);
-  const sizeClass = size === "sm" ? "h-4 w-4" : "h-6 w-6";
+  const sizeClass = size === "sm" ? "h-3.5 w-3.5" : "h-5 w-5";
 
   return (
     <div className="flex gap-0.5" onMouseLeave={() => setHovered(0)}>
@@ -30,7 +30,7 @@ export function StarRating({
             className={`${readonly ? "cursor-default" : "cursor-pointer"} transition-colors`}
           >
             <svg
-              className={`${sizeClass} ${filled ? "text-amber-400" : "text-warm-border"}`}
+              className={`${sizeClass} ${filled ? "text-accent" : "text-border"}`}
               fill="currentColor"
               viewBox="0 0 20 20"
             >

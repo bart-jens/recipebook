@@ -31,14 +31,15 @@ export function ShareLinkButton({ recipeId, title }: { recipeId: string; title: 
   return (
     <button
       onClick={handleShare}
-      className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
+      className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink flex items-center gap-1 transition-all active:scale-[0.94]"
       title="Share link"
     >
-      {copied ? "Copied!" : (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-        </svg>
-      )}
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+        <polyline points="16 6 12 2 8 6"/>
+        <line x1="12" y1="2" x2="12" y2="15"/>
+      </svg>
+      {copied ? "Copied" : "Share"}
     </button>
   );
 }

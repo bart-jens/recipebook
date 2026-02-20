@@ -73,7 +73,7 @@ export function CollectionPicker({ recipeId }: { recipeId: string }) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
+        className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink transition-colors"
       >
         Add to Collection
       </button>
@@ -81,44 +81,52 @@ export function CollectionPicker({ recipeId }: { recipeId: string }) {
   }
 
   return (
-    <div className="rounded-md border border-warm-border bg-warm-tag p-4">
+    <div className="border border-border p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-medium">Collections</h3>
+        <h3 className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted">Collections</h3>
         <button
           onClick={() => setOpen(false)}
-          className="text-xs text-warm-gray hover:text-accent"
+          className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink"
         >
           Done
         </button>
       </div>
 
       {loading ? (
-        <p className="text-sm text-warm-gray">Loading...</p>
+        <p className="text-[13px] font-light text-ink-muted">Loading...</p>
       ) : collections.length === 0 && !showCreate ? (
         <div className="text-center">
-          <p className="text-sm text-warm-gray mb-2">No collections yet</p>
+          <p className="text-[13px] font-light text-ink-muted mb-2">No collections yet</p>
           <button
             onClick={() => setShowCreate(true)}
-            className="text-sm font-medium text-accent hover:underline"
+            className="font-mono text-[10px] uppercase tracking-[0.06em] text-accent hover:underline"
           >
             Create one
           </button>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1">
           {collections.map((c) => (
             <label
               key={c.id}
-              className="flex items-center gap-2 cursor-pointer rounded-md px-2 py-1 hover:bg-white/50"
+              className="flex items-center gap-2 cursor-pointer py-1.5 border-b border-dotted border-border hover:pl-1 transition-all"
             >
-              <input
-                type="checkbox"
-                checked={c.contains_recipe}
-                onChange={() => handleToggle(c.id, c.contains_recipe)}
-                disabled={isPending}
-                className="h-4 w-4 rounded border-warm-border text-accent focus:ring-accent"
-              />
-              <span className="text-sm">{c.name}</span>
+              <span
+                className={`w-3.5 h-3.5 border-[1.5px] rounded-[2px] flex-shrink-0 relative transition-all ${
+                  c.contains_recipe
+                    ? "bg-accent border-accent"
+                    : "border-border hover:border-accent"
+                }`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleToggle(c.id, c.contains_recipe);
+                }}
+              >
+                {c.contains_recipe && (
+                  <span className="absolute left-[2.5px] top-0 w-[4px] h-[7px] border-white border-r-[1.5px] border-b-[1.5px] rotate-45" />
+                )}
+              </span>
+              <span className="text-[13px] font-light text-ink">{c.name}</span>
             </label>
           ))}
         </div>
@@ -131,13 +139,13 @@ export function CollectionPicker({ recipeId }: { recipeId: string }) {
             placeholder="Collection name"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="flex-1 rounded-md bg-white px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+            className="flex-1 bg-surface px-2 py-1 text-[13px] font-light text-ink border border-border focus:outline-none focus:border-accent"
             autoFocus
           />
           <button
             type="submit"
             disabled={isPending || !newName.trim()}
-            className="rounded-md bg-cta px-3 py-1 text-sm font-medium text-white hover:bg-cta-hover disabled:opacity-50"
+            className="font-mono text-[10px] uppercase tracking-[0.06em] bg-ink text-bg px-3 py-1 hover:bg-ink/80 disabled:opacity-50"
           >
             Add
           </button>
@@ -145,12 +153,12 @@ export function CollectionPicker({ recipeId }: { recipeId: string }) {
       ) : (
         <button
           onClick={() => setShowCreate(true)}
-          className="mt-3 text-sm font-medium text-accent hover:underline"
+          className="mt-3 font-mono text-[10px] uppercase tracking-[0.06em] text-accent hover:underline"
         >
           New Collection
         </button>
       )}
-      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-[10px] text-red-600">{error}</p>}
     </div>
   );
 }

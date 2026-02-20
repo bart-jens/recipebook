@@ -24,11 +24,11 @@ export function FavoriteButton({
     <button
       onClick={handleClick}
       disabled={isPending || !hasCooked}
-      className="rounded-md bg-warm-tag p-1.5 text-warm-gray hover:bg-warm-border disabled:opacity-50"
+      className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink flex items-center gap-1 transition-all active:scale-[0.94] disabled:opacity-40"
       title={!hasCooked ? "Cook this recipe to add it to favorites" : isFavorited ? "Remove from favorites" : "Add to favorites"}
     >
       <svg
-        className={`h-5 w-5 ${isFavorited ? "text-red-400" : "text-warm-border"}`}
+        className={`h-3.5 w-3.5 ${isFavorited ? "text-accent" : ""}`}
         fill={isFavorited ? "currentColor" : "none"}
         stroke="currentColor"
         strokeWidth={isFavorited ? 0 : 1.5}
