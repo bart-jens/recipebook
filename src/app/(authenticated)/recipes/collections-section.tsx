@@ -221,7 +221,7 @@ export function CollectionsSection({
                       setEditingId(collection.id);
                       setEditName(collection.name);
                     }}
-                    className="font-mono text-[9px] uppercase tracking-[0.06em] bg-white/90 px-1.5 py-0.5 text-ink-muted hover:text-accent"
+                    className="font-mono text-[9px] uppercase tracking-[0.06em] bg-surface/90 px-1.5 py-0.5 text-ink-muted hover:text-accent"
                   >
                     Rename
                   </button>
@@ -230,7 +230,7 @@ export function CollectionsSection({
                       e.preventDefault();
                       setDeletingId(collection.id);
                     }}
-                    className="font-mono text-[9px] uppercase tracking-[0.06em] bg-white/90 px-1.5 py-0.5 text-ink-muted hover:text-red-600"
+                    className="font-mono text-[9px] uppercase tracking-[0.06em] bg-surface/90 px-1.5 py-0.5 text-ink-muted hover:text-red-600"
                   >
                     Delete
                   </button>

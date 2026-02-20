@@ -49,7 +49,7 @@ export function ForkDot({ size, color }: { size: number; color?: string }) {
   return <ForkMark size={size} color={color} />;
 }
 
-export function Logo({ height = 17, className }: LogoProps) {
+export function Logo({ className }: LogoProps) {
   return (
     <span
       className={`inline-flex items-center ${className ?? ""}`}

@@ -195,7 +195,7 @@ export default function RecipeDetailScreen() {
   };
 
   const scrollY = useSharedValue(0);
-  const heroScale = useSharedValue(animation.imageHoverScale);
+  const heroScale = useSharedValue<number>(animation.imageHoverScale);
 
   useEffect(() => {
     heroScale.value = withTiming(1, {

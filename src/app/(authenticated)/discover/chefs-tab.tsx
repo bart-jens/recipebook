@@ -150,7 +150,7 @@ export function ChefsTab() {
         {followedChefs.length > 0 && (
           <div className="mt-2">
             <h3 className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted mb-2 pb-1.5 border-b border-border">Following</h3>
-            {followedChefs.map((chef, i) => (
+            {followedChefs.map((chef) => (
               <ChefCard
                 key={chef.id}
                 id={chef.id}
@@ -170,7 +170,7 @@ export function ChefsTab() {
 
   return (
     <div className="px-5 pb-24">
-      {unfollowedChefs.map((chef, i) => (
+      {unfollowedChefs.map((chef) => (
         <ChefCard
           key={chef.id}
           id={chef.id}

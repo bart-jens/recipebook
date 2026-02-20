@@ -92,7 +92,7 @@ export function ProfileForm({
           </button>
         </div>
         {!isPrivate && profile.is_private && (
-          <p className="mt-2 text-xs text-amber-600">
+          <p className="mt-2 text-xs text-accent">
             Switching to public will automatically approve all pending follow requests.
           </p>
         )}
