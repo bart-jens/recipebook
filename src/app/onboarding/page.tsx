@@ -19,11 +19,11 @@ export default async function OnboardingPage() {
   if (profile?.onboarded_at) redirect("/recipes");
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white p-4">
+    <div className="flex min-h-screen items-center justify-center bg-bg p-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold">Welcome to EefEats</h1>
-          <p className="mt-2 text-sm text-warm-gray">
+          <h1 className="font-display text-3xl text-ink">Welcome to EefEats</h1>
+          <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-ink-muted">
             Set up your profile to get started
           </p>
         </div>

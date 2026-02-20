@@ -1,15 +1,15 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Redirect, Tabs } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/lib/supabase';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { colors, typography, animation } from '@/lib/theme';
+import { colors, fontFamily, animation } from '@/lib/theme';
 import { Logo } from '@/components/ui/Logo';
 
 function AnimatedTabBarIcon({
@@ -21,33 +21,58 @@ function AnimatedTabBarIcon({
   color: string;
   focused: boolean;
 }) {
-  const scale = useSharedValue(1);
+  return (
+    <View style={{ alignItems: 'center' }}>
+      <FontAwesome name={name} size={19} color={color} />
+    </View>
+  );
+}
 
-  useEffect(() => {
-    if (focused) {
-      scale.value = withSpring(1.15, animation.springConfig);
-    } else {
-      scale.value = withSpring(1, animation.springConfig);
-    }
-  }, [focused]);
+function AnimatedTabButton({
+  children,
+  onPress,
+  onLongPress,
+  accessibilityState,
+  accessibilityRole,
+  accessibilityLabel,
+  testID,
+}: any) {
+  const scale = useSharedValue(1);
+  const focused = accessibilityState?.selected;
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
+  const handlePressIn = () => {
+    scale.value = withSpring(animation.tabPressScale, animation.springBounce);
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, animation.springBounce);
+  };
+
   return (
-    <Animated.View style={[{ alignItems: 'center', marginBottom: -2 }, animatedStyle]}>
-      <FontAwesome name={name} size={22} color={color} />
-      <View
-        style={{
-          width: 4,
-          height: 4,
-          borderRadius: 2,
-          backgroundColor: focused ? colors.primary : 'transparent',
-          marginTop: 3,
-        }}
-      />
-    </Animated.View>
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      accessibilityRole={accessibilityRole}
+      accessibilityState={accessibilityState}
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+      style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Animated.View
+        style={[
+          { alignItems: 'center', justifyContent: 'center', paddingVertical: 5 },
+          animatedStyle,
+        ]}
+      >
+        {children}
+      </Animated.View>
+    </Pressable>
   );
 }
 
@@ -97,8 +122,8 @@ export default function TabLayout() {
 
   if (loading || (session && !checked)) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg }}>
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
@@ -114,18 +139,25 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
+        tabBarActiveTintColor: colors.ink,
+        tabBarInactiveTintColor: colors.inkMuted,
         tabBarStyle: {
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          backgroundColor: colors.background,
+          backgroundColor: 'rgba(246,244,239,0.94)',
           elevation: 0,
         },
-        headerStyle: {
-          backgroundColor: colors.background,
+        tabBarLabelStyle: {
+          fontFamily: fontFamily.mono,
+          fontSize: 9,
+          textTransform: 'uppercase',
+          letterSpacing: 0.54,
         },
-        headerTintColor: colors.text,
+        tabBarButton: (props) => <AnimatedTabButton {...props} />,
+        headerStyle: {
+          backgroundColor: colors.bg,
+        },
+        headerTintColor: colors.ink,
         headerShadowVisible: false,
       }}
     >
@@ -147,14 +179,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="recipes"
         options={{
-          title: 'My Recipes',
+          title: 'Recipes',
           tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="book" color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="shopping-list"
         options={{
-          title: 'Grocery',
+          title: 'Groceries',
           tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="shopping-cart" color={color} focused={focused} />,
         }}
       />
@@ -164,7 +196,7 @@ export default function TabLayout() {
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="user" color={color} focused={focused} />,
           tabBarBadge: newFollowerCount > 0 ? (newFollowerCount > 9 ? '9+' : newFollowerCount) : undefined,
-          tabBarBadgeStyle: newFollowerCount > 0 ? { backgroundColor: colors.primary, fontSize: 10 } : undefined,
+          tabBarBadgeStyle: newFollowerCount > 0 ? { backgroundColor: colors.accent, fontSize: 10 } : undefined,
         }}
       />
     </Tabs>

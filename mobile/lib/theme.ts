@@ -1,41 +1,55 @@
 import { Platform, TextStyle } from 'react-native';
 
 export const colors = {
-  primary: '#2D5F5D',
-  primaryLight: '#3D7A72',
-  primaryDark: '#234B49',
-  cta: '#2D5F5D',
-  ctaHover: '#234B49',
-  background: '#FFFFFF',
+  // Core palette
+  bg: '#F6F4EF',
+  surface: '#FFFFFF',
+  surfaceAlt: '#EDEADE',
+  ink: '#141210',
+  inkSecondary: '#5C5850',
+  inkMuted: '#9C978C',
+  border: '#D6D2C8',
+  borderStrong: '#141210',
+  accent: '#8B4513',
+  accentLight: 'rgba(139,69,19,0.07)',
+  olive: '#4A5D3A',
+  oliveLight: 'rgba(74,93,58,0.08)',
+
+  // Semantic aliases (backward compat)
+  primary: '#8B4513',
+  primaryLight: 'rgba(139,69,19,0.15)',
+  primaryDark: '#6D360F',
+  cta: '#8B4513',
+  ctaHover: '#6D360F',
+  background: '#F6F4EF',
   card: '#FFFFFF',
-  surface: '#F5F5F5',
-  surfaceAlt: '#F5F5F5',
-  text: '#111111',
-  textSecondary: '#666666',
-  textMuted: '#999999',
+  text: '#141210',
+  textSecondary: '#5C5850',
+  textMuted: '#9C978C',
   textOnPrimary: '#FFFFFF',
-  border: '#E8E8E8',
-  borderLight: '#E8E8E8',
-  starFilled: '#F59E0B',
-  starEmpty: '#E8E8E8',
-  success: '#15803D',
-  successBg: '#F0FDF4',
-  successBorder: '#BBF7D0',
+  borderLight: '#D6D2C8',
+
+  // Functional
+  starFilled: '#8B4513',
+  starEmpty: '#D6D2C8',
+  success: '#4A5D3A',
+  successBg: 'rgba(74,93,58,0.08)',
+  successBorder: 'rgba(74,93,58,0.20)',
   danger: '#DC2626',
   dangerLight: '#EF4444',
   dangerBg: '#FEF2F2',
   dangerBorder: '#FECACA',
   white: '#FFFFFF',
-  // Gradient colors (kept for parallax hero overlay only)
+
   gradientOverlayStart: 'transparent',
-  gradientOverlayEnd: 'rgba(0,0,0,0.65)',
-  // Skeleton shimmer
-  skeletonBase: '#E8E8E8',
-  skeletonHighlight: '#F5F5F5',
-  // Teal wash (accent at varying opacity)
-  accentWash: 'rgba(45,95,93,0.05)',
-  accentWashBorder: 'rgba(45,95,93,0.20)',
-  accentWashIcon: 'rgba(45,95,93,0.40)',
+  gradientOverlayEnd: '#F6F4EF',
+
+  skeletonBase: '#D6D2C8',
+  skeletonHighlight: '#EDEADE',
+
+  accentWash: 'rgba(139,69,19,0.05)',
+  accentWashBorder: 'rgba(139,69,19,0.20)',
+  accentWashIcon: 'rgba(139,69,19,0.40)',
 } as const;
 
 export const spacing = {
@@ -51,36 +65,38 @@ export const spacing = {
 } as const;
 
 export const fontFamily = {
-  // Single typeface system — DM Sans only
-  serif: 'DMSans_400Regular', // aliased for backward compat
-  serifSemiBold: 'DMSans_500Medium', // aliased for backward compat
-  serifBold: 'DMSans_700Bold', // aliased for backward compat
-  sans: 'DMSans_400Regular',
-  sansMedium: 'DMSans_500Medium',
-  sansBold: 'DMSans_700Bold',
-  logo: 'Outfit_700Bold',
+  display: 'InstrumentSerif_400Regular',
+  displayItalic: 'InstrumentSerif_400Regular_Italic',
+  sans: 'InterTight_400Regular',
+  sansLight: 'InterTight_300Light',
+  sansMedium: 'InterTight_500Medium',
+  sansBold: 'InterTight_700Bold',
+  mono: 'GeistMono_400Regular',
+  monoMedium: 'GeistMono_500Medium',
+  logo: 'InterTight_700Bold',
   system: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  // Backward compat aliases
+  serif: 'InstrumentSerif_400Regular',
+  serifSemiBold: 'InstrumentSerif_400Regular',
+  serifBold: 'InstrumentSerif_400Regular',
 } as const;
 
 export const typography: Record<string, TextStyle> = {
-  h1: { fontSize: 26, fontWeight: '700', lineHeight: 32 },
-  h2: { fontSize: 22, fontWeight: '700', lineHeight: 28 },
-  h3: { fontSize: 17, fontWeight: '600', lineHeight: 22 },
-  body: { fontSize: 15, lineHeight: 22 },
-  bodySmall: { fontSize: 14, lineHeight: 20 },
-  caption: { fontSize: 12, lineHeight: 16 },
-  label: { fontSize: 13, fontWeight: '500', lineHeight: 18 },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '500',
-    lineHeight: 20,
-  },
-  // Display styles (recipe titles — DM Sans)
-  display: { fontSize: 28, fontFamily: fontFamily.sansBold, fontWeight: '700', lineHeight: 34 },
-  displaySmall: { fontSize: 22, fontFamily: fontFamily.sansMedium, fontWeight: '600', lineHeight: 28 },
-  // Heading styles (page/section headings)
-  heading: { fontSize: 22, fontFamily: fontFamily.sansBold, lineHeight: 28 },
-  headingSmall: { fontSize: 18, fontFamily: fontFamily.sansBold, lineHeight: 24 },
+  display: { fontSize: 40, fontFamily: fontFamily.display, lineHeight: 40 },
+  displaySmall: { fontSize: 28, fontFamily: fontFamily.display, lineHeight: 30 },
+  sectionTitle: { fontSize: 18, fontFamily: fontFamily.display, lineHeight: 22 },
+  h1: { fontSize: 32, fontFamily: fontFamily.display, lineHeight: 34 },
+  h2: { fontSize: 28, fontFamily: fontFamily.display, lineHeight: 30 },
+  h3: { fontSize: 20, fontFamily: fontFamily.display, lineHeight: 24 },
+  body: { fontSize: 14, fontFamily: fontFamily.sans, lineHeight: 21 },
+  bodySmall: { fontSize: 13, fontFamily: fontFamily.sansLight, lineHeight: 19 },
+  bodyLight: { fontSize: 13, fontFamily: fontFamily.sansLight, lineHeight: 19 },
+  label: { fontSize: 14, fontFamily: fontFamily.sansMedium, lineHeight: 20 },
+  caption: { fontSize: 12, fontFamily: fontFamily.sans, lineHeight: 16 },
+  monoLabel: { fontSize: 10, fontFamily: fontFamily.mono, textTransform: 'uppercase', letterSpacing: 1.4 },
+  monoMeta: { fontSize: 11, fontFamily: fontFamily.mono },
+  heading: { fontSize: 22, fontFamily: fontFamily.display, lineHeight: 26 },
+  headingSmall: { fontSize: 18, fontFamily: fontFamily.display, lineHeight: 22 },
 } as const;
 
 export const radii = {
@@ -107,11 +123,18 @@ export const shadows = Platform.select({
 export const animation = {
   springConfig: { damping: 15, stiffness: 150, mass: 0.8 },
   pressSpring: { damping: 25, stiffness: 200 },
-  pressScale: 0.98,
-  buttonPressScale: 0.96,
+  springBounce: { damping: 12, stiffness: 180, mass: 0.6 },
+  pressScale: 0.995,
+  buttonPressScale: 0.94,
+  tabPressScale: 0.88,
   pressOpacity: 0.7,
-  heartScale: 1.3,
-  staggerDelay: 30,
+  heartScale: 1.25,
+  imageHoverScale: 1.08,
+  avatarHoverScale: 1.12,
+  checkPopScale: 1.25,
+  staggerDelay: 40,
   staggerMax: 10,
   skeletonDuration: 1200,
+  fadeInUpDistance: 18,
+  fadeInDuration: 550,
 } as const;

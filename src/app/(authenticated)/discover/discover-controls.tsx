@@ -3,15 +3,11 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useTransition } from "react";
 
-const SORT_OPTIONS = [
-  { value: "newest", label: "Newest" },
-  { value: "rating", label: "Highest rated" },
-  { value: "popular", label: "Most popular" },
-];
-
 const TABS = [
   { value: "recipes", label: "Recipes" },
   { value: "chefs", label: "Chefs" },
+  { value: "newest", label: "Newest" },
+  { value: "rating", label: "Top Rated" },
 ];
 
 export function DiscoverControls() {
@@ -46,77 +42,84 @@ export function DiscoverControls() {
     }, 300);
   }
 
+  // Determine active tab value — combine tab and sort into unified tabs
+  const activeTab = tab === "chefs" ? "chefs" : sort === "rating" ? "rating" : sort === "newest" || sort === "" ? (tab === "recipes" || tab === "" ? "recipes" : tab) : "recipes";
+
+  function handleTabClick(value: string) {
+    if (value === "chefs") {
+      updateParams({ tab: "chefs", sort: "" });
+    } else if (value === "newest") {
+      updateParams({ tab: "", sort: "newest" });
+    } else if (value === "rating") {
+      updateParams({ tab: "", sort: "rating" });
+    } else {
+      // "recipes" — default
+      updateParams({ tab: "", sort: "newest" });
+    }
+  }
+
   return (
-    <div className="flex flex-col gap-4">
-      {/* Tab segmented control */}
-      <div className="flex gap-1 rounded-md bg-warm-tag p-1">
+    <div>
+      {/* Search — bottom-border style */}
+      <div className="px-5 mb-0">
+        <div className="flex items-center gap-2 pb-1.5 border-b-2 border-ink focus-within:border-accent transition-colors duration-300">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-ink-muted shrink-0"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            type="search"
+            placeholder="Search recipes or chefs"
+            defaultValue={q}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="flex-1 bg-transparent border-none outline-none font-body text-[15px] font-light text-ink placeholder:text-ink-muted"
+          />
+          {isPending && (
+            <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-accent" />
+          )}
+        </div>
+
+        {/* Active tag filter */}
+        {tag && (
+          <div className="mt-2">
+            <button
+              onClick={() => updateParams({ tag: "" })}
+              className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.06em] text-accent hover:text-ink transition-colors"
+            >
+              {tag}
+              <span className="ml-0.5 text-ink-muted">&times;</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Filter tabs — mono uppercase with active underline */}
+      <div className="flex gap-0 px-5 border-b border-border">
         {TABS.map((t) => (
           <button
             key={t.value}
-            onClick={() => updateParams({ tab: t.value === "recipes" ? "" : t.value })}
-            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              tab === t.value
-                ? "bg-white text-foreground shadow-sm"
-                : "text-warm-gray hover:text-foreground"
+            onClick={() => handleTabClick(t.value)}
+            className={`relative font-mono text-[11px] uppercase tracking-[0.06em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
+              activeTab === t.value
+                ? "text-ink"
+                : "text-ink-muted hover:text-ink"
             }`}
           >
             {t.label}
+            {activeTab === t.value && (
+              <span className="absolute bottom-[-1px] left-0 right-[14px] h-0.5 bg-ink" />
+            )}
           </button>
         ))}
       </div>
-
-      {/* Recipe-specific controls (only show on recipes tab) */}
-      {tab === "recipes" && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
-            <input
-              type="search"
-              placeholder="Search recipes, ingredients, tags..."
-              defaultValue={q}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="w-full rounded-md bg-warm-tag px-3 py-2 pl-9 text-sm placeholder:text-warm-gray/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-            />
-            <svg
-              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-gray/50"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            {isPending && (
-              <div className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-warm-border border-t-accent" />
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {tag && (
-              <button
-                onClick={() => updateParams({ tag: "" })}
-                className="flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent"
-              >
-                {tag}
-                <span className="ml-0.5">&times;</span>
-              </button>
-            )}
-            <select
-              value={sort}
-              onChange={(e) => updateParams({ sort: e.target.value })}
-              className="rounded-md bg-warm-tag px-3 py-2 text-sm text-warm-gray focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

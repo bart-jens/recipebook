@@ -24,30 +24,30 @@ export default async function AdminLayout({
 
   return (
     <div>
-      <div className="mb-6 flex items-center gap-4 border-b border-warm-border pb-4">
-        <h1 className="text-lg font-semibold">Admin</h1>
+      <div className="mb-6 flex items-center gap-4 border-b border-border pb-4">
+        <h1 className="font-display text-xl text-ink">Admin</h1>
         <nav className="flex gap-1">
           <Link
             href="/admin"
-            className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag hover:text-[#111111]"
+            className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:bg-surface-alt hover:text-ink"
           >
             Dashboard
           </Link>
           <Link
             href="/admin/users"
-            className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag hover:text-[#111111]"
+            className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:bg-surface-alt hover:text-ink"
           >
             Users
           </Link>
           <Link
             href="/admin/invites"
-            className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag hover:text-[#111111]"
+            className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:bg-surface-alt hover:text-ink"
           >
             Invites
           </Link>
           <Link
             href="/admin/feedback"
-            className="rounded-md px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-tag hover:text-[#111111]"
+            className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:bg-surface-alt hover:text-ink"
           >
             Feedback
           </Link>

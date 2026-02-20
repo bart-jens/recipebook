@@ -77,7 +77,7 @@ export function ImageUpload({
         Recipe Photo
       </label>
       {imageUrl ? (
-        <div className="aspect-video w-full max-w-lg overflow-hidden rounded-lg mb-2">
+        <div className="aspect-video w-full max-w-lg overflow-hidden mb-2">
           <img
             src={imageUrl}
             alt="Recipe"
@@ -96,7 +96,7 @@ export function ImageUpload({
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
-        className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border disabled:opacity-50"
+        className="bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border disabled:opacity-50"
       >
         {uploading
           ? "Uploading..."

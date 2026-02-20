@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ForkDot } from "@/components/logo";
 import { FollowButton } from "./follow-button";
 import { ProfileTabs } from "./profile-tabs";
 
@@ -107,88 +107,98 @@ export default async function PublicProfilePage({
   }
 
   return (
-    <div className="max-w-2xl">
-      <div className="mb-8">
-        <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
-          &larr; Back to recipes
-        </Link>
-      </div>
-
-      <div className="mb-6 flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          {profile.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt={profile.display_name}
-              className="h-16 w-16 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warm-tag text-2xl font-semibold text-warm-gray">
-              {profile.display_name[0].toUpperCase()}
+    <div>
+      {/* Profile Top */}
+      <div className="px-5 pt-6 flex gap-4 items-start animate-fade-in-up opacity-0 anim-delay-1">
+        {profile.avatar_url ? (
+          <img
+            src={profile.avatar_url}
+            alt={profile.display_name}
+            className="w-16 h-16 rounded-full object-cover shrink-0 transition-transform duration-300"
+            style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+          />
+        ) : (
+          <div
+            className="w-16 h-16 rounded-full bg-ink text-bg font-display text-[24px] flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-[1.08]"
+            style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+          >
+            {profile.display_name[0].toUpperCase()}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="font-display text-[28px] leading-none tracking-[-0.03em] text-ink">
+                {profile.display_name}
+              </h1>
+              {profile.is_private && (
+                <p className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">
+                  Private account
+                </p>
+              )}
             </div>
-          )}
-          <div>
-            <h1 className="text-2xl font-semibold">
-              {profile.display_name}
-            </h1>
-            {profile.is_private && (
-              <span className="text-xs text-warm-gray">Private account</span>
+            {user && (
+              <FollowButton
+                userId={params.id}
+                state={followState}
+                isPrivate={profile.is_private}
+              />
             )}
           </div>
+          {profile.bio && (
+            <p className="mt-1 text-[13px] font-light text-ink-secondary leading-[1.45]">
+              {profile.bio}
+            </p>
+          )}
         </div>
-        {user && (
-          <FollowButton
-            userId={params.id}
-            state={followState}
-            isPrivate={profile.is_private}
-          />
-        )}
       </div>
 
-      {profile.bio && (
-        <p className="mb-6 text-warm-gray leading-relaxed">{profile.bio}</p>
-      )}
-
-      <div className="mb-8 flex gap-6">
+      {/* Stats Bar */}
+      <div className="mx-5 mt-5 flex border-t-[3px] border-t-ink border-b border-b-ink animate-fade-in-up opacity-0 anim-delay-2">
         {canView && (
           <>
-            <div className="text-center">
-              <p className="text-xl font-semibold">{stats.recipe_count}</p>
-              <p className="text-xs text-warm-gray">recipes</p>
+            <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+              <div className="font-display text-[22px] text-ink">{stats.recipe_count}</div>
+              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Recipes</div>
             </div>
-            <div className="text-center">
-              <p className="text-xl font-semibold">{stats.cook_count}</p>
-              <p className="text-xs text-warm-gray">times cooked</p>
+            <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+              <div className="font-display text-[22px] text-ink">{stats.cook_count}</div>
+              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Cooked</div>
             </div>
           </>
         )}
-        <div className="text-center">
-          <p className="text-xl font-semibold">{stats.follower_count}</p>
-          <p className="text-xs text-warm-gray">followers</p>
+        <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light last:border-r-0">
+          <div className="font-display text-[22px] text-ink">{stats.follower_count}</div>
+          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Followers</div>
         </div>
-        <div className="text-center">
-          <p className="text-xl font-semibold">{stats.following_count}</p>
-          <p className="text-xs text-warm-gray">following</p>
+        <div className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
+          <div className="font-display text-[22px] text-ink">{stats.following_count}</div>
+          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Following</div>
         </div>
       </div>
 
       {!canView ? (
-        <div className="rounded-md bg-warm-tag p-8 text-center">
-          <p className="text-sm text-warm-gray">This account is private</p>
-          <p className="mt-1 text-xs text-warm-gray/60">
+        <div className="mx-5 mt-6 border-t border-border py-10 text-center animate-fade-in-up opacity-0 anim-delay-3">
+          <ForkDot size={24} color="rgba(139,69,19,0.2)" />
+          <p className="mt-3 font-display text-[18px] tracking-[-0.02em] text-ink">
+            This account is private
+          </p>
+          <p className="mt-1 text-[13px] font-light text-ink-secondary">
             Follow this user to see their recipes and cooking activity.
           </p>
         </div>
       ) : (
-        <ProfileTabs
-          activity={data.activity || []}
-          favorites={data.favorites || []}
-          published={data.published || []}
-          recommendations={data.recommendations || []}
-          profileName={profile.display_name}
-          profileAvatarUrl={profile.avatar_url}
-          profileId={params.id}
-        />
+        <div className="animate-fade-in-up opacity-0 anim-delay-3">
+          <ProfileTabs
+            activity={data.activity || []}
+            favorites={data.favorites || []}
+            published={data.published || []}
+            recommendations={data.recommendations || []}
+            profileName={profile.display_name}
+            profileAvatarUrl={profile.avatar_url}
+            profileId={params.id}
+          />
+        </div>
       )}
     </div>
   );

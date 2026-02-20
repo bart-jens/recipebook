@@ -60,13 +60,13 @@ export default async function PublicRecipePage({ params }: Props) {
   if (!recipe) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <p className="text-lg font-medium">This recipe is private or doesn&apos;t exist</p>
-        <p className="mt-2 text-sm text-warm-gray">
+        <p className="font-display text-2xl text-ink">This recipe is private or doesn&apos;t exist</p>
+        <p className="mt-2 font-body text-sm text-ink-secondary">
           Sign up for EefEats to discover and share recipes with friends.
         </p>
         <Link
           href="/signup"
-          className="mt-6 inline-block rounded-md bg-accent px-6 py-2 text-sm font-medium text-white hover:opacity-90"
+          className="mt-6 inline-block bg-ink px-6 py-2.5 font-mono text-[10px] uppercase tracking-widest text-white transition-opacity hover:opacity-80"
         >
           Sign up for EefEats
         </Link>
@@ -97,9 +97,9 @@ export default async function PublicRecipePage({ params }: Props) {
     : [];
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl bg-bg px-4 py-8">
       {recipe.image_url && (
-        <div className="mb-6 aspect-video w-full overflow-hidden rounded-lg">
+        <div className="mb-6 aspect-video w-full overflow-hidden">
           <img
             src={recipe.image_url}
             alt={recipe.title}
@@ -109,19 +109,19 @@ export default async function PublicRecipePage({ params }: Props) {
       )}
 
       {creator?.display_name && (
-        <p className="mb-2 text-sm text-warm-gray">
+        <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
           By {creator.display_name}
         </p>
       )}
 
-      <h1 className="mb-4 font-sans text-3xl font-semibold leading-tight">{recipe.title}</h1>
+      <h1 className="mb-4 font-display text-4xl leading-tight text-ink">{recipe.title}</h1>
 
       {(tags || []).length > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
           {(tags || []).map((t) => (
             <span
               key={t.id}
-              className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray"
+              className="border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary"
             >
               {t.tag}
             </span>
@@ -130,7 +130,7 @@ export default async function PublicRecipePage({ params }: Props) {
       )}
 
       {recipe.source_name && (
-        <p className="mb-4 text-sm text-warm-gray">
+        <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
           {recipe.source_url ? (
             <a
               href={recipe.source_url}
@@ -147,29 +147,29 @@ export default async function PublicRecipePage({ params }: Props) {
       )}
 
       {recipe.description && (
-        <p className="mb-8 leading-relaxed text-warm-gray whitespace-pre-line">
+        <p className="mb-8 font-body leading-relaxed text-ink-secondary whitespace-pre-line">
           {recipe.description}
         </p>
       )}
 
       <div className="mb-8 flex flex-wrap gap-3">
         {recipe.prep_time_minutes && (
-          <span className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
+          <span className="border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
             Prep: {recipe.prep_time_minutes} min
           </span>
         )}
         {recipe.cook_time_minutes && (
-          <span className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
+          <span className="border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
             Cook: {recipe.cook_time_minutes} min
           </span>
         )}
         {recipe.servings && (
-          <span className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
+          <span className="border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
             Servings: {recipe.servings}
           </span>
         )}
         {recipe.prep_time_minutes && recipe.cook_time_minutes && (
-          <span className="rounded-full bg-accent px-3 py-1 text-sm text-white">
+          <span className="bg-accent px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-white">
             Total: {recipe.prep_time_minutes + recipe.cook_time_minutes} min
           </span>
         )}
@@ -177,17 +177,17 @@ export default async function PublicRecipePage({ params }: Props) {
 
       {(ingredients || []).length > 0 && (
         <div className="mb-10">
-          <div className="mb-4 border-b border-warm-divider pb-2">
-            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">Ingredients</h2>
+          <div className="mb-4 border-b border-border pb-2">
+            <h2 className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary">Ingredients</h2>
           </div>
           <ul className="space-y-2">
             {(ingredients || []).map((ing) => (
-              <li key={ing.id} className="flex items-baseline gap-2 border-b border-warm-divider pb-2">
-                <span className="min-w-[4rem] text-right font-medium">
+              <li key={ing.id} className="flex items-baseline gap-2 border-b border-border pb-2">
+                <span className="min-w-[4rem] text-right font-body font-medium text-ink">
                   {formatQuantity(ing.quantity)} {ing.unit || ""}
                 </span>
-                <span className="text-warm-gray">{ing.ingredient_name}</span>
-                {ing.notes && <span className="text-sm text-warm-gray/60">({ing.notes})</span>}
+                <span className="font-body text-ink-secondary">{ing.ingredient_name}</span>
+                {ing.notes && <span className="font-body text-sm text-ink-muted">({ing.notes})</span>}
               </li>
             ))}
           </ul>
@@ -196,21 +196,21 @@ export default async function PublicRecipePage({ params }: Props) {
 
       {instructions.length > 0 && (
         <div className="mb-10">
-          <div className="mb-4 border-b border-warm-divider pb-2">
-            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">Preparation</h2>
+          <div className="mb-4 border-b border-border pb-2">
+            <h2 className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary">Preparation</h2>
           </div>
           {instructions.length === 1 ? (
-            <div className="leading-relaxed text-warm-gray whitespace-pre-line">
+            <div className="font-body leading-relaxed text-ink-secondary whitespace-pre-line">
               {instructions[0]}
             </div>
           ) : (
             <ol className="space-y-5">
               {instructions.map((step, i) => (
                 <li key={i} className="flex gap-4">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-medium text-white">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-ink font-mono text-xs text-white">
                     {i + 1}
                   </span>
-                  <p className="leading-relaxed text-warm-gray pt-0.5">{step}</p>
+                  <p className="font-body leading-relaxed text-ink-secondary pt-0.5">{step}</p>
                 </li>
               ))}
             </ol>
@@ -218,14 +218,14 @@ export default async function PublicRecipePage({ params }: Props) {
         </div>
       )}
 
-      <div className="mt-12 rounded-lg border border-warm-divider bg-warm-tag/30 p-6 text-center">
-        <p className="text-lg font-medium">Want to save this recipe?</p>
-        <p className="mt-1 text-sm text-warm-gray">
+      <div className="mt-12 border border-border bg-surface-alt p-6 text-center">
+        <p className="font-display text-xl text-ink">Want to save this recipe?</p>
+        <p className="mt-1 font-body text-sm text-ink-secondary">
           Join EefEats to save recipes, track what you cook, and discover new favorites.
         </p>
         <Link
           href="/signup"
-          className="mt-4 inline-block rounded-md bg-accent px-6 py-2 text-sm font-medium text-white hover:opacity-90"
+          className="mt-4 inline-block bg-ink px-6 py-2.5 font-mono text-[10px] uppercase tracking-widest text-white transition-opacity hover:opacity-80"
         >
           Sign up for EefEats
         </Link>

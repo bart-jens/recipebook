@@ -24,9 +24,9 @@ export function SignupForm() {
 
   return (
     <>
-      <form action={handleSubmit} className="space-y-4">
+      <form action={handleSubmit} className="space-y-5">
         <div className="animate-fade-in-up [animation-delay:200ms] [animation-fill-mode:backwards]">
-          <label htmlFor="code" className="block text-sm font-medium text-warm-gray">
+          <label htmlFor="code" className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
             Invite code
           </label>
           <input
@@ -36,11 +36,11 @@ export function SignupForm() {
             required
             defaultValue={defaultCode}
             placeholder="ABCD1234"
-            className="mt-1 block w-full rounded-md bg-warm-tag px-3 py-3 font-mono text-base uppercase tracking-wider focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+            className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 font-mono text-base uppercase tracking-wider text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
           />
         </div>
         <div className="animate-fade-in-up [animation-delay:300ms] [animation-fill-mode:backwards]">
-          <label htmlFor="email" className="block text-sm font-medium text-warm-gray">
+          <label htmlFor="email" className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
             Email
           </label>
           <input
@@ -48,11 +48,11 @@ export function SignupForm() {
             name="email"
             type="email"
             required
-            className="mt-1 block w-full rounded-md bg-warm-tag px-3 py-3 text-base focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+            className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 font-body text-base text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
           />
         </div>
         <div className="animate-fade-in-up [animation-delay:400ms] [animation-fill-mode:backwards]">
-          <label htmlFor="password" className="block text-sm font-medium text-warm-gray">
+          <label htmlFor="password" className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
             Password
           </label>
           <input
@@ -61,21 +61,21 @@ export function SignupForm() {
             type="password"
             required
             minLength={6}
-            className="mt-1 block w-full rounded-md bg-warm-tag px-3 py-3 text-base focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+            className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 font-body text-base text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
           />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <div className="animate-fade-in-up [animation-delay:500ms] [animation-fill-mode:backwards]">
+        <div className="animate-fade-in-up pt-2 [animation-delay:500ms] [animation-fill-mode:backwards]">
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+            className="w-full bg-ink px-4 py-3 font-mono text-xs uppercase tracking-widest text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
           >
             {loading ? "Creating account..." : "Sign up"}
           </button>
         </div>
       </form>
-      <p className="animate-fade-in-up text-center text-sm text-warm-gray [animation-delay:600ms] [animation-fill-mode:backwards]">
+      <p className="animate-fade-in-up text-center font-body text-sm text-ink-secondary [animation-delay:600ms] [animation-fill-mode:backwards]">
         Already have an account?{" "}
         <Link href="/login" className="text-accent hover:underline">
           Sign in

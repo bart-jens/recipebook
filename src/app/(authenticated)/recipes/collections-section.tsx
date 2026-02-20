@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { ForkDot } from "@/components/logo";
 import { createCollection, deleteCollection, renameCollection } from "./collections/actions";
 
 interface Collection {
@@ -76,30 +77,35 @@ export function CollectionsSection({
     });
   }
 
+  if (collections.length === 0 && !showCreate) return null;
+
   return (
-    <div className="mb-8">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">Collections</h2>
-        {atLimit ? (
-          <span className="text-xs text-warm-gray">5/5 (upgrade for more)</span>
-        ) : (
-          <button
-            onClick={() => setShowCreate(true)}
-            className="text-sm font-medium text-accent hover:underline"
-          >
-            New Collection
-          </button>
-        )}
+    <div className="mb-6">
+      <div className="flex items-baseline justify-between mb-2">
+        <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink">Collections</h2>
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[11px] text-ink-muted">{collections.length} total</span>
+          {atLimit ? (
+            <span className="font-mono text-[9px] uppercase tracking-[0.06em] px-1.5 py-0.5 border border-border text-ink-muted">5/5</span>
+          ) : (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="font-mono text-[11px] uppercase tracking-[0.06em] px-2.5 py-1.5 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
+            >
+              New
+            </button>
+          )}
+        </div>
       </div>
 
       {showCreate && (
-        <form onSubmit={handleCreate} className="mb-4 rounded-md bg-warm-tag p-4 space-y-3">
+        <form onSubmit={handleCreate} className="mb-4 border border-border p-4 space-y-3">
           <input
             type="text"
             placeholder="Collection name"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="block w-full rounded-md bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+            className="block w-full bg-transparent border-b-2 border-ink pb-1.5 text-[15px] font-light text-ink placeholder:text-ink-muted focus:border-accent outline-none transition-colors"
             autoFocus
           />
           <input
@@ -107,21 +113,21 @@ export function CollectionsSection({
             placeholder="Description (optional)"
             value={newDesc}
             onChange={(e) => setNewDesc(e.target.value)}
-            className="block w-full rounded-md bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+            className="block w-full bg-transparent border-b border-border pb-1.5 text-[13px] font-light text-ink placeholder:text-ink-muted focus:border-accent outline-none transition-colors"
           />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-[12px] text-red-600">{error}</p>}
           <div className="flex gap-2">
             <button
               type="submit"
               disabled={isPending || !newName.trim()}
-              className="rounded-md bg-cta px-4 py-1.5 text-sm font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+              className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 bg-accent text-white hover:bg-[#6D360F] transition-colors disabled:opacity-50"
             >
               {isPending ? "Creating..." : "Create"}
             </button>
             <button
               type="button"
               onClick={() => { setShowCreate(false); setError(null); }}
-              className="rounded-md bg-warm-tag px-4 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
+              className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
             >
               Cancel
             </button>
@@ -130,30 +136,30 @@ export function CollectionsSection({
       )}
 
       {collections.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
           {collections.map((collection) => (
-            <div key={collection.id} className="group relative">
+            <div key={collection.id} className="group relative shrink-0 w-[140px]">
               {deletingId === collection.id ? (
-                <div className="rounded-md border border-red-200 bg-red-50 p-4 text-center">
-                  <p className="text-sm text-red-700 mb-2">Delete &ldquo;{collection.name}&rdquo;?</p>
+                <div className="border border-red-200 bg-red-50 p-4 text-center">
+                  <p className="text-[12px] text-red-700 mb-2">Delete &ldquo;{collection.name}&rdquo;?</p>
                   <div className="flex gap-2 justify-center">
                     <button
                       onClick={() => handleDelete(collection.id)}
                       disabled={isPending}
-                      className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                      className="font-mono text-[9px] uppercase tracking-[0.06em] px-2 py-1 bg-red-600 text-white disabled:opacity-50"
                     >
                       {isPending ? "..." : "Delete"}
                     </button>
                     <button
                       onClick={() => setDeletingId(null)}
-                      className="rounded-md bg-white px-3 py-1 text-xs text-warm-gray hover:bg-warm-tag"
+                      className="font-mono text-[9px] uppercase tracking-[0.06em] px-2 py-1 border border-border text-ink-muted"
                     >
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : editingId === collection.id ? (
-                <div className="rounded-md border border-warm-border bg-warm-tag p-3">
+                <div className="border border-border p-3">
                   <input
                     type="text"
                     value={editName}
@@ -162,20 +168,20 @@ export function CollectionsSection({
                       if (e.key === "Enter") handleRename(collection.id);
                       if (e.key === "Escape") setEditingId(null);
                     }}
-                    className="block w-full rounded-md bg-white px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="block w-full bg-transparent border-b border-border pb-1 text-[13px] text-ink focus:border-accent outline-none transition-colors"
                     autoFocus
                   />
                   <div className="mt-2 flex gap-2">
                     <button
                       onClick={() => handleRename(collection.id)}
                       disabled={isPending}
-                      className="text-xs font-medium text-accent hover:underline"
+                      className="font-mono text-[9px] uppercase tracking-[0.06em] text-accent hover:underline"
                     >
                       Save
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
-                      className="text-xs text-warm-gray hover:underline"
+                      className="font-mono text-[9px] uppercase tracking-[0.06em] text-ink-muted hover:underline"
                     >
                       Cancel
                     </button>
@@ -184,26 +190,24 @@ export function CollectionsSection({
               ) : (
                 <Link
                   href={`/recipes/collections/${collection.id}`}
-                  className="block rounded-md border border-warm-border bg-warm-tag overflow-hidden transition-all hover:-translate-y-px hover:shadow-sm"
+                  className="block border border-border overflow-hidden transition-all hover:-translate-y-px"
                 >
                   {collection.resolved_cover_url ? (
                     <div className="aspect-[16/10] overflow-hidden">
                       <img
                         src={collection.resolved_cover_url}
                         alt={collection.name}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
                       />
                     </div>
                   ) : (
-                    <div className="flex aspect-[16/10] items-center justify-center bg-accent/5">
-                      <span className="text-lg font-medium text-accent/40">
-                        {collection.name.slice(0, 1)}
-                      </span>
+                    <div className="flex aspect-[16/10] items-center justify-center bg-accent-light">
+                      <ForkDot size={16} color="rgba(139,69,19,0.15)" />
                     </div>
                   )}
-                  <div className="p-3">
-                    <h3 className="text-sm font-medium truncate">{collection.name}</h3>
-                    <p className="text-xs text-warm-gray">
+                  <div className="p-2.5">
+                    <h3 className="font-display text-[15px] leading-[1.2] tracking-[-0.01em] text-ink truncate">{collection.name}</h3>
+                    <p className="font-mono text-[10px] text-ink-muted mt-0.5">
                       {collection.recipe_count} recipe{collection.recipe_count !== 1 ? "s" : ""}
                     </p>
                   </div>
@@ -217,7 +221,7 @@ export function CollectionsSection({
                       setEditingId(collection.id);
                       setEditName(collection.name);
                     }}
-                    className="rounded bg-white/90 px-1.5 py-0.5 text-xs text-warm-gray hover:text-accent shadow-sm"
+                    className="font-mono text-[9px] uppercase tracking-[0.06em] bg-surface/90 px-1.5 py-0.5 text-ink-muted hover:text-accent"
                   >
                     Rename
                   </button>
@@ -226,7 +230,7 @@ export function CollectionsSection({
                       e.preventDefault();
                       setDeletingId(collection.id);
                     }}
-                    className="rounded bg-white/90 px-1.5 py-0.5 text-xs text-warm-gray hover:text-red-600 shadow-sm"
+                    className="font-mono text-[9px] uppercase tracking-[0.06em] bg-surface/90 px-1.5 py-0.5 text-ink-muted hover:text-red-600"
                   >
                     Delete
                   </button>

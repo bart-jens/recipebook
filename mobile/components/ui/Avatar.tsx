@@ -1,5 +1,5 @@
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { colors, radii } from '@/lib/theme';
+import { colors, fontFamily } from '@/lib/theme';
 
 type Size = 'sm' | 'md' | 'lg';
 
@@ -50,12 +50,12 @@ export default function Avatar({ name, size = 'md', imageUrl }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.ink,
     justifyContent: 'center',
     alignItems: 'center',
   },
   text: {
-    fontWeight: '600',
-    color: colors.textSecondary,
+    fontFamily: fontFamily.display,
+    color: colors.bg,
   },
 });

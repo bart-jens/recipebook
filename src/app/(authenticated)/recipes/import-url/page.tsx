@@ -129,7 +129,7 @@ export default function ImportUrlPage() {
               placeholder="https://..."
               value={url}
               onChange={(e) => { setUrl(e.target.value); setError(null); }}
-              className="mt-1 block w-full rounded-md bg-warm-tag px-3 py-3 text-base focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+              className="mt-1 block w-full bg-warm-tag px-3 py-3 text-base focus:bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
             />
             <p className="mt-1.5 text-xs text-warm-gray">
               Works with recipe websites, Instagram posts, and any page with recipe data.
@@ -139,7 +139,7 @@ export default function ImportUrlPage() {
           <button
             type="submit"
             disabled={loading}
-            className="rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+            className="bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
           >
             {loading ? "Extracting recipe..." : "Extract Recipe"}
           </button>

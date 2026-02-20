@@ -15,7 +15,7 @@ import { Stack, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import RecipeForm, { RecipeFormData } from '@/components/RecipeForm';
-import { colors, spacing, typography, radii } from '@/lib/theme';
+import { colors, spacing, fontFamily } from '@/lib/theme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
@@ -248,7 +248,7 @@ export default function ImportPhotoScreen() {
           headerContent={
             !sourceSkipped ? (
               <View style={styles.sourceCard}>
-                <Text style={styles.sourceCardTitle}>Where is this recipe from?</Text>
+                <Text style={styles.sourceCardTitle}>WHERE IS THIS RECIPE FROM?</Text>
 
                 <TouchableOpacity
                   style={[styles.scanCoverButton, scanningCover && { opacity: 0.5 }]}
@@ -257,9 +257,9 @@ export default function ImportPhotoScreen() {
                   activeOpacity={0.7}
                 >
                   {scanningCover ? (
-                    <ActivityIndicator size="small" color={colors.primary} />
+                    <ActivityIndicator size="small" color={colors.accent} />
                   ) : (
-                    <FontAwesome name="camera" size={16} color={colors.primary} />
+                    <FontAwesome name="camera" size={16} color={colors.accent} />
                   )}
                   <Text style={styles.scanCoverText}>
                     {scanningCover ? 'Scanning...' : 'Scan book cover'}
@@ -271,7 +271,7 @@ export default function ImportPhotoScreen() {
                   value={sourceName}
                   onChangeText={setSourceName}
                   placeholder="e.g. The Food Lab, Ottolenghi Simple"
-                  placeholderTextColor={colors.textMuted}
+                  placeholderTextColor={colors.inkMuted}
                 />
 
                 <TouchableOpacity
@@ -309,17 +309,17 @@ export default function ImportPhotoScreen() {
               onPress={() => setImageUri(null)}
               activeOpacity={0.7}
             >
-              <Text style={styles.changeButtonText}>Choose different image</Text>
+              <Text style={styles.changeButtonText}>CHOOSE DIFFERENT IMAGE</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.pickContainer}>
             <TouchableOpacity style={styles.pickButton} onPress={takePhoto} activeOpacity={0.7}>
-              <FontAwesome name="camera" size={28} color={colors.primary} />
+              <FontAwesome name="camera" size={28} color={colors.accent} />
               <Text style={styles.pickText}>Take Photo</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.pickButton} onPress={pickImage} activeOpacity={0.7}>
-              <FontAwesome name="image" size={28} color={colors.primary} />
+              <FontAwesome name="image" size={28} color={colors.accent} />
               <Text style={styles.pickText}>Choose from Library</Text>
             </TouchableOpacity>
           </View>
@@ -335,16 +335,16 @@ export default function ImportPhotoScreen() {
             {extracting ? (
               <View style={styles.loadingRow}>
                 <ActivityIndicator size="small" color={colors.white} />
-                <Text style={styles.extractButtonText}>Extracting...</Text>
+                <Text style={styles.extractButtonText}>EXTRACTING...</Text>
               </View>
             ) : (
-              <Text style={styles.extractButtonText}>Extract Recipe</Text>
+              <Text style={styles.extractButtonText}>EXTRACT RECIPE</Text>
             )}
           </TouchableOpacity>
         )}
 
         <View style={styles.tips}>
-          <Text style={styles.tipsTitle}>Tips</Text>
+          <Text style={styles.tipsTitle}>TIPS</Text>
           <Text style={styles.tipText}>Works best with clear, well-lit photos of printed or handwritten recipes.</Text>
           <Text style={styles.tipText}>Screenshots of recipe websites or apps work great too.</Text>
           <Text style={styles.tipText}>After extraction, you can review and edit all fields before saving.</Text>
@@ -355,10 +355,10 @@ export default function ImportPhotoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.xl },
-  heading: { ...typography.h2, color: colors.text, marginBottom: spacing.sm },
-  subtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.xxl },
+  heading: { fontFamily: fontFamily.display, fontSize: 28, lineHeight: 30, color: colors.ink, marginBottom: spacing.sm },
+  subtitle: { fontFamily: fontFamily.sans, fontSize: 14, lineHeight: 21, color: colors.inkSecondary, marginBottom: spacing.xxl },
 
   pickContainer: {
     flexDirection: 'row',
@@ -367,16 +367,18 @@ const styles = StyleSheet.create({
   },
   pickButton: {
     flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
     paddingVertical: spacing.xxl,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
   },
   pickText: {
-    ...typography.bodySmall,
-    color: colors.text,
+    fontFamily: fontFamily.sans,
+    fontSize: 13,
+    color: colors.ink,
     fontWeight: '500',
   },
 
@@ -387,82 +389,82 @@ const styles = StyleSheet.create({
   preview: {
     width: '100%',
     height: 250,
-    borderRadius: radii.md,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceAlt,
   },
   changeButton: {
     marginTop: spacing.sm,
   },
   changeButtonText: {
-    ...typography.bodySmall,
-    color: colors.primary,
-    fontWeight: '500',
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: colors.accent,
   },
 
   extractButton: {
-    backgroundColor: colors.cta,
-    borderRadius: radii.md,
+    backgroundColor: colors.ink,
     paddingVertical: spacing.lg,
     alignItems: 'center',
   },
   extractButtonDisabled: { opacity: 0.5 },
-  extractButtonText: { color: colors.white, fontSize: 16, fontWeight: '600' },
+  extractButtonText: { color: colors.white, fontFamily: fontFamily.mono, fontSize: 11, letterSpacing: 1.4 },
   loadingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
 
   tips: {
     marginTop: spacing.xxxl,
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    padding: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: spacing.lg,
   },
-  tipsTitle: { ...typography.bodySmall, fontWeight: '600', color: colors.text, marginBottom: spacing.sm },
-  tipText: { ...typography.label, color: colors.textSecondary, marginBottom: spacing.xs },
+  tipsTitle: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.inkSecondary, marginBottom: spacing.sm },
+  tipText: { fontFamily: fontFamily.sans, fontSize: 13, color: colors.inkSecondary, marginBottom: spacing.xs },
 
   // Source attribution card
   sourceCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceAlt,
     padding: spacing.lg,
     marginBottom: spacing.md,
     gap: spacing.md,
   },
   sourceCardTitle: {
-    ...typography.bodySmall,
-    fontWeight: '600',
-    color: colors.text,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: colors.inkSecondary,
   },
   scanCoverButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    backgroundColor: colors.background,
-    borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
+    backgroundColor: colors.bg,
     paddingVertical: spacing.md,
   },
   scanCoverText: {
-    ...typography.bodySmall,
+    fontFamily: fontFamily.sans,
+    fontSize: 13,
     fontWeight: '500',
-    color: colors.text,
+    color: colors.ink,
   },
   sourceInput: {
-    backgroundColor: colors.background,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    ...typography.body,
-    color: colors.text,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    paddingVertical: 10,
+    fontFamily: fontFamily.sans,
+    fontSize: 14,
+    color: colors.ink,
   },
   skipButton: {
     paddingVertical: spacing.md,
   },
   skipText: {
-    ...typography.caption,
-    color: colors.textMuted,
+    fontFamily: fontFamily.sans,
+    fontSize: 12,
+    color: colors.inkMuted,
     textDecorationLine: 'underline' as const,
   },
 });

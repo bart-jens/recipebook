@@ -31,24 +31,24 @@ export function InviteList({ invites }: { invites: Invite[] }) {
       {invites.map((inv) => (
         <div
           key={inv.id}
-          className="flex items-center justify-between rounded-md border border-warm-border bg-white px-4 py-3"
+          className="flex items-center justify-between border border-border bg-surface px-4 py-3"
         >
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <p className="truncate text-sm font-medium">{inv.email}</p>
+              <p className="truncate font-body text-sm font-medium text-ink">{inv.email}</p>
               <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                className={`shrink-0 font-mono text-[10px] uppercase tracking-widest ${
                   inv.usedAt
-                    ? "bg-green-50 text-green-700"
-                    : "bg-warm-tag text-warm-gray"
+                    ? "text-olive"
+                    : "text-ink-muted"
                 }`}
               >
                 {inv.usedAt ? "Joined" : "Pending"}
               </span>
             </div>
-            <p className="text-xs text-warm-gray">
+            <p className="font-mono text-[10px] text-ink-secondary">
               Invited by {inv.inviterName} &middot;{" "}
-              <span className="font-mono">{inv.code}</span> &middot;{" "}
+              <span className="uppercase tracking-widest">{inv.code}</span> &middot;{" "}
               {new Date(inv.createdAt).toLocaleDateString()}
             </p>
           </div>
@@ -57,17 +57,17 @@ export function InviteList({ invites }: { invites: Invite[] }) {
             <div className="ml-4 shrink-0">
               {confirmId === inv.id ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-red-600">Revoke?</span>
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-red-600">Revoke?</span>
                   <button
                     onClick={() => handleRevoke(inv.id)}
                     disabled={isPending}
-                    className="rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                    className="bg-red-600 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-white hover:bg-red-700 disabled:opacity-50"
                   >
                     {isPending ? "..." : "Yes"}
                   </button>
                   <button
                     onClick={() => setConfirmId(null)}
-                    className="rounded-md bg-warm-tag px-2 py-1 text-xs text-warm-gray hover:bg-warm-border"
+                    className="border border-border px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:border-ink hover:text-ink"
                   >
                     No
                   </button>
@@ -75,7 +75,7 @@ export function InviteList({ invites }: { invites: Invite[] }) {
               ) : (
                 <button
                   onClick={() => setConfirmId(inv.id)}
-                  className="rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+                  className="px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-red-600 hover:bg-red-50"
                 >
                   Revoke
                 </button>
@@ -86,7 +86,7 @@ export function InviteList({ invites }: { invites: Invite[] }) {
       ))}
 
       {invites.length === 0 && (
-        <p className="py-8 text-center text-sm text-warm-gray">No invites found</p>
+        <p className="py-8 text-center font-body text-sm text-ink-muted">No invites found</p>
       )}
     </div>
   );

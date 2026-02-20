@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Pressable,
   TextInput,
   Alert,
   Linking,
@@ -25,6 +26,9 @@ import Animated, {
   interpolate,
   Extrapolation,
   FadeInDown,
+  withTiming,
+  withSpring,
+  Easing,
 } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
@@ -34,7 +38,6 @@ import { convertIngredient, type UnitSystem } from '@/lib/unit-conversion';
 import { colors, spacing, typography, radii, fontFamily, animation } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 import StarRating from '@/components/ui/StarRating';
-import SectionHeader from '@/components/ui/SectionHeader';
 import Badge from '@/components/ui/Badge';
 import IconButton from '@/components/ui/IconButton';
 import AnimatedHeart from '@/components/ui/AnimatedHeart';
@@ -53,7 +56,7 @@ const LANGUAGE_NAMES: Record<string, string> = {
   sv: 'Swedish', da: 'Danish', no: 'Norwegian', fi: 'Finnish', tr: 'Turkish',
   el: 'Greek', hi: 'Hindi', id: 'Indonesian', ms: 'Malay', he: 'Hebrew',
 };
-const HERO_HEIGHT = Math.min(280, SCREEN_HEIGHT * 0.4);
+const HERO_HEIGHT = 220;
 const HEADER_HEIGHT = 56;
 
 interface Recipe {
@@ -96,6 +99,39 @@ interface RatingEntry {
   created_at: string;
 }
 
+function IngredientCheckbox({ checked }: { checked: boolean }) {
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    if (checked) {
+      scale.value = withSpring(animation.checkPopScale, animation.springBounce);
+      setTimeout(() => {
+        scale.value = withSpring(1, animation.springBounce);
+      }, 150);
+    }
+  }, [checked]);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        styles.ingCheck,
+        checked && styles.ingCheckChecked,
+        animStyle,
+      ]}
+    >
+      {checked && (
+        <View style={styles.ingCheckmark}>
+          <FontAwesome name="check" size={9} color={colors.white} />
+        </View>
+      )}
+    </Animated.View>
+  );
+}
+
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -132,6 +168,7 @@ export default function RecipeDetailScreen() {
   const [addedToList, setAddedToList] = useState(false);
   const [addedIngredients, setAddedIngredients] = useState<Set<string>>(new Set());
   const [addingIngredientId, setAddingIngredientId] = useState<string | null>(null);
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     AsyncStorage.getItem('unit_system').then((stored) => {
@@ -144,7 +181,28 @@ export default function RecipeDetailScreen() {
     AsyncStorage.setItem('unit_system', system);
   };
 
+  const toggleIngredientCheck = (index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCheckedIngredients((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
+
   const scrollY = useSharedValue(0);
+  const heroScale = useSharedValue<number>(animation.imageHoverScale);
+
+  useEffect(() => {
+    heroScale.value = withTiming(1, {
+      duration: 800,
+      easing: Easing.bezier(0.16, 1, 0.3, 1),
+    });
+  }, []);
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -572,13 +630,16 @@ export default function RecipeDetailScreen() {
 
   // Parallax animated styles
   const heroAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: interpolate(scrollY.value, [0, HERO_HEIGHT], [0, HERO_HEIGHT * 0.5], Extrapolation.CLAMP) }],
+    transform: [
+      { translateY: interpolate(scrollY.value, [0, HERO_HEIGHT], [0, HERO_HEIGHT * 0.5], Extrapolation.CLAMP) },
+      { scale: heroScale.value },
+    ],
   }));
 
   const headerBgStyle = useAnimatedStyle(() => ({
     backgroundColor: hasImage
-      ? `rgba(255, 251, 245, ${interpolate(scrollY.value, [0, HERO_HEIGHT - HEADER_HEIGHT - insets.top], [0, 1], Extrapolation.CLAMP)})`
-      : colors.background,
+      ? `rgba(246, 244, 239, ${interpolate(scrollY.value, [0, HERO_HEIGHT - HEADER_HEIGHT - insets.top], [0, 0.92], Extrapolation.CLAMP)})`
+      : colors.bg,
   }));
 
   const headerTitleStyle = useAnimatedStyle(() => ({
@@ -647,6 +708,10 @@ export default function RecipeDetailScreen() {
   const currentServings = adjustedServings ?? recipe.servings;
   const scaleFactor = recipe.servings && currentServings ? currentServings / recipe.servings : 1;
 
+  const avgRating = ratings.length > 0
+    ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
+    : null;
+
   const formatQuantity = (qty: number | null) => {
     if (qty === null) return '';
     if (qty === Math.floor(qty)) return String(qty);
@@ -666,6 +731,15 @@ export default function RecipeDetailScreen() {
     return qty.toFixed(1);
   };
 
+  const formatTime = (minutes: number) => {
+    if (minutes >= 60) {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return m > 0 ? `${h}h ${m}m` : `${h}h`;
+    }
+    return `${minutes}m`;
+  };
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -679,8 +753,8 @@ export default function RecipeDetailScreen() {
           onScroll={scrollHandler}
           scrollEventThrottle={16}
         >
-          {/* Content */}
-          <View style={styles.content}>
+          {/* Header section (below hero, overlapping gradient) */}
+          <View style={[styles.detailHeader, !hasImage && { marginTop: 0 }]}>
             {/* Add photo button (no-image, owner only) */}
             {!hasImage && isOwner && (
               <TouchableOpacity
@@ -690,66 +764,26 @@ export default function RecipeDetailScreen() {
                 disabled={uploading}
               >
                 {uploading ? (
-                  <ActivityIndicator size="small" color={colors.primary} />
+                  <ActivityIndicator size="small" color={colors.accent} />
                 ) : (
                   <>
-                    <FontAwesome name="camera" size={24} color={colors.textMuted} />
+                    <FontAwesome name="camera" size={24} color={colors.inkMuted} />
                     <Text style={styles.addImageText}>Add a photo</Text>
                   </>
                 )}
               </TouchableOpacity>
             )}
 
-            {/* Creator name for non-owned recipes */}
-            {creatorName && recipe.created_by && (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => router.push(`/profile/${recipe.created_by}`)}
-                style={{ marginBottom: spacing.xs }}
-              >
-                <Text style={styles.creatorLink}>by {creatorName}</Text>
-              </TouchableOpacity>
+            {/* Mono category from first tag */}
+            {tags.length > 0 && (
+              <Animated.Text entering={FadeInDown.duration(300)} style={styles.detailCategory}>
+                {tags[0].tag}
+              </Animated.Text>
             )}
 
-            {/* Aggregate rating for public recipes */}
-            {recipe.visibility === 'public' && !isOwner && ratings.length > 0 && (() => {
-              const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
-              return (
-                <View style={styles.aggregateRating}>
-                  <View style={styles.aggregateStars}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Text
-                        key={star}
-                        style={star <= Math.round(avgRating) ? styles.starFilled : styles.starEmpty}
-                      >
-                        {'\u2605'}
-                      </Text>
-                    ))}
-                  </View>
-                  <Text style={styles.aggregateText}>
-                    {avgRating.toFixed(1)} ({ratings.length} {ratings.length === 1 ? 'rating' : 'ratings'})
-                  </Text>
-                </View>
-              );
-            })()}
-
-            {/* Source attribution for imported recipes */}
-            {recipe.source_type !== 'manual' && (recipe.source_name || recipe.source_url) && (
-              <TouchableOpacity
-                activeOpacity={recipe.source_url ? 0.7 : 1}
-                onPress={recipe.source_url ? () => Linking.openURL(recipe.source_url!) : undefined}
-                disabled={!recipe.source_url}
-                style={{ marginBottom: spacing.xs }}
-              >
-                <Text style={recipe.source_url ? styles.sourceLink : styles.sourceText}>
-                  from {recipe.source_name || (recipe.source_url ? new URL(recipe.source_url).hostname.replace(/^www\./, '') : '')}
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {/* Title and favorite */}
-            <Animated.View entering={FadeInDown.duration(300)} style={styles.titleRow}>
-              <Text style={styles.title}>{recipe.title}</Text>
+            {/* Large serif title */}
+            <Animated.View entering={FadeInDown.delay(animation.staggerDelay).duration(300)} style={styles.titleRow}>
+              <Text style={styles.detailTitle}>{recipe.title}</Text>
               <AnimatedHeart
                 isFavorite={isFavorited}
                 onToggle={toggleFavorite}
@@ -758,9 +792,71 @@ export default function RecipeDetailScreen() {
               />
             </Animated.View>
 
+            {/* Light byline */}
+            <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(300)}>
+              {creatorName && recipe.created_by ? (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => router.push(`/profile/${recipe.created_by}`)}
+                >
+                  <Text style={styles.detailByline}>
+                    By {creatorName}
+                    {cookEntries.length > 0 ? ` · Cooked ${cookEntries.length}x` : ''}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <Text style={styles.detailByline}>
+                  {isOwner ? 'By you' : ''}
+                  {cookEntries.length > 0 ? `${isOwner ? ' · ' : ''}Cooked ${cookEntries.length}x` : ''}
+                </Text>
+              )}
+            </Animated.View>
+
+            {/* Mono date */}
+            <Animated.Text entering={FadeInDown.delay(animation.staggerDelay * 2.5).duration(300)} style={styles.detailDate}>
+              {recipe.source_type !== 'manual' && (recipe.source_name || recipe.source_url)
+                ? `From ${recipe.source_name || (recipe.source_url ? new URL(recipe.source_url).hostname.replace(/^www\./, '') : '')}`
+                : recipe.language
+                  ? LANGUAGE_NAMES[recipe.language] || recipe.language.toUpperCase()
+                  : ''}
+            </Animated.Text>
+          </View>
+
+          {/* Stats bar */}
+          {(recipe.prep_time_minutes || recipe.cook_time_minutes || recipe.servings || avgRating) && (
+            <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(300)} style={styles.statsBar}>
+              {recipe.prep_time_minutes ? (
+                <View style={styles.statCell}>
+                  <Text style={styles.statValue}>{formatTime(recipe.prep_time_minutes)}</Text>
+                  <Text style={styles.statLabel}>Prep</Text>
+                </View>
+              ) : null}
+              {recipe.cook_time_minutes ? (
+                <View style={styles.statCell}>
+                  <Text style={styles.statValue}>{formatTime(recipe.cook_time_minutes)}</Text>
+                  <Text style={styles.statLabel}>Cook</Text>
+                </View>
+              ) : null}
+              {recipe.servings != null && recipe.servings > 0 ? (
+                <View style={styles.statCell}>
+                  <Text style={styles.statValue}>{currentServings}</Text>
+                  <Text style={styles.statLabel}>Serves</Text>
+                </View>
+              ) : null}
+              {avgRating ? (
+                <View style={[styles.statCell, styles.statCellLast]}>
+                  <Text style={styles.statValue}>{avgRating.toFixed(1)}</Text>
+                  <Text style={styles.statLabel}>Rating</Text>
+                </View>
+              ) : null}
+            </Animated.View>
+          )}
+
+          {/* Body content */}
+          <View style={styles.body}>
             {/* Owner actions */}
             {isOwner && (
-              <Animated.View entering={FadeInDown.delay(animation.staggerDelay).duration(300)} style={styles.ownerActions}>
+              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3.5).duration(300)} style={styles.ownerActions}>
                 <Button
                   title="Edit"
                   variant="secondary"
@@ -776,7 +872,7 @@ export default function RecipeDetailScreen() {
                     onPress={toggleVisibility}
                   >
                     {recipe.visibility !== 'public' && (
-                      <FontAwesome name="lock" size={12} color={colors.textMuted} style={{ marginRight: spacing.xs }} />
+                      <FontAwesome name="lock" size={12} color={colors.inkMuted} style={{ marginRight: spacing.xs }} />
                     )}
                     <Text style={[
                       styles.actionButtonText,
@@ -818,7 +914,7 @@ export default function RecipeDetailScreen() {
 
             {/* Non-owner: save + share link */}
             {!isOwner && recipe.visibility === 'public' && (
-              <Animated.View entering={FadeInDown.delay(animation.staggerDelay).duration(300)} style={styles.ownerActions}>
+              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3.5).duration(300)} style={styles.ownerActions}>
                 <Button
                   title={isSaved ? 'Saved' : 'Save'}
                   variant={isSaved ? 'primary' : 'secondary'}
@@ -834,9 +930,28 @@ export default function RecipeDetailScreen() {
               </Animated.View>
             )}
 
+            {/* Aggregate rating for public recipes */}
+            {recipe.visibility === 'public' && !isOwner && ratings.length > 0 && avgRating && (
+              <View style={styles.aggregateRating}>
+                <View style={styles.aggregateStars}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Text
+                      key={star}
+                      style={star <= Math.round(avgRating) ? styles.starFilled : styles.starEmpty}
+                    >
+                      {'\u2605'}
+                    </Text>
+                  ))}
+                </View>
+                <Text style={styles.aggregateText}>
+                  {avgRating.toFixed(1)} ({ratings.length} {ratings.length === 1 ? 'rating' : 'ratings'})
+                </Text>
+              </View>
+            )}
+
             {/* Tags */}
             {(tags.length > 0 || isOwner) && (
-              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(300)} style={styles.tagsRow}>
+              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 4).duration(300)} style={styles.tagsRow}>
                 {tags.map((t) => (
                   isOwner ? (
                     <TouchableOpacity
@@ -871,7 +986,7 @@ export default function RecipeDetailScreen() {
                       value={newTag}
                       onChangeText={setNewTag}
                       placeholder="tag name"
-                      placeholderTextColor={colors.textMuted}
+                      placeholderTextColor={colors.inkMuted}
                       autoFocus
                       returnKeyType="done"
                       onSubmitEditing={addTag}
@@ -885,43 +1000,46 @@ export default function RecipeDetailScreen() {
 
             {/* Add to Collection */}
             {isOwner && (
-              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(300)}>
+              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 4).duration(300)}>
                 <TouchableOpacity
                   style={styles.collectionButton}
                   onPress={() => setShowCollectionPicker(true)}
                   activeOpacity={0.7}
                 >
-                  <FontAwesome name="folder-o" size={14} color={colors.textSecondary} />
+                  <FontAwesome name="folder-o" size={14} color={colors.inkSecondary} />
                   <Text style={styles.collectionButtonText}>Add to Collection</Text>
                 </TouchableOpacity>
               </Animated.View>
             )}
 
-            {/* Description */}
+            {/* Description / intro */}
             {recipe.description && (
               <Animated.Text
-                entering={FadeInDown.delay(animation.staggerDelay * 2).duration(300)}
-                style={styles.description}
+                entering={FadeInDown.delay(animation.staggerDelay * 4.5).duration(300)}
+                style={styles.detailIntro}
               >
                 {recipe.description}
               </Animated.Text>
             )}
 
-            {/* Time & servings pills */}
-            <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(300)} style={styles.metaRow}>
-              {recipe.prep_time_minutes && (
-                <View style={styles.metaPill}>
-                  <Text style={styles.metaText}>Prep: {recipe.prep_time_minutes} min</Text>
-                </View>
-              )}
-              {recipe.cook_time_minutes && (
-                <View style={styles.metaPill}>
-                  <Text style={styles.metaText}>Cook: {recipe.cook_time_minutes} min</Text>
-                </View>
-              )}
-              {recipe.servings != null && recipe.servings > 0 && (
-                <View style={styles.servingsAdjuster}>
-                  <Text style={styles.metaText}>Servings:</Text>
+            {/* Source attribution for imported recipes */}
+            {recipe.source_type !== 'manual' && recipe.source_url && (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => Linking.openURL(recipe.source_url!)}
+                style={{ marginBottom: spacing.lg }}
+              >
+                <Text style={styles.sourceLink}>
+                  View original recipe
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Servings adjuster */}
+            {recipe.servings != null && recipe.servings > 0 && (
+              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 5).duration(300)} style={styles.servingsAdjuster}>
+                <Text style={styles.servingsLabel}>Servings</Text>
+                <View style={styles.servingsControls}>
                   <TouchableOpacity
                     onPress={() => setAdjustedServings(Math.max(1, (currentServings || 1) - 1))}
                     style={styles.servingsButton}
@@ -943,28 +1061,14 @@ export default function RecipeDetailScreen() {
                     </TouchableOpacity>
                   )}
                 </View>
-              )}
-              {recipe.language && (
-                <View style={[styles.metaPill, { backgroundColor: 'rgba(45,95,93,0.1)' }]}>
-                  <Text style={[styles.metaText, { color: colors.primary }]}>
-                    {LANGUAGE_NAMES[recipe.language] || recipe.language.toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              {recipe.prep_time_minutes && recipe.cook_time_minutes && (
-                <View style={[styles.metaPill, styles.totalPill]}>
-                  <Text style={[styles.metaText, styles.totalText]}>
-                    Total: {recipe.prep_time_minutes + recipe.cook_time_minutes} min
-                  </Text>
-                </View>
-              )}
-            </Animated.View>
+              </Animated.View>
+            )}
 
             {/* Ingredients */}
             {ingredients.length > 0 && (
-              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 4).duration(300)} style={styles.section}>
+              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 5.5).duration(300)} style={styles.section}>
                 <View style={styles.ingredientHeader}>
-                  <SectionHeader title="Ingredients" />
+                  <Text style={styles.sectionLabel}>Ingredients</Text>
                   <View style={styles.unitToggle}>
                     <TouchableOpacity
                       style={[styles.unitOption, unitSystem === 'metric' && styles.unitOptionActive]}
@@ -986,37 +1090,52 @@ export default function RecipeDetailScreen() {
                     </TouchableOpacity>
                   </View>
                 </View>
-                {ingredients.map((ing) => {
+                {ingredients.map((ing, index) => {
                   const scaledQty = ing.quantity != null ? ing.quantity * scaleFactor : null;
                   const converted = convertIngredient(scaledQty, ing.unit || '', unitSystem);
+                  const isChecked = checkedIngredients.has(index);
                   const isIngAdded = addedIngredients.has(ing.id) || addedToList;
                   const isIngAdding = addingIngredientId === ing.id;
                   return (
-                  <View key={ing.id} style={styles.ingredientRow}>
-                    <Text style={styles.ingredientQty}>
-                      {formatQuantity(converted.quantity)} {converted.unit}
-                    </Text>
-                    <View style={styles.ingredientNameWrap}>
-                      <Text style={styles.ingredientName}>{ing.ingredient_name}</Text>
-                      {ing.notes && <Text style={styles.ingredientNotes}>({ing.notes})</Text>}
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => !isIngAdded && addSingleIngredient(ing)}
-                      disabled={isIngAdded || isIngAdding}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      style={[styles.ingredientAddButton, isIngAdded && styles.ingredientAddButtonDone]}
+                    <Pressable
+                      key={ing.id}
+                      style={styles.ingredientRow}
+                      onPress={() => toggleIngredientCheck(index)}
                     >
-                      {isIngAdding ? (
-                        <ActivityIndicator size="small" color={colors.primary} />
-                      ) : (
-                        <FontAwesome
-                          name={isIngAdded ? 'check' : 'plus'}
-                          size={12}
-                          color={isIngAdded ? colors.success : colors.primary}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  </View>
+                      <IngredientCheckbox checked={isChecked} />
+                      <Text style={[
+                        styles.ingName,
+                        isChecked && styles.ingNameChecked,
+                      ]}>
+                        {ing.ingredient_name}
+                        {ing.notes ? ` (${ing.notes})` : ''}
+                      </Text>
+                      <Text style={[
+                        styles.ingAmount,
+                        isChecked && styles.ingAmountChecked,
+                      ]}>
+                        {formatQuantity(converted.quantity)} {converted.unit}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={(e) => {
+                          e.stopPropagation?.();
+                          if (!isIngAdded) addSingleIngredient(ing);
+                        }}
+                        disabled={isIngAdded || isIngAdding}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        style={[styles.ingredientAddButton, isIngAdded && styles.ingredientAddButtonDone]}
+                      >
+                        {isIngAdding ? (
+                          <ActivityIndicator size="small" color={colors.accent} />
+                        ) : (
+                          <FontAwesome
+                            name={isIngAdded ? 'check' : 'plus'}
+                            size={10}
+                            color={isIngAdded ? colors.success : colors.accent}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    </Pressable>
                   );
                 })}
                 <TouchableOpacity
@@ -1026,13 +1145,13 @@ export default function RecipeDetailScreen() {
                   activeOpacity={0.7}
                 >
                   {addingToList ? (
-                    <ActivityIndicator size="small" color={colors.primary} />
+                    <ActivityIndicator size="small" color={colors.accent} />
                   ) : (
                     <>
                       <FontAwesome
                         name={addedToList ? 'check' : 'shopping-cart'}
                         size={14}
-                        color={addedToList ? colors.success : colors.primary}
+                        color={addedToList ? colors.success : colors.accent}
                       />
                       <Text style={[styles.addToListText, addedToList && styles.addToListTextDone]}>
                         {addedToList
@@ -1045,18 +1164,18 @@ export default function RecipeDetailScreen() {
               </Animated.View>
             )}
 
-            {/* Instructions */}
+            {/* Instructions / Method */}
             {instructions.length > 0 && (
-              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 5).duration(300)} style={styles.section}>
-                <SectionHeader title="Preparation" />
+              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 6).duration(300)} style={styles.section}>
+                <Text style={styles.sectionLabel}>Method</Text>
                 {instructions.length === 1 ? (
-                  <Text style={styles.instructionText}>{instructions[0]}</Text>
+                  <Text style={styles.stepText}>{instructions[0]}</Text>
                 ) : (
                   instructions.map((step, i) => (
                     <View key={i} style={styles.stepRow}>
-                      <View style={styles.stepNumber}>
-                        <Text style={styles.stepNumberText}>{i + 1}</Text>
-                      </View>
+                      <Text style={styles.stepNumber}>
+                        {String(i + 1).padStart(2, '0')}
+                      </Text>
                       <Text style={styles.stepText}>{step}</Text>
                     </View>
                   ))
@@ -1065,8 +1184,8 @@ export default function RecipeDetailScreen() {
             )}
 
             {/* Cooking Log */}
-            <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 6).duration(300)} style={styles.section}>
-              <SectionHeader title="Cooking log" />
+            <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 7).duration(300)} style={styles.section}>
+              <Text style={styles.sectionLabel}>Cooking log</Text>
 
               {cookEntries.length === 0 && !showCookForm && (
                 <Text style={styles.emptyLog}>You haven't cooked this yet.</Text>
@@ -1085,7 +1204,7 @@ export default function RecipeDetailScreen() {
                     <IconButton
                       name="times"
                       onPress={() => deleteCookLogEntry(entry.id)}
-                      color={colors.starEmpty}
+                      color={colors.border}
                       size={16}
                     />
                   </View>
@@ -1108,7 +1227,7 @@ export default function RecipeDetailScreen() {
                   <TextInput
                     style={styles.cookNotesInput}
                     placeholder="How did it turn out?"
-                    placeholderTextColor={colors.textMuted}
+                    placeholderTextColor={colors.inkMuted}
                     value={cookNotes}
                     onChangeText={setCookNotes}
                     multiline
@@ -1135,8 +1254,8 @@ export default function RecipeDetailScreen() {
                 </View>
               )}
 
-              {/* Ratings — gated by cooking */}
-              <SectionHeader title="Ratings" />
+              {/* Ratings -- gated by cooking */}
+              <Text style={[styles.sectionLabel, { marginTop: spacing.xl }]}>Ratings</Text>
               {!hasCooked ? (
                 <Text style={styles.emptyLog}>Cook this recipe to leave a rating.</Text>
               ) : (
@@ -1148,7 +1267,7 @@ export default function RecipeDetailScreen() {
                         <IconButton
                           name="times"
                           onPress={() => deleteRatingEntry(entry.id)}
-                          color={colors.starEmpty}
+                          color={colors.border}
                           size={16}
                         />
                       </View>
@@ -1179,7 +1298,7 @@ export default function RecipeDetailScreen() {
                       <TextInput
                         style={styles.cookNotesInput}
                         placeholder="Notes (optional)"
-                        placeholderTextColor={colors.textMuted}
+                        placeholderTextColor={colors.inkMuted}
                         value={ratingNotes}
                         onChangeText={setRatingNotes}
                         multiline
@@ -1304,7 +1423,7 @@ export default function RecipeDetailScreen() {
             <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
               <View>
                 <Animated.View style={headerIconPrimaryStyle}>
-                  <FontAwesome name="chevron-left" size={18} color={colors.primary} />
+                  <FontAwesome name="chevron-left" size={18} color={colors.accent} />
                 </Animated.View>
                 <Animated.View style={[StyleSheet.absoluteFillObject, headerIconWhiteStyle]}>
                   <FontAwesome name="chevron-left" size={18} color={colors.white} />
@@ -1331,14 +1450,13 @@ export default function RecipeDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.bg },
   centered: { justifyContent: 'center', alignItems: 'center' },
   scrollContent: { paddingBottom: spacing.xxxl },
-  content: { padding: spacing.pagePadding, backgroundColor: colors.background },
-  emptyText: { fontSize: 16, color: colors.textSecondary, fontFamily: fontFamily.sansMedium },
-  emptySubtext: { fontSize: 14, color: colors.textSecondary, marginTop: spacing.xs, textAlign: 'center' as const },
+  emptyText: { fontSize: 16, color: colors.inkSecondary, fontFamily: fontFamily.sansMedium },
+  emptySubtext: { fontSize: 14, color: colors.inkSecondary, marginTop: spacing.xs, textAlign: 'center' as const },
   backLink: { marginTop: spacing.md },
-  backLinkText: { fontSize: 14, color: colors.primary, fontFamily: fontFamily.sansMedium },
+  backLinkText: { fontSize: 14, color: colors.accent, fontFamily: fontFamily.sansMedium },
 
   // Parallax hero
   heroContainer: {
@@ -1347,6 +1465,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: HERO_HEIGHT,
+    overflow: 'hidden',
     zIndex: 0,
   },
   heroTouchable: {
@@ -1360,7 +1479,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: '50%',
+    height: 80,
   },
   uploadOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -1381,8 +1500,9 @@ const styles = StyleSheet.create({
   },
   pageCounterText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: fontFamily.mono,
     color: colors.white,
+    letterSpacing: 0.4,
   },
 
   // Custom header
@@ -1408,7 +1528,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: fontFamily.sansMedium,
     fontSize: 17,
-    color: colors.text,
+    color: colors.ink,
     marginHorizontal: spacing.md,
   },
   headerSpacer: {
@@ -1419,9 +1539,8 @@ const styles = StyleSheet.create({
   addImageButton: {
     width: '100%',
     aspectRatio: 16 / 9,
-    borderRadius: radii.lg,
     borderWidth: 2,
-    borderColor: colors.borderLight,
+    borderColor: colors.border,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1429,18 +1548,122 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   addImageText: {
-    ...typography.bodySmall,
-    color: colors.textMuted,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.inkMuted,
     marginTop: spacing.sm,
   },
 
-  // Creator & source
-  creatorLink: { ...typography.bodySmall, color: colors.primary, fontWeight: '500' },
+  // Detail header
+  detailHeader: {
+    paddingHorizontal: 20,
+    marginTop: -16,
+    position: 'relative',
+    backgroundColor: colors.bg,
+  },
+  detailCategory: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.4,
+    color: colors.accent,
+    marginBottom: 6,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  detailTitle: {
+    fontFamily: fontFamily.display,
+    fontSize: 40,
+    lineHeight: 40,
+    letterSpacing: -1.6,
+    color: colors.ink,
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  detailByline: {
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.inkSecondary,
+    marginBottom: 4,
+  },
+  detailDate: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    color: colors.inkMuted,
+    letterSpacing: 0.4,
+    marginBottom: 18,
+  },
+
+  // Stats bar
+  statsBar: {
+    marginHorizontal: 20,
+    borderTopWidth: 3,
+    borderTopColor: colors.ink,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.ink,
+    flexDirection: 'row',
+  },
+  statCell: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
+  },
+  statCellLast: {
+    borderRightWidth: 0,
+  },
+  statValue: {
+    fontFamily: fontFamily.display,
+    fontSize: 20,
+    color: colors.ink,
+    lineHeight: 22,
+  },
+  statLabel: {
+    fontFamily: fontFamily.mono,
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 0.9,
+    color: colors.inkMuted,
+    marginTop: 1,
+  },
+
+  // Body
+  body: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 100,
+  },
+
+  // Description / intro
+  detailIntro: {
+    fontFamily: fontFamily.displayItalic,
+    fontSize: 18,
+    color: colors.inkSecondary,
+    lineHeight: 26,
+    marginBottom: 28,
+  },
+
+  // Source link
+  sourceLink: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.accent,
+    textDecorationLine: 'underline',
+    letterSpacing: 0.4,
+  },
+
+  // Creator & aggregate rating
   aggregateRating: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.md,
   },
   aggregateStars: {
     flexDirection: 'row',
@@ -1448,34 +1671,20 @@ const styles = StyleSheet.create({
   },
   starFilled: {
     fontSize: 15,
-    color: colors.starFilled,
+    color: colors.accent,
   },
   starEmpty: {
     fontSize: 15,
     color: colors.border,
   },
   aggregateText: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-  },
-  sourceLink: { ...typography.bodySmall, color: colors.primary },
-  sourceText: { ...typography.bodySmall, color: colors.textSecondary },
-
-  // Title
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-  },
-  title: {
-    ...typography.display,
-    color: colors.text,
-    flex: 1,
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.inkMuted,
   },
 
   // Owner actions
-  ownerActions: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
+  ownerActions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.lg },
   actionButton: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
@@ -1486,7 +1695,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontFamily: fontFamily.sansMedium,
-    fontSize: typography.bodySmall.fontSize,
+    fontSize: 13,
   },
   publicButton: {
     backgroundColor: colors.successBg,
@@ -1496,7 +1705,7 @@ const styles = StyleSheet.create({
   publicButtonText: {
     color: colors.success,
     fontFamily: fontFamily.sansMedium,
-    fontSize: typography.bodySmall.fontSize,
+    fontSize: 13,
   },
   privateButton: {
     backgroundColor: colors.surface,
@@ -1504,9 +1713,9 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   privateButtonText: {
-    color: colors.textMuted,
+    color: colors.inkMuted,
     fontFamily: fontFamily.sansMedium,
-    fontSize: typography.bodySmall.fontSize,
+    fontSize: 13,
   },
   recommendedContainer: {
     flexDirection: 'row' as const,
@@ -1518,13 +1727,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   recommendedText: {
-    color: colors.textSecondary,
+    color: colors.inkSecondary,
     fontFamily: fontFamily.sansMedium,
-    fontSize: typography.bodySmall.fontSize,
+    fontSize: 13,
   },
   removeRecommendText: {
-    color: colors.textMuted,
-    fontSize: typography.caption.fontSize,
+    color: colors.inkMuted,
+    fontSize: 12,
     textDecorationLine: 'underline' as const,
   },
 
@@ -1542,8 +1751,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   collectionButtonText: {
-    ...typography.label,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.sansMedium,
+    fontSize: 14,
+    color: colors.inkSecondary,
   },
   addTagButton: {
     backgroundColor: colors.surface,
@@ -1552,82 +1762,102 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   addTagText: {
-    ...typography.caption,
-    color: colors.primary,
-    fontWeight: '500',
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.accent,
   },
   tagInputWrap: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: colors.accent,
     borderRadius: radii.xl,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs - 1,
     minWidth: 80,
   },
   tagInput: {
-    ...typography.caption,
-    color: colors.text,
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.ink,
     padding: 0,
     margin: 0,
   },
 
-  // Description
-  description: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },
-
-  // Meta
-  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.xxl },
-  metaPill: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.xl,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm - 2,
-  },
-  metaText: { ...typography.label, color: colors.textSecondary },
-  totalPill: { backgroundColor: colors.primary },
-  totalText: { color: colors.white },
+  // Servings adjuster
   servingsAdjuster: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radii.xl,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm - 2,
+    justifyContent: 'space-between',
+    marginBottom: spacing.xl,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  servingsLabel: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.4,
+    color: colors.inkMuted,
+  },
+  servingsControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
   },
   servingsButton: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: colors.primary + '1A',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.accentLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   servingsButtonText: {
-    ...typography.label,
-    color: colors.primary,
-    fontWeight: '600',
+    fontFamily: fontFamily.sansMedium,
+    fontSize: 16,
+    color: colors.accent,
   },
   servingsCount: {
-    ...typography.label,
-    color: colors.text,
-    fontWeight: '600',
-    minWidth: 20,
+    fontFamily: fontFamily.display,
+    fontSize: 20,
+    color: colors.ink,
+    minWidth: 24,
     textAlign: 'center',
   },
   servingsReset: {
-    ...typography.caption,
-    color: colors.primary,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    color: colors.accent,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
 
   // Sections
-  section: { marginBottom: spacing.xxxl - 4 },
+  section: { marginBottom: spacing.sectionGap },
+
+  // Section label (mono uppercase with bottom border)
+  sectionLabel: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.4,
+    color: colors.inkMuted,
+    marginBottom: 10,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
 
   // Ingredients
   ingredientHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 10,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   unitToggle: {
     flexDirection: 'row',
@@ -1640,49 +1870,87 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   unitOptionActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent,
   },
   unitOptionText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontWeight: '500',
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    color: colors.inkSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   unitOptionTextActive: {
     color: colors.white,
   },
   ingredientRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 9,
     borderBottomWidth: 1,
-    borderBottomColor: colors.surface,
-    paddingVertical: spacing.sm,
+    borderBottomColor: colors.border,
+    borderStyle: 'dotted' as any,
   },
-  ingredientQty: {
-    width: 80,
-    textAlign: 'right',
-    ...typography.body,
-    fontWeight: '500',
-    color: colors.text,
-    marginRight: spacing.md,
-  },
-  ingredientNameWrap: { flex: 1 },
-  ingredientName: { ...typography.body, color: colors.textSecondary },
-  ingredientNotes: { ...typography.label, color: colors.textMuted, marginTop: 2 },
-
-  // Instructions
-  instructionText: { ...typography.body, color: colors.textSecondary, lineHeight: 24 },
-  stepRow: { flexDirection: 'row', marginBottom: spacing.lg, gap: spacing.md },
-  stepNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: colors.primary,
+  ingCheck: {
+    width: 16,
+    height: 16,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 2,
   },
-  stepNumberText: { color: colors.white, ...typography.label, fontWeight: '600' },
-  stepText: { flex: 1, ...typography.body, color: colors.textSecondary, lineHeight: 24 },
+  ingCheckChecked: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
+  ingCheckmark: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  ingName: {
+    flex: 1,
+    fontFamily: fontFamily.sans,
+    fontSize: 14,
+    color: colors.ink,
+  },
+  ingNameChecked: {
+    color: colors.inkMuted,
+    textDecorationLine: 'line-through',
+    textDecorationColor: colors.accent,
+  },
+  ingAmount: {
+    fontFamily: fontFamily.mono,
+    fontSize: 12,
+    color: colors.inkSecondary,
+  },
+  ingAmountChecked: {
+    opacity: 0.4,
+  },
+
+  // Steps / Method
+  stepRow: {
+    flexDirection: 'row',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    gap: 12,
+  },
+  stepNumber: {
+    fontFamily: fontFamily.display,
+    fontSize: 28,
+    color: colors.border,
+    lineHeight: 28,
+    width: 36,
+  },
+  stepText: {
+    flex: 1,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 14,
+    color: colors.inkSecondary,
+    lineHeight: 22,
+    paddingTop: 4,
+  },
 
   // Cooking log
   cookForm: {
@@ -1693,17 +1961,18 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   } as ViewStyle,
   cookFormLabel: {
-    ...typography.body,
-    fontWeight: '500',
-    color: colors.text,
+    fontFamily: fontFamily.sansMedium,
+    fontSize: 14,
+    color: colors.ink,
     marginBottom: spacing.sm,
   },
   cookNotesInput: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
     borderRadius: radii.sm,
     padding: spacing.md,
-    ...typography.bodySmall,
-    color: colors.text,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.ink,
     minHeight: 60,
     textAlignVertical: 'top',
     marginTop: spacing.md,
@@ -1716,9 +1985,9 @@ const styles = StyleSheet.create({
   },
 
   emptyLog: {
-    ...typography.bodySmall,
-    color: colors.textMuted,
-    fontStyle: 'italic',
+    fontFamily: fontFamily.displayItalic,
+    fontSize: 14,
+    color: colors.inkMuted,
     marginTop: spacing.xs,
   },
 
@@ -1729,15 +1998,15 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginTop: spacing.sm,
   } as ViewStyle,
-  logEntryHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  logDate: { ...typography.label, color: colors.text },
-  logNotes: { ...typography.label, color: colors.textSecondary, marginTop: spacing.sm - 2, lineHeight: 18 },
+  logEntryHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  logDate: { fontFamily: fontFamily.mono, fontSize: 11, color: colors.ink, letterSpacing: 0.4 },
+  logNotes: { fontFamily: fontFamily.sansLight, fontSize: 13, color: colors.inkSecondary, marginTop: spacing.sm - 2, lineHeight: 18 },
 
   // Add to shopping list
   ingredientAddButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1752,7 +2021,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingVertical: spacing.sm + 2,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: colors.accent,
     borderRadius: radii.md,
   },
   addToListButtonDone: {
@@ -1760,9 +2029,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.successBg,
   },
   addToListText: {
-    ...typography.label,
-    color: colors.primary,
-    fontWeight: '600',
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.accent,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   addToListTextDone: {
     color: colors.success,

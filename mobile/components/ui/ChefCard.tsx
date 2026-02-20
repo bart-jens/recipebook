@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import Avatar from './Avatar';
-import { colors, spacing, typography, radii } from '@/lib/theme';
+import { colors, spacing, typography, fontFamily } from '@/lib/theme';
 
 interface Props {
   id: string;
@@ -72,30 +72,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     padding: spacing.lg,
-    borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
   },
   info: {
     flex: 1,
     minWidth: 0,
   },
   name: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.text,
+    fontFamily: fontFamily.display,
+    fontSize: 18,
+    lineHeight: 22,
+    color: colors.ink,
   },
   meta: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...typography.monoMeta,
+    color: colors.inkSecondary,
     marginTop: 2,
   },
   followButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderRadius: radii.md,
-    backgroundColor: colors.cta,
+    backgroundColor: colors.accent,
   },
   followingButton: {
     backgroundColor: 'transparent',
@@ -103,11 +102,13 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   followText: {
-    ...typography.label,
-    fontWeight: '600',
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
     color: colors.white,
   },
   followingText: {
-    color: colors.textSecondary,
+    color: colors.inkSecondary,
   },
 });

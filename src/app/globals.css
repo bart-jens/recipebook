@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Outfit:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500&family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,8 +6,47 @@
 
 @layer base {
   body {
-    @apply bg-white text-[#111111] font-sans antialiased;
+    @apply bg-bg text-ink font-body antialiased;
+    font-size: 14px;
+    line-height: 1.5;
   }
+
+  ::selection {
+    @apply bg-accent text-white;
+  }
+}
+
+@layer components {
+  .rule-thick {
+    @apply h-[3px] bg-ink;
+  }
+
+  .rule-thin {
+    @apply h-px bg-border;
+  }
+
+  .mono-label {
+    @apply font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted;
+  }
+
+  .mono-meta {
+    @apply font-mono text-[11px] text-ink-muted;
+  }
+
+  .serif-title {
+    @apply font-display tracking-[-0.02em] text-ink;
+  }
+
+  .anim-delay-1 { animation-delay: 40ms; }
+  .anim-delay-2 { animation-delay: 80ms; }
+  .anim-delay-3 { animation-delay: 120ms; }
+  .anim-delay-4 { animation-delay: 160ms; }
+  .anim-delay-5 { animation-delay: 200ms; }
+  .anim-delay-6 { animation-delay: 240ms; }
+  .anim-delay-7 { animation-delay: 280ms; }
+  .anim-delay-8 { animation-delay: 320ms; }
+  .anim-delay-9 { animation-delay: 360ms; }
+  .anim-delay-10 { animation-delay: 400ms; }
 }
 
 @layer utilities {

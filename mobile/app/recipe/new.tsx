@@ -60,8 +60,8 @@ export default function NewRecipeScreen() {
         options={{
           headerShown: true,
           headerTitle: 'New Recipe',
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.primary,
+          headerStyle: { backgroundColor: colors.bg },
+          headerTintColor: colors.accent,
           headerShadowVisible: false,
         }}
       />

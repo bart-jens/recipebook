@@ -13,7 +13,7 @@ interface Props {
 export default function IconButton({
   name,
   onPress,
-  color = colors.textSecondary,
+  color = colors.inkMuted,
   size = 16,
   disabled = false,
 }: Props) {

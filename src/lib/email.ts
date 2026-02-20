@@ -14,7 +14,7 @@ export async function sendInviteEmail(
   const signupUrl = `${APP_URL}/signup?code=${code}`;
 
   const html = `
-    <div style="font-family: 'DM Sans', system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 24px;">
+    <div style="font-family: 'Inter Tight', system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 24px;">
       <h1 style="font-family: Georgia, serif; font-size: 28px; font-weight: 600; color: #1a1a1a; margin: 0 0 8px;">
         EefEats
       </h1>
@@ -28,11 +28,11 @@ export async function sendInviteEmail(
         <p style="color: #6B7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 8px;">
           Your invite code
         </p>
-        <p style="font-family: monospace; font-size: 24px; font-weight: 700; color: #2D5F5D; letter-spacing: 0.1em; margin: 0;">
+        <p style="font-family: monospace; font-size: 24px; font-weight: 700; color: #8B4513; letter-spacing: 0.1em; margin: 0;">
           ${code}
         </p>
       </div>
-      <a href="${signupUrl}" style="display: block; background: #2D5F5D; color: white; text-decoration: none; text-align: center; padding: 14px 24px; border-radius: 8px; font-size: 16px; font-weight: 500;">
+      <a href="${signupUrl}" style="display: block; background: #8B4513; color: white; text-decoration: none; text-align: center; padding: 14px 24px; border-radius: 8px; font-size: 16px; font-weight: 500;">
         Sign up now
       </a>
       <p style="color: #9CA3AF; font-size: 12px; text-align: center; margin: 24px 0 0;">

@@ -8,7 +8,7 @@ export default function RecipeDetailSkeleton() {
   return (
     <View style={styles.container}>
       <Animated.View entering={FadeIn.delay(0)}>
-        <Skeleton width="100%" height={200} borderRadius={radii.lg} />
+        <Skeleton width="100%" height={200} borderRadius={0} />
       </Animated.View>
 
       <Animated.View entering={FadeIn.delay(animation.staggerDelay)}>
@@ -16,9 +16,9 @@ export default function RecipeDetailSkeleton() {
       </Animated.View>
 
       <Animated.View entering={FadeIn.delay(animation.staggerDelay * 2)} style={styles.pillRow}>
-        <Skeleton width={80} height={28} borderRadius={radii.xl} />
-        <Skeleton width={80} height={28} borderRadius={radii.xl} />
-        <Skeleton width={90} height={28} borderRadius={radii.xl} />
+        <Skeleton width={80} height={28} borderRadius={0} />
+        <Skeleton width={80} height={28} borderRadius={0} />
+        <Skeleton width={90} height={28} borderRadius={0} />
       </Animated.View>
 
       <Animated.View entering={FadeIn.delay(animation.staggerDelay * 3)}>

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { colors, spacing, radii, typography } from '@/lib/theme';
+import { colors, spacing, fontFamily } from '@/lib/theme';
 
 type Variant = 'success' | 'premium' | 'default';
 
@@ -18,24 +18,26 @@ export default function Badge({ label, variant = 'default' }: Props) {
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: radii.lg,
+    borderWidth: 1,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs / 2,
   },
   text: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontFamily: fontFamily.mono,
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 1.4,
   },
 });
 
 const variantBgStyles: Record<Variant, ViewStyle> = {
-  success: { backgroundColor: colors.successBg },
-  premium: { backgroundColor: colors.surface },
-  default: { backgroundColor: colors.surface },
+  success: { backgroundColor: 'transparent', borderColor: colors.olive },
+  premium: { backgroundColor: 'transparent', borderColor: colors.accent },
+  default: { backgroundColor: 'transparent', borderColor: colors.border },
 };
 
 const variantTextStyles: Record<Variant, TextStyle> = {
-  success: { color: colors.success },
-  premium: { color: colors.primary },
-  default: { color: colors.textSecondary },
+  success: { color: colors.olive },
+  premium: { color: colors.accent },
+  default: { color: colors.inkSecondary },
 };

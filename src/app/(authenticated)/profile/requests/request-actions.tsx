@@ -23,14 +23,14 @@ export function RequestActions({ requesterId }: { requesterId: string }) {
       <button
         onClick={handleApprove}
         disabled={isPending}
-        className="rounded-md bg-cta px-3 py-1.5 text-xs font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+        className="bg-ink px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
       >
         Approve
       </button>
       <button
         onClick={handleDeny}
         disabled={isPending}
-        className="rounded-md bg-warm-tag px-3 py-1.5 text-xs text-warm-gray hover:bg-warm-border disabled:opacity-50"
+        className="border border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-ink-secondary transition-colors hover:border-ink hover:text-ink disabled:opacity-50"
       >
         Deny
       </button>

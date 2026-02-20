@@ -42,15 +42,15 @@ export default async function FollowRequestsPage() {
   return (
     <div className="max-w-2xl">
       <div className="mb-8">
-        <Link href="/profile" className="text-sm text-warm-gray hover:text-accent">
+        <Link href="/profile" className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:text-accent">
           &larr; Back to profile
         </Link>
       </div>
 
-      <h1 className="mb-6 text-2xl font-semibold">Follow Requests</h1>
+      <h1 className="mb-6 font-display text-3xl text-ink">Follow Requests</h1>
 
       {(requests || []).length === 0 ? (
-        <p className="text-sm text-warm-gray/60">No pending follow requests.</p>
+        <p className="font-body text-sm text-ink-muted">No pending follow requests.</p>
       ) : (
         <div className="space-y-3">
           {(requests || []).map((request) => {
@@ -58,7 +58,7 @@ export default async function FollowRequestsPage() {
             return (
               <div
                 key={request.id}
-                className="flex items-center justify-between rounded-md bg-warm-tag p-4 border border-warm-border"
+                className="flex items-center justify-between border border-border bg-surface p-4"
               >
                 <Link
                   href={`/profile/${request.requester_id}`}
@@ -71,11 +71,11 @@ export default async function FollowRequestsPage() {
                       className="h-10 w-10 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-tag text-sm font-semibold text-warm-gray">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-alt font-display text-sm text-ink-secondary">
                       {(requester?.display_name || "?")[0].toUpperCase()}
                     </div>
                   )}
-                  <span className="text-sm font-medium">
+                  <span className="font-body text-sm font-medium text-ink">
                     {requester?.display_name || "Unknown"}
                   </span>
                 </Link>

@@ -1,17 +1,26 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import {
-  DMSans_400Regular,
-  DMSans_500Medium,
-  DMSans_700Bold,
-} from '@expo-google-fonts/dm-sans';
-import { Outfit_700Bold } from '@expo-google-fonts/outfit';
+  InstrumentSerif_400Regular,
+  InstrumentSerif_400Regular_Italic,
+} from '@expo-google-fonts/instrument-serif';
+import {
+  InterTight_300Light,
+  InterTight_400Regular,
+  InterTight_500Medium,
+  InterTight_600SemiBold,
+  InterTight_700Bold,
+} from '@expo-google-fonts/inter-tight';
+import {
+  GeistMono_400Regular,
+  GeistMono_500Medium,
+} from '@expo-google-fonts/geist-mono';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 import { AuthProvider } from '@/contexts/auth';
-import { colors } from '@/lib/theme';
+import { colors, fontFamily } from '@/lib/theme';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -21,10 +30,15 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
-    DMSans_400Regular,
-    DMSans_500Medium,
-    DMSans_700Bold,
-    Outfit_700Bold,
+    InstrumentSerif_400Regular,
+    InstrumentSerif_400Regular_Italic,
+    InterTight_300Light,
+    InterTight_400Regular,
+    InterTight_500Medium,
+    InterTight_600SemiBold,
+    InterTight_700Bold,
+    GeistMono_400Regular,
+    GeistMono_500Medium,
   });
 
   useEffect(() => {
@@ -40,11 +54,14 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   const headerDefaults = {
-    headerStyle: { backgroundColor: colors.background },
-    headerTintColor: colors.text,
+    headerStyle: { backgroundColor: colors.bg },
+    headerTintColor: colors.inkMuted,
     headerShadowVisible: false,
     headerBackTitle: 'Back',
-    headerTitleStyle: { color: colors.text },
+    headerTitleStyle: {
+      color: colors.ink,
+      fontFamily: fontFamily.display,
+    },
   };
 
   return (

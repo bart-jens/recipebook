@@ -13,7 +13,7 @@ interface IngredientRowsProps {
 }
 
 const inputClass =
-  "rounded-md bg-warm-tag px-2 py-3 text-base focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent";
+  "bg-warm-tag px-2 py-3 text-base focus:bg-surface focus:outline-none focus:ring-1 focus:ring-accent";
 
 export function IngredientRows({ ingredients, onChange }: IngredientRowsProps) {
   function update(index: number, field: keyof Ingredient, value: string) {
@@ -49,7 +49,7 @@ export function IngredientRows({ ingredients, onChange }: IngredientRowsProps) {
     <div className="space-y-2">
       <label className="block text-sm font-medium text-warm-gray">Ingredients</label>
       {ingredients.map((ing, i) => (
-        <div key={i} className="flex flex-col gap-2 rounded-md bg-warm-surface p-3">
+        <div key={i} className="flex flex-col gap-2 bg-warm-surface p-3">
           <div className="flex gap-2">
             <input
               type="number"
@@ -117,7 +117,7 @@ export function IngredientRows({ ingredients, onChange }: IngredientRowsProps) {
       <button
         type="button"
         onClick={add}
-        className="rounded-md border border-dashed border-warm-border/50 px-4 py-3 text-sm text-warm-gray hover:bg-warm-tag w-full"
+        className="border border-dashed border-warm-border/50 px-4 py-3 text-sm text-warm-gray hover:bg-warm-tag w-full"
       >
         + Add ingredient
       </button>

@@ -21,19 +21,29 @@ export function VisibilityToggle({ recipeId, isPublic: initialPublic }: { recipe
     <button
       onClick={handleToggle}
       disabled={loading}
-      className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+      className={`font-mono text-[10px] uppercase tracking-[0.06em] flex items-center gap-1 transition-all active:scale-[0.94] disabled:opacity-40 ${
         isPublic
-          ? "bg-green-50 text-green-700 hover:bg-green-100"
-          : "bg-warm-tag text-warm-gray hover:bg-warm-border"
+          ? "text-olive"
+          : "text-ink-muted hover:text-ink"
       }`}
     >
-      {isPublic ? "Public" : (
-        <span className="flex items-center gap-1">
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+      {isPublic ? (
+        <>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          Public
+        </>
+      ) : (
+        <>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
           Private
-        </span>
+        </>
       )}
     </button>
   );

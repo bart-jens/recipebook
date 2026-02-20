@@ -159,11 +159,11 @@ export default function ImportPhotoPage() {
           <p className="mt-1 text-sm text-warm-gray">Extracted from photo. Review and edit before saving.</p>
         </div>
         {!sourceSkipped && (
-          <div className="mb-6 max-w-2xl rounded-lg border border-warm-border bg-warm-tag p-5">
+          <div className="mb-6 max-w-2xl border border-warm-border bg-warm-tag p-5">
             <p className="text-sm font-medium text-warm-gray">Where is this recipe from?</p>
 
             <label
-              className={`mt-3 flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-md border border-warm-border bg-white px-4 py-3.5 text-sm font-medium text-warm-gray transition-colors hover:border-accent hover:text-accent ${scanningCover ? "opacity-50 pointer-events-none" : ""}`}
+              className={`mt-3 flex min-h-[44px] cursor-pointer items-center justify-center gap-2 border border-warm-border bg-surface px-4 py-3.5 text-sm font-medium text-warm-gray transition-colors hover:border-accent hover:text-accent ${scanningCover ? "opacity-50 pointer-events-none" : ""}`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0011.586 3H8.414a1 1 0 00-.707.293L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
@@ -187,7 +187,7 @@ export default function ImportPhotoPage() {
                 placeholder="e.g. The Food Lab, Ottolenghi Simple"
                 value={sourceName}
                 onChange={(e) => setSourceName(e.target.value)}
-                className="block w-full rounded-md bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                className="block w-full bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
 
@@ -240,7 +240,7 @@ export default function ImportPhotoPage() {
               setError(null);
               setFileName(e.target.files?.[0]?.name || null);
             }}
-            className="mt-1 block w-full text-sm text-warm-gray file:mr-4 file:rounded-md file:border file:border-warm-border file:bg-warm-tag file:px-4 file:py-2 file:text-sm file:font-medium file:text-warm-gray hover:file:bg-warm-divider"
+            className="mt-1 block w-full text-sm text-warm-gray file:mr-4 file:border file:border-warm-border file:bg-warm-tag file:px-4 file:py-2 file:text-sm file:font-medium file:text-warm-gray hover:file:bg-warm-divider"
           />
           {fileName && (
             <p className="mt-1 text-xs text-warm-gray">Image will be resized for processing.</p>
@@ -250,7 +250,7 @@ export default function ImportPhotoPage() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+          className="bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           {loading ? "Extracting recipe..." : "Extract Recipe"}
         </button>

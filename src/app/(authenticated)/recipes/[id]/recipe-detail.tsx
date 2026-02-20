@@ -54,6 +54,9 @@ interface Recipe {
   forked_from_id: string | null;
   language?: string | null;
   visibility: string;
+  category?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 interface Tag {
@@ -73,6 +76,18 @@ function formatInstructions(text: string): string[] {
   const lines = text.split(/\n/).map((l) => l.trim()).filter(Boolean);
   if (lines.length > 1) return lines;
   return [text];
+}
+
+function formatTime(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 export function RecipeDetail({
@@ -109,67 +124,50 @@ export function RecipeDetail({
   const [addingIngredient, setAddingIngredient] = useState<string | null>(null);
   const [addedAll, setAddedAll] = useState(false);
   const [addingAll, setAddingAll] = useState(false);
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const scaleFactor = recipe.servings ? servings / recipe.servings : 1;
 
   const instructions = recipe.instructions ? formatInstructions(recipe.instructions) : [];
 
+  const avgRating = ratings.length > 0
+    ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
+    : null;
+
+  const heroImage = photos && photos.length > 0
+    ? photos[0].url
+    : recipe.image_url || null;
+
+  const hasMultiplePhotos = photos && photos.length > 1;
+
+  // Determine the first tag as category
+  const category = tags.length > 0 ? tags[0].tag : null;
+
+  function toggleIngredientCheck(index: number) {
+    setCheckedIngredients(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  }
+
   return (
-    <div className="max-w-2xl">
-      <div className="mb-8">
-        <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
-          &larr; Back to recipes
+    <div className="-mx-5">
+      {/* Detail Nav — sticky blurred */}
+      <nav className="sticky top-0 z-50 flex items-center justify-between px-5 py-3 backdrop-blur-[20px] bg-[rgba(246,244,239,0.92)]">
+        <Link
+          href="/recipes"
+          className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-muted hover:text-ink flex items-center gap-1.5 transition-colors active:translate-x-[-3px]"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back
         </Link>
-      </div>
-
-      {photos && photos.length > 0 ? (
-        <PhotoCarousel photos={photos} />
-      ) : recipe.image_url ? (
-        <div className="mb-6 aspect-video w-full overflow-hidden rounded-lg">
-          <img
-            src={recipe.image_url}
-            alt={recipe.title}
-            className="h-full w-full object-cover"
-          />
-        </div>
-      ) : null}
-
-      {creatorName && creatorId && (
-        <div className="mb-3 text-sm text-warm-gray">
-          By{" "}
-          <Link href={`/profile/${creatorId}`} className="text-accent hover:underline">
-            {creatorName}
-          </Link>
-        </div>
-      )}
-
-      {recipe.visibility === "public" && !isOwner && ratings.length > 0 && (() => {
-        const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
-        return (
-          <div className="mb-3 flex items-center gap-2">
-            <div className="flex items-center gap-0.5">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg
-                  key={star}
-                  className={`h-4 w-4 ${star <= Math.round(avgRating) ? "text-amber-400" : "text-warm-border"}`}
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-            </div>
-            <span className="text-sm text-warm-gray">
-              {avgRating.toFixed(1)} ({ratings.length} {ratings.length === 1 ? "rating" : "ratings"})
-            </span>
-          </div>
-        );
-      })()}
-
-      <div className="mb-3 flex items-start justify-between">
-        <div className="flex-1">
-          <h1 className="font-sans text-3xl font-semibold leading-tight">{recipe.title}</h1>
-        </div>
-        <div className="flex gap-2 pt-1">
+        <div className="flex items-center gap-3.5">
           {isOwner ? (
             <>
               <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
@@ -183,8 +181,12 @@ export function RecipeDetail({
               )}
               <Link
                 href={`/recipes/${recipe.id}/edit`}
-                className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border"
+                className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink flex items-center gap-1 transition-colors active:scale-[0.94]"
               >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
                 Edit
               </Link>
               <DeleteButton recipeId={recipe.id} />
@@ -199,166 +201,287 @@ export function RecipeDetail({
             </>
           )}
         </div>
-      </div>
+      </nav>
 
-      {isOwner && (
-        <div className="mb-4">
-          <TagEditor recipeId={recipe.id} tags={tags} />
-        </div>
+      {/* Hero Image */}
+      {heroImage && (
+        hasMultiplePhotos ? (
+          <div className="px-5 mb-2 opacity-0 animate-fade-in" style={{ animationDelay: "50ms" }}>
+            <PhotoCarousel photos={photos!} />
+          </div>
+        ) : (
+          <div className="overflow-hidden h-[220px] relative opacity-0 animate-fade-in" style={{ animationDelay: "50ms" }}>
+            <img
+              src={heroImage}
+              alt={recipe.title}
+              className="w-full h-full object-cover animate-hero-zoom"
+            />
+            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-bg to-transparent" />
+          </div>
+        )
       )}
 
-      <div className="mb-4">
-        <CollectionPicker recipeId={recipe.id} />
+      {/* Header */}
+      <div className={`px-5 relative ${heroImage && !hasMultiplePhotos ? "-mt-4" : "pt-4"}`}>
+        {category && (
+          <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-accent font-medium mb-1.5 opacity-0 animate-fade-in-up" style={{ animationDelay: "150ms" }}>
+            {category}
+          </div>
+        )}
+        <h1 className="font-display text-[40px] leading-[0.96] tracking-[-0.04em] text-ink mb-2.5 opacity-0 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
+          {recipe.title}
+        </h1>
+        <div className="text-[13px] font-light text-ink-secondary mb-1 opacity-0 animate-fade-in-up" style={{ animationDelay: "250ms" }}>
+          {creatorName && creatorId ? (
+            <>
+              By{" "}
+              <Link href={`/profile/${creatorId}`} className="font-semibold text-ink hover:text-accent transition-colors">
+                {creatorName}
+              </Link>
+            </>
+          ) : isOwner ? (
+            <>By <span className="font-semibold text-ink">you</span></>
+          ) : null}
+          {cookEntries.length > 0 && (
+            <> · Cooked {cookEntries.length} time{cookEntries.length !== 1 ? "s" : ""}</>
+          )}
+          {avgRating != null && (
+            <> · {avgRating.toFixed(1)} rating</>
+          )}
+        </div>
+
+        {recipe.source_type !== "manual" && (recipe.source_name || recipe.source_url) && (
+          <div className="text-[12px] text-ink-muted mb-1 opacity-0 animate-fade-in-up" style={{ animationDelay: "260ms" }}>
+            {recipe.source_url ? (
+              <a
+                href={recipe.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent hover:underline"
+              >
+                from {recipe.source_name || new URL(recipe.source_url).hostname.replace(/^www\./, "")}
+              </a>
+            ) : (
+              <span>from {recipe.source_name}</span>
+            )}
+          </div>
+        )}
+
+        {recipe.language && (
+          <span className="inline-block font-mono text-[9px] uppercase tracking-[0.1em] border border-accent text-accent px-1.5 py-0.5 mb-1 opacity-0 animate-fade-in-up" style={{ animationDelay: "265ms" }}>
+            {LANGUAGE_NAMES[recipe.language] || recipe.language.toUpperCase()}
+          </span>
+        )}
+
+        <div className="font-mono text-[10px] text-ink-muted tracking-[0.04em] mb-4 opacity-0 animate-fade-in-up" style={{ animationDelay: "270ms" }}>
+          {recipe.updated_at ? `Updated ${formatDate(recipe.updated_at)}` : recipe.created_at ? formatDate(recipe.created_at) : null}
+        </div>
       </div>
 
-      {!isOwner && tags.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-2">
-          {tags.map((t) => (
-            <span
-              key={t.id}
-              className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray"
-            >
-              {t.tag}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {recipe.source_type !== "manual" && (recipe.source_name || recipe.source_url) && (
-        <div className="mb-6 text-sm text-warm-gray">
-          {recipe.source_url ? (
-            <a
-              href={recipe.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent hover:underline"
-            >
-              from {recipe.source_name || new URL(recipe.source_url).hostname.replace(/^www\./, "")}
-            </a>
-          ) : (
-            <span>from {recipe.source_name}</span>
+      {/* Stats Bar */}
+      {(recipe.prep_time_minutes || recipe.cook_time_minutes || recipe.servings || avgRating != null) && (
+        <div className="mx-5 border-t-[3px] border-t-ink border-b border-b-ink flex opacity-0 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
+          {recipe.prep_time_minutes && (
+            <div className="flex-1 py-2.5 px-3 text-center border-r border-border hover:bg-accent-light transition-colors">
+              <div className="font-display text-[20px] text-ink">{formatTime(recipe.prep_time_minutes)}</div>
+              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Prep</div>
+            </div>
+          )}
+          {recipe.cook_time_minutes && (
+            <div className="flex-1 py-2.5 px-3 text-center border-r border-border hover:bg-accent-light transition-colors">
+              <div className="font-display text-[20px] text-ink">{formatTime(recipe.cook_time_minutes)}</div>
+              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Cook</div>
+            </div>
+          )}
+          {recipe.servings && (
+            <div className="flex-1 py-2.5 px-3 text-center border-r border-border hover:bg-accent-light transition-colors cursor-pointer group">
+              <div className="font-display text-[20px] text-ink flex items-center justify-center gap-1">
+                <button
+                  onClick={() => setServings(Math.max(1, servings - 1))}
+                  className="opacity-0 group-hover:opacity-100 text-ink-muted hover:text-accent text-[14px] transition-opacity"
+                >
+                  -
+                </button>
+                <span>{servings}</span>
+                <button
+                  onClick={() => setServings(servings + 1)}
+                  className="opacity-0 group-hover:opacity-100 text-ink-muted hover:text-accent text-[14px] transition-opacity"
+                >
+                  +
+                </button>
+              </div>
+              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">
+                Serves
+                {servings !== recipe.servings && (
+                  <button
+                    onClick={() => setServings(recipe.servings!)}
+                    className="ml-1 text-accent hover:underline"
+                  >
+                    reset
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+          {avgRating != null && (
+            <div className="flex-1 py-2.5 px-3 text-center hover:bg-accent-light transition-colors">
+              <div className="font-display text-[20px] text-ink">{avgRating.toFixed(1)}</div>
+              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Rating</div>
+            </div>
+          )}
+          {recipe.prep_time_minutes && recipe.cook_time_minutes && (
+            <div className="flex-1 py-2.5 px-3 text-center hover:bg-accent-light transition-colors">
+              <div className="font-display text-[20px] text-ink">{formatTime(recipe.prep_time_minutes + recipe.cook_time_minutes)}</div>
+              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Total</div>
+            </div>
           )}
         </div>
       )}
 
-      {recipe.description && (
-        <div className="mb-8 mt-4">
-          <p className="text-warm-gray leading-relaxed whitespace-pre-line">{recipe.description}</p>
-        </div>
-      )}
-
-      <div className="mb-8 flex flex-wrap gap-3">
-        {recipe.prep_time_minutes && (
-          <span className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
-            Prep: {recipe.prep_time_minutes} min
-          </span>
+      {/* Tags + Controls Row */}
+      <div className="px-5 pt-4 flex flex-wrap items-center gap-2">
+        {isOwner && (
+          <div className="w-full opacity-0 animate-fade-in-up" style={{ animationDelay: "340ms" }}>
+            <TagEditor recipeId={recipe.id} tags={tags} />
+          </div>
         )}
-        {recipe.cook_time_minutes && (
-          <span className="rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
-            Cook: {recipe.cook_time_minutes} min
-          </span>
-        )}
-        {recipe.language && (
-          <span className="rounded-full bg-accent/10 px-3 py-1 text-sm text-accent">
-            {LANGUAGE_NAMES[recipe.language] || recipe.language.toUpperCase()}
-          </span>
-        )}
-        {recipe.servings && (
-          <span className="inline-flex items-center gap-2 rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray">
-            Servings:
-            <button
-              onClick={() => setServings(Math.max(1, servings - 1))}
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/10 text-accent hover:bg-accent/20"
-            >
-              -
-            </button>
-            <span className="min-w-[1.5rem] text-center font-medium">{servings}</span>
-            <button
-              onClick={() => setServings(servings + 1)}
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/10 text-accent hover:bg-accent/20"
-            >
-              +
-            </button>
-            {servings !== recipe.servings && (
-              <button
-                onClick={() => setServings(recipe.servings!)}
-                className="text-xs text-accent hover:underline"
+        {!isOwner && tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 opacity-0 animate-fade-in-up" style={{ animationDelay: "340ms" }}>
+            {tags.map((t) => (
+              <span
+                key={t.id}
+                className="font-mono text-[9px] uppercase tracking-[0.06em] border border-border text-ink-muted px-2 py-0.5"
               >
-                reset
-              </button>
-            )}
-          </span>
+                {t.tag}
+              </span>
+            ))}
+          </div>
         )}
-        {recipe.prep_time_minutes && recipe.cook_time_minutes && (
-          <span className="rounded-full bg-accent px-3 py-1 text-sm text-white">
-            Total: {recipe.prep_time_minutes + recipe.cook_time_minutes} min
-          </span>
-        )}
+        <div className="w-full opacity-0 animate-fade-in-up" style={{ animationDelay: "360ms" }}>
+          <CollectionPicker recipeId={recipe.id} />
+        </div>
       </div>
 
-      {ingredients.length > 0 && (
-        <div className="mb-10">
-          <div className="mb-4 flex items-center justify-between border-b border-warm-divider pb-2">
-            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">Ingredients</h2>
-            <UnitToggle system={unitSystem} onChange={setUnitSystem} />
-          </div>
-          <ul className="space-y-2">
-            {ingredients.map((ing) => {
-              const scaledQty = ing.quantity != null ? ing.quantity * scaleFactor : null;
-              const converted = convertIngredient(scaledQty, ing.unit || "", unitSystem);
-              const isAdded = addedIngredients.has(ing.id) || addedAll;
-              const isAdding = addingIngredient === ing.id;
-              return (
-                <li key={ing.id} className="flex items-center gap-2 border-b border-warm-divider pb-2">
-                  <span className="min-w-[4rem] text-right font-medium">
-                    {formatQuantity(converted.quantity)} {converted.unit}
-                  </span>
-                  <span className="flex-1 text-warm-gray">
-                    {ing.ingredient_name}
-                    {ing.notes && <span className="text-sm text-warm-gray/60"> ({ing.notes})</span>}
-                  </span>
-                  <button
-                    onClick={async () => {
-                      if (isAdded) return;
-                      setAddingIngredient(ing.id);
-                      const result = await addIngredientToDefaultShoppingList(
-                        ing.ingredient_name,
-                        ing.quantity,
-                        ing.unit,
-                      );
-                      setAddingIngredient(null);
-                      if (!result?.error) {
-                        setAddedIngredients((prev) => new Set(prev).add(ing.id));
-                      }
-                    }}
-                    disabled={isAdded || isAdding}
-                    className={`shrink-0 flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
-                      isAdded
-                        ? "bg-accent/10 text-accent"
-                        : "text-warm-gray/40 hover:bg-accent/10 hover:text-accent"
-                    }`}
-                    aria-label={isAdded ? "Added to list" : `Add ${ing.ingredient_name} to grocery list`}
+      {/* Body */}
+      <div className="px-5 pt-6 pb-24">
+        {/* Intro / Description */}
+        {recipe.description && (
+          <p className="font-display text-[18px] italic text-ink-secondary leading-[1.45] max-w-[360px] mb-7 opacity-0 animate-fade-in-up" style={{ animationDelay: "350ms" }}>
+            {recipe.description}
+          </p>
+        )}
+
+        {/* Public recipe rating display for non-owners */}
+        {recipe.visibility === "public" && !isOwner && ratings.length > 0 && (() => {
+          return (
+            <div className="flex items-center gap-2 mb-5 opacity-0 animate-fade-in-up" style={{ animationDelay: "370ms" }}>
+              <div className="flex items-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg
+                    key={star}
+                    className={`h-4 w-4 ${star <= Math.round(avgRating!) ? "text-accent" : "text-border"}`}
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
                   >
-                    {isAdding ? (
-                      <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
-                        <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75" />
-                      </svg>
-                    ) : isAdded ? (
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                    ) : (
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="mt-4">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <span className="font-mono text-[11px] text-ink-muted">
+                {avgRating!.toFixed(1)} ({ratings.length} {ratings.length === 1 ? "rating" : "ratings"})
+              </span>
+            </div>
+          );
+        })()}
+
+        {/* Ingredients */}
+        {ingredients.length > 0 && (
+          <div className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: "400ms" }}>
+            <div className="flex items-center justify-between mono-label mb-2.5 pb-1.5 border-b border-border">
+              <span>Ingredients</span>
+              <UnitToggle system={unitSystem} onChange={setUnitSystem} />
+            </div>
+            <ul className="list-none mb-4">
+              {ingredients.map((ing, index) => {
+                const scaledQty = ing.quantity != null ? ing.quantity * scaleFactor : null;
+                const converted = convertIngredient(scaledQty, ing.unit || "", unitSystem);
+                const isChecked = checkedIngredients.has(index);
+                const isAdded = addedIngredients.has(ing.id) || addedAll;
+                const isAdding = addingIngredient === ing.id;
+                return (
+                  <li
+                    key={ing.id}
+                    className="flex items-center gap-2.5 py-2 border-b border-dotted border-border cursor-pointer transition-all hover:pl-1"
+                    onClick={() => toggleIngredientCheck(index)}
+                  >
+                    {/* Checkbox */}
+                    <span
+                      className={`w-4 h-4 border-[1.5px] rounded-[2px] flex-shrink-0 relative transition-all duration-200 ${
+                        isChecked
+                          ? "bg-accent border-accent animate-check-pop"
+                          : "border-border hover:border-accent hover:scale-110"
+                      }`}
+                    >
+                      {isChecked && (
+                        <span className="absolute left-[3px] top-0 w-[5px] h-[9px] border-white border-r-[1.5px] border-b-[1.5px] rotate-45" />
+                      )}
+                    </span>
+                    {/* Ingredient name */}
+                    <span className={`flex-1 text-[14px] transition-all duration-250 ${
+                      isChecked ? "text-ink-muted line-through decoration-accent" : "text-ink"
+                    }`}>
+                      {ing.ingredient_name}
+                      {ing.notes && <span className="text-ink-muted text-[12px]"> ({ing.notes})</span>}
+                    </span>
+                    {/* Amount */}
+                    <span className={`font-mono text-[12px] text-ink-secondary flex-shrink-0 transition-opacity ${
+                      isChecked ? "opacity-40" : ""
+                    }`}>
+                      {formatQuantity(converted.quantity)} {converted.unit}
+                    </span>
+                    {/* Add to grocery list button */}
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (isAdded) return;
+                        setAddingIngredient(ing.id);
+                        const result = await addIngredientToDefaultShoppingList(
+                          ing.ingredient_name,
+                          ing.quantity,
+                          ing.unit,
+                        );
+                        setAddingIngredient(null);
+                        if (!result?.error) {
+                          setAddedIngredients((prev) => new Set(prev).add(ing.id));
+                        }
+                      }}
+                      disabled={isAdded || isAdding}
+                      className={`shrink-0 flex h-6 w-6 items-center justify-center transition-colors ${
+                        isAdded
+                          ? "text-accent"
+                          : "text-ink-muted/40 hover:text-accent"
+                      }`}
+                      aria-label={isAdded ? "Added to list" : `Add ${ing.ingredient_name} to grocery list`}
+                    >
+                      {isAdding ? (
+                        <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                          <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75" />
+                        </svg>
+                      ) : isAdded ? (
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                      ) : (
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
             <button
               onClick={async () => {
                 setAddingAll(true);
@@ -370,40 +493,45 @@ export function RecipeDetail({
                 }
               }}
               disabled={addingAll || addedAll}
-              className="rounded-md bg-warm-tag px-3 py-1.5 text-sm text-warm-gray hover:bg-warm-border disabled:opacity-50"
+              className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-accent transition-colors disabled:opacity-50"
             >
               {addedAll ? `Added all ${ingredients.length} items` : addingAll ? "Adding..." : "Add all to Grocery List"}
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {instructions.length > 0 && (
-        <div className="mb-10">
-          <div className="mb-4 border-b border-warm-divider pb-2">
-            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">Preparation</h2>
+        {/* Steps / Method */}
+        {instructions.length > 0 && (
+          <div className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: "450ms" }}>
+            <div className="mono-label mb-2.5 pb-1.5 border-b border-border">Method</div>
+            {instructions.length === 1 ? (
+              <div className="text-[14px] font-light text-ink-secondary leading-[1.6] whitespace-pre-line">
+                {instructions[0]}
+              </div>
+            ) : (
+              <ol className="list-none">
+                {instructions.map((step, i) => (
+                  <li
+                    key={i}
+                    className="grid grid-cols-[36px_1fr] gap-3 py-4 border-b border-border group transition-all hover:pl-1"
+                  >
+                    <span className="font-display text-[28px] leading-none text-border group-hover:text-accent transition-colors">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <p className="text-[14px] font-light text-ink-secondary leading-[1.6] pt-1">
+                      {step}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            )}
           </div>
-          {instructions.length === 1 ? (
-            <div className="leading-relaxed text-warm-gray whitespace-pre-line">
-              {instructions[0]}
-            </div>
-          ) : (
-            <ol className="space-y-5">
-              {instructions.map((step, i) => (
-                <li key={i} className="flex gap-4">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-medium text-white">
-                    {i + 1}
-                  </span>
-                  <p className="leading-relaxed text-warm-gray pt-0.5">{step}</p>
-                </li>
-              ))}
-            </ol>
-          )}
-        </div>
-      )}
+        )}
 
-      <div className="mb-10">
-        <CookingLog recipeId={recipe.id} cookEntries={cookEntries} ratings={ratings} />
+        {/* Cooking Log + Ratings */}
+        <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: "500ms" }}>
+          <CookingLog recipeId={recipe.id} cookEntries={cookEntries} ratings={ratings} />
+        </div>
       </div>
     </div>
   );

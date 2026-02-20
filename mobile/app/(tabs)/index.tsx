@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  TouchableOpacity,
+  Pressable,
   RefreshControl,
   ActivityIndicator,
   Linking,
@@ -16,9 +16,7 @@ import { router, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, radii, animation } from '@/lib/theme';
-import Avatar from '@/components/ui/Avatar';
-import { ForkDot } from '@/components/ui/Logo';
+import { colors, spacing, fontFamily, animation } from '@/lib/theme';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
 
 interface FeedItem {
@@ -40,6 +38,10 @@ interface SuggestionRecipe {
   id: string;
   title: string;
   image_url: string | null;
+  description: string | null;
+  prep_time_minutes: number | null;
+  cook_time_minutes: number | null;
+  recipe_tags?: { tag: string }[];
 }
 
 interface RecentCook {
@@ -61,6 +63,8 @@ export default function HomeScreen() {
   const [hasMoreFeed, setHasMoreFeed] = useState(false);
   const previousFeedCount = useRef(0);
 
+  const recipeSelectFields = 'id, title, image_url, description, prep_time_minutes, cook_time_minutes, recipe_tags(tag)';
+
   const loadData = useCallback(async (isRefresh = false) => {
     if (!user) return;
 
@@ -81,9 +85,9 @@ export default function HomeScreen() {
         .eq('follower_id', user.id),
       supabase
         .from('recipe_favorites')
-        .select('recipe_id, recipes(id, title, image_url)')
+        .select(`recipe_id, recipes(${recipeSelectFields})`)
         .eq('user_id', user.id)
-        .limit(6),
+        .limit(10),
       supabase
         .from('cook_log')
         .select('id, cooked_at, recipes(id, title)')
@@ -93,7 +97,7 @@ export default function HomeScreen() {
     ]);
 
     setDisplayName(profile?.display_name || '');
-    setRecentCooks((cooks || []) as RecentCook[]);
+    setRecentCooks((cooks || []) as unknown as RecentCook[]);
 
     // Suggestions: favorites first, fall back to recent recipes
     const favRecipes = (favorites || [])
@@ -105,10 +109,10 @@ export default function HomeScreen() {
     } else {
       const { data: recent } = await supabase
         .from('recipes')
-        .select('id, title, image_url')
+        .select(recipeSelectFields)
         .eq('created_by', user.id)
         .order('updated_at', { ascending: false })
-        .limit(6);
+        .limit(10);
       setSuggestions((recent || []) as SuggestionRecipe[]);
     }
 
@@ -194,35 +198,33 @@ export default function HomeScreen() {
   const actionVerb = (type: string) => {
     switch (type) {
       case 'cooked': return ' cooked ';
-      case 'created': return ' created ';
+      case 'created': return ' published ';
       case 'saved': return ' saved ';
       case 'rated': return ' rated ';
       default: return ' ';
     }
   };
 
-  const getDomain = (url: string) => {
-    try {
-      return new URL(url).hostname.replace(/^www\./, '');
-    } catch {
-      return url;
-    }
+  const formatDate = () => {
+    return new Date().toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).toUpperCase();
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <FontAwesome
-          key={i}
-          name={i <= rating ? 'star' : 'star-o'}
-          size={12}
-          color={i <= rating ? colors.starFilled : colors.starEmpty}
-          style={{ marginRight: 2 }}
-        />
-      );
-    }
-    return <View style={styles.starsRow}>{stars}</View>;
+  const formatTime = (minutes: number | null) => {
+    if (!minutes) return null;
+    if (minutes < 60) return `${minutes} min`;
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+  };
+
+  const getTag = (recipe: SuggestionRecipe) => {
+    const tags = recipe.recipe_tags;
+    if (tags && tags.length > 0) return tags[0].tag;
+    return null;
   };
 
   const handleFeedItemPress = (item: FeedItem) => {
@@ -233,190 +235,249 @@ export default function HomeScreen() {
     }
   };
 
-  const renderFeedItem = ({ item, index }: { item: FeedItem; index: number }) => (
-    <Animated.View
-      entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
-    >
-    <TouchableOpacity
-      style={styles.feedItem}
-      activeOpacity={0.7}
-      onPress={() => handleFeedItemPress(item)}
-    >
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => router.push(`/profile/${item.user_id}`)}
-      >
-        <Avatar name={item.display_name} size="sm" imageUrl={item.avatar_url} />
-      </TouchableOpacity>
-      {item.recipe_image_url && (
-        <Image
-          source={{ uri: item.recipe_image_url }}
-          style={styles.feedThumbnail}
-          contentFit="cover"
-          transition={200}
-        />
-      )}
-      <View style={styles.feedContent}>
-        <Text style={styles.feedText} numberOfLines={2}>
-          <Text style={styles.feedName}>{item.display_name}</Text>
-          {actionVerb(item.event_type)}
-          <Text style={styles.feedRecipe}>{item.recipe_title}</Text>
-        </Text>
-        {item.event_type === 'rated' && item.rating != null && renderStars(item.rating)}
-        {item.event_type === 'saved' && item.source_url && (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => Linking.openURL(item.source_url!)}
-          >
-            <Text style={styles.feedSource}>
-              {item.source_name || getDomain(item.source_url)}
-            </Text>
-          </TouchableOpacity>
-        )}
-        {item.notes && (
-          <Text style={styles.feedNotes} numberOfLines={2}>
-            {'\u201C'}{item.notes}{'\u201D'}
-          </Text>
-        )}
-        <Text style={styles.feedTime}>{formatTimeAgo(item.event_at)}</Text>
-      </View>
-    </TouchableOpacity>
-    </Animated.View>
-  );
+  // Derive featured recipe (first with an image) and remaining recipes
+  const featuredRecipe = suggestions.find((r) => r.image_url) || suggestions[0] || null;
+  const indexRecipes = suggestions.filter((r) => r !== featuredRecipe);
 
+  const renderStars = (rating: number) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <FontAwesome
+          key={i}
+          name={i <= rating ? 'star' : 'star-o'}
+          size={11}
+          color={i <= rating ? colors.accent : colors.border}
+          style={{ marginRight: 1 }}
+        />
+      );
+    }
+    return <View style={styles.starsRow}>{stars}</View>;
+  };
+
+  // Sections rendered as header (masthead, featured, index) and footer (activity)
   const renderHeader = () => (
     <View>
-      {/* Greeting */}
-      <Animated.Text entering={FadeInDown.duration(400)} style={styles.greeting}>
-        {greeting()}, {displayName || 'Chef'}
-      </Animated.Text>
+      {/* 1. Compact Masthead */}
+      <Animated.View entering={FadeInDown.duration(400)} style={styles.masthead}>
+        <Text style={styles.mastheadGreeting}>
+          {greeting()}, {displayName || 'Chef'}
+        </Text>
+        <Text style={styles.mastheadDate}>{formatDate()}</Text>
+      </Animated.View>
 
-      {/* Section A: Activity Feed header */}
+      {/* 2. Thick Rule */}
       <Animated.View entering={FadeInDown.delay(animation.staggerDelay).duration(400)}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Your Feed</Text>
-        </View>
+        <View style={styles.ruleThick} />
+      </Animated.View>
 
-        {followingCount === 0 ? (
+      {/* 3. Featured Recipe */}
+      {featuredRecipe && (
+        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
+          <Pressable
+            style={styles.featured}
+            onPress={() => router.push(`/recipe/${featuredRecipe.id}`)}
+          >
+            <Text style={styles.featuredLabel}>FEATURED</Text>
+            <View style={styles.featuredLayout}>
+              <View style={styles.featuredText}>
+                {getTag(featuredRecipe) && (
+                  <Text style={styles.featuredCategory}>{getTag(featuredRecipe)!.toUpperCase()}</Text>
+                )}
+                <Text style={styles.featuredTitle} numberOfLines={3}>
+                  {featuredRecipe.title}
+                </Text>
+                {featuredRecipe.description && (
+                  <Text style={styles.featuredExcerpt} numberOfLines={2}>
+                    {featuredRecipe.description}
+                  </Text>
+                )}
+                <View style={styles.featuredMeta}>
+                  {displayName ? <Text style={styles.featuredMetaText}>By {displayName}</Text> : null}
+                  {featuredRecipe.cook_time_minutes ? (
+                    <>
+                      <View style={styles.metaDot} />
+                      <Text style={styles.featuredMetaText}>
+                        {formatTime(featuredRecipe.cook_time_minutes)}
+                      </Text>
+                    </>
+                  ) : null}
+                </View>
+              </View>
+              {featuredRecipe.image_url ? (
+                <Image
+                  source={{ uri: featuredRecipe.image_url }}
+                  style={styles.featuredImage}
+                  contentFit="cover"
+                  transition={200}
+                />
+              ) : (
+                <View style={[styles.featuredImage, { backgroundColor: colors.surfaceAlt }]} />
+              )}
+            </View>
+          </Pressable>
+        </Animated.View>
+      )}
+
+      {/* 4. Thin Rule */}
+      <View style={styles.ruleThin} />
+
+      {/* 5. Numbered Recipe Index */}
+      {indexRecipes.length > 0 && (
+        <View style={styles.indexSection}>
+          <Animated.View
+            entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}
+            style={styles.indexHeader}
+          >
+            <Text style={styles.indexTitle}>Your Recipes</Text>
+            <Text style={styles.indexCount}>{suggestions.length} total</Text>
+          </Animated.View>
+          {indexRecipes.map((recipe, idx) => (
+            <Animated.View
+              key={recipe.id}
+              entering={
+                idx < animation.staggerMax
+                  ? FadeInDown.delay(animation.staggerDelay * (4 + idx)).duration(400)
+                  : undefined
+              }
+            >
+              <Pressable
+                style={styles.indexItem}
+                onPress={() => router.push(`/recipe/${recipe.id}`)}
+              >
+                <Text style={styles.indexNumber}>{idx + 1}</Text>
+                <View style={styles.indexContent}>
+                  {getTag(recipe) && (
+                    <Text style={styles.indexCategory}>{getTag(recipe)!.toUpperCase()}</Text>
+                  )}
+                  <Text style={styles.indexItemTitle} numberOfLines={2}>
+                    {recipe.title}
+                  </Text>
+                  <View style={styles.indexItemMeta}>
+                    {recipe.cook_time_minutes ? (
+                      <Text style={styles.indexMetaText}>
+                        {formatTime(recipe.cook_time_minutes)}
+                      </Text>
+                    ) : recipe.prep_time_minutes ? (
+                      <Text style={styles.indexMetaText}>
+                        {formatTime(recipe.prep_time_minutes)}
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+                {recipe.image_url && (
+                  <Image
+                    source={{ uri: recipe.image_url }}
+                    style={styles.indexThumb}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                )}
+              </Pressable>
+            </Animated.View>
+          ))}
+        </View>
+      )}
+
+      {/* Thin Rule before activity */}
+      <View style={[styles.ruleThin, { marginTop: 12 }]} />
+
+      {/* 6. Activity Ticker Header */}
+      {feedItems.length > 0 ? (
+        <Animated.View
+          entering={FadeInDown.delay(animation.staggerDelay * 6).duration(400)}
+          style={styles.tickerHeader}
+        >
+          <Text style={styles.tickerTitle}>Activity</Text>
+        </Animated.View>
+      ) : followingCount === 0 ? (
+        <Animated.View
+          entering={FadeInDown.delay(animation.staggerDelay * 4).duration(400)}
+          style={styles.promptSection}
+        >
+          <Text style={styles.tickerTitle}>Activity</Text>
           <View style={styles.promptCard}>
-            <ForkDot size={20} color="rgba(45,95,93,0.3)" />
-            <Text style={styles.promptTitle}>Follow some chefs to see what they're cooking</Text>
-            <TouchableOpacity
+            <Text style={styles.promptTitle}>Follow some chefs to see what they are cooking</Text>
+            <Pressable
               style={styles.promptButton}
-              activeOpacity={0.7}
               onPress={() => router.push('/(tabs)/discover')}
             >
               <Text style={styles.promptButtonText}>Discover Chefs</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
-        ) : feedItems.length === 0 ? (
+        </Animated.View>
+      ) : feedItems.length === 0 ? (
+        <Animated.View
+          entering={FadeInDown.delay(animation.staggerDelay * 4).duration(400)}
+          style={styles.promptSection}
+        >
+          <Text style={styles.tickerTitle}>Activity</Text>
           <View style={styles.promptCard}>
-            <ForkDot size={20} color="rgba(45,95,93,0.3)" />
-            <Text style={styles.promptTitle}>Your chefs haven't been cooking lately</Text>
-            <Text style={styles.promptSubtitle}>
-              Why not cook something yourself?
-            </Text>
-            <TouchableOpacity
+            <Text style={styles.promptTitle}>Your chefs have not been cooking lately</Text>
+            <Pressable
               style={styles.promptButton}
-              activeOpacity={0.7}
               onPress={() => router.push('/(tabs)/recipes')}
             >
               <Text style={styles.promptButtonText}>My recipes</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
-        ) : null}
-      </Animated.View>
+        </Animated.View>
+      ) : null}
     </View>
+  );
+
+  const renderTickerItem = ({ item, index }: { item: FeedItem; index: number }) => (
+    <Animated.View
+      entering={
+        index < animation.staggerMax
+          ? FadeInDown.delay(index * animation.staggerDelay).duration(400)
+          : undefined
+      }
+    >
+      <Pressable
+        style={styles.tickerItem}
+        onPress={() => handleFeedItemPress(item)}
+      >
+        {item.recipe_image_url ? (
+          <Image
+            source={{ uri: item.recipe_image_url }}
+            style={styles.tickerThumb}
+            contentFit="cover"
+            transition={200}
+          />
+        ) : (
+          <View style={[styles.tickerThumb, { backgroundColor: colors.surfaceAlt }]} />
+        )}
+        <View style={styles.tickerBody}>
+          <Text style={styles.tickerText} numberOfLines={2}>
+            <Text style={styles.tickerName}>{item.display_name}</Text>
+            {actionVerb(item.event_type)}
+            <Text style={styles.tickerRecipe}>{item.recipe_title}</Text>
+          </Text>
+          {item.event_type === 'rated' && item.rating != null && renderStars(item.rating)}
+        </View>
+        <Text style={styles.tickerTime}>{formatTimeAgo(item.event_at)}</Text>
+      </Pressable>
+    </Animated.View>
   );
 
   const renderFooter = () => (
     <View>
       {loadingMore && (
         <View style={styles.loadingMore}>
-          <ActivityIndicator size="small" color={colors.textMuted} />
+          <ActivityIndicator size="small" color={colors.inkMuted} />
         </View>
       )}
-
-      {/* Section B: Looking for something to cook? */}
-      {suggestions.length > 0 && (
-        <View style={styles.suggestionsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Looking for something to cook?</Text>
-          </View>
-          <FlatList
-            data={suggestions}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.suggestionsListContent}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.suggestionCard}
-                activeOpacity={animation.pressOpacity}
-                onPress={() => router.push(`/recipe/${item.id}`)}
-              >
-                <View style={styles.suggestionImageWrap}>
-                  {item.image_url ? (
-                    <Image
-                      source={{ uri: item.image_url }}
-                      style={styles.suggestionImage}
-                      contentFit="cover"
-                      transition={200}
-                    />
-                  ) : (
-                    <View style={styles.suggestionPlaceholder} />
-                  )}
-                </View>
-                <Text style={styles.suggestionTitle} numberOfLines={2}>
-                  {item.title}
-                </Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      )}
-
-      {/* Section C: Your Recent Activity */}
-      {recentCooks.length > 0 && (
-        <View style={styles.recentSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Your Recent Activity</Text>
-          </View>
-          {recentCooks.map((cook) => (
-            <TouchableOpacity
-              key={cook.id}
-              style={styles.recentItem}
-              activeOpacity={0.7}
-              onPress={() => cook.recipes && router.push(`/recipe/${cook.recipes.id}`)}
-            >
-              <Text style={styles.recentText}>
-                <Text style={styles.recentTime}>{formatTimeAgo(cook.cooked_at)}</Text>
-                {'  You cooked '}
-                <Text style={styles.recentRecipeName}>{cook.recipes?.title || 'a recipe'}</Text>
-              </Text>
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity
-            style={styles.seeAllButton}
-            activeOpacity={0.7}
-            onPress={() => router.push('/(tabs)/recipes')}
-          >
-            <Text style={styles.seeAllText}>See all</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      <View style={{ height: spacing.xxxl }} />
+      <View style={{ height: 100 }} />
     </View>
   );
 
   return (
     <FlatList
       style={styles.container}
-      contentContainerStyle={styles.content}
       data={feedItems.length > 0 ? feedItems : []}
       keyExtractor={(item, i) => `${item.event_type}-${item.recipe_id}-${item.event_at}-${i}`}
-      renderItem={renderFeedItem}
+      renderItem={renderTickerItem}
       ListHeaderComponent={renderHeader}
       ListFooterComponent={renderFooter}
       onEndReached={loadMoreFeed}
@@ -425,192 +486,285 @@ export default function HomeScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={colors.textMuted}
+          tintColor={colors.inkMuted}
         />
       }
     />
   );
 }
 
-const SUGGESTION_CARD_WIDTH = 120;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    paddingTop: spacing.sm,
-  },
-  greeting: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.lg,
-    paddingHorizontal: spacing.pagePadding,
+    backgroundColor: colors.bg,
   },
 
-  // Section headers
-  sectionHeader: {
-    paddingHorizontal: spacing.pagePadding,
-    marginBottom: spacing.md,
-  },
-  sectionTitle: {
-    ...typography.h3,
-    color: colors.text,
-  },
-
-  // Feed items
-  feedItem: {
+  // 1. Compact Masthead
+  masthead: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.pagePadding,
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
+    borderBottomColor: colors.border,
   },
-  feedThumbnail: {
-    width: 44,
-    height: 44,
-    borderRadius: radii.sm,
+  mastheadGreeting: {
+    fontFamily: fontFamily.displayItalic,
+    fontSize: 15,
+    color: colors.inkSecondary,
   },
-  feedContent: {
+  mastheadDate: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.0,
+    color: colors.inkMuted,
+  },
+
+  // 2. Thick Rule
+  ruleThick: {
+    height: 3,
+    backgroundColor: colors.ink,
+  },
+
+  // 3. Featured Recipe
+  featured: {
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 20,
+  },
+  featuredLabel: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.4,
+    color: colors.inkMuted,
+    marginBottom: 10,
+  },
+  featuredLayout: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  featuredText: {
     flex: 1,
   },
-  feedText: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-    lineHeight: 20,
+  featuredCategory: {
+    fontFamily: fontFamily.monoMedium,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.0,
+    color: colors.accent,
+    marginBottom: 4,
   },
-  feedName: {
-    fontWeight: '600',
-    color: colors.text,
+  featuredTitle: {
+    fontFamily: fontFamily.display,
+    fontSize: 28,
+    lineHeight: 30,
+    letterSpacing: -0.8,
+    color: colors.ink,
+    marginBottom: 8,
   },
-  feedRecipe: {
-    fontWeight: '500',
-    color: colors.text,
+  featuredExcerpt: {
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.inkSecondary,
+    marginBottom: 8,
+  },
+  featuredMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  featuredMetaText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.inkMuted,
+  },
+  metaDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: colors.border,
+  },
+  featuredImage: {
+    width: 130,
+    height: 170,
+    borderRadius: 0,
+  },
+
+  // 4. Thin Rule
+  ruleThin: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginHorizontal: 20,
+  },
+
+  // 5. Numbered Recipe Index
+  indexSection: {
+    paddingHorizontal: 20,
+  },
+  indexHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  indexTitle: {
+    fontFamily: fontFamily.display,
+    fontSize: 18,
+    letterSpacing: -0.4,
+    color: colors.ink,
+  },
+  indexCount: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.inkMuted,
+  },
+  indexItem: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  indexNumber: {
+    fontFamily: fontFamily.display,
+    fontSize: 32,
+    lineHeight: 32,
+    color: colors.border,
+    minWidth: 28,
+    paddingTop: 2,
+  },
+  indexContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+  indexCategory: {
+    fontFamily: fontFamily.monoMedium,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.0,
+    color: colors.accent,
+    marginBottom: 1,
+  },
+  indexItemTitle: {
+    fontFamily: fontFamily.display,
+    fontSize: 20,
+    lineHeight: 23,
+    letterSpacing: -0.4,
+    color: colors.ink,
+    marginBottom: 3,
+  },
+  indexItemMeta: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  indexMetaText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.inkMuted,
+  },
+  indexThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: 0,
+    alignSelf: 'center',
+  },
+
+  // 6. Activity Ticker
+  tickerHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  tickerTitle: {
+    fontFamily: fontFamily.display,
+    fontSize: 18,
+    letterSpacing: -0.4,
+    color: colors.ink,
+  },
+  tickerItem: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    alignItems: 'center',
+  },
+  tickerThumb: {
+    width: 36,
+    height: 36,
+    borderRadius: 0,
+  },
+  tickerBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  tickerText: {
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.ink,
+  },
+  tickerName: {
+    fontFamily: fontFamily.sansBold,
+    fontSize: 13,
+  },
+  tickerRecipe: {
+    fontFamily: fontFamily.displayItalic,
+    fontSize: 13,
+    color: colors.accent,
+  },
+  tickerTime: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    color: colors.inkMuted,
   },
   starsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 2,
   },
-  feedSource: {
-    ...typography.caption,
-    color: colors.primary,
-    marginTop: 2,
-  },
-  feedNotes: {
-    ...typography.caption,
-    color: colors.textMuted,
-    fontStyle: 'italic',
-    marginTop: 2,
-  },
-  feedTime: {
-    ...typography.caption,
-    color: colors.textMuted,
-    marginTop: spacing.xs,
-  },
+
+  // Loading
   loadingMore: {
     paddingVertical: spacing.lg,
     alignItems: 'center',
   },
 
   // Empty / prompt states
+  promptSection: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
   promptCard: {
-    marginHorizontal: spacing.pagePadding,
-    marginBottom: spacing.sectionGap,
-    borderRadius: radii.lg,
+    marginTop: 12,
     borderWidth: 1,
-    borderColor: colors.accentWashBorder,
-    backgroundColor: colors.accentWash,
-    padding: spacing.xl,
+    borderColor: colors.border,
+    padding: 20,
     alignItems: 'center',
   },
   promptTitle: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.text,
-    marginTop: spacing.md,
-    marginBottom: spacing.xs,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 14,
+    color: colors.inkSecondary,
     textAlign: 'center',
-  },
-  promptSubtitle: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-    textAlign: 'center',
+    marginBottom: 12,
   },
   promptButton: {
-    marginTop: spacing.lg,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.cta,
-    borderRadius: radii.full,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: colors.ink,
   },
   promptButtonText: {
-    ...typography.label,
-    color: colors.white,
-    fontWeight: '600',
-  },
-
-  // Section B: Suggestions
-  suggestionsSection: {
-    marginTop: spacing.sectionGap,
-  },
-  suggestionsListContent: {
-    paddingHorizontal: spacing.pagePadding,
-    gap: spacing.md,
-  },
-  suggestionCard: {
-    width: SUGGESTION_CARD_WIDTH,
-  },
-  suggestionImageWrap: {
-    width: SUGGESTION_CARD_WIDTH,
-    height: SUGGESTION_CARD_WIDTH,
-    borderRadius: radii.lg,
-    overflow: 'hidden',
-    backgroundColor: colors.surface,
-  },
-  suggestionImage: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  suggestionPlaceholder: {
-    flex: 1,
-    backgroundColor: colors.surface,
-  },
-  suggestionTitle: {
-    ...typography.caption,
-    color: colors.text,
-    marginTop: spacing.xs,
-  },
-
-  // Section C: Recent Activity
-  recentSection: {
-    marginTop: spacing.sectionGap,
-  },
-  recentItem: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.pagePadding,
-  },
-  recentText: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-  },
-  recentTime: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  recentRecipeName: {
-    fontWeight: '500',
-    color: colors.text,
-  },
-  seeAllButton: {
-    paddingHorizontal: spacing.pagePadding,
-    paddingVertical: spacing.md,
-  },
-  seeAllText: {
-    ...typography.bodySmall,
-    color: colors.primary,
-    fontWeight: '500',
+    fontFamily: fontFamily.monoMedium,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    color: colors.bg,
   },
 });

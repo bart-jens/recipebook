@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, ViewStyle, Pressable } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { colors, radii, animation } from '@/lib/theme';
+import { colors, animation } from '@/lib/theme';
 
 interface Props {
   children: React.ReactNode;
@@ -40,8 +40,7 @@ export default function AnimatedCard({ children, onPress, style }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.card,
-    borderRadius: radii.lg,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     padding: 16,

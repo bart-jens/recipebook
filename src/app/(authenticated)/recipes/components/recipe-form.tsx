@@ -32,7 +32,7 @@ const emptyForm: RecipeFormData = {
 };
 
 const inputClass =
-  "mt-1 block w-full rounded-md bg-warm-tag px-3 py-3 text-base focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent";
+  "mt-1 block w-full bg-warm-tag px-3 py-3 text-base focus:bg-surface focus:outline-none focus:ring-1 focus:ring-accent";
 
 export function RecipeForm({ initialData, action, submitLabel, sourceName, onSourceNameChange }: RecipeFormProps) {
   const [data, setData] = useState<RecipeFormData>(initialData ?? emptyForm);
@@ -182,7 +182,7 @@ export function RecipeForm({ initialData, action, submitLabel, sourceName, onSou
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50 md:w-auto"
+        className="w-full bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50 md:w-auto"
       >
         {loading ? "Saving..." : submitLabel}
       </button>

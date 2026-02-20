@@ -32,16 +32,16 @@ export function TagEditor({
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5 items-center">
         {tags.map((t) => (
           <span
             key={t.id}
-            className="flex items-center gap-1 rounded-full bg-warm-tag px-3 py-1 text-sm text-warm-gray"
+            className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.06em] border border-border text-ink-muted px-2 py-0.5"
           >
             {t.tag}
             <button
               onClick={() => handleRemove(t.id)}
-              className="ml-0.5 text-warm-gray/50 hover:text-accent"
+              className="text-ink-muted/50 hover:text-accent ml-0.5"
               disabled={isPending}
             >
               &times;
@@ -55,7 +55,7 @@ export function TagEditor({
           onKeyDown={handleKeyDown}
           placeholder="Add tag..."
           disabled={isPending}
-          className="rounded-full border border-dashed border-warm-border bg-transparent px-3 py-1 text-sm placeholder:text-warm-gray/40 focus:border-accent focus:outline-none"
+          className="font-mono text-[10px] uppercase tracking-[0.06em] border border-dashed border-border bg-transparent px-2 py-0.5 text-ink placeholder:text-ink-muted/40 focus:border-accent focus:outline-none"
         />
       </div>
     </div>

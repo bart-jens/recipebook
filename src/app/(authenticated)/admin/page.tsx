@@ -33,17 +33,17 @@ export default async function AdminDashboard() {
 
   return (
     <div>
-      <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-warm-gray">
+      <h2 className="mb-4 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
         Platform Overview
       </h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="rounded-lg border border-warm-border bg-white p-4"
+            className="border border-border bg-surface p-4"
           >
-            <p className="text-2xl font-semibold">{stat.value}</p>
-            <p className="text-sm text-warm-gray">{stat.label}</p>
+            <p className="font-display text-3xl text-ink">{stat.value}</p>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary">{stat.label}</p>
           </div>
         ))}
       </div>

@@ -45,12 +45,12 @@ export function CollectionRecipeList({
           placeholder="Search in collection..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="mb-4 block w-full rounded-md bg-warm-tag px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+          className="mb-4 block w-full bg-warm-tag px-3 py-2 text-sm focus:bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
         />
       )}
 
       {filtered.length === 0 ? (
-        <div className="rounded-md border border-accent/20 bg-accent/5 p-8 text-center">
+        <div className="border border-accent/20 bg-accent/5 p-8 text-center">
           <p className="text-warm-gray">
             {search ? "No recipes match your search." : "No recipes in this collection yet."}
           </p>
@@ -68,7 +68,7 @@ export function CollectionRecipeList({
             return (
               <div
                 key={recipe.id}
-                className="flex items-center gap-3 rounded-md border border-warm-border bg-warm-tag animate-fade-in-up"
+                className="flex items-center gap-3 border border-warm-border bg-warm-tag animate-fade-in-up"
                 style={i < 10 ? { animationDelay: `${i * 30}ms`, animationFillMode: "backwards" } : undefined}
               >
                 <Link
@@ -76,7 +76,7 @@ export function CollectionRecipeList({
                   className="flex flex-1 gap-4 p-4 transition-all hover:-translate-y-px hover:shadow-sm"
                 >
                   {recipe.image_url && (
-                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden">
                       <img
                         src={recipe.image_url}
                         alt={recipe.title}

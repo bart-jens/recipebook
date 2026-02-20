@@ -4,27 +4,25 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, Stack, useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
-import Avatar from '@/components/ui/Avatar';
+import { colors, spacing, typography, fontFamily } from '@/lib/theme';
 import RecipeCard from '@/components/ui/RecipeCard';
 import RecommendationCard from '@/components/ui/RecommendationCard';
-import Button from '@/components/ui/Button';
 import { ForkDot } from '@/components/ui/Logo';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
 
 type FollowState = 'not_following' | 'following' | 'requested';
-type TabId = 'activity' | 'favorites' | 'published' | 'recommendations';
+type TabId = 'recipes' | 'activity' | 'favorites' | 'recommendations';
 
 const TABS: { id: TabId; label: string }[] = [
+  { id: 'recipes', label: 'Recipes' },
   { id: 'activity', label: 'Activity' },
   { id: 'favorites', label: 'Favorites' },
-  { id: 'published', label: 'Published' },
   { id: 'recommendations', label: 'Recs' },
 ];
 
@@ -59,7 +57,7 @@ function formatDate(timestamp: string): string {
   const days = Math.floor(diff / 86400000);
   if (days === 0) return 'Today';
   if (days === 1) return 'Yesterday';
-  if (days < 7) return `${days} days ago`;
+  if (days < 7) return `${days}d ago`;
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
@@ -72,7 +70,7 @@ export default function PublicProfileScreen() {
   const [followerCount, setFollowerCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId>('activity');
+  const [activeTab, setActiveTab] = useState<TabId>('recipes');
 
   useFocusEffect(
     useCallback(() => {
@@ -173,6 +171,7 @@ export default function PublicProfileScreen() {
 
   const { profile, stats, can_view: canView } = chefData;
   const isOwnProfile = user?.id === id;
+  const initial = (profile.display_name || '?')[0].toUpperCase();
 
   const followButtonTitle = {
     following: 'Following',
@@ -180,86 +179,146 @@ export default function PublicProfileScreen() {
     not_following: profile.is_private ? 'Request to Follow' : 'Follow',
   }[followState];
 
-  const followButtonVariant = followState === 'not_following' ? 'primary' : 'secondary';
-
   return (
     <>
       <Stack.Screen options={{ headerTitle: profile.display_name }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Avatar name={profile.display_name} size="lg" imageUrl={profile.avatar_url} />
-          <Text style={styles.name}>{profile.display_name}</Text>
-          {profile.is_private && (
-            <Text style={styles.privateLabel}>Private account</Text>
+        {/* Profile Top */}
+        <View style={styles.profileTop}>
+          {profile.avatar_url ? (
+            <Image
+              source={{ uri: profile.avatar_url }}
+              style={styles.avatarImage}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={styles.avatar}>
+              <Text style={styles.avatarInitial}>{initial}</Text>
+            </View>
           )}
-          {profile.bio && <Text style={styles.bio}>{profile.bio}</Text>}
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>{profile.display_name}</Text>
+            {profile.is_private && (
+              <Text style={styles.privateBadge}>Private account</Text>
+            )}
+            {profile.bio && (
+              <Text style={styles.profileBio}>{profile.bio}</Text>
+            )}
+          </View>
         </View>
 
-        <View style={styles.statsRow}>
+        {/* Stats Bar */}
+        <View style={styles.statsBar}>
           {canView && (
             <>
               <View style={styles.stat}>
-                <Text style={styles.statNumber}>{stats.recipe_count}</Text>
-                <Text style={styles.statLabel}>recipes</Text>
+                <Text style={styles.statValue}>{stats.recipe_count}</Text>
+                <Text style={styles.statLabel}>Recipes</Text>
               </View>
               <View style={styles.stat}>
-                <Text style={styles.statNumber}>{stats.cook_count}</Text>
-                <Text style={styles.statLabel}>cooked</Text>
+                <Text style={styles.statValue}>{stats.cook_count}</Text>
+                <Text style={styles.statLabel}>Cooked</Text>
               </View>
             </>
           )}
           <View style={styles.stat}>
-            <Text style={styles.statNumber}>{followerCount}</Text>
-            <Text style={styles.statLabel}>followers</Text>
+            <Text style={styles.statValue}>{followerCount}</Text>
+            <Text style={styles.statLabel}>Followers</Text>
           </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>{stats.following_count}</Text>
-            <Text style={styles.statLabel}>following</Text>
+          <View style={[styles.stat, styles.statLast]}>
+            <Text style={styles.statValue}>{stats.following_count}</Text>
+            <Text style={styles.statLabel}>Following</Text>
           </View>
         </View>
 
+        {/* Follow Button */}
         {!isOwnProfile && (
-          <View style={styles.followButtonContainer}>
-            <Button
-              title={followButtonTitle}
+          <View style={styles.followRow}>
+            <Pressable
+              style={[
+                styles.followButton,
+                followState === 'not_following' ? styles.followButtonPrimary : styles.followButtonSecondary,
+              ]}
               onPress={handleFollowAction}
-              variant={followButtonVariant}
-              size="lg"
-              loading={actionLoading}
-            />
+              disabled={actionLoading}
+            >
+              <Text style={[
+                styles.followButtonText,
+                followState === 'not_following' ? styles.followButtonTextPrimary : styles.followButtonTextSecondary,
+              ]}>
+                {actionLoading ? '...' : followButtonTitle}
+              </Text>
+            </Pressable>
           </View>
         )}
 
         {canView ? (
           <>
-            {/* Tab bar */}
+            {/* Nav Tabs */}
             <View style={styles.tabBar}>
               {TABS.map((tab) => (
-                <TouchableOpacity
+                <Pressable
                   key={tab.id}
-                  style={[styles.tab, activeTab === tab.id && styles.tabActive]}
                   onPress={() => setActiveTab(tab.id)}
-                  activeOpacity={0.7}
+                  style={[styles.tab, activeTab === tab.id && styles.tabActive]}
                 >
                   <Text style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}>
                     {tab.label}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
 
-            {/* Tab content */}
+            {/* Recipes Tab */}
+            {activeTab === 'recipes' && (
+              <View style={styles.tabContent}>
+                {(chefData.published || []).length === 0 ? (
+                  <EmptyTab message="No published recipes yet" />
+                ) : (
+                  <View style={styles.recipeList}>
+                    {chefData.published.map((recipe) => (
+                      <Pressable
+                        key={recipe.id}
+                        style={styles.recipeItem}
+                        onPress={() => router.push(`/recipe/${recipe.id}`)}
+                      >
+                        {recipe.image_url ? (
+                          <Image
+                            source={{ uri: recipe.image_url }}
+                            style={styles.recipeThumb}
+                            contentFit="cover"
+                          />
+                        ) : (
+                          <View style={styles.recipePlaceholder}>
+                            <ForkDot size={14} color={colors.inkMuted} />
+                          </View>
+                        )}
+                        <View style={styles.recipeInfo}>
+                          <Text style={styles.recipeTitle} numberOfLines={1}>{recipe.title}</Text>
+                          <View style={styles.recipeMeta}>
+                            <View style={[styles.recipeBadge, styles.recipeBadgePub]}>
+                              <Text style={[styles.recipeBadgeText, styles.recipeBadgeTextPub]}>Published</Text>
+                            </View>
+                          </View>
+                        </View>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Activity Tab */}
             {activeTab === 'activity' && (
               <View style={styles.tabContent}>
                 {(chefData.activity || []).length === 0 ? (
                   <EmptyTab message="No cooking activity yet" />
                 ) : (
-                  <View style={styles.itemList}>
+                  <View style={styles.activityList}>
                     {chefData.activity.map((item, i) => (
-                      <TouchableOpacity
+                      <Pressable
                         key={`${item.recipe_id}-${item.cooked_at}-${i}`}
                         style={styles.activityItem}
-                        activeOpacity={0.7}
                         onPress={() => router.push(`/recipe/${item.recipe_id}`)}
                       >
                         <View style={styles.activityRow}>
@@ -271,79 +330,55 @@ export default function PublicProfileScreen() {
                             {'\u201C'}{item.notes}{'\u201D'}
                           </Text>
                         )}
-                      </TouchableOpacity>
+                      </Pressable>
                     ))}
                   </View>
                 )}
               </View>
             )}
 
+            {/* Favorites Tab */}
             {activeTab === 'favorites' && (
               <View style={styles.tabContent}>
                 {(chefData.favorites || []).length === 0 ? (
                   <EmptyTab message="No favorite recipes yet" />
                 ) : (
-                  <View style={styles.itemList}>
+                  <View style={styles.recipeList}>
                     {chefData.favorites.map((item) => (
-                      <TouchableOpacity
+                      <Pressable
                         key={item.recipe_id}
-                        style={styles.favoriteItem}
-                        activeOpacity={0.7}
+                        style={styles.recipeItem}
                         onPress={() => router.push(`/recipe/${item.recipe_id}`)}
                       >
                         {item.recipe_image_url ? (
                           <Image
                             source={{ uri: item.recipe_image_url }}
-                            style={styles.favImage}
+                            style={styles.recipeThumb}
                             contentFit="cover"
                           />
                         ) : (
-                          <View style={styles.favPlaceholder}>
-                            <ForkDot size={14} color="rgba(45,95,93,0.2)" />
+                          <View style={styles.recipePlaceholder}>
+                            <ForkDot size={14} color={colors.inkMuted} />
                           </View>
                         )}
-                        <View style={styles.favInfo}>
-                          <Text style={styles.favTitle} numberOfLines={1}>{item.recipe_title}</Text>
-                          <Text style={styles.favDate}>Saved {formatDate(item.favorited_at)}</Text>
+                        <View style={styles.recipeInfo}>
+                          <Text style={styles.recipeTitle} numberOfLines={1}>{item.recipe_title}</Text>
+                          <Text style={styles.recipeMetaText}>Saved {formatDate(item.favorited_at)}</Text>
                         </View>
-                      </TouchableOpacity>
+                      </Pressable>
                     ))}
                   </View>
                 )}
               </View>
             )}
 
-            {activeTab === 'published' && (
-              <View style={styles.tabContent}>
-                {(chefData.published || []).length === 0 ? (
-                  <EmptyTab message="No published recipes yet" />
-                ) : (
-                  <View style={styles.itemList}>
-                    {chefData.published.map((recipe) => (
-                      <RecipeCard
-                        key={recipe.id}
-                        recipe={{
-                          id: recipe.id,
-                          title: recipe.title,
-                          description: recipe.description,
-                          image_url: recipe.image_url,
-                          creatorName: profile.display_name,
-                        }}
-                        variant="compact"
-                        onPress={() => router.push(`/recipe/${recipe.id}`)}
-                      />
-                    ))}
-                  </View>
-                )}
-              </View>
-            )}
-
+            {/* Recommendations Tab */}
             {activeTab === 'recommendations' && (
               <View style={styles.tabContent}>
                 {(chefData.recommendations || []).length === 0 ? (
                   <EmptyTab message="No recommendations yet" />
                 ) : (
-                  <View style={styles.itemList}>
+                  <View style={styles.recsList}>
                     {chefData.recommendations.map((card) => (
                       <RecommendationCard
                         key={card.share_id}
@@ -384,97 +419,233 @@ export default function PublicProfileScreen() {
 function EmptyTab({ message }: { message: string }) {
   return (
     <View style={styles.emptyTab}>
-      <ForkDot size={20} color="rgba(45,95,93,0.3)" />
       <Text style={styles.emptyTabText}>{message}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.bg },
   centered: { justifyContent: 'center', alignItems: 'center' },
-  content: { padding: spacing.xl },
+  content: { paddingBottom: 100 },
 
-  header: { alignItems: 'center', marginBottom: spacing.xl },
-  name: {
-    fontFamily: fontFamily.sansBold,
-    fontSize: 24,
-    color: colors.text,
-    marginTop: spacing.md,
-  },
-  privateLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  bio: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-    textAlign: 'center',
-  },
-
-  statsRow: {
+  // Profile Top
+  profileTop: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: spacing.lg,
-    borderTopWidth: 1,
+    gap: 16,
+    alignItems: 'flex-start',
+  },
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+  },
+  avatarInitial: {
+    fontFamily: fontFamily.display,
+    fontSize: 24,
+    color: colors.bg,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontFamily: fontFamily.display,
+    fontSize: 28,
+    lineHeight: 28,
+    color: colors.ink,
+  },
+  privateBadge: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    color: colors.inkMuted,
+    marginTop: 4,
+  },
+  profileBio: {
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.inkSecondary,
+    lineHeight: 19,
+    marginTop: 4,
+  },
+
+  // Stats Bar
+  statsBar: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    borderTopWidth: 3,
+    borderTopColor: colors.ink,
     borderBottomWidth: 1,
-    borderColor: colors.borderLight,
-    marginBottom: spacing.xl,
+    borderBottomColor: colors.ink,
+    flexDirection: 'row',
   },
-  stat: { alignItems: 'center' },
-  statNumber: { fontSize: 20, fontWeight: '700', color: colors.text },
-  statLabel: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
-
-  followButtonContainer: {
-    marginBottom: spacing.xxl,
+  stat: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
+  },
+  statLast: {
+    borderRightWidth: 0,
+  },
+  statValue: {
+    fontFamily: fontFamily.display,
+    fontSize: 22,
+    color: colors.ink,
+  },
+  statLabel: {
+    fontFamily: fontFamily.mono,
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 0.9,
+    color: colors.inkMuted,
+    marginTop: 1,
   },
 
+  // Follow Button
+  followRow: {
+    paddingHorizontal: 20,
+    marginTop: 16,
+  },
+  followButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  followButtonPrimary: {
+    backgroundColor: colors.ink,
+    borderColor: colors.ink,
+  },
+  followButtonSecondary: {
+    backgroundColor: 'transparent',
+    borderColor: colors.border,
+  },
+  followButtonText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  followButtonTextPrimary: {
+    color: colors.bg,
+  },
+  followButtonTextSecondary: {
+    color: colors.inkSecondary,
+  },
+
+  // Nav Tabs
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    padding: 3,
-    marginBottom: spacing.lg,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    marginTop: 20,
   },
   tab: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.md - 2,
-    alignItems: 'center',
+    paddingVertical: 10,
+    paddingRight: 14,
   },
   tabActive: {
-    backgroundColor: colors.card,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 1,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    marginBottom: -1,
   },
   tabText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontWeight: '500',
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.66,
+    color: colors.inkMuted,
   },
   tabTextActive: {
-    color: colors.text,
-    fontWeight: '600',
+    color: colors.ink,
   },
 
+  // Tab Content
   tabContent: {
-    marginBottom: spacing.xl,
-  },
-  itemList: {
-    gap: spacing.md,
+    paddingHorizontal: 20,
   },
 
-  activityItem: {
-    borderRadius: radii.lg,
+  // Recipe List (shared for recipes & favorites)
+  recipeList: {},
+  recipeItem: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    alignItems: 'center',
+  },
+  recipeThumb: {
+    width: 48,
+    height: 48,
+    borderRadius: 0,
+  },
+  recipePlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 0,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recipeInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  recipeTitle: {
+    fontFamily: fontFamily.display,
+    fontSize: 17,
+    lineHeight: 20,
+    color: colors.ink,
+    marginBottom: 2,
+  },
+  recipeMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  recipeMetaText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.inkMuted,
+  },
+  recipeBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 1,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.card,
-    padding: spacing.lg,
+  },
+  recipeBadgePub: {
+    borderColor: colors.olive,
+  },
+  recipeBadgeText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  recipeBadgeTextPub: {
+    color: colors.olive,
+  },
+
+  // Activity List
+  activityList: {},
+  activityItem: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   activityRow: {
     flexDirection: 'row',
@@ -482,89 +653,66 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   activityTitle: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.text,
+    fontFamily: fontFamily.display,
+    fontSize: 17,
+    color: colors.ink,
     flex: 1,
     marginRight: spacing.sm,
   },
   activityDate: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    color: colors.inkMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   activityNotes: {
-    ...typography.bodySmall,
-    color: colors.textMuted,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.inkSecondary,
     fontStyle: 'italic',
-    marginTop: spacing.xs,
+    marginTop: 4,
   },
 
-  favoriteItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  // Recommendations
+  recsList: {
     gap: spacing.md,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.card,
-    padding: spacing.md,
-  },
-  favImage: {
-    width: 48,
-    height: 48,
-    borderRadius: radii.md,
-  },
-  favPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: radii.md,
-    backgroundColor: colors.accentWash,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  favInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  favTitle: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  favDate: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
+    paddingTop: spacing.md,
   },
 
-  emptyText: { ...typography.bodySmall, color: colors.textSecondary },
+  // Empty
+  emptyText: {
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.inkMuted,
+  },
   emptyTab: {
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.accentWashBorder,
-    backgroundColor: colors.accentWash,
-    padding: spacing.xl,
+    paddingVertical: 32,
     alignItems: 'center',
   },
   emptyTabText: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.inkMuted,
   },
 
+  // Private message
   privateMessage: {
     alignItems: 'center',
     paddingVertical: spacing.xxxl,
     paddingHorizontal: spacing.xl,
   },
   privateTitle: {
-    ...typography.h3,
-    color: colors.text,
+    fontFamily: fontFamily.display,
+    fontSize: 22,
+    color: colors.ink,
     marginBottom: spacing.sm,
   },
   privateDescription: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.inkSecondary,
     textAlign: 'center',
+    lineHeight: 19,
   },
 });

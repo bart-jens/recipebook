@@ -12,7 +12,7 @@ import {
 import Constants from 'expo-constants';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
+import { colors, spacing, fontFamily } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 
 interface Props {
@@ -67,7 +67,7 @@ export default function FeedbackModal({ visible, onClose, sourceScreen }: Props)
           <View style={styles.header}>
             <Text style={styles.title}>Send Feedback</Text>
             <TouchableOpacity onPress={handleClose} hitSlop={12}>
-              <Text style={styles.closeButton}>Close</Text>
+              <Text style={styles.closeButton}>CLOSE</Text>
             </TouchableOpacity>
           </View>
 
@@ -80,7 +80,7 @@ export default function FeedbackModal({ visible, onClose, sourceScreen }: Props)
               <TextInput
                 style={styles.input}
                 placeholder="Found a bug, have an idea, or just want to say hi? We read every message."
-                placeholderTextColor={colors.textMuted}
+                placeholderTextColor={colors.inkMuted}
                 multiline
                 textAlignVertical="top"
                 value={message}
@@ -109,9 +109,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   sheet: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: radii.xl,
-    borderTopRightRadius: radii.xl,
+    backgroundColor: colors.bg,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     padding: spacing.pagePadding,
     paddingBottom: spacing.xxxl + spacing.lg,
   },
@@ -122,22 +122,23 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    ...typography.h3,
-    fontFamily: fontFamily.sansBold,
-    color: colors.text,
+    fontFamily: fontFamily.display,
+    fontSize: 22,
+    color: colors.ink,
   },
   closeButton: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: colors.inkSecondary,
   },
   input: {
-    ...typography.body,
     fontFamily: fontFamily.sans,
-    color: colors.text,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radii.md,
-    padding: spacing.lg,
+    fontSize: 14,
+    color: colors.ink,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    paddingVertical: spacing.md,
     minHeight: 140,
     marginBottom: spacing.lg,
   },
@@ -146,8 +147,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   successText: {
-    ...typography.body,
     fontFamily: fontFamily.sansMedium,
-    color: colors.success,
+    fontSize: 14,
+    color: colors.olive,
   },
 });

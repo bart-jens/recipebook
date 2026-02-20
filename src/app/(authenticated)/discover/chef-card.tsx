@@ -51,16 +51,16 @@ export function ChefCard({
   };
 
   return (
-    <div className="flex items-center gap-3 rounded-md border border-warm-border bg-warm-tag p-4 transition-all hover:-translate-y-px hover:shadow-sm">
+    <div className="flex items-center gap-3 py-3.5 border-b border-border transition-all duration-200 hover:bg-accent-light hover:-mx-2 hover:px-2">
       <Link href={`/profile/${id}`} className="shrink-0">
         {avatarUrl ? (
           <img
             src={avatarUrl}
             alt=""
-            className="h-12 w-12 rounded-full object-cover"
+            className="h-11 w-11 rounded-full object-cover transition-transform duration-300 hover:scale-[1.08]"
           />
         ) : (
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-bg font-display text-[18px]">
             {displayName[0]?.toUpperCase()}
           </div>
         )}
@@ -68,24 +68,24 @@ export function ChefCard({
       <div className="min-w-0 flex-1">
         <Link
           href={`/profile/${id}`}
-          className="block truncate font-medium hover:text-accent"
+          className="block truncate font-display text-[18px] leading-[1.2] tracking-[-0.01em] text-ink hover:text-accent transition-colors"
         >
           {displayName}
         </Link>
-        <p className="mt-0.5 text-xs text-warm-gray">
-          {recipeCount} recipe{recipeCount !== 1 ? "s" : ""}
+        <p className="font-mono text-[11px] text-ink-muted flex gap-2">
+          <span>{recipeCount} recipe{recipeCount !== 1 ? "s" : ""}</span>
           {lastCooked && (
-            <span> &middot; Cooked {formatTimeAgo(lastCooked)}</span>
+            <span>Cooked {formatTimeAgo(lastCooked)}</span>
           )}
         </p>
       </div>
       <button
         onClick={handleFollow}
         disabled={isPending}
-        className={`shrink-0 rounded-md px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${
+        className={`shrink-0 font-mono text-[10px] uppercase tracking-[0.06em] px-3 py-1.5 transition-all disabled:opacity-50 ${
           followState === "following"
-            ? "border border-warm-border text-warm-gray hover:border-red-300 hover:text-red-500"
-            : "bg-accent text-white hover:bg-accent/90"
+            ? "border border-border text-ink-muted hover:border-accent hover:text-accent"
+            : "bg-ink text-bg hover:bg-accent"
         }`}
       >
         {isPending

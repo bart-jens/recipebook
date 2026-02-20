@@ -12,6 +12,15 @@ interface LoadedRecipe {
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   creator_name: string;
+  tags: string[];
+}
+
+function formatTime(minutes: number | null): string | null {
+  if (!minutes) return null;
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
 export function LoadMoreButton({
@@ -36,7 +45,7 @@ export function LoadMoreButton({
 
     const query = supabase
       .from("recipes")
-      .select("id, title, description, image_url, prep_time_minutes, cook_time_minutes, created_by")
+      .select("id, title, description, image_url, prep_time_minutes, cook_time_minutes, created_by, recipe_tags(tag)")
       .eq("visibility", "public")
       .order("published_at", { ascending: false })
       .range(offset, offset + pageSize - 1);
@@ -46,7 +55,7 @@ export function LoadMoreButton({
     }
 
     const { data } = await query;
-    let newRecipes = (data || []) as { id: string; title: string; description: string | null; image_url: string | null; prep_time_minutes: number | null; cook_time_minutes: number | null; created_by: string }[];
+    let newRecipes = (data || []) as { id: string; title: string; description: string | null; image_url: string | null; prep_time_minutes: number | null; cook_time_minutes: number | null; created_by: string; recipe_tags: { tag: string }[] }[];
 
     // Also find public recipes matching by ingredient or tag
     if (searchQuery) {
@@ -63,7 +72,7 @@ export function LoadMoreButton({
       if (extraIds.size > 0) {
         const { data: extraData } = await supabase
           .from("recipes")
-          .select("id, title, description, image_url, prep_time_minutes, cook_time_minutes, created_by")
+          .select("id, title, description, image_url, prep_time_minutes, cook_time_minutes, created_by, recipe_tags(tag)")
           .eq("visibility", "public")
           .in("id", Array.from(extraIds));
         newRecipes = [...newRecipes, ...(extraData || []) as typeof newRecipes];
@@ -82,8 +91,14 @@ export function LoadMoreButton({
     const profileMap = new Map((profiles || []).map((p: { id: string; display_name: string }) => [p.id, p.display_name]));
 
     const enriched = newRecipes.map((r) => ({
-      ...r,
+      id: r.id,
+      title: r.title,
+      description: r.description,
+      image_url: r.image_url,
+      prep_time_minutes: r.prep_time_minutes,
+      cook_time_minutes: r.cook_time_minutes,
       creator_name: profileMap.get(r.created_by) || "Unknown",
+      tags: (r.recipe_tags || []).map((t) => t.tag),
     }));
 
     setRecipes((prev) => [...prev, ...enriched]);
@@ -94,54 +109,51 @@ export function LoadMoreButton({
   return (
     <>
       {recipes.map((recipe) => {
-        const timeInfo = [
-          recipe.prep_time_minutes && `${recipe.prep_time_minutes} min prep`,
-          recipe.cook_time_minutes && `${recipe.cook_time_minutes} min cook`,
-        ]
-          .filter(Boolean)
-          .join(" · ");
+        const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
+        const timeStr = formatTime(totalTime);
 
         return (
           <Link
             key={recipe.id}
             href={`/recipes/${recipe.id}`}
-            className="group block overflow-hidden rounded-md bg-warm-tag border border-warm-border transition-all hover:-translate-y-px hover:shadow-sm"
+            className="group flex gap-3 py-3.5 border-b border-border cursor-pointer transition-all duration-200 hover:bg-accent-light hover:-mx-2 hover:px-2"
           >
-            {recipe.image_url ? (
-              <div className="aspect-[16/10] overflow-hidden bg-warm-tag">
-                <img
-                  src={recipe.image_url}
-                  alt={recipe.title}
-                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                />
+            <div className="flex-1 min-w-0">
+              {recipe.tags[0] && (
+                <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-accent font-medium mb-0.5">
+                  {recipe.tags[0]}
+                </div>
+              )}
+              <div className="font-display text-[20px] leading-[1.12] tracking-[-0.02em] text-ink transition-colors group-hover:text-accent">
+                {recipe.title}
               </div>
-            ) : (
-              <div className="flex aspect-[16/10] items-center justify-center bg-warm-tag">
-                <span className="text-2xl font-sans font-medium text-white/80">
-                  {recipe.title.slice(0, 1)}
-                </span>
-              </div>
-            )}
-            <div className="p-4">
-              <h2 className="font-sans text-lg font-medium">{recipe.title}</h2>
-              <p className="mt-0.5 text-xs text-warm-gray">by {recipe.creator_name}</p>
               {recipe.description && (
-                <p className="mt-1 text-sm text-warm-gray line-clamp-2">{recipe.description}</p>
+                <p className="text-[13px] font-light text-ink-secondary line-clamp-2 mb-1.5">
+                  {recipe.description}
+                </p>
               )}
-              {timeInfo && (
-                <p className="mt-2 text-xs text-warm-gray">{timeInfo}</p>
-              )}
+              <div className="font-mono text-[11px] text-ink-muted flex gap-2.5">
+                <span>By {recipe.creator_name}</span>
+                {timeStr && <span>{timeStr}</span>}
+              </div>
             </div>
+            {recipe.image_url && (
+              <img
+                src={recipe.image_url}
+                alt={recipe.title}
+                className="w-[56px] h-[56px] object-cover shrink-0 self-center transition-transform duration-300 group-hover:scale-[1.08]"
+              />
+            )}
           </Link>
         );
       })}
 
       {hasMore && (
-        <div className="py-4 text-center">
+        <div className="py-6 text-center border-b border-border">
           <button
             onClick={loadMore}
             disabled={loading}
-            className="rounded-md bg-warm-tag px-6 py-2 text-sm font-medium text-warm-gray hover:bg-warm-border disabled:opacity-50"
+            className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent hover:text-ink transition-colors disabled:opacity-50"
           >
             {loading ? "Loading..." : "Load more"}
           </button>

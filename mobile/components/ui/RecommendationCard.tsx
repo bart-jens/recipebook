@@ -12,7 +12,7 @@ import {
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
+import { colors, spacing, typography, fontFamily } from '@/lib/theme';
 import Avatar from './Avatar';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
@@ -255,7 +255,7 @@ export default function RecommendationCard({
           style={styles.actionButton}
         >
           {saving ? (
-            <ActivityIndicator size="small" color={colors.cta} />
+            <ActivityIndicator size="small" color={colors.accent} />
           ) : (
             <Text style={[styles.actionText, (saved) && styles.actionTextDisabled]}>
               {saved ? 'Saved' : 'Save to my recipes'}
@@ -279,7 +279,6 @@ export default function RecommendationCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: radii.lg,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.border,
@@ -292,20 +291,18 @@ const styles = StyleSheet.create({
   thumbnail: {
     width: 72,
     height: 72,
-    borderRadius: radii.md,
     backgroundColor: colors.surface,
   },
   thumbnailPlaceholder: {
     width: 72,
     height: 72,
-    borderRadius: radii.md,
-    backgroundColor: colors.cta,
+    backgroundColor: colors.accent,
     justifyContent: 'center',
     alignItems: 'center',
   },
   thumbnailLetter: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 18,
+    fontFamily: fontFamily.display,
+    fontSize: 24,
     color: 'rgba(255,255,255,0.8)',
   },
   info: {
@@ -323,28 +320,27 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   sharerName: {
-    ...typography.caption,
-    fontWeight: '600',
-    color: colors.textSecondary,
+    ...typography.monoMeta,
+    color: colors.inkSecondary,
   },
   dateText: {
-    ...typography.caption,
-    color: colors.textMuted,
+    ...typography.monoMeta,
+    color: colors.inkMuted,
   },
   title: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 15,
-    color: colors.text,
-    lineHeight: 20,
+    fontFamily: fontFamily.display,
+    fontSize: 17,
+    color: colors.ink,
+    lineHeight: 22,
   },
   sourceLink: {
-    ...typography.caption,
-    color: colors.cta,
+    ...typography.monoMeta,
+    color: colors.accent,
     marginTop: 2,
   },
   sourceText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...typography.monoMeta,
+    color: colors.inkSecondary,
     marginTop: 2,
   },
   starsRow: {
@@ -354,7 +350,7 @@ const styles = StyleSheet.create({
   },
   starFilled: {
     fontSize: 13,
-    color: colors.starFilled,
+    color: colors.accent,
   },
   starEmpty: {
     fontSize: 13,
@@ -362,13 +358,13 @@ const styles = StyleSheet.create({
   },
   notesSection: {
     borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
+    borderTopColor: colors.border,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
   notesText: {
     ...typography.bodySmall,
-    color: colors.textSecondary,
+    color: colors.inkSecondary,
     fontStyle: 'italic',
   },
   tagsSection: {
@@ -376,26 +372,26 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
+    borderTopColor: colors.border,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
   tag: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.full,
+    borderWidth: 1,
+    borderColor: colors.border,
     paddingHorizontal: spacing.sm,
     paddingVertical: 3,
   },
   tagText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...typography.monoMeta,
+    color: colors.inkSecondary,
   },
   actionsSection: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
+    borderTopColor: colors.border,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
@@ -404,16 +400,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   actionText: {
-    ...typography.caption,
-    fontWeight: '600',
-    color: colors.cta,
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    color: colors.accent,
   },
   actionTextDisabled: {
     opacity: 0.5,
   },
   secondaryActionText: {
-    ...typography.caption,
-    fontWeight: '600',
-    color: colors.textSecondary,
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    color: colors.inkSecondary,
   },
 });

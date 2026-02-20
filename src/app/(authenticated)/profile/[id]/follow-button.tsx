@@ -43,10 +43,10 @@ export function FollowButton({
     <button
       onClick={handleClick}
       disabled={isPending}
-      className={`rounded-md px-4 py-1.5 text-sm font-medium disabled:opacity-50 ${
+      className={`font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1.5 border transition-colors shrink-0 disabled:opacity-50 ${
         isActive
-          ? "bg-warm-tag text-warm-gray hover:bg-warm-border"
-          : "bg-cta text-white hover:bg-cta-hover active:scale-[0.98] transition-transform"
+          ? "border-border text-ink-muted hover:border-ink hover:text-ink"
+          : "border-ink bg-ink text-bg hover:bg-transparent hover:text-ink"
       }`}
     >
       {isPending ? "..." : label}

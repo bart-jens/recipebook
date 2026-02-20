@@ -11,16 +11,16 @@ import {
   ScrollView,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Image } from 'expo-image';
 import { useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { colors, spacing, typography, radii, animation } from '@/lib/theme';
-import Button from '@/components/ui/Button';
-import RecipeCard from '@/components/ui/RecipeCard';
+import { colors, spacing, fontFamily, animation } from '@/lib/theme';
 import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 import CollectionsSection from '@/components/ui/CollectionsSection';
+import { ForkDot } from '@/components/ui/Logo';
 
 type SortOption = 'updated' | 'alpha' | 'rating' | 'prep' | 'cook';
 type FilterOption = '' | 'favorited' | 'want-to-cook';
@@ -29,8 +29,8 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'updated', label: 'Recent' },
   { value: 'alpha', label: 'A-Z' },
   { value: 'rating', label: 'Top Rated' },
-  { value: 'prep', label: 'Prep Time' },
-  { value: 'cook', label: 'Cook Time' },
+  { value: 'prep', label: 'Prep' },
+  { value: 'cook', label: 'Cook' },
 ];
 
 const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
@@ -58,6 +58,14 @@ interface Recipe {
   hasCooked: boolean;
 }
 
+function formatTime(minutes: number | null): string | null {
+  if (!minutes) return null;
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
 export default function RecipesScreen() {
   const { user } = useAuth();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -67,6 +75,7 @@ export default function RecipesScreen() {
   const [activeFilter, setActiveFilter] = useState<FilterOption>('');
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [showImportMenu, setShowImportMenu] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   const [collections, setCollections] = useState<{ id: string; name: string; description: string | null; recipe_count: number; cover_url: string | null }[]>([]);
   const [collectionPlan, setCollectionPlan] = useState('free');
 
@@ -263,142 +272,210 @@ export default function RecipesScreen() {
     }, [fetchRecipes, fetchCollections])
   );
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search recipes, ingredients, tags..."
-          placeholderTextColor={colors.textMuted}
-          value={search}
-          onChangeText={setSearch}
-          returnKeyType="search"
-        />
-        <View style={styles.actionRow}>
-          {recipes.length > 0 && !loading && (
-            <Text style={styles.count}>
-              {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
-              {search ? ` for "${search}"` : ''}
-            </Text>
+  const renderRecipeItem = ({ item, index }: { item: Recipe; index: number }) => {
+    const totalTime = (item.prep_time_minutes || 0) + (item.cook_time_minutes || 0);
+    const timeStr = formatTime(totalTime);
+    const tag = item.tags.length > 0 ? item.tags[0] : null;
+
+    return (
+      <Animated.View
+        entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
+      >
+        <Pressable
+          style={styles.resultItem}
+          onPress={() => router.push(`/recipe/${item.id}`)}
+        >
+          {item.image_url ? (
+            <Image
+              source={{ uri: item.image_url }}
+              style={styles.resultThumb}
+              contentFit="cover"
+              transition={200}
+            />
+          ) : (
+            <View style={[styles.resultThumb, styles.thumbPlaceholder]}>
+              <ForkDot size={14} color="rgba(139,69,19,0.15)" />
+            </View>
           )}
+          <View style={styles.resultContent}>
+            <View style={styles.titleRow}>
+              <View style={styles.titleWrap}>
+                {tag && (
+                  <Text style={styles.resultCategory}>{tag.toUpperCase()}</Text>
+                )}
+                <Text style={styles.resultTitle} numberOfLines={2}>{item.title}</Text>
+              </View>
+              {item.isFavorited && (
+                <FontAwesome name="heart" size={12} color={colors.accent} style={styles.heartIcon} />
+              )}
+            </View>
+            <View style={styles.resultFooter}>
+              {timeStr && (
+                <Text style={styles.resultFooterText}>{timeStr}</Text>
+              )}
+              {item.avgRating != null && (
+                <Text style={styles.resultFooterText}>{item.avgRating.toFixed(1)}</Text>
+              )}
+              {item.tags.length > 1 && (
+                <Text style={styles.resultFooterText} numberOfLines={1}>{item.tags.slice(1).join(', ')}</Text>
+              )}
+            </View>
+          </View>
+        </Pressable>
+      </Animated.View>
+    );
+  };
+
+  const renderHeader = () => (
+    <View>
+      {/* Header: overline + serif title */}
+      <Animated.View entering={FadeInDown.duration(400)} style={styles.header}>
+        <Text style={styles.overline}>YOUR LIBRARY</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.title}>Recipes</Text>
           <View style={styles.actionButtons}>
-            <Button
-              title="Import"
-              variant="secondary"
-              size="sm"
+            <Pressable
+              style={styles.actionButton}
               onPress={() => setShowImportMenu(true)}
-            />
-            <Button
-              title="Create"
-              variant="primary"
-              size="sm"
+            >
+              <Text style={styles.actionButtonText}>IMPORT</Text>
+            </Pressable>
+            <Pressable
+              style={styles.actionButtonPrimary}
               onPress={() => router.push('/recipe/new')}
-            />
+            >
+              <Text style={styles.actionButtonPrimaryText}>CREATE</Text>
+            </Pressable>
           </View>
         </View>
 
+        {/* Search bar — bottom-border style */}
+        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
+          <View style={[styles.searchWrap, searchFocused && styles.searchWrapFocused]}>
+            <FontAwesome name="search" size={14} color={colors.inkMuted} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search recipes, ingredients, tags..."
+              placeholderTextColor={colors.inkMuted}
+              value={search}
+              onChangeText={setSearch}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              returnKeyType="search"
+            />
+          </View>
+        </Animated.View>
+      </Animated.View>
+
+      {/* Sort tabs */}
+      <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.sortRow}
+          contentContainerStyle={styles.filterRow}
         >
           {SORT_OPTIONS.map((opt) => (
-            <TouchableOpacity
+            <Pressable
               key={opt.value}
-              style={[styles.sortPill, sort === opt.value && styles.sortPillActive]}
+              style={styles.filterTab}
               onPress={() => setSort(opt.value)}
-              activeOpacity={0.7}
             >
-              <Text style={[styles.sortPillText, sort === opt.value && styles.sortPillTextActive]}>
-                {opt.label}
+              <Text style={[styles.filterTabText, sort === opt.value && styles.filterTabTextActive]}>
+                {opt.label.toUpperCase()}
               </Text>
-            </TouchableOpacity>
+              {sort === opt.value && <View style={styles.filterTabLine} />}
+            </Pressable>
           ))}
         </ScrollView>
+      </Animated.View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.courseRow}
-        >
-          {FILTER_OPTIONS.map((opt) => (
-            <TouchableOpacity
-              key={opt.value}
-              style={[styles.coursePill, activeFilter === opt.value && styles.coursePillActive]}
-              onPress={() => setActiveFilter(opt.value)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.coursePillText, activeFilter === opt.value && styles.coursePillTextActive]}>
-                {opt.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+      {/* Filter tabs */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.secondaryFilterRow}
+      >
+        {FILTER_OPTIONS.map((opt) => (
+          <Pressable
+            key={`filter-${opt.value}`}
+            style={styles.secondaryTab}
+            onPress={() => setActiveFilter(opt.value)}
+          >
+            <Text style={[styles.secondaryTabText, activeFilter === opt.value && styles.secondaryTabTextActive]}>
+              {opt.label.toUpperCase()}
+            </Text>
+            {activeFilter === opt.value && <View style={styles.secondaryTabLine} />}
+          </Pressable>
+        ))}
+        <View style={styles.tabDivider} />
+        {selectedCourse && (
+          <Pressable
+            style={styles.secondaryTab}
+            onPress={() => setSelectedCourse(null)}
+          >
+            <Text style={styles.clearText}>CLEAR</Text>
+          </Pressable>
+        )}
+        {COURSE_OPTIONS.map((c) => (
+          <Pressable
+            key={c}
+            style={styles.secondaryTab}
+            onPress={() => setSelectedCourse(selectedCourse === c ? null : c)}
+          >
+            <Text style={[styles.secondaryTabText, selectedCourse === c && styles.courseTabTextActive]}>
+              {c.toUpperCase()}
+            </Text>
+            {selectedCourse === c && <View style={styles.courseTabLine} />}
+          </Pressable>
+        ))}
+      </ScrollView>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.courseRow}
-        >
-          {selectedCourse && (
-            <TouchableOpacity
-              style={styles.clearPill}
-              onPress={() => setSelectedCourse(null)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.clearPillText}>Clear</Text>
-            </TouchableOpacity>
-          )}
-          {COURSE_OPTIONS.map((c) => (
-            <TouchableOpacity
-              key={c}
-              style={[styles.coursePill, selectedCourse === c && styles.coursePillActive]}
-              onPress={() => setSelectedCourse(selectedCourse === c ? null : c)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.coursePillText, selectedCourse === c && styles.coursePillTextActive]}>
-                {c}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-      </View>
-
+      {/* Collections */}
       <CollectionsSection
         collections={collections}
         userPlan={collectionPlan}
         onRefresh={fetchCollections}
       />
 
+      {/* Result count */}
+      {recipes.length > 0 && !loading && (
+        <View style={styles.countRow}>
+          <Text style={styles.count}>
+            {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
+            {search ? ` for "${search}"` : ''}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
       {loading ? (
-        <RecipeListSkeleton />
+        <View style={{ flex: 1 }}>
+          {renderHeader()}
+          <RecipeListSkeleton />
+        </View>
       ) : recipes.length === 0 ? (
-        <EmptyState
-          icon="book"
-          title={search ? 'No results' : 'No recipes yet'}
-          subtitle={
-            search
-              ? `No recipes match "${search}"`
-              : 'Import a recipe or create your first one!'
-          }
-        />
+        <View style={{ flex: 1 }}>
+          {renderHeader()}
+          <EmptyState
+            icon="book"
+            title={search ? 'No results' : 'No recipes yet'}
+            subtitle={
+              search
+                ? `No recipes match "${search}"`
+                : 'Import a recipe or create your first one!'
+            }
+          />
+        </View>
       ) : (
         <FlatList
           data={recipes}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: spacing.lg }}
-          ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
-          renderItem={({ item, index }) => (
-            <Animated.View
-              entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
-            >
-              <RecipeCard
-                recipe={item}
-                onPress={() => router.push(`/recipe/${item.id}`)}
-              />
-            </Animated.View>
-          )}
+          contentContainerStyle={styles.listContent}
+          ListHeaderComponent={renderHeader}
+          renderItem={renderRecipeItem}
         />
       )}
 
@@ -416,7 +493,7 @@ export default function RecipesScreen() {
               activeOpacity={0.7}
               onPress={() => { setShowImportMenu(false); router.push('/recipe/import-url'); }}
             >
-              <FontAwesome name="link" size={18} color={colors.primary} />
+              <FontAwesome name="link" size={18} color={colors.accent} />
               <View style={styles.importOptionText}>
                 <Text style={styles.importOptionTitle}>From Link</Text>
                 <Text style={styles.importOptionDesc}>Paste a link from any recipe site or Instagram</Text>
@@ -427,7 +504,7 @@ export default function RecipesScreen() {
               activeOpacity={0.7}
               onPress={() => { setShowImportMenu(false); router.push('/recipe/import-photo'); }}
             >
-              <FontAwesome name="camera" size={18} color={colors.primary} />
+              <FontAwesome name="camera" size={18} color={colors.accent} />
               <View style={styles.importOptionText}>
                 <Text style={styles.importOptionTitle}>From Photo</Text>
                 <Text style={styles.importOptionDesc}>Scan a photo of a recipe with AI</Text>
@@ -441,116 +518,292 @@ export default function RecipesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  searchContainer: { padding: spacing.pagePadding, paddingBottom: 0 },
-  searchInput: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    ...typography.body,
-    color: colors.text,
+  container: {
+    flex: 1,
+    backgroundColor: colors.bg,
   },
-  actionRow: {
+  listContent: {
+    paddingBottom: 100,
+  },
+
+  // Header
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  overline: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.4,
+    color: colors.inkMuted,
+    marginBottom: 4,
+  },
+  headerRow: {
     flexDirection: 'row',
+    alignItems: 'baseline',
     justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  title: {
+    fontFamily: fontFamily.display,
+    fontSize: 32,
+    letterSpacing: -1,
+    color: colors.ink,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionButton: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  actionButtonText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.66,
+    color: colors.inkMuted,
+  },
+  actionButtonPrimary: {
+    borderWidth: 1,
+    borderColor: colors.ink,
+    backgroundColor: colors.ink,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  actionButtonPrimaryText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.66,
+    color: colors.bg,
+  },
+
+  // Search — bottom-border style
+  searchWrap: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: spacing.sm + 2,
-  },
-  count: { ...typography.label, color: colors.textSecondary },
-  actionButtons: { flexDirection: 'row', gap: spacing.sm },
-
-  sortRow: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-    marginTop: spacing.md,
-    paddingRight: spacing.lg,
-  },
-  sortPill: {
-    paddingBottom: spacing.sm,
     borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    borderBottomColor: colors.ink,
+    paddingBottom: 6,
+    gap: 8,
   },
-  sortPillActive: {
-    borderBottomColor: colors.primary,
+  searchWrapFocused: {
+    borderBottomColor: colors.accent,
   },
-  sortPillText: {
-    ...typography.label,
-    color: colors.textSecondary,
-    fontWeight: '400',
-  },
-  sortPillTextActive: {
-    color: colors.text,
-    fontWeight: '600',
+  searchInput: {
+    flex: 1,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 15,
+    color: colors.ink,
+    paddingVertical: 0,
   },
 
-  courseRow: {
+  // Sort tabs
+  filterRow: {
     flexDirection: 'row',
-    gap: spacing.md,
-    marginTop: spacing.sm,
-    paddingRight: spacing.lg,
-    paddingBottom: spacing.sm,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  coursePill: {
-    paddingBottom: spacing.xs,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+  filterTab: {
+    paddingVertical: 8,
+    paddingRight: 14,
+    position: 'relative',
   },
-  coursePillActive: {
-    borderBottomColor: colors.primary,
+  filterTabText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.66,
+    color: colors.inkMuted,
   },
-  coursePillText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+  filterTabTextActive: {
+    color: colors.ink,
   },
-  coursePillTextActive: {
-    color: colors.text,
-    fontWeight: '600',
-  },
-  clearPill: {
-    paddingBottom: spacing.xs,
-  },
-  clearPillText: {
-    ...typography.caption,
-    color: colors.primary,
-    fontWeight: '600',
+  filterTabLine: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 14,
+    height: 2,
+    backgroundColor: colors.ink,
   },
 
+  // Filter + Course tabs
+  secondaryFilterRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    alignItems: 'center',
+  },
+  secondaryTab: {
+    paddingVertical: 6,
+    paddingRight: 12,
+    position: 'relative',
+  },
+  secondaryTabText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    color: colors.inkMuted,
+  },
+  secondaryTabTextActive: {
+    color: colors.ink,
+  },
+  secondaryTabLine: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 12,
+    height: 1.5,
+    backgroundColor: colors.ink,
+  },
+  courseTabTextActive: {
+    color: colors.accent,
+  },
+  courseTabLine: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 12,
+    height: 1.5,
+    backgroundColor: colors.accent,
+  },
+  tabDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: colors.border,
+    marginHorizontal: 4,
+    alignSelf: 'center',
+  },
+  clearText: {
+    fontFamily: fontFamily.monoMedium,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    color: colors.accent,
+  },
+
+  // Count
+  countRow: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
+  count: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.inkMuted,
+  },
+
+  // Recipe items — index-item pattern
+  resultItem: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  resultThumb: {
+    width: 48,
+    height: 48,
+    borderRadius: 0,
+    alignSelf: 'center',
+  },
+  thumbPlaceholder: {
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  titleWrap: {
+    flex: 1,
+    minWidth: 0,
+  },
+  resultCategory: {
+    fontFamily: fontFamily.monoMedium,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.0,
+    color: colors.accent,
+    marginBottom: 2,
+  },
+  resultTitle: {
+    fontFamily: fontFamily.display,
+    fontSize: 20,
+    lineHeight: 23,
+    letterSpacing: -0.4,
+    color: colors.ink,
+    marginBottom: 3,
+  },
+  heartIcon: {
+    marginTop: 4,
+    marginLeft: 8,
+  },
+  resultFooter: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  resultFooterText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.inkMuted,
+  },
+
+  // Import modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
   },
   importMenu: {
-    backgroundColor: colors.card,
-    borderTopLeftRadius: radii.xl,
-    borderTopRightRadius: radii.xl,
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     padding: spacing.xl,
     paddingBottom: spacing.xxxl,
   },
   importMenuTitle: {
-    ...typography.h3,
-    color: colors.text,
+    fontFamily: fontFamily.display,
+    fontSize: 20,
+    lineHeight: 24,
+    color: colors.ink,
     marginBottom: spacing.lg,
   },
   importOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing.lg,
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
     marginBottom: spacing.sm,
     gap: spacing.lg,
   },
   importOptionText: { flex: 1 },
   importOptionTitle: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.text,
+    fontFamily: fontFamily.sansMedium,
+    fontSize: 14,
+    color: colors.ink,
   },
   importOptionDesc: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.inkSecondary,
     marginTop: 2,
   },
 });

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, radii } from '@/lib/theme';
+import { colors, spacing, fontFamily } from '@/lib/theme';
 import { Logo } from '@/components/ui/Logo';
 
 export default function LoginScreen() {
@@ -39,27 +39,32 @@ export default function LoginScreen() {
     >
       <View style={styles.inner}>
         <Logo height={40} />
-        <Text style={styles.subtitle}>Sign in to your recipe collection</Text>
+        <Text style={styles.subtitle}>SIGN IN TO YOUR RECIPE COLLECTION</Text>
 
         <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor={colors.textMuted}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor={colors.textMuted}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+          <View style={styles.field}>
+            <Text style={styles.label}>EMAIL</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="your@email.com"
+              placeholderTextColor={colors.inkMuted}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+          <View style={styles.field}>
+            <Text style={styles.label}>PASSWORD</Text>
+            <TextInput
+              style={styles.input}
+              placeholderTextColor={colors.inkMuted}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
           {error && <Text style={styles.error}>{error}</Text>}
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -69,7 +74,7 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.buttonText}>Sign in</Text>
+              <Text style={styles.buttonText}>SIGN IN</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -87,7 +92,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.bg,
   },
   inner: {
     flex: 1,
@@ -96,49 +101,62 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
   },
   subtitle: {
-    marginTop: spacing.sm,
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    marginTop: spacing.md,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: colors.inkMuted,
   },
   form: {
     width: '100%',
-    marginTop: 32,
-    gap: spacing.md,
+    marginTop: 40,
+    gap: spacing.xl,
+  },
+  field: {
+    gap: spacing.sm,
+  },
+  label: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: colors.inkSecondary,
   },
   input: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: 14,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    paddingVertical: 12,
     fontSize: 16,
-    color: colors.text,
+    fontFamily: fontFamily.sans,
+    color: colors.ink,
   },
   error: {
+    fontFamily: fontFamily.sans,
+    fontSize: 13,
     color: colors.danger,
-    ...typography.bodySmall,
   },
   button: {
-    backgroundColor: colors.cta,
-    borderRadius: radii.md,
+    backgroundColor: colors.ink,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
     color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    letterSpacing: 1.4,
   },
   linkText: {
     marginTop: spacing.xxl,
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.sans,
+    fontSize: 13,
+    color: colors.inkSecondary,
   },
   linkAccent: {
-    color: colors.primary,
-    fontWeight: '500',
+    color: colors.accent,
+    fontFamily: fontFamily.sansMedium,
   },
 });
