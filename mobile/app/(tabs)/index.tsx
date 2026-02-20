@@ -7,8 +7,11 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Image } from 'expo-image';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '@/lib/supabase';
@@ -27,7 +30,7 @@ interface CarouselRecipe {
 }
 
 interface FeedItem {
-  event_type: 'cooked' | 'published' | 'shared';
+  event_type: string;
   user_id: string;
   recipe_id: string;
   event_at: string;
@@ -36,6 +39,9 @@ interface FeedItem {
   avatar_url: string | null;
   recipe_title: string;
   recipe_image_url: string | null;
+  source_url: string | null;
+  source_name: string | null;
+  rating: number | null;
 }
 
 export default function HomeScreen() {
@@ -160,9 +166,42 @@ export default function HomeScreen() {
   const actionVerb = (type: string) => {
     switch (type) {
       case 'cooked': return ' cooked ';
-      case 'published': return ' published ';
-      case 'shared': return ' recommended ';
+      case 'created': return ' created ';
+      case 'saved': return ' saved ';
+      case 'rated': return ' rated ';
       default: return ' ';
+    }
+  };
+
+  const getDomain = (url: string) => {
+    try {
+      return new URL(url).hostname.replace(/^www\./, '');
+    } catch {
+      return url;
+    }
+  };
+
+  const renderStars = (rating: number) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <FontAwesome
+          key={i}
+          name={i <= rating ? 'star' : 'star-o'}
+          size={12}
+          color={i <= rating ? colors.starFilled : colors.starEmpty}
+          style={{ marginRight: 2 }}
+        />
+      );
+    }
+    return <View style={styles.starsRow}>{stars}</View>;
+  };
+
+  const handleFeedItemPress = (item: FeedItem) => {
+    if (item.event_type === 'saved' && item.source_url) {
+      Linking.openURL(item.source_url);
+    } else {
+      router.push(`/recipe/${item.recipe_id}`);
     }
   };
 
@@ -173,7 +212,7 @@ export default function HomeScreen() {
     <TouchableOpacity
       style={styles.feedItem}
       activeOpacity={0.7}
-      onPress={() => router.push(`/recipe/${item.recipe_id}`)}
+      onPress={() => handleFeedItemPress(item)}
     >
       <TouchableOpacity
         activeOpacity={0.7}
@@ -181,12 +220,31 @@ export default function HomeScreen() {
       >
         <Avatar name={item.display_name} size="sm" imageUrl={item.avatar_url} />
       </TouchableOpacity>
+      {item.recipe_image_url && (
+        <Image
+          source={{ uri: item.recipe_image_url }}
+          style={styles.feedThumbnail}
+          contentFit="cover"
+          transition={200}
+        />
+      )}
       <View style={styles.feedContent}>
         <Text style={styles.feedText} numberOfLines={2}>
           <Text style={styles.feedName}>{item.display_name}</Text>
           {actionVerb(item.event_type)}
           <Text style={styles.feedRecipe}>{item.recipe_title}</Text>
         </Text>
+        {item.event_type === 'rated' && item.rating != null && renderStars(item.rating)}
+        {item.event_type === 'saved' && item.source_url && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => Linking.openURL(item.source_url!)}
+          >
+            <Text style={styles.feedSource}>
+              {item.source_name || getDomain(item.source_url)}
+            </Text>
+          </TouchableOpacity>
+        )}
         {item.notes && (
           <Text style={styles.feedNotes} numberOfLines={2}>
             {'\u201C'}{item.notes}{'\u201D'}
@@ -329,6 +387,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
+  feedThumbnail: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.sm,
+  },
   feedContent: {
     flex: 1,
   },
@@ -344,6 +407,16 @@ const styles = StyleSheet.create({
   feedRecipe: {
     fontWeight: '500',
     color: colors.text,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  feedSource: {
+    ...typography.caption,
+    color: colors.primary,
+    marginTop: 2,
   },
   feedNotes: {
     ...typography.caption,
