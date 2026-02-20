@@ -14,7 +14,8 @@ const SORT_OPTIONS = [
 const FILTER_OPTIONS = [
   { value: "", label: "All" },
   { value: "favorited", label: "Favorited" },
-  { value: "want-to-cook", label: "Want to Cook" },
+  { value: "saved", label: "Saved" },
+  { value: "published", label: "Published" },
 ];
 
 const COURSE_OPTIONS = [

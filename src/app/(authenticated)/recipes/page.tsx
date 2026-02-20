@@ -32,6 +32,7 @@ interface EnrichedRecipe extends RecipeRow {
   ratingCount: number;
   isFavorited: boolean;
   hasCooked: boolean;
+  isSaved: boolean;
 }
 
 function formatTime(minutes: number | null): string | null {
@@ -152,6 +153,7 @@ export default async function RecipesPage({
       ratingCount: ratings.length,
       isFavorited: favoritedIds.has(r.id),
       hasCooked: cookedIds.has(r.id),
+      isSaved: savedRecipeIds.has(r.id),
     };
   });
 
@@ -159,10 +161,8 @@ export default async function RecipesPage({
   let filtered = enriched;
   if (filter === "favorited") {
     filtered = filtered.filter((r) => r.isFavorited);
-  } else if (filter === "want-to-cook") {
-    filtered = filtered.filter((r) => !r.hasCooked);
-  } else if (filter === "cooked") {
-    filtered = filtered.filter((r) => r.hasCooked);
+  } else if (filter === "saved") {
+    filtered = filtered.filter((r) => r.isSaved);
   } else if (filter === "published") {
     filtered = filtered.filter((r) => r.visibility === "public");
   }

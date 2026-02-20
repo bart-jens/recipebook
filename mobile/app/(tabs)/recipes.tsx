@@ -23,7 +23,7 @@ import CollectionsSection from '@/components/ui/CollectionsSection';
 import { ForkDot } from '@/components/ui/Logo';
 
 type SortOption = 'updated' | 'alpha' | 'rating' | 'prep' | 'cook';
-type FilterOption = '' | 'favorited' | 'want-to-cook';
+type FilterOption = '' | 'favorited' | 'saved' | 'published';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'updated', label: 'Recent' },
@@ -36,11 +36,19 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
   { value: '', label: 'All' },
   { value: 'favorited', label: 'Favorited' },
-  { value: 'want-to-cook', label: 'Want to Cook' },
+  { value: 'saved', label: 'Saved' },
+  { value: 'published', label: 'Published' },
 ];
 
 const COURSE_OPTIONS = [
-  'Breakfast', 'Lunch', 'Dinner', 'Appetizer', 'Side dish', 'Dessert', 'Snack',
+  { value: '', label: 'All' },
+  { value: 'breakfast', label: 'Breakfast' },
+  { value: 'lunch', label: 'Lunch' },
+  { value: 'dinner', label: 'Dinner' },
+  { value: 'appetizer', label: 'Appetizer' },
+  { value: 'side dish', label: 'Side' },
+  { value: 'dessert', label: 'Dessert' },
+  { value: 'snack', label: 'Snack' },
 ];
 
 interface Recipe {
@@ -50,12 +58,14 @@ interface Recipe {
   image_url: string | null;
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
+  updated_at: string;
   visibility: string;
   avgRating: number | null;
   ratingCount: number;
   tags: string[];
   isFavorited: boolean;
   hasCooked: boolean;
+  isSaved: boolean;
 }
 
 function formatTime(minutes: number | null): string | null {
@@ -139,7 +149,7 @@ export default function RecipesScreen() {
     if (!user) return;
     setLoading(true);
 
-    const selectFields = 'id, title, description, image_url, prep_time_minutes, cook_time_minutes, visibility, recipe_tags(tag)';
+    const selectFields = 'id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, visibility, recipe_tags(tag)';
 
     let ownedQuery = supabase
       .from('recipes')
@@ -236,21 +246,24 @@ export default function RecipesScreen() {
         tags: ((r as any).recipe_tags || []).map((t: { tag: string }) => t.tag),
         isFavorited: favoritedIds.has(r.id),
         hasCooked: cookedIds.has(r.id),
+        isSaved: savedRecipeIds.has(r.id),
       };
     });
 
     // Filter by course
     if (selectedCourse) {
       enriched = enriched.filter((r) =>
-        r.tags.some((t) => t.toLowerCase() === selectedCourse.toLowerCase())
+        r.tags.some((t) => t.toLowerCase() === selectedCourse)
       );
     }
 
     // Apply interaction filter
     if (activeFilter === 'favorited') {
       enriched = enriched.filter((r) => r.isFavorited);
-    } else if (activeFilter === 'want-to-cook') {
-      enriched = enriched.filter((r) => !r.hasCooked);
+    } else if (activeFilter === 'saved') {
+      enriched = enriched.filter((r) => r.isSaved);
+    } else if (activeFilter === 'published') {
+      enriched = enriched.filter((r) => r.visibility === 'public');
     }
 
     // Sort favorites first, then by chosen sort
@@ -258,7 +271,10 @@ export default function RecipesScreen() {
       if (a.isFavorited !== b.isFavorited) return a.isFavorited ? -1 : 1;
       if (sort === 'rating') return (b.avgRating || 0) - (a.avgRating || 0);
       if (sort === 'alpha') return a.title.localeCompare(b.title);
-      return 0;
+      if (sort === 'prep') return (a.prep_time_minutes || 999) - (b.prep_time_minutes || 999);
+      if (sort === 'cook') return (a.cook_time_minutes || 999) - (b.cook_time_minutes || 999);
+      // Default: updated
+      return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     });
 
     setRecipes(enriched);
@@ -367,6 +383,13 @@ export default function RecipesScreen() {
         </Animated.View>
       </Animated.View>
 
+      {/* Collections */}
+      <CollectionsSection
+        collections={collections}
+        userPlan={collectionPlan}
+        onRefresh={fetchCollections}
+      />
+
       {/* Sort tabs */}
       <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}>
         <ScrollView
@@ -408,34 +431,19 @@ export default function RecipesScreen() {
           </Pressable>
         ))}
         <View style={styles.tabDivider} />
-        {selectedCourse && (
+        {COURSE_OPTIONS.map((opt) => (
           <Pressable
+            key={`course-${opt.value}`}
             style={styles.secondaryTab}
-            onPress={() => setSelectedCourse(null)}
+            onPress={() => setSelectedCourse(opt.value || null)}
           >
-            <Text style={styles.clearText}>CLEAR</Text>
-          </Pressable>
-        )}
-        {COURSE_OPTIONS.map((c) => (
-          <Pressable
-            key={c}
-            style={styles.secondaryTab}
-            onPress={() => setSelectedCourse(selectedCourse === c ? null : c)}
-          >
-            <Text style={[styles.secondaryTabText, selectedCourse === c && styles.courseTabTextActive]}>
-              {c.toUpperCase()}
+            <Text style={[styles.secondaryTabText, (selectedCourse || '') === opt.value && (opt.value ? styles.courseTabTextActive : styles.secondaryTabTextActive)]}>
+              {opt.label.toUpperCase()}
             </Text>
-            {selectedCourse === c && <View style={styles.courseTabLine} />}
+            {(selectedCourse || '') === opt.value && <View style={opt.value ? styles.courseTabLine : styles.secondaryTabLine} />}
           </Pressable>
         ))}
       </ScrollView>
-
-      {/* Collections */}
-      <CollectionsSection
-        collections={collections}
-        userPlan={collectionPlan}
-        onRefresh={fetchCollections}
-      />
 
       {/* Result count */}
       {recipes.length > 0 && !loading && (
@@ -683,14 +691,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
     alignSelf: 'center',
   },
-  clearText: {
-    fontFamily: fontFamily.monoMedium,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    color: colors.accent,
-  },
-
   // Count
   countRow: {
     paddingHorizontal: 20,
