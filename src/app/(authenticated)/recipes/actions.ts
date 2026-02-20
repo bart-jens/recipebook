@@ -18,6 +18,7 @@ export async function createRecipe(formData: FormData) {
   const ingredientsJson = formData.get("ingredients") as string;
   const externalImageUrl = (formData.get("image_url") as string) || null;
 
+  const imageBase64 = (formData.get("image_base64") as string) || null;
   const sourceName = (formData.get("source_name") as string) || null;
   const language = (formData.get("language") as string) || null;
   const sourceType = (formData.get("source_type") as string) || "manual";
@@ -76,8 +77,42 @@ export async function createRecipe(formData: FormData) {
     }
   }
 
+  // Upload user-provided image (from create form)
+  if (imageBase64) {
+    try {
+      const buffer = Buffer.from(imageBase64, "base64");
+      const storagePath = `${user.id}/${recipe.id}/${crypto.randomUUID()}.jpg`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("recipe-images")
+        .upload(storagePath, buffer, {
+          contentType: "image/jpeg",
+          upsert: false,
+        });
+
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage
+          .from("recipe-images")
+          .getPublicUrl(storagePath);
+
+        await supabase
+          .from("recipes")
+          .update({ image_url: urlData.publicUrl })
+          .eq("id", recipe.id);
+
+        await supabase.from("recipe_images").insert({
+          recipe_id: recipe.id,
+          storage_path: storagePath,
+          is_primary: true,
+        });
+      }
+    } catch (e) {
+      console.error("Image upload failed:", e);
+    }
+  }
+
   // Rehost external image to our own storage (non-blocking for redirect)
-  if (externalImageUrl) {
+  if (externalImageUrl && !imageBase64) {
     try {
       const rehostedUrl = await rehostImage(externalImageUrl, user.id, recipe.id);
       await supabase

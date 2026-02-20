@@ -11,7 +11,7 @@ export default function NewRecipePage() {
         </Link>
         <h1 className="mt-2 text-2xl font-semibold">Create My Own Recipe</h1>
       </div>
-      <RecipeForm action={createRecipe} submitLabel="Create Recipe" />
+      <RecipeForm action={createRecipe} submitLabel="Create Recipe" showImageUpload />
     </div>
   );
 }
