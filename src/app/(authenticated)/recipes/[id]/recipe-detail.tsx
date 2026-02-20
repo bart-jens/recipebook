@@ -117,7 +117,6 @@ export function RecipeDetail({
   isShared?: boolean;
   photos?: { id: string; url: string; imageType: string }[];
 }) {
-  const hasCooked = cookEntries.length > 0;
   const [unitSystem, setUnitSystem] = useUnitSystem();
   const [servings, setServings] = useState(recipe.servings ?? 0);
   const [addedIngredients, setAddedIngredients] = useState<Set<string>>(new Set());
