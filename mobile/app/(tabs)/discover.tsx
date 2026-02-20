@@ -5,18 +5,19 @@ import {
   StyleSheet,
   FlatList,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Image } from 'expo-image';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, radii, animation } from '@/lib/theme';
-import RecipeCard from '@/components/ui/RecipeCard';
+import { colors, spacing, fontFamily, animation } from '@/lib/theme';
 import ChefCard from '@/components/ui/ChefCard';
 import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
@@ -71,6 +72,15 @@ export default function DiscoverScreen() {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [pendingFollowId, setPendingFollowId] = useState<string | null>(null);
+  const [searchFocused, setSearchFocused] = useState(false);
+
+  const formatTime = (minutes: number | null) => {
+    if (!minutes) return null;
+    if (minutes < 60) return `${minutes} min`;
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+  };
 
   const enrichRecipes = async (recipeData: any[]): Promise<DiscoverRecipe[]> => {
     const tagSet = new Set<string>();
@@ -357,6 +367,51 @@ export default function DiscoverScreen() {
   const unfollowedChefs = chefs.filter((c) => c.follow_state === 'not_following');
   const followedChefs = chefs.filter((c) => c.follow_state === 'following');
 
+  const renderRecipeItem = ({ item, index }: { item: DiscoverRecipe; index: number }) => {
+    const cookTime = item.cook_time_minutes || item.prep_time_minutes;
+    const tag = item.tags.length > 0 ? item.tags[0] : null;
+
+    return (
+      <Animated.View
+        entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
+      >
+        <Pressable
+          style={styles.resultItem}
+          onPress={() => router.push(`/recipe/${item.id}`)}
+        >
+          <View style={styles.resultContent}>
+            {tag && (
+              <Text style={styles.resultCategory}>{tag.toUpperCase()}</Text>
+            )}
+            <Text style={styles.resultTitle} numberOfLines={2}>{item.title}</Text>
+            {item.description && (
+              <Text style={styles.resultDesc} numberOfLines={2}>{item.description}</Text>
+            )}
+            <View style={styles.resultFooter}>
+              <Text style={styles.resultFooterText}>By {item.creatorName}</Text>
+              {cookTime && (
+                <Text style={styles.resultFooterText}>{formatTime(cookTime)}</Text>
+              )}
+              {item.avgRating != null && (
+                <Text style={styles.resultFooterText}>{item.avgRating.toFixed(1)}</Text>
+              )}
+            </View>
+          </View>
+          {item.image_url ? (
+            <Image
+              source={{ uri: item.image_url }}
+              style={styles.resultThumb}
+              contentFit="cover"
+              transition={200}
+            />
+          ) : (
+            <View style={[styles.resultThumb, { backgroundColor: colors.surfaceAlt }]} />
+          )}
+        </Pressable>
+      </Animated.View>
+    );
+  };
+
   const renderChefsList = () => {
     if (loading) {
       return <RecipeListSkeleton />;
@@ -390,7 +445,7 @@ export default function DiscoverScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => fetchChefs(true)}
-              tintColor={colors.primary}
+              tintColor={colors.inkMuted}
             />
           }
         >
@@ -398,10 +453,10 @@ export default function DiscoverScreen() {
             <ForkDot size={20} color="rgba(45,95,93,0.3)" />
             <Text style={styles.allFollowedTitle}>You follow all Chefs!</Text>
             <Link href="/invites" asChild>
-              <Text style={[styles.allFollowedSubtitle, { color: colors.primary }]}>Invite more friends to join EefEats</Text>
+              <Text style={styles.allFollowedSubtitle}>Invite more friends to join EefEats</Text>
             </Link>
           </View>
-          <Text style={styles.chefSectionTitle}>Following</Text>
+          <Text style={styles.chefSectionTitle}>FOLLOWING</Text>
           {followedChefs.map((chef, index) => (
             <Animated.View
               key={chef.id}
@@ -431,7 +486,7 @@ export default function DiscoverScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => fetchChefs(true)}
-            tintColor={colors.primary}
+            tintColor={colors.inkMuted}
           />
         }
       >
@@ -455,7 +510,7 @@ export default function DiscoverScreen() {
         ))}
         {followedChefs.length > 0 && (
           <>
-            <Text style={styles.chefSectionTitle}>Following</Text>
+            <Text style={styles.chefSectionTitle}>FOLLOWING</Text>
             {followedChefs.map((chef, index) => (
               <Animated.View
                 key={chef.id}
@@ -476,125 +531,168 @@ export default function DiscoverScreen() {
             ))}
           </>
         )}
-        <TouchableOpacity style={styles.inviteCard} activeOpacity={0.7} onPress={() => router.push('/invites')}>
+        <Pressable style={styles.inviteCard} onPress={() => router.push('/invites')}>
           <Text style={styles.inviteTitle}>Know someone who loves cooking?</Text>
-          <Text style={[styles.inviteSubtitle, { color: colors.primary }]}>Invite them to join EefEats</Text>
-        </TouchableOpacity>
+          <Text style={styles.inviteSubtitle}>Invite them to join EefEats</Text>
+        </Pressable>
       </ScrollView>
     );
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.controlsContainer}>
-        {/* Tab segmented control */}
-        <View style={styles.tabRow}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'recipes' && styles.tabActive]}
-            onPress={() => handleTabChange('recipes')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.tabText, activeTab === 'recipes' && styles.tabTextActive]}>Recipes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'chefs' && styles.tabActive]}
-            onPress={() => handleTabChange('chefs')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.tabText, activeTab === 'chefs' && styles.tabTextActive]}>Chefs</Text>
-          </TouchableOpacity>
-        </View>
+  // Build all filter tabs: Recipes, Chefs, then sort options + tags when on recipes tab
+  const renderFilterTabs = () => {
+    const tabs: { key: string; label: string; isActive: boolean; onPress: () => void }[] = [
+      {
+        key: 'tab-recipes',
+        label: 'RECIPES',
+        isActive: activeTab === 'recipes',
+        onPress: () => handleTabChange('recipes'),
+      },
+      {
+        key: 'tab-chefs',
+        label: 'CHEFS',
+        isActive: activeTab === 'chefs',
+        onPress: () => handleTabChange('chefs'),
+      },
+    ];
 
-        {/* Recipe-specific controls */}
-        {activeTab === 'recipes' && (
-          <>
+    if (activeTab === 'recipes') {
+      for (const opt of SORT_OPTIONS) {
+        tabs.push({
+          key: `sort-${opt.value}`,
+          label: opt.label.toUpperCase(),
+          isActive: sort === opt.value,
+          onPress: () => setSort(opt.value),
+        });
+      }
+    }
+
+    return (
+      <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
+        >
+          {tabs.map((tab) => (
+            <Pressable
+              key={tab.key}
+              style={styles.filterTab}
+              onPress={tab.onPress}
+            >
+              <Text style={[styles.filterTabText, tab.isActive && styles.filterTabTextActive]}>
+                {tab.label}
+              </Text>
+              {tab.isActive && <View style={styles.filterTabLine} />}
+            </Pressable>
+          ))}
+        </ScrollView>
+      </Animated.View>
+    );
+  };
+
+  const renderTagRow = () => {
+    if (activeTab !== 'recipes' || allTags.length === 0) return null;
+
+    return (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tagRow}
+      >
+        {selectedTag && (
+          <Pressable
+            style={styles.tagPill}
+            onPress={() => setSelectedTag(null)}
+          >
+            <Text style={styles.tagClearText}>CLEAR</Text>
+          </Pressable>
+        )}
+        {allTags.map((tag) => (
+          <Pressable
+            key={tag}
+            style={styles.tagPill}
+            onPress={() => setSelectedTag(selectedTag === tag ? null : tag)}
+          >
+            <Text style={[styles.tagPillText, selectedTag === tag && styles.tagPillTextActive]}>
+              {tag.toUpperCase()}
+            </Text>
+            {selectedTag === tag && <View style={styles.tagActiveLine} />}
+          </Pressable>
+        ))}
+      </ScrollView>
+    );
+  };
+
+  const renderHeader = () => (
+    <View>
+      {/* Header: overline + title */}
+      <Animated.View entering={FadeInDown.duration(400)} style={styles.header}>
+        <Text style={styles.overline}>EXPLORE</Text>
+        <Text style={styles.title}>Discover</Text>
+
+        {/* Search bar — bottom-border style */}
+        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
+          <View style={[styles.searchWrap, searchFocused && styles.searchWrapFocused]}>
+            <FontAwesome name="search" size={14} color={colors.inkMuted} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search recipes, ingredients, tags..."
-              placeholderTextColor={colors.textMuted}
+              placeholder="Search recipes or chefs"
+              placeholderTextColor={colors.inkMuted}
               value={search}
               onChangeText={setSearch}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
               returnKeyType="search"
             />
+          </View>
+        </Animated.View>
+      </Animated.View>
 
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.sortRow}
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <TouchableOpacity
-                  key={opt.value}
-                  style={[styles.sortPill, sort === opt.value && styles.sortPillActive]}
-                  onPress={() => setSort(opt.value)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.sortPillText, sort === opt.value && styles.sortPillTextActive]}>
-                    {opt.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+      {/* Filter tabs */}
+      {renderFilterTabs()}
 
-            {allTags.length > 0 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.tagRow}
-              >
-                {selectedTag && (
-                  <TouchableOpacity
-                    style={styles.clearTagPill}
-                    onPress={() => setSelectedTag(null)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.clearTagText}>Clear</Text>
-                  </TouchableOpacity>
-                )}
-                {allTags.map((tag) => (
-                  <TouchableOpacity
-                    key={tag}
-                    style={[styles.tagPill, selectedTag === tag && styles.tagPillActive]}
-                    onPress={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[styles.tagPillText, selectedTag === tag && styles.tagPillTextActive]}>
-                      {tag}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            )}
-          </>
-        )}
-      </View>
+      {/* Tag filter row */}
+      {renderTagRow()}
+    </View>
+  );
 
+  return (
+    <View style={styles.container}>
       {activeTab === 'chefs' ? (
-        renderChefsList()
+        <View style={{ flex: 1 }}>
+          {renderHeader()}
+          {renderChefsList()}
+        </View>
       ) : loading ? (
-        <RecipeListSkeleton />
+        <View style={{ flex: 1 }}>
+          {renderHeader()}
+          <RecipeListSkeleton />
+        </View>
       ) : recipes.length === 0 ? (
-        <EmptyState
-          icon="compass"
-          title={search ? 'No results' : 'No published recipes yet'}
-          subtitle={
-            search
-              ? `No recipes match "${search}"`
-              : 'Be the first to publish a recipe!'
-          }
-        />
+        <View style={{ flex: 1 }}>
+          {renderHeader()}
+          <EmptyState
+            icon="compass"
+            title={search ? 'No results' : 'No published recipes yet'}
+            subtitle={
+              search
+                ? `No recipes match "${search}"`
+                : 'Be the first to publish a recipe!'
+            }
+          />
+        </View>
       ) : (
         <FlatList
           data={recipes}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ListHeaderComponent={renderHeader}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => fetchRecipes(true)}
-              tintColor={colors.primary}
-              colors={[colors.primary]}
+              tintColor={colors.inkMuted}
             />
           }
           onEndReached={loadMoreRecipes}
@@ -602,20 +700,11 @@ export default function DiscoverScreen() {
           ListFooterComponent={
             loadingMore ? (
               <View style={styles.footer}>
-                <ActivityIndicator size="small" color={colors.primary} />
+                <ActivityIndicator size="small" color={colors.inkMuted} />
               </View>
-            ) : null
+            ) : <View style={{ height: 100 }} />
           }
-          renderItem={({ item, index }) => (
-            <Animated.View
-              entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
-            >
-              <RecipeCard
-                recipe={item}
-                onPress={() => router.push(`/recipe/${item.id}`)}
-              />
-            </Animated.View>
-          )}
+          renderItem={renderRecipeItem}
         />
       )}
     </View>
@@ -625,113 +714,180 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.bg,
   },
-  controlsContainer: {
-    padding: spacing.pagePadding,
-    paddingBottom: spacing.sm,
+
+  // Header
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
   },
-  tabRow: {
+  overline: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.4,
+    color: colors.inkMuted,
+    marginBottom: 4,
+  },
+  title: {
+    fontFamily: fontFamily.display,
+    fontSize: 32,
+    letterSpacing: -1,
+    color: colors.ink,
+    marginBottom: 14,
+  },
+
+  // Search — bottom-border style
+  searchWrap: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    padding: 3,
-    marginBottom: spacing.md,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.md - 2,
     alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    paddingBottom: 6,
+    gap: 8,
   },
-  tabActive: {
-    backgroundColor: colors.card,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  tabText: {
-    ...typography.label,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  tabTextActive: {
-    color: colors.text,
-    fontWeight: '600',
+  searchWrapFocused: {
+    borderBottomColor: colors.accent,
   },
   searchInput: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    ...typography.body,
-    color: colors.text,
+    flex: 1,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 15,
+    color: colors.ink,
+    paddingVertical: 0,
   },
-  sortRow: {
+
+  // Filter tabs
+  filterRow: {
     flexDirection: 'row',
-    gap: spacing.lg,
-    marginTop: spacing.md,
-    paddingRight: spacing.lg,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  sortPill: {
-    paddingBottom: spacing.sm,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+  filterTab: {
+    paddingVertical: 8,
+    paddingRight: 14,
+    position: 'relative',
   },
-  sortPillActive: {
-    borderBottomColor: colors.primary,
+  filterTabText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.66,
+    color: colors.inkMuted,
   },
-  sortPillText: {
-    ...typography.label,
-    color: colors.textSecondary,
-    fontWeight: '400',
+  filterTabTextActive: {
+    color: colors.ink,
   },
-  sortPillTextActive: {
-    color: colors.text,
-    fontWeight: '600',
+  filterTabLine: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 14,
+    height: 2,
+    backgroundColor: colors.ink,
   },
+
+  // Tag filter row
   tagRow: {
     flexDirection: 'row',
-    gap: spacing.md,
-    marginTop: spacing.sm,
-    paddingRight: spacing.lg,
+    paddingHorizontal: 20,
+    paddingVertical: 6,
+    gap: 12,
   },
   tagPill: {
-    paddingBottom: spacing.xs,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tagPillActive: {
-    borderBottomColor: colors.primary,
+    position: 'relative',
+    paddingBottom: 4,
   },
   tagPillText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    color: colors.inkMuted,
   },
   tagPillTextActive: {
-    color: colors.text,
-    fontWeight: '600',
+    color: colors.accent,
   },
-  clearTagPill: {
-    paddingBottom: spacing.xs,
+  tagClearText: {
+    fontFamily: fontFamily.monoMedium,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    color: colors.accent,
   },
-  clearTagText: {
-    ...typography.caption,
-    color: colors.primary,
-    fontWeight: '600',
+  tagActiveLine: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 1.5,
+    backgroundColor: colors.accent,
   },
+
+  // Results list — index-item pattern
   listContent: {
-    padding: spacing.lg,
+    paddingBottom: 0,
   },
-  separator: {
-    height: spacing.md,
+  resultItem: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
+  resultContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+  resultCategory: {
+    fontFamily: fontFamily.monoMedium,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.0,
+    color: colors.accent,
+    marginBottom: 2,
+  },
+  resultTitle: {
+    fontFamily: fontFamily.display,
+    fontSize: 20,
+    lineHeight: 23,
+    letterSpacing: -0.4,
+    color: colors.ink,
+    marginBottom: 3,
+  },
+  resultDesc: {
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.inkSecondary,
+    marginBottom: 6,
+  },
+  resultFooter: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  resultFooterText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    color: colors.inkMuted,
+  },
+  resultThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: 0,
+    alignSelf: 'center',
+  },
+
+  // Footer
   footer: {
     paddingVertical: spacing.xl,
     alignItems: 'center',
   },
+
+  // Chefs tab
   chefsContent: {
     padding: spacing.pagePadding,
     paddingBottom: spacing.xxxl,
@@ -740,49 +896,49 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   chefSectionTitle: {
-    ...typography.label,
-    color: colors.textSecondary,
-    fontWeight: '600',
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.4,
+    color: colors.inkMuted,
     marginTop: spacing.lg,
     marginBottom: spacing.md,
   },
   allFollowedCard: {
-    borderRadius: radii.lg,
     borderWidth: 1,
-    borderColor: colors.accentWashBorder,
-    backgroundColor: colors.accentWash,
+    borderColor: colors.border,
     padding: spacing.xl,
     alignItems: 'center',
     marginBottom: spacing.lg,
   },
   allFollowedTitle: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.text,
+    fontFamily: fontFamily.display,
+    fontSize: 18,
+    color: colors.ink,
     marginTop: spacing.md,
   },
   allFollowedSubtitle: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.accent,
     marginTop: spacing.xs,
   },
   inviteCard: {
-    borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.card,
     padding: spacing.xl,
     alignItems: 'center',
     marginTop: spacing.lg,
   },
   inviteTitle: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.text,
+    fontFamily: fontFamily.display,
+    fontSize: 18,
+    color: colors.ink,
   },
   inviteSubtitle: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.accent,
     marginTop: spacing.xs,
   },
 });
