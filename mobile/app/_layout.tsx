@@ -20,7 +20,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 import { AuthProvider } from '@/contexts/auth';
-import { colors } from '@/lib/theme';
+import { colors, fontFamily } from '@/lib/theme';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -54,11 +54,14 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   const headerDefaults = {
-    headerStyle: { backgroundColor: colors.background },
-    headerTintColor: colors.text,
+    headerStyle: { backgroundColor: colors.bg },
+    headerTintColor: colors.inkMuted,
     headerShadowVisible: false,
     headerBackTitle: 'Back',
-    headerTitleStyle: { color: colors.text },
+    headerTitleStyle: {
+      color: colors.ink,
+      fontFamily: fontFamily.display,
+    },
   };
 
   return (
