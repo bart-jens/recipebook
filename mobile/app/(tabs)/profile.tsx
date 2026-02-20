@@ -4,15 +4,14 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
-import Avatar from '@/components/ui/Avatar';
-import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
+import { colors, spacing, typography, fontFamily } from '@/lib/theme';
+import { ForkDot } from '@/components/ui/Logo';
 import FeedbackModal from '@/components/FeedbackModal';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
 
@@ -29,7 +28,16 @@ interface RecentRecipe {
   id: string;
   title: string;
   visibility: string;
+  image_url: string | null;
 }
+
+type TabId = 'recipes' | 'activity' | 'favorites';
+
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'recipes', label: 'Recipes' },
+  { id: 'activity', label: 'Activity' },
+  { id: 'favorites', label: 'Favorites' },
+];
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
@@ -40,6 +48,7 @@ export default function ProfileScreen() {
   const [newFollowerCount, setNewFollowerCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('recipes');
 
   useFocusEffect(
     useCallback(() => {
@@ -60,7 +69,7 @@ export default function ProfileScreen() {
             .single(),
           supabase
             .from('recipes')
-            .select('id, title, visibility')
+            .select('id, title, visibility, image_url')
             .eq('created_by', user!.id)
             .order('updated_at', { ascending: false }),
           supabase
@@ -119,125 +128,179 @@ export default function ProfileScreen() {
     );
   }
 
+  const displayName = profile?.display_name || 'Anonymous';
+  const initial = displayName[0].toUpperCase();
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <View style={styles.avatarWrap}>
-          <Avatar name={profile?.display_name || '?'} size="lg" imageUrl={profile?.avatar_url} />
-        </View>
-        <Text style={styles.name}>{profile?.display_name || 'Anonymous'}</Text>
-        {profile?.role === 'creator' && (
-          <Badge label="Creator" variant="premium" />
-        )}
-        <Text style={styles.email}>{user?.email}</Text>
-        {profile?.is_private && (
-          <Text style={styles.privateLabel}>Private account</Text>
-        )}
-        {profile?.bio && <Text style={styles.bio}>{profile.bio}</Text>}
-      </View>
-
-      <View style={styles.statsRow}>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>{stats.recipes}</Text>
-          <Text style={styles.statLabel}>recipes</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>{stats.published}</Text>
-          <Text style={styles.statLabel}>published</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>{stats.cooked}</Text>
-          <Text style={styles.statLabel}>cooked</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>{stats.followers}</Text>
-          <Text style={styles.statLabel}>followers</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>{stats.following}</Text>
-          <Text style={styles.statLabel}>following</Text>
-        </View>
-      </View>
-
-      {pendingRequests > 0 && (
-        <TouchableOpacity
-          style={styles.requestsBanner}
-          onPress={() => router.push('/profile/requests')}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.requestsText}>Follow requests</Text>
-          <View style={styles.requestsBadge}>
-            <Text style={styles.requestsBadgeText}>{pendingRequests}</Text>
+      {/* Profile Top */}
+      <View style={styles.profileTop}>
+        {profile?.avatar_url ? (
+          <Image
+            source={{ uri: profile.avatar_url }}
+            style={styles.avatarImage}
+            contentFit="cover"
+          />
+        ) : (
+          <View style={styles.avatar}>
+            <Text style={styles.avatarInitial}>{initial}</Text>
           </View>
-        </TouchableOpacity>
+        )}
+        <View style={styles.profileInfo}>
+          <Text style={styles.profileName}>{displayName}</Text>
+          {profile?.is_private && (
+            <Text style={styles.privateBadge}>Private account</Text>
+          )}
+          {profile?.bio && (
+            <Text style={styles.profileBio}>{profile.bio}</Text>
+          )}
+        </View>
+      </View>
+
+      {/* Stats Bar */}
+      <View style={styles.statsBar}>
+        <View style={styles.stat}>
+          <Text style={styles.statValue}>{stats.recipes}</Text>
+          <Text style={styles.statLabel}>Recipes</Text>
+        </View>
+        <View style={styles.stat}>
+          <Text style={styles.statValue}>{stats.published}</Text>
+          <Text style={styles.statLabel}>Published</Text>
+        </View>
+        <View style={styles.stat}>
+          <Text style={styles.statValue}>{stats.cooked}</Text>
+          <Text style={styles.statLabel}>Cooked</Text>
+        </View>
+        <View style={[styles.stat, styles.statLast]}>
+          <Text style={styles.statValue}>{stats.followers}</Text>
+          <Text style={styles.statLabel}>Followers</Text>
+        </View>
+      </View>
+
+      {/* Banners */}
+      {pendingRequests > 0 && (
+        <Pressable
+          style={styles.banner}
+          onPress={() => router.push('/profile/requests')}
+        >
+          <Text style={styles.bannerText}>Follow requests</Text>
+          <View style={styles.bannerBadge}>
+            <Text style={styles.bannerBadgeText}>{pendingRequests}</Text>
+          </View>
+        </Pressable>
       )}
 
       {newFollowerCount > 0 && (
-        <TouchableOpacity
-          style={styles.requestsBanner}
+        <Pressable
+          style={styles.banner}
           onPress={() => router.push('/profile/new-followers')}
-          activeOpacity={0.7}
         >
-          <Text style={styles.requestsText}>New followers</Text>
-          <View style={styles.requestsBadge}>
-            <Text style={styles.requestsBadgeText}>
+          <Text style={styles.bannerText}>New followers</Text>
+          <View style={styles.bannerBadge}>
+            <Text style={styles.bannerBadgeText}>
               {newFollowerCount > 9 ? '9+' : newFollowerCount}
             </Text>
           </View>
-        </TouchableOpacity>
+        </Pressable>
       )}
 
-      <View style={styles.section}>
-        <Badge
-          label={profile?.plan === 'premium' ? 'Premium plan' : 'Free plan'}
-          variant={profile?.plan === 'premium' ? 'premium' : 'default'}
-        />
+      {/* Plan Badge */}
+      <View style={styles.planRow}>
+        <View style={styles.planBadge}>
+          <Text style={styles.planBadgeText}>
+            {profile?.plan === 'premium' ? 'Premium plan' : 'Free plan'}
+          </Text>
+        </View>
       </View>
 
-      {recentRecipes.length > 0 && (
-        <View style={styles.recipesSection}>
-          <Text style={styles.recipesTitle}>Your recipes</Text>
+      {/* Nav Tabs */}
+      <View style={styles.tabBar}>
+        {TABS.map((tab) => (
+          <Pressable
+            key={tab.id}
+            onPress={() => setActiveTab(tab.id)}
+            style={[styles.tab, activeTab === tab.id && styles.tabActive]}
+          >
+            <Text style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}>
+              {tab.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {/* Tab Content */}
+      {activeTab === 'recipes' && recentRecipes.length > 0 && (
+        <View style={styles.recipeList}>
           {recentRecipes.map((recipe) => (
-            <TouchableOpacity
+            <Pressable
               key={recipe.id}
               style={styles.recipeItem}
-              activeOpacity={0.7}
               onPress={() => router.push(`/recipe/${recipe.id}`)}
             >
-              <Text style={styles.recipeItemTitle} numberOfLines={1}>{recipe.title}</Text>
-              <Text style={styles.recipeItemVisibility}>
-                {recipe.visibility === 'public' ? 'Public' : 'Private'}
-              </Text>
-            </TouchableOpacity>
+              {recipe.image_url ? (
+                <Image
+                  source={{ uri: recipe.image_url }}
+                  style={styles.recipeThumb}
+                  contentFit="cover"
+                />
+              ) : (
+                <View style={styles.recipePlaceholder}>
+                  <ForkDot size={14} color={colors.inkMuted} />
+                </View>
+              )}
+              <View style={styles.recipeInfo}>
+                <Text style={styles.recipeTitle} numberOfLines={1}>{recipe.title}</Text>
+                <View style={styles.recipeMeta}>
+                  <View style={[
+                    styles.recipeBadge,
+                    recipe.visibility === 'public' ? styles.recipeBadgePub : styles.recipeBadgePriv,
+                  ]}>
+                    <Text style={[
+                      styles.recipeBadgeText,
+                      recipe.visibility === 'public' ? styles.recipeBadgeTextPub : styles.recipeBadgeTextPriv,
+                    ]}>
+                      {recipe.visibility === 'public' ? 'Published' : 'Private'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </Pressable>
           ))}
         </View>
       )}
 
+      {activeTab === 'recipes' && recentRecipes.length === 0 && (
+        <View style={styles.emptyTab}>
+          <Text style={styles.emptyTabText}>No recipes yet</Text>
+        </View>
+      )}
+
+      {activeTab === 'activity' && (
+        <View style={styles.emptyTab}>
+          <Text style={styles.emptyTabText}>No cooking activity yet</Text>
+        </View>
+      )}
+
+      {activeTab === 'favorites' && (
+        <View style={styles.emptyTab}>
+          <Text style={styles.emptyTabText}>No favorites yet</Text>
+        </View>
+      )}
+
+      {/* Actions */}
       <View style={styles.actions}>
-        <Button
-          title="Edit Profile"
-          variant="secondary"
-          size="lg"
-          onPress={() => router.push('/profile/edit')}
-        />
-        <Button
-          title="Invite Friends"
-          variant="secondary"
-          size="lg"
-          onPress={() => router.push('/invites')}
-        />
-        <Button
-          title="Send Feedback"
-          variant="secondary"
-          size="lg"
-          onPress={() => setFeedbackVisible(true)}
-        />
-        <Button
-          title="Sign out"
-          variant="ghost"
-          size="lg"
-          onPress={signOut}
-        />
+        <Pressable style={styles.actionButton} onPress={() => router.push('/profile/edit')}>
+          <Text style={styles.actionButtonText}>Edit Profile</Text>
+        </Pressable>
+        <Pressable style={styles.actionButton} onPress={() => router.push('/invites')}>
+          <Text style={styles.actionButtonText}>Invite Friends</Text>
+        </Pressable>
+        <Pressable style={styles.actionButton} onPress={() => setFeedbackVisible(true)}>
+          <Text style={styles.actionButtonText}>Send Feedback</Text>
+        </Pressable>
+        <Pressable style={styles.actionButtonGhost} onPress={signOut}>
+          <Text style={styles.actionButtonGhostText}>Sign out</Text>
+        </Pressable>
       </View>
 
       <FeedbackModal
@@ -250,110 +313,281 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.pagePadding },
-  header: { alignItems: 'center', marginBottom: spacing.xxl },
-  avatarWrap: { marginBottom: spacing.md },
-  name: {
-    ...typography.h2,
-    fontFamily: fontFamily.sansBold,
-    color: colors.text,
-  },
-  email: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  privateLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  bio: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-    textAlign: 'center',
-  },
-  statsRow: {
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { paddingBottom: 100 },
+
+  // Profile Top
+  profileTop: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: spacing.xl,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: colors.borderLight,
-    marginBottom: spacing.xxl,
+    gap: 16,
+    alignItems: 'flex-start',
   },
-  stat: { alignItems: 'center' },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.text,
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+  },
+  avatarInitial: {
+    fontFamily: fontFamily.display,
+    fontSize: 24,
+    color: colors.bg,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontFamily: fontFamily.display,
+    fontSize: 28,
+    lineHeight: 28,
+    color: colors.ink,
+  },
+  privateBadge: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    color: colors.inkMuted,
+    marginTop: 4,
+  },
+  profileBio: {
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.inkSecondary,
+    lineHeight: 19,
+    marginTop: 4,
+  },
+
+  // Stats Bar
+  statsBar: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    borderTopWidth: 3,
+    borderTopColor: colors.ink,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.ink,
+    flexDirection: 'row',
+  },
+  stat: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
+  },
+  statLast: {
+    borderRightWidth: 0,
+  },
+  statValue: {
+    fontFamily: fontFamily.display,
+    fontSize: 22,
+    color: colors.ink,
   },
   statLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
+    fontFamily: fontFamily.mono,
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 0.9,
+    color: colors.inkMuted,
+    marginTop: 1,
   },
-  requestsBanner: {
+
+  // Banners
+  banner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    backgroundColor: `${colors.primary}10`,
-    borderRadius: 8,
-    marginBottom: spacing.xxl,
+    marginHorizontal: 20,
+    marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  requestsText: {
-    ...typography.bodySmall,
-    fontWeight: '600',
-    color: colors.text,
+  bannerText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    color: colors.ink,
   },
-  requestsBadge: {
-    minWidth: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.primary,
+  bannerBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: 6,
   },
-  requestsBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.white,
+  bannerBadgeText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    color: colors.bg,
   },
-  section: { alignItems: 'center', marginBottom: spacing.xxl },
-  recipesSection: {
-    marginBottom: spacing.xxl,
+
+  // Plan
+  planRow: {
+    paddingHorizontal: 20,
+    marginTop: 16,
   },
-  recipesTitle: {
-    ...typography.sectionTitle,
-    color: colors.text,
-    marginBottom: spacing.md,
+  planBadge: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  planBadgeText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    color: colors.inkMuted,
+  },
+
+  // Nav Tabs
+  tabBar: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    marginTop: 20,
+  },
+  tab: {
+    paddingVertical: 10,
+    paddingRight: 14,
+  },
+  tabActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    marginBottom: -1,
+  },
+  tabText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.66,
+    color: colors.inkMuted,
+  },
+  tabTextActive: {
+    color: colors.ink,
+  },
+
+  // Recipe List
+  recipeList: {
+    paddingHorizontal: 20,
   },
   recipeItem: {
     flexDirection: 'row',
+    gap: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
     alignItems: 'center',
-    justifyContent: 'space-between',
+  },
+  recipeThumb: {
+    width: 48,
+    height: 48,
+    borderRadius: 0,
+  },
+  recipePlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 0,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recipeInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  recipeTitle: {
+    fontFamily: fontFamily.display,
+    fontSize: 17,
+    lineHeight: 20,
+    color: colors.ink,
+    marginBottom: 2,
+  },
+  recipeMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  recipeBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderWidth: 1,
+  },
+  recipeBadgePub: {
+    borderColor: colors.olive,
+  },
+  recipeBadgePriv: {
+    borderColor: colors.border,
+  },
+  recipeBadgeText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  recipeBadgeTextPub: {
+    color: colors.olive,
+  },
+  recipeBadgeTextPriv: {
+    color: colors.inkMuted,
+  },
+
+  // Empty Tab
+  emptyTab: {
+    paddingHorizontal: 20,
+    paddingVertical: 32,
+    alignItems: 'center',
+  },
+  emptyTabText: {
+    fontFamily: fontFamily.sansLight,
+    fontSize: 13,
+    color: colors.inkMuted,
+  },
+
+  // Actions
+  actions: {
+    paddingHorizontal: 20,
+    marginTop: 24,
+    gap: 8,
+  },
+  actionButton: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    marginBottom: spacing.xs,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
-  recipeItemTitle: {
-    ...typography.body,
-    fontFamily: fontFamily.sansMedium,
-    color: colors.text,
-    flex: 1,
-    marginRight: spacing.md,
+  actionButtonText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    color: colors.ink,
   },
-  recipeItemVisibility: {
-    ...typography.caption,
-    color: colors.textSecondary,
+  actionButtonGhost: {
+    paddingVertical: 12,
+    alignItems: 'center',
   },
-  actions: { gap: spacing.sm },
+  actionButtonGhostText: {
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    color: colors.inkMuted,
+  },
 });
