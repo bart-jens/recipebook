@@ -69,7 +69,7 @@ export function CollectionRecipeList({
               <div
                 key={recipe.id}
                 className="flex items-center gap-3 border border-warm-border bg-warm-tag animate-fade-in-up"
-                style={i < 10 ? { animationDelay: `${i * 30}ms`, animationFillMode: "backwards" } : undefined}
+                style={i < 10 ? { animationDelay: `${i * 30}ms` } : undefined}
               >
                 <Link
                   href={`/recipes/${recipe.id}`}

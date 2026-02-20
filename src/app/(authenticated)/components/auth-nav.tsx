@@ -31,9 +31,11 @@ function NavLink({
 export function AuthNav({
   initial,
   followerBadge,
+  isAdmin,
 }: {
   initial: string;
   followerBadge: string | null;
+  isAdmin: boolean;
 }) {
   const pathname = usePathname();
 
@@ -44,13 +46,24 @@ export function AuthNav({
       <Link href="/home">
         <Logo />
       </Link>
-      <div className="flex items-center gap-3.5">
+      <div className="flex items-center gap-2.5">
         <NavLink href="/home" active={isActive("/home")}>
           Feed
         </NavLink>
         <NavLink href="/discover" active={isActive("/discover")}>
           Browse
         </NavLink>
+        <NavLink href="/recipes" active={isActive("/recipes")}>
+          Recipes
+        </NavLink>
+        <NavLink href="/invites" active={isActive("/invites")}>
+          Invite
+        </NavLink>
+        {isAdmin && (
+          <NavLink href="/admin" active={isActive("/admin")}>
+            Admin
+          </NavLink>
+        )}
         <Link href="/profile">
           <div className="relative w-7 h-7 rounded-full bg-ink text-bg text-[11px] font-bold flex items-center justify-center transition-transform duration-[250ms] [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.12]">
             {initial}

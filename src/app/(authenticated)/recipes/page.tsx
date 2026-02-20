@@ -274,7 +274,7 @@ export default async function RecipesPage({
                 key={recipe.id}
                 href={`/recipes/${recipe.id}`}
                 className="group flex gap-3 py-3.5 border-b border-border cursor-pointer transition-all duration-200 hover:bg-accent-light hover:-mx-2 hover:px-2 animate-fade-in-up opacity-0"
-                style={i < 10 ? { animationDelay: `${(i + 5) * 40}ms`, animationFillMode: "backwards" } : undefined}
+                style={i < 10 ? { animationDelay: `${(i + 5) * 40}ms` } : undefined}
               >
                 {recipe.image_url ? (
                   <img

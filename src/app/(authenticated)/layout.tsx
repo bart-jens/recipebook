@@ -29,13 +29,14 @@ export default async function AuthenticatedLayout({
 
   const displayName = profile?.display_name || user.email?.split("@")[0] || "User";
   const initial = displayName[0].toUpperCase();
+  const isAdmin = profile?.role === "admin";
   const followerBadge = newFollowerCount && newFollowerCount > 0
     ? newFollowerCount > 9 ? "9+" : String(newFollowerCount)
     : null;
 
   return (
     <div className="min-h-screen">
-      <AuthNav initial={initial} followerBadge={followerBadge} />
+      <AuthNav initial={initial} followerBadge={followerBadge} isAdmin={isAdmin} />
       <hr className="rule-thick border-0" />
       <main className="max-w-[480px] mx-auto">{children}</main>
       <footer className="max-w-[480px] mx-auto px-5 py-8">
