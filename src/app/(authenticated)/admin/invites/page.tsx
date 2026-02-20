@@ -31,7 +31,7 @@ export default async function AdminInvitesPage() {
 
   return (
     <div>
-      <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-warm-gray">
+      <h2 className="mb-4 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
         Invites ({enriched.length})
       </h2>
       <InviteList invites={enriched} />

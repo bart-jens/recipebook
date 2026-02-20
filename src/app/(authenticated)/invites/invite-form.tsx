@@ -21,27 +21,27 @@ export function InviteForm() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-3">
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="friend@email.com"
           required
-          className="flex-1 rounded-md bg-warm-tag px-3 py-2 text-sm placeholder:text-warm-gray/40 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+          className="flex-1 border-b-2 border-ink bg-transparent px-0 py-2 font-body text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+          className="border border-ink bg-ink px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
         >
           {isPending ? "Creating..." : "Create invite"}
         </button>
       </form>
 
       {result?.code && (
-        <div className="mt-3 rounded-md bg-green-50 p-3">
-          <p className="text-sm text-green-700">
+        <div className="mt-3 border border-olive/20 bg-olive-light p-3">
+          <p className="font-body text-sm text-olive">
             Invite created and emailed! Code:{" "}
             <span className="font-mono font-semibold">{result.code}</span>
           </p>
@@ -49,7 +49,7 @@ export function InviteForm() {
       )}
 
       {result?.error && (
-        <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-600">
+        <div className="mt-3 border border-red-200 bg-red-50 p-3 text-sm text-red-600">
           {result.error}
         </div>
       )}

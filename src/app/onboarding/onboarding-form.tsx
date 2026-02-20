@@ -131,7 +131,7 @@ export function OnboardingForm({
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="group relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-warm-tag transition-all hover:ring-2 hover:ring-accent"
+          className="group relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-surface-alt transition-all hover:ring-2 hover:ring-accent"
         >
           {avatarUrl ? (
             <img
@@ -140,11 +140,11 @@ export function OnboardingForm({
               className="h-full w-full object-cover"
             />
           ) : (
-            <span className="text-2xl font-semibold text-warm-gray">
+            <span className="font-display text-2xl text-ink-secondary">
               {initial}
             </span>
           )}
-          <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+          <span className="absolute inset-0 flex items-center justify-center bg-black/40 font-mono text-[10px] uppercase tracking-widest text-white opacity-0 transition-opacity group-hover:opacity-100">
             {uploading ? "Uploading..." : "Upload"}
           </span>
         </button>
@@ -161,7 +161,7 @@ export function OnboardingForm({
       <div>
         <label
           htmlFor="displayName"
-          className="block text-sm font-medium text-warm-gray"
+          className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary"
         >
           Display name
         </label>
@@ -171,7 +171,7 @@ export function OnboardingForm({
           value={displayName}
           onChange={(e) => handleDisplayNameChange(e.target.value)}
           required
-          className="mt-1 block w-full rounded-md bg-warm-tag px-3 py-3 text-base focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+          className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 font-body text-base text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
         />
       </div>
 
@@ -179,12 +179,12 @@ export function OnboardingForm({
       <div>
         <label
           htmlFor="username"
-          className="block text-sm font-medium text-warm-gray"
+          className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary"
         >
           Username
         </label>
-        <div className="relative mt-1">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-warm-gray/50">
+        <div className="relative">
+          <span className="pointer-events-none absolute bottom-3 left-0 text-ink-muted">
             @
           </span>
           <input
@@ -193,15 +193,15 @@ export function OnboardingForm({
             value={username}
             onChange={(e) => handleUsernameChange(e.target.value)}
             required
-            className="block w-full rounded-md bg-warm-tag py-3 pl-8 pr-3 text-base focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+            className="block w-full border-b-2 border-ink bg-transparent py-3 pl-5 pr-0 font-body text-base text-ink focus:border-accent focus:outline-none"
           />
         </div>
         <div className="mt-1 h-5">
           {usernameStatus === "checking" && (
-            <p className="text-xs text-warm-gray">Checking...</p>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted">Checking...</p>
           )}
           {usernameStatus === "available" && (
-            <p className="text-xs text-green-600">Available</p>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-olive">Available</p>
           )}
           {usernameStatus === "taken" && (
             <p className="text-xs text-red-600">Already taken</p>
@@ -221,7 +221,7 @@ export function OnboardingForm({
       <button
         type="submit"
         disabled={!canSubmit}
-        className="w-full rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+        className="w-full bg-ink px-4 py-3 font-mono text-xs uppercase tracking-widest text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
       >
         {isPending ? "Setting up..." : "Get started"}
       </button>

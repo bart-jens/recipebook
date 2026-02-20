@@ -45,7 +45,7 @@ export function FeedbackList({ items: initial }: { items: FeedbackItem[] }) {
 
   if (items.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-warm-gray">
+      <p className="py-8 text-center font-body text-sm text-ink-muted">
         No feedback yet.
       </p>
     );
@@ -56,31 +56,31 @@ export function FeedbackList({ items: initial }: { items: FeedbackItem[] }) {
       {items.map((item) => (
         <div
           key={item.id}
-          className="rounded-lg border border-warm-border bg-white"
+          className="border border-border bg-surface"
         >
           <button
             onClick={() => handleExpand(item)}
             className="flex w-full items-center gap-3 px-4 py-3 text-left"
           >
             <StatusBadge status={item.status} />
-            <span className="min-w-0 flex-1 truncate text-sm">
+            <span className="min-w-0 flex-1 truncate font-body text-sm text-ink">
               {item.message}
             </span>
             <PlatformBadge platform={item.platform} />
-            <span className="shrink-0 text-xs text-warm-gray">
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
               {item.userName}
             </span>
-            <span className="shrink-0 text-xs text-warm-gray/60">
+            <span className="shrink-0 font-mono text-[10px] text-ink-muted">
               {formatDate(item.createdAt)}
             </span>
           </button>
 
           {expandedId === item.id && (
-            <div className="border-t border-warm-border px-4 py-4">
-              <p className="mb-4 whitespace-pre-wrap text-sm leading-relaxed">
+            <div className="border-t border-border px-4 py-4">
+              <p className="mb-4 whitespace-pre-wrap font-body text-sm leading-relaxed text-ink">
                 {item.message}
               </p>
-              <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-warm-gray">
+              <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
                 <span>From: {item.userName}</span>
                 <span>Platform: {item.platform}</span>
                 {item.sourceScreen && (
@@ -93,7 +93,7 @@ export function FeedbackList({ items: initial }: { items: FeedbackItem[] }) {
               {item.status !== "resolved" && (
                 <button
                   onClick={() => updateStatus(item.id, "resolved")}
-                  className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-100"
+                  className="bg-olive-light px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-olive hover:bg-olive/10"
                 >
                   Mark resolved
                 </button>
@@ -108,13 +108,13 @@ export function FeedbackList({ items: initial }: { items: FeedbackItem[] }) {
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    new: "bg-accent/10 text-accent",
-    read: "bg-warm-tag text-warm-gray",
-    resolved: "bg-green-50 text-green-700",
+    new: "bg-accent-light text-accent",
+    read: "bg-surface-alt text-ink-muted",
+    resolved: "bg-olive-light text-olive",
   };
   return (
     <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${styles[status] || styles.read}`}
+      className={`shrink-0 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${styles[status] || styles.read}`}
     >
       {status}
     </span>
@@ -123,7 +123,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function PlatformBadge({ platform }: { platform: string }) {
   return (
-    <span className="shrink-0 rounded bg-warm-tag px-1.5 py-0.5 text-[10px] text-warm-gray">
+    <span className="shrink-0 bg-surface-alt px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-ink-muted">
       {platform}
     </span>
   );

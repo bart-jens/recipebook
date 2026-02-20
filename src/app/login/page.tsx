@@ -20,20 +20,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white p-4">
+    <div className="flex min-h-screen items-center justify-center bg-bg p-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
           <div className="flex animate-fade-in-up justify-center">
             <Logo height={40} />
           </div>
-          <p className="mt-3 animate-fade-in-up text-sm text-warm-gray [animation-delay:100ms] [animation-fill-mode:backwards]">
+          <p className="mt-3 animate-fade-in-up font-mono text-[10px] uppercase tracking-widest text-ink-muted [animation-delay:100ms] [animation-fill-mode:backwards]">
             Sign in to your recipe collection
           </p>
         </div>
 
-        <form action={handleSubmit} className="space-y-4">
+        <form action={handleSubmit} className="space-y-5">
           <div className="animate-fade-in-up [animation-delay:200ms] [animation-fill-mode:backwards]">
-            <label htmlFor="email" className="block text-sm font-medium text-warm-gray">
+            <label htmlFor="email" className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
               Email
             </label>
             <input
@@ -41,11 +41,11 @@ export default function LoginPage() {
               name="email"
               type="email"
               required
-              className="mt-1 block w-full rounded-md bg-warm-tag px-3 py-3 text-base focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+              className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 font-body text-base text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
             />
           </div>
           <div className="animate-fade-in-up [animation-delay:300ms] [animation-fill-mode:backwards]">
-            <label htmlFor="password" className="block text-sm font-medium text-warm-gray">
+            <label htmlFor="password" className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
               Password
             </label>
             <input
@@ -53,23 +53,23 @@ export default function LoginPage() {
               name="password"
               type="password"
               required
-              className="mt-1 block w-full rounded-md bg-warm-tag px-3 py-3 text-base focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+              className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 font-body text-base text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
             />
           </div>
           {error && (
             <p className="text-sm text-red-600">{error}</p>
           )}
-          <div className="animate-fade-in-up [animation-delay:400ms] [animation-fill-mode:backwards]">
+          <div className="animate-fade-in-up pt-2 [animation-delay:400ms] [animation-fill-mode:backwards]">
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+              className="w-full bg-ink px-4 py-3 font-mono text-xs uppercase tracking-widest text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
             >
               {loading ? "Signing in..." : "Sign in"}
             </button>
           </div>
         </form>
-        <p className="animate-fade-in-up text-center text-sm text-warm-gray [animation-delay:500ms] [animation-fill-mode:backwards]">
+        <p className="animate-fade-in-up text-center font-body text-sm text-ink-secondary [animation-delay:500ms] [animation-fill-mode:backwards]">
           Have an invite code?{" "}
           <Link href="/signup" className="text-accent hover:underline">
             Sign up

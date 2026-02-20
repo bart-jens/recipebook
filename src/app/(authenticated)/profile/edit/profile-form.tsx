@@ -30,13 +30,13 @@ export function ProfileForm({
   return (
     <form action={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+        <div className="border border-red-200 bg-red-50 p-3 text-sm text-red-600">
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="display_name" className="mb-1 block text-sm font-medium text-warm-gray">
+        <label htmlFor="display_name" className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
           Display name
         </label>
         <input
@@ -45,12 +45,12 @@ export function ProfileForm({
           type="text"
           defaultValue={profile.display_name}
           required
-          className="w-full rounded-md bg-warm-tag px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+          className="w-full border-b-2 border-ink bg-transparent px-0 py-2 font-body text-sm text-ink focus:border-accent focus:outline-none"
         />
       </div>
 
       <div>
-        <label htmlFor="bio" className="mb-1 block text-sm font-medium text-warm-gray">
+        <label htmlFor="bio" className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
           Bio
         </label>
         <textarea
@@ -60,16 +60,16 @@ export function ProfileForm({
           maxLength={300}
           defaultValue={profile.bio}
           placeholder="Tell people a bit about yourself..."
-          className="w-full rounded-md bg-warm-tag px-3 py-2 text-sm placeholder:text-warm-gray/40 focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+          className="w-full border-b-2 border-ink bg-transparent px-0 py-2 font-body text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
         />
-        <p className="mt-1 text-xs text-warm-gray/60">Max 300 characters</p>
+        <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-ink-muted">Max 300 characters</p>
       </div>
 
-      <div className="rounded-md bg-warm-tag p-4">
+      <div className="border border-border bg-surface-alt p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium">Private account</p>
-            <p className="text-xs text-warm-gray">
+            <p className="font-body text-sm font-medium text-ink">Private account</p>
+            <p className="font-body text-xs text-ink-secondary">
               {isPrivate
                 ? "Only approved followers can see your recipes and activity"
                 : "Anyone can follow you and see your recipes"}
@@ -81,7 +81,7 @@ export function ProfileForm({
             aria-checked={isPrivate}
             onClick={() => setIsPrivate(!isPrivate)}
             className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 ${
-              isPrivate ? "bg-accent" : "bg-warm-border"
+              isPrivate ? "bg-accent" : "bg-border"
             }`}
           >
             <span
@@ -102,14 +102,14 @@ export function ProfileForm({
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-md bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+          className="bg-ink px-5 py-2 font-mono text-[10px] uppercase tracking-widest text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
         >
           {isPending ? "Saving..." : "Save"}
         </button>
         <button
           type="button"
           onClick={() => router.push("/profile")}
-          className="rounded-md bg-warm-tag px-4 py-2 text-sm text-warm-gray hover:bg-warm-border"
+          className="border border-border px-5 py-2 font-mono text-[10px] uppercase tracking-widest text-ink-secondary transition-colors hover:border-ink hover:text-ink"
         >
           Cancel
         </button>

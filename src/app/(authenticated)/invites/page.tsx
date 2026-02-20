@@ -17,8 +17,8 @@ export default async function InvitesPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-2 text-2xl font-semibold">Invite Friends</h1>
-      <p className="mb-6 text-sm text-warm-gray">
+      <h1 className="mb-2 font-display text-3xl text-ink">Invite Friends</h1>
+      <p className="mb-6 font-body text-sm text-ink-secondary">
         EefEats is invite-only. Share codes with friends to let them join.
       </p>
 
@@ -28,8 +28,8 @@ export default async function InvitesPage() {
 
       {(invites || []).length > 0 && (
         <div>
-          <div className="mb-4 border-b border-warm-divider pb-2">
-            <h2 className="text-xs font-medium uppercase tracking-widest text-warm-gray">
+          <div className="mb-4 border-b border-border pb-2">
+            <h2 className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
               Your Invites
             </h2>
           </div>
@@ -37,17 +37,17 @@ export default async function InvitesPage() {
             {(invites || []).map((invite) => (
               <div
                 key={invite.id}
-                className="flex items-center justify-between rounded-md bg-warm-tag px-4 py-3 border border-warm-border"
+                className="flex items-center justify-between border border-border bg-surface px-4 py-3"
               >
                 <div>
-                  <p className="text-sm font-medium">{invite.email}</p>
-                  <p className="font-mono text-xs text-warm-gray">{invite.code}</p>
+                  <p className="font-body text-sm font-medium text-ink">{invite.email}</p>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted">{invite.code}</p>
                 </div>
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                  className={`font-mono text-[10px] uppercase tracking-widest ${
                     invite.used_at
-                      ? "bg-green-50 text-green-700"
-                      : "bg-warm-tag text-warm-gray"
+                      ? "text-olive"
+                      : "text-ink-muted"
                   }`}
                 >
                   {invite.used_at ? "Joined" : "Pending"}
