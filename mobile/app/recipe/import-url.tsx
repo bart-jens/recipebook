@@ -13,7 +13,7 @@ import { Stack, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import RecipeForm, { RecipeFormData } from '@/components/RecipeForm';
-import { colors, spacing, typography, radii } from '@/lib/theme';
+import { colors, spacing, fontFamily } from '@/lib/theme';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
 
@@ -211,12 +211,13 @@ export default function ImportUrlScreen() {
           Paste a link to any recipe website or Instagram post. We'll extract the recipe details automatically.
         </Text>
 
+        <Text style={styles.label}>RECIPE URL</Text>
         <TextInput
           style={styles.input}
           value={url}
           onChangeText={setUrl}
           placeholder="https://..."
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.inkMuted}
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="url"
@@ -231,15 +232,15 @@ export default function ImportUrlScreen() {
           {extracting ? (
             <View style={styles.loadingRow}>
               <ActivityIndicator size="small" color={colors.white} />
-              <Text style={styles.buttonText}>Extracting...</Text>
+              <Text style={styles.buttonText}>EXTRACTING...</Text>
             </View>
           ) : (
-            <Text style={styles.buttonText}>Extract Recipe</Text>
+            <Text style={styles.buttonText}>EXTRACT RECIPE</Text>
           )}
         </TouchableOpacity>
 
         <View style={styles.tips}>
-          <Text style={styles.tipsTitle}>Works with</Text>
+          <Text style={styles.tipsTitle}>WORKS WITH</Text>
           <Text style={styles.tipText}>Recipe websites (AllRecipes, BBC Good Food, etc.)</Text>
           <Text style={styles.tipText}>Instagram posts with recipes in the caption</Text>
           <Text style={styles.tipText}>Any page with structured recipe data</Text>
@@ -250,34 +251,34 @@ export default function ImportUrlScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.xl },
-  heading: { ...typography.h2, color: colors.text, marginBottom: spacing.sm },
-  subtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.xxl },
+  heading: { fontFamily: fontFamily.display, fontSize: 28, lineHeight: 30, color: colors.ink, marginBottom: spacing.sm },
+  subtitle: { fontFamily: fontFamily.sans, fontSize: 14, lineHeight: 21, color: colors.inkSecondary, marginBottom: spacing.xxl },
+  label: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.inkSecondary, marginBottom: spacing.xs },
   input: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: 14,
-    ...typography.body,
-    color: colors.text,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    paddingVertical: 12,
+    fontFamily: fontFamily.sans,
+    fontSize: 14,
+    color: colors.ink,
     marginBottom: spacing.lg,
   },
   button: {
-    backgroundColor: colors.cta,
-    borderRadius: radii.md,
+    backgroundColor: colors.ink,
     paddingVertical: spacing.lg,
     alignItems: 'center',
   },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: colors.white, fontSize: 16, fontWeight: '600' },
+  buttonText: { color: colors.white, fontFamily: fontFamily.mono, fontSize: 11, letterSpacing: 1.4 },
   loadingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   tips: {
     marginTop: spacing.xxxl,
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    padding: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: spacing.lg,
   },
-  tipsTitle: { ...typography.bodySmall, fontWeight: '600', color: colors.text, marginBottom: spacing.sm },
-  tipText: { ...typography.label, color: colors.textSecondary, marginBottom: spacing.xs },
+  tipsTitle: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.inkSecondary, marginBottom: spacing.sm },
+  tipText: { fontFamily: fontFamily.sans, fontSize: 13, color: colors.inkSecondary, marginBottom: spacing.xs },
 });

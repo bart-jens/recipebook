@@ -104,8 +104,8 @@ export default function EditRecipeScreen() {
     return (
       <>
         <Stack.Screen options={{ headerTitle: 'Edit Recipe' }} />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-          <ActivityIndicator size="large" color={colors.primary} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg }}>
+          <ActivityIndicator size="large" color={colors.accent} />
         </View>
       </>
     );

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Stack, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import { colors, spacing, typography, radii } from '@/lib/theme';
+import { colors, spacing, fontFamily } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
@@ -123,7 +123,7 @@ export default function InvitesScreen() {
             value={email}
             onChangeText={setEmail}
             placeholder="friend@email.com"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={colors.inkMuted}
             autoCapitalize="none"
             keyboardType="email-address"
             autoCorrect={false}
@@ -147,13 +147,13 @@ export default function InvitesScreen() {
               activeOpacity={0.7}
               style={styles.shareButton}
             >
-              <Text style={styles.shareButtonText}>Share</Text>
+              <Text style={styles.shareButtonText}>SHARE</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {loading ? (
-          <ActivityIndicator style={styles.loader} color={colors.primary} />
+          <ActivityIndicator style={styles.loader} color={colors.accent} />
         ) : invites.length > 0 ? (
           <FlatList
             data={invites}
@@ -161,7 +161,7 @@ export default function InvitesScreen() {
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             ListHeaderComponent={
-              <Text style={styles.sectionTitle}>Your Invites</Text>
+              <Text style={styles.sectionTitle}>YOUR INVITES</Text>
             }
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -173,17 +173,12 @@ export default function InvitesScreen() {
                   <Text style={styles.inviteEmail}>{item.email}</Text>
                   <Text style={styles.inviteCode}>{item.code}</Text>
                 </View>
-                <View style={[
-                  styles.statusBadge,
-                  item.used_at ? styles.statusBadgeJoined : styles.statusBadgePending,
+                <Text style={[
+                  styles.statusText,
+                  item.used_at ? styles.statusTextJoined : styles.statusTextPending,
                 ]}>
-                  <Text style={[
-                    styles.statusText,
-                    item.used_at ? styles.statusTextJoined : styles.statusTextPending,
-                  ]}>
-                    {item.used_at ? 'Joined' : 'Pending'}
-                  </Text>
-                </View>
+                  {item.used_at ? 'JOINED' : 'PENDING'}
+                </Text>
               </TouchableOpacity>
             )}
           />
@@ -196,60 +191,63 @@ export default function InvitesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.bg },
   header: { padding: spacing.xl, paddingBottom: spacing.md },
-  subtitle: { ...typography.body, color: colors.textSecondary },
+  subtitle: { fontFamily: fontFamily.sans, fontSize: 14, lineHeight: 21, color: colors.inkSecondary },
 
   formRow: {
     flexDirection: 'row',
     paddingHorizontal: spacing.xl,
     gap: spacing.sm,
     marginBottom: spacing.lg,
+    alignItems: 'flex-end',
   },
   emailInput: {
     flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    ...typography.body,
-    color: colors.text,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    paddingVertical: 10,
+    fontFamily: fontFamily.sans,
+    fontSize: 14,
+    color: colors.ink,
   },
 
   successCard: {
     marginHorizontal: spacing.xl,
-    backgroundColor: colors.successBg,
-    borderRadius: radii.md,
+    backgroundColor: colors.oliveLight,
+    borderWidth: 1,
+    borderColor: colors.successBorder,
     padding: spacing.lg,
     marginBottom: spacing.lg,
     alignItems: 'center',
   },
-  successText: { ...typography.bodySmall, color: colors.success },
+  successText: { fontFamily: fontFamily.sans, fontSize: 13, color: colors.olive },
   codeText: {
     fontSize: 20,
-    fontWeight: '700',
-    color: colors.success,
+    fontFamily: fontFamily.mono,
+    color: colors.olive,
     letterSpacing: 2,
     marginTop: spacing.sm,
   },
   shareButton: {
     marginTop: spacing.md,
-    backgroundColor: colors.success,
-    borderRadius: radii.md,
+    backgroundColor: colors.olive,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm,
   },
-  shareButtonText: { color: colors.white, fontWeight: '600', ...typography.bodySmall },
+  shareButtonText: { color: colors.white, fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4 },
 
   loader: { marginTop: spacing.xxl },
   listContent: { paddingHorizontal: spacing.xl },
   separator: { height: spacing.sm },
   sectionTitle: {
-    ...typography.sectionTitle,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: colors.inkSecondary,
     marginBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
+    borderBottomColor: colors.border,
     paddingBottom: spacing.sm,
   },
 
@@ -257,39 +255,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    padding: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingVertical: spacing.lg,
   },
   inviteInfo: { flex: 1 },
-  inviteEmail: { ...typography.bodySmall, fontWeight: '500', color: colors.text },
-  inviteCode: { ...typography.caption, color: colors.textMuted, marginTop: 2, fontFamily: 'monospace' },
+  inviteEmail: { fontFamily: fontFamily.sans, fontSize: 14, fontWeight: '500', color: colors.ink },
+  inviteCode: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.inkMuted, marginTop: 2 },
 
-  statusBadge: {
-    borderRadius: radii.xl,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  statusBadgeJoined: {
-    backgroundColor: colors.successBg,
-  },
-  statusBadgePending: {
-    backgroundColor: colors.surface,
-  },
   statusText: {
-    ...typography.caption,
-    fontWeight: '500',
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1.4,
   },
   statusTextJoined: {
-    color: colors.success,
+    color: colors.olive,
   },
   statusTextPending: {
-    color: colors.textSecondary,
+    color: colors.inkMuted,
   },
 
   emptyText: {
-    ...typography.body,
-    color: colors.textMuted,
+    fontFamily: fontFamily.sans,
+    fontSize: 14,
+    color: colors.inkMuted,
     textAlign: 'center',
     marginTop: spacing.xxl,
   },

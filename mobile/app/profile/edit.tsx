@@ -15,7 +15,7 @@ import { Stack, router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, fontFamily, radii } from '@/lib/theme';
+import { colors, spacing, fontFamily } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 
 interface ProfileData {
@@ -157,7 +157,7 @@ export default function EditProfileScreen() {
       <>
         <Stack.Screen options={{ headerTitle: 'Edit Profile' }} />
         <View style={[styles.container, styles.centered]}>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={colors.accent} />
         </View>
       </>
     );
@@ -186,29 +186,29 @@ export default function EditProfileScreen() {
               )}
             </View>
           </TouchableOpacity>
-          <Text style={styles.avatarHint}>Tap to change photo</Text>
+          <Text style={styles.avatarHint}>TAP TO CHANGE PHOTO</Text>
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Display name</Text>
+          <Text style={styles.label}>DISPLAY NAME</Text>
           <TextInput
             style={styles.input}
             value={displayName}
             onChangeText={setDisplayName}
             placeholder="Your name"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={colors.inkMuted}
             autoCapitalize="words"
           />
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Bio</Text>
+          <Text style={styles.label}>BIO</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
             value={bio}
             onChangeText={(t) => setBio(t.slice(0, 300))}
             placeholder="Tell people a bit about yourself..."
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={colors.inkMuted}
             multiline
             numberOfLines={3}
             textAlignVertical="top"
@@ -229,7 +229,7 @@ export default function EditProfileScreen() {
             <Switch
               value={isPrivate}
               onValueChange={setIsPrivate}
-              trackColor={{ false: colors.border, true: colors.primary }}
+              trackColor={{ false: colors.border, true: colors.accent }}
               thumbColor={colors.white}
             />
           </View>
@@ -250,7 +250,7 @@ export default function EditProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.bg },
   centered: { justifyContent: 'center', alignItems: 'center' },
   content: { padding: spacing.xl },
 
@@ -261,14 +261,14 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceAlt,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarInitial: {
     fontSize: 36,
-    fontWeight: '600',
-    color: colors.textSecondary,
+    fontFamily: fontFamily.display,
+    color: colors.inkSecondary,
   },
   avatarOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -278,39 +278,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarHint: {
-    ...typography.caption,
-    color: colors.textMuted,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: colors.inkMuted,
     marginTop: spacing.sm,
   },
 
   field: { marginBottom: spacing.xl },
   label: {
-    ...typography.label,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: colors.inkSecondary,
     marginBottom: spacing.sm,
   },
   input: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    paddingVertical: 10,
     fontSize: 15,
-    color: colors.text,
+    fontFamily: fontFamily.sans,
+    color: colors.ink,
   },
   textArea: {
-    height: 80,
+    minHeight: 80,
     paddingTop: spacing.md,
+    textAlignVertical: 'top',
   },
   charCount: {
-    ...typography.caption,
-    color: colors.textMuted,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: colors.inkMuted,
     textAlign: 'right',
     marginTop: spacing.xs,
   },
 
   privacyCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: spacing.lg,
     marginBottom: spacing.xxl,
   },
@@ -321,18 +329,21 @@ const styles = StyleSheet.create({
   },
   privacyText: { flex: 1, marginRight: spacing.md },
   privacyTitle: {
-    ...typography.bodySmall,
-    fontWeight: '600',
-    color: colors.text,
+    fontFamily: fontFamily.sans,
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.ink,
   },
   privacyDescription: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.sans,
+    fontSize: 12,
+    color: colors.inkSecondary,
     marginTop: 2,
   },
   privacyWarning: {
-    ...typography.caption,
-    color: colors.starFilled,
+    fontFamily: fontFamily.sans,
+    fontSize: 12,
+    color: colors.accent,
     marginTop: spacing.sm,
   },
 

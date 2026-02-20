@@ -9,7 +9,7 @@ import {
 import { Stack, router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, radii } from '@/lib/theme';
+import { colors, spacing, fontFamily } from '@/lib/theme';
 import Avatar from '@/components/ui/Avatar';
 
 interface NewFollower {
@@ -68,7 +68,7 @@ export default function NewFollowersScreen() {
       <View style={styles.container}>
         {loading ? (
           <View style={styles.centered}>
-            <Text style={styles.loadingText}>Loading...</Text>
+            <Text style={styles.loadingText}>LOADING...</Text>
           </View>
         ) : followers.length === 0 ? (
           <View style={styles.centered}>
@@ -92,22 +92,26 @@ export default function NewFollowersScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.bg },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.xl },
   list: { padding: spacing.xl },
 
   loadingText: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: colors.inkSecondary,
   },
   emptyTitle: {
-    ...typography.h3,
-    color: colors.text,
+    fontFamily: fontFamily.display,
+    fontSize: 20,
+    color: colors.ink,
     marginBottom: spacing.sm,
   },
   emptyDescription: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontFamily: fontFamily.sans,
+    fontSize: 13,
+    color: colors.inkSecondary,
     textAlign: 'center',
   },
 
@@ -117,14 +121,15 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   followerName: {
-    ...typography.bodySmall,
-    fontWeight: '600',
-    color: colors.text,
+    fontFamily: fontFamily.sans,
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.ink,
     marginLeft: spacing.md,
     flex: 1,
   },
   separator: {
     height: 1,
-    backgroundColor: colors.borderLight,
+    backgroundColor: colors.border,
   },
 });
