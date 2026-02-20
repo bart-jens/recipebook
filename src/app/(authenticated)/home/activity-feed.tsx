@@ -22,48 +22,27 @@ interface FeedItem {
 function formatTimeAgo(timestamp: string): string {
   const diff = Date.now() - new Date(timestamp).getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return `${minutes}m`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `${hours}h`;
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return `${Math.floor(days / 7)}w ago`;
+  if (days < 7) return `${days}d`;
+  return `${Math.floor(days / 7)}w`;
 }
 
 function actionVerb(type: string): string {
   switch (type) {
-    case "cooked": return " cooked ";
-    case "created": return " created ";
-    case "saved": return " saved ";
-    case "rated": return " rated ";
-    default: return " ";
+    case "cooked":
+      return " cooked ";
+    case "created":
+      return " published ";
+    case "saved":
+      return " saved ";
+    case "rated":
+      return " rated ";
+    default:
+      return " ";
   }
-}
-
-function getDomain(url: string): string | null {
-  try {
-    const hostname = new URL(url).hostname;
-    return hostname.replace(/^www\./, "");
-  } catch {
-    return null;
-  }
-}
-
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <span className="inline-flex gap-0.5" aria-label={`${rating} out of 5 stars`}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <svg
-          key={star}
-          className={`h-3.5 w-3.5 ${star <= rating ? "text-amber-400" : "text-warm-border"}`}
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-      ))}
-    </span>
-  );
 }
 
 function recipeLink(item: FeedItem): string {
@@ -75,6 +54,24 @@ function recipeLink(item: FeedItem): string {
 
 function isExternalLink(item: FeedItem): boolean {
   return item.event_type === "saved" && !!item.source_url;
+}
+
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <span
+      className="inline-flex gap-px mt-px"
+      aria-label={`${rating} out of 5 stars`}
+    >
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+          key={star}
+          className={`text-[11px] ${star <= rating ? "text-accent" : "text-border"}`}
+        >
+          &#9733;
+        </span>
+      ))}
+    </span>
+  );
 }
 
 export function ActivityFeed({
@@ -108,116 +105,70 @@ export function ActivityFeed({
 
   return (
     <div>
-      <div className="divide-y divide-warm-border/40">
-        {items.map((item, i) => {
-          const href = recipeLink(item);
-          const external = isExternalLink(item);
-          const domain = item.source_url ? getDomain(item.source_url) : null;
+      {items.map((item, i) => {
+        const href = recipeLink(item);
+        const external = isExternalLink(item);
 
-          return (
-            <div
-              key={`${item.event_type}-${item.recipe_id}-${item.event_at}-${i}`}
-              className="flex items-start gap-3 py-3 animate-fade-in-up"
-              style={i < 10 ? { animationDelay: `${i * 30}ms`, animationFillMode: "backwards" } : undefined}
-            >
-              <Link href={`/profile/${item.user_id}`} className="shrink-0">
-                {item.avatar_url ? (
-                  <img src={item.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
-                ) : (
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-warm-tag text-xs font-semibold text-warm-gray">
-                    {item.display_name[0]?.toUpperCase()}
-                  </div>
-                )}
+        const RecipeLink = external
+          ? ({ children, className }: { children: React.ReactNode; className?: string }) => (
+              <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+                {children}
+              </a>
+            )
+          : ({ children, className }: { children: React.ReactNode; className?: string }) => (
+              <Link href={href} className={className}>
+                {children}
               </Link>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm">
-                  <Link
-                    href={`/profile/${item.user_id}`}
-                    className="font-semibold hover:text-accent"
-                  >
-                    {item.display_name}
-                  </Link>
-                  <span className="text-warm-gray">
-                    {actionVerb(item.event_type)}
-                  </span>
-                  {external ? (
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium hover:text-accent"
-                    >
-                      {item.recipe_title}
-                    </a>
-                  ) : (
-                    <Link
-                      href={href}
-                      className="font-medium hover:text-accent"
-                    >
-                      {item.recipe_title}
-                    </Link>
-                  )}
-                </p>
-                {item.event_type === "saved" && domain && (
-                  <p className="mt-0.5 text-xs text-warm-gray">
-                    from {domain}
-                    {item.source_url && (
-                      <>
-                        {" "}
-                        <a
-                          href={item.source_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-warm-accent hover:underline"
-                        >
-                          View source
-                        </a>
-                      </>
-                    )}
-                  </p>
-                )}
-                {item.event_type === "rated" && item.rating != null && (
-                  <div className="mt-0.5">
-                    <StarRating rating={item.rating} />
-                  </div>
-                )}
-                {item.notes && (
-                  <p className="mt-1 text-xs text-warm-gray italic">
-                    &ldquo;{item.notes}&rdquo;
-                  </p>
-                )}
-                <span className="mt-1 block text-xs text-warm-gray">
-                  {formatTimeAgo(item.event_at)}
+            );
+
+        return (
+          <div
+            key={`${item.event_type}-${item.recipe_id}-${item.event_at}-${i}`}
+            className="group flex gap-2.5 py-2.5 border-t border-border items-center transition-all duration-150 cursor-pointer hover:bg-accent-light hover:-mx-1.5 hover:px-1.5"
+          >
+            {item.recipe_image_url ? (
+              <RecipeLink className="shrink-0">
+                <img
+                  src={item.recipe_image_url}
+                  alt={item.recipe_title}
+                  className="w-[36px] h-[36px] object-cover shrink-0 transition-transform duration-[250ms] group-hover:scale-110"
+                />
+              </RecipeLink>
+            ) : (
+              <div className="w-[36px] h-[36px] bg-surface-alt shrink-0 flex items-center justify-center">
+                <span className="font-display text-[14px] text-ink-muted">
+                  {item.display_name[0]?.toUpperCase()}
                 </span>
               </div>
-              {item.recipe_image_url && (
-                external ? (
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                    <img
-                      src={item.recipe_image_url}
-                      alt={item.recipe_title}
-                      className="h-12 w-12 rounded-md object-cover"
-                    />
-                  </a>
-                ) : (
-                  <Link href={href} className="shrink-0">
-                    <img
-                      src={item.recipe_image_url}
-                      alt={item.recipe_title}
-                      className="h-12 w-12 rounded-md object-cover"
-                    />
-                  </Link>
-                )
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-light text-ink leading-[1.35]">
+                <Link
+                  href={`/profile/${item.user_id}`}
+                  className="font-semibold hover:text-accent"
+                >
+                  {item.display_name}
+                </Link>
+                <span>{actionVerb(item.event_type)}</span>
+                <RecipeLink className="font-display italic text-accent hover:underline">
+                  {item.recipe_title}
+                </RecipeLink>
+              </p>
+              {item.event_type === "rated" && item.rating != null && (
+                <StarRating rating={item.rating} />
               )}
             </div>
-          );
-        })}
-      </div>
+            <span className="font-mono text-[10px] text-ink-muted shrink-0">
+              {formatTimeAgo(item.event_at)}
+            </span>
+          </div>
+        );
+      })}
       {hasMore && (
         <button
           onClick={loadMore}
           disabled={loading}
-          className="mt-4 w-full rounded-md border border-warm-border py-2 text-sm text-warm-gray transition-all hover:-translate-y-px hover:shadow-sm disabled:opacity-50"
+          className="mt-3 w-full border-t border-border py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-muted hover:text-accent transition-colors disabled:opacity-50"
         >
           {loading ? "Loading..." : "Load more"}
         </button>
