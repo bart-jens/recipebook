@@ -69,16 +69,16 @@ export function RecommendationCard({
   };
 
   return (
-    <div className="overflow-hidden rounded-md bg-warm-tag">
+    <div className="overflow-hidden border border-warm-border bg-white">
       <div className="flex gap-4 p-4">
         {/* Thumbnail */}
         {imageUrl ? (
-          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-warm-tag">
+          <div className="h-20 w-20 shrink-0 overflow-hidden bg-warm-tag">
             <img src={imageUrl} alt={title} className="h-full w-full object-cover" />
           </div>
         ) : (
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md bg-warm-tag">
-            <span className="text-lg font-sans font-medium text-white/80">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center bg-accent">
+            <span className="font-serif text-2xl text-white/80">
               {title.slice(0, 1)}
             </span>
           </div>
@@ -90,24 +90,24 @@ export function RecommendationCard({
             {sharerAvatarUrl ? (
               <img src={sharerAvatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
             ) : (
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-warm-tag text-[10px] font-semibold text-warm-gray">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[10px] font-serif text-warm-bg">
                 {sharerName[0].toUpperCase()}
               </div>
             )}
-            <Link href={`/profile/${sharerId}`} className="text-xs font-medium text-warm-gray hover:text-accent">
+            <Link href={`/profile/${sharerId}`} className="font-mono text-[11px] text-warm-gray hover:text-accent">
               {sharerName}
             </Link>
-            <span className="text-xs text-warm-gray/50">
+            <span className="font-mono text-[11px] text-warm-muted">
               {new Date(sharedAt).toLocaleDateString()}
             </span>
           </div>
 
           {/* Title */}
-          <h3 className="font-sans text-base font-medium leading-tight">{title}</h3>
+          <h3 className="font-serif text-lg leading-tight text-ink">{title}</h3>
 
           {/* Source attribution */}
           {sourceDisplay && (
-            <p className="mt-0.5 text-xs text-warm-gray">
+            <p className="mt-0.5 font-mono text-[11px] text-warm-gray">
               {sourceUrl ? (
                 <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
                   via {sourceDisplay}
@@ -124,7 +124,7 @@ export function RecommendationCard({
               {[1, 2, 3, 4, 5].map((star) => (
                 <svg
                   key={star}
-                  className={`h-3.5 w-3.5 ${star <= userRating ? "text-amber-400" : "text-warm-border"}`}
+                  className={`h-3.5 w-3.5 ${star <= userRating ? "text-accent" : "text-warm-border"}`}
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -138,17 +138,17 @@ export function RecommendationCard({
 
       {/* Notes */}
       {shareNotes && (
-        <div className="border-t border-warm-divider px-4 py-3">
-          <p className="text-sm text-warm-gray italic">&ldquo;{shareNotes}&rdquo;</p>
+        <div className="border-t border-warm-border px-4 py-3">
+          <p className="font-light text-sm text-warm-gray italic">&ldquo;{shareNotes}&rdquo;</p>
         </div>
       )}
 
       {/* Tags */}
       {tags && tags.length > 0 && (
-        <div className="border-t border-warm-divider px-4 py-2">
+        <div className="border-t border-warm-border px-4 py-2">
           <div className="flex flex-wrap gap-1.5">
             {tags.slice(0, 3).map((tag) => (
-              <span key={tag} className="rounded-full bg-warm-tag px-2 py-0.5 text-xs text-warm-gray">
+              <span key={tag} className="border border-warm-border px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-warm-gray">
                 {tag}
               </span>
             ))}
@@ -157,11 +157,11 @@ export function RecommendationCard({
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-3 border-t border-warm-divider px-4 py-2">
+      <div className="flex items-center gap-3 border-t border-warm-border px-4 py-2">
         <button
           onClick={handleSave}
           disabled={saving || saved}
-          className="text-xs font-medium text-accent hover:underline disabled:opacity-50 disabled:no-underline"
+          className="font-mono text-[11px] uppercase tracking-wider text-accent hover:underline disabled:opacity-50 disabled:no-underline"
         >
           {saving ? "Saving..." : saved ? "Saved" : "Save to my recipes"}
         </button>
@@ -170,7 +170,7 @@ export function RecommendationCard({
             href={sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-medium text-warm-gray hover:text-accent"
+            className="font-mono text-[11px] uppercase tracking-wider text-warm-gray hover:text-accent"
           >
             View source
           </a>

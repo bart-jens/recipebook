@@ -18,7 +18,7 @@ export default function StarRating({ rating, size = 16, interactive = false, onR
           <FontAwesome
             name={filled ? 'star' : 'star-o'}
             size={size}
-            color={filled ? colors.starFilled : colors.starEmpty}
+            color={filled ? colors.accent : colors.border}
           />
         );
 

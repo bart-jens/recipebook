@@ -45,7 +45,7 @@ export default function AnimatedHeart({ isFavorite, onToggle, size = 24, disable
       <AnimatedIcon
         name={isFavorite ? 'heart' : 'heart-o'}
         size={size}
-        color={isFavorite ? colors.dangerLight : colors.starEmpty}
+        color={isFavorite ? colors.accent : colors.border}
         style={animatedStyle}
       />
     </Pressable>

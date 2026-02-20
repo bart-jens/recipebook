@@ -51,7 +51,7 @@ export default function Skeleton({ width, height, borderRadius = radii.md, style
 export function SkeletonCard({ style }: { style?: ViewStyle }) {
   return (
     <View style={[styles.cardContainer, style]}>
-      <Skeleton width="100%" height={140} borderRadius={radii.lg} />
+      <Skeleton width="100%" height={140} borderRadius={0} />
       <View style={styles.cardContent}>
         <Skeleton width="70%" height={16} />
         <Skeleton width="40%" height={12} style={styles.mt8} />
@@ -70,10 +70,9 @@ export function SkeletonCircle({ size = 40, style }: { size?: number; style?: Vi
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: colors.card,
-    borderRadius: radii.lg,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: colors.border,
     overflow: 'hidden',
   },
   cardContent: {

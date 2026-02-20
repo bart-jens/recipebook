@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import StarRating from './StarRating';
 import { ForkDot } from './Logo';
-import { colors, spacing, typography, radii, fontFamily, animation } from '@/lib/theme';
+import { colors, spacing, typography, fontFamily, animation } from '@/lib/theme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -69,7 +69,7 @@ export default function RecipeCard({ recipe, onPress, onLongPress, variant = 'de
           />
         ) : (
           <View style={styles.placeholder}>
-            <ForkDot size={28} color="rgba(45,95,93,0.2)" />
+            <ForkDot size={28} color={colors.accentWashIcon} />
           </View>
         )}
       </View>
@@ -81,7 +81,7 @@ export default function RecipeCard({ recipe, onPress, onLongPress, variant = 'de
             {recipe.title}
           </Text>
           {recipe.isFavorited && (
-            <FontAwesome name="heart" size={12} color={colors.dangerLight} style={styles.heartIcon} />
+            <FontAwesome name="heart" size={12} color={colors.accent} style={styles.heartIcon} />
           )}
         </View>
         {recipe.creatorName && (
@@ -109,10 +109,9 @@ export default function RecipeCard({ recipe, onPress, onLongPress, variant = 'de
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
     overflow: 'hidden',
   },
   imageContainer: {
@@ -142,10 +141,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   title: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 15,
-    lineHeight: 20,
-    color: colors.text,
+    fontFamily: fontFamily.display,
+    fontSize: 17,
+    lineHeight: 22,
+    color: colors.ink,
     flex: 1,
   },
   titleWithHeart: {
@@ -155,8 +154,8 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   creatorName: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...typography.monoMeta,
+    color: colors.inkSecondary,
     marginBottom: spacing.xs,
   },
   metaRow: {
@@ -170,7 +169,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   metaText: {
-    ...typography.caption,
-    color: colors.textMuted,
+    ...typography.monoMeta,
+    color: colors.inkMuted,
   },
 });

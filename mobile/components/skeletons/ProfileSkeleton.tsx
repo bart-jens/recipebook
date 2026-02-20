@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import Skeleton, { SkeletonCircle, SkeletonLine, SkeletonCard } from '@/components/ui/Skeleton';
-import { spacing, radii, animation } from '@/lib/theme';
+import { spacing, animation } from '@/lib/theme';
 
 export default function ProfileSkeleton() {
   return (
@@ -14,9 +14,9 @@ export default function ProfileSkeleton() {
       </Animated.View>
 
       <Animated.View entering={FadeIn.delay(animation.staggerDelay)} style={styles.statsRow}>
-        <Skeleton width={60} height={40} borderRadius={radii.md} />
-        <Skeleton width={60} height={40} borderRadius={radii.md} />
-        <Skeleton width={60} height={40} borderRadius={radii.md} />
+        <Skeleton width={60} height={40} borderRadius={0} />
+        <Skeleton width={60} height={40} borderRadius={0} />
+        <Skeleton width={60} height={40} borderRadius={0} />
       </Animated.View>
 
       <Animated.View entering={FadeIn.delay(animation.staggerDelay * 2)}>

@@ -19,7 +19,7 @@ export default function EmptyState({ title, subtitle, icon, onAction, actionLabe
         <FontAwesome name={icon} size={28} color={colors.accentWashIcon} style={styles.icon} />
       ) : (
         <View style={styles.icon}>
-          <ForkDot size={24} color="rgba(45,95,93,0.3)" />
+          <ForkDot size={24} color={colors.accentWashIcon} />
         </View>
       )}
       <Text style={styles.title}>{title}</Text>
@@ -42,21 +42,21 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentWash,
     borderWidth: 1,
     borderColor: colors.accentWashBorder,
-    borderRadius: 12,
   },
   icon: {
     marginBottom: spacing.md,
   },
   title: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 15,
-    color: colors.text,
+    fontFamily: fontFamily.display,
+    fontSize: 18,
+    lineHeight: 22,
+    color: colors.ink,
     textAlign: 'center',
     marginBottom: spacing.xs,
   },
   subtitle: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    ...typography.bodyLight,
+    color: colors.inkSecondary,
     textAlign: 'center',
     maxWidth: 260,
   },
@@ -64,12 +64,13 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.primary,
-    borderRadius: 8,
+    backgroundColor: colors.accent,
   },
   actionLabel: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 14,
-    color: colors.card,
+    fontFamily: fontFamily.mono,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    color: colors.white,
   },
 });

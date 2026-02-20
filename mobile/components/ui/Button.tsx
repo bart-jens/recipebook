@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { colors, spacing, radii, typography } from '@/lib/theme';
+import { colors, spacing, radii, typography, fontFamily } from '@/lib/theme';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 type Size = 'sm' | 'md' | 'lg';
@@ -38,7 +38,7 @@ export default function Button({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'primary' || variant === 'danger' ? colors.white : colors.textSecondary}
+          color={variant === 'primary' || variant === 'danger' ? colors.white : colors.inkSecondary}
         />
       ) : (
         <Text
@@ -65,13 +65,15 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   text: {
-    fontWeight: '600',
+    fontFamily: fontFamily.mono,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
 });
 
 const variantStyles: Record<Variant, ViewStyle> = {
   primary: {
-    backgroundColor: colors.cta,
+    backgroundColor: colors.accent,
   },
   secondary: {
     backgroundColor: 'transparent',
@@ -90,9 +92,9 @@ const variantStyles: Record<Variant, ViewStyle> = {
 
 const variantTextStyles: Record<Variant, TextStyle> = {
   primary: { color: colors.white },
-  secondary: { color: colors.textSecondary },
+  secondary: { color: colors.inkSecondary },
   danger: { color: colors.danger },
-  ghost: { color: colors.textSecondary },
+  ghost: { color: colors.inkSecondary },
 };
 
 const sizeStyles: Record<Size, ViewStyle> = {
@@ -102,7 +104,7 @@ const sizeStyles: Record<Size, ViewStyle> = {
 };
 
 const sizeTextStyles: Record<Size, TextStyle> = {
-  sm: { fontSize: typography.label.fontSize },
-  md: { fontSize: typography.bodySmall.fontSize },
-  lg: { fontSize: typography.body.fontSize },
+  sm: { fontSize: 11 },
+  md: { fontSize: 12 },
+  lg: { fontSize: 13 },
 };
