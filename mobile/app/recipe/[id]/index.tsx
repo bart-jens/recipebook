@@ -122,10 +122,7 @@ export default function RecipeDetailScreen() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [addingTag, setAddingTag] = useState(false);
-  const [isShared, setIsShared] = useState(false);
   const [shareNotes, setShareNotes] = useState<string | null>(null);
-  const [publishCount, setPublishCount] = useState(0);
-  const [userPlan, setUserPlan] = useState('free');
   const [photos, setPhotos] = useState<{ id: string; url: string; imageType: string }[]>([]);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [adjustedServings, setAdjustedServings] = useState<number | null>(null);
@@ -217,14 +214,6 @@ export default function RecipeDetailScreen() {
 
     // Owner-specific data
     if (recipeData && recipeData.created_by === user?.id) {
-      // Fetch publish count and user plan
-      const [{ data: profileData }, { count }] = await Promise.all([
-        supabase.from('user_profiles').select('plan').eq('id', user!.id).single(),
-        supabase.from('recipes').select('id', { count: 'exact', head: true }).eq('created_by', user!.id).eq('visibility', 'public'),
-      ]);
-      setUserPlan(profileData?.plan || 'free');
-      setPublishCount(count || 0);
-
       // Check share status for non-publishable recipes (imports and forks)
       if (recipeData.source_type !== 'manual' || recipeData.forked_from_id) {
         const { data: share } = await supabase
@@ -233,8 +222,7 @@ export default function RecipeDetailScreen() {
           .eq('user_id', user!.id)
           .eq('recipe_id', id)
           .maybeSingle();
-        setIsShared(!!share);
-        setShareNotes(share?.notes || null);
+        setShareNotes(share ? (share.notes || '') : null);
       }
     }
 
@@ -292,92 +280,42 @@ export default function RecipeDetailScreen() {
     }
   };
 
-  const publishLimit = 10;
-  const atPublishLimit = userPlan === 'free' && publishCount >= publishLimit;
+  const toggleVisibility = async () => {
+    if (!recipe || !user) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-  const togglePublish = async () => {
-    if (!recipe || !isOwner) return;
-    const isPublic = recipe.visibility === 'public';
-
-    if (!isPublic && atPublishLimit) {
-      Alert.alert(
-        'Publish limit reached',
-        `Free accounts can publish up to ${publishLimit} recipes. Upgrade to Premium for unlimited publishing.`
-      );
-      return;
+    const newVisibility = recipe.visibility === 'public' ? 'private' : 'public';
+    const updates: Record<string, unknown> = { visibility: newVisibility };
+    if (newVisibility === 'public') {
+      updates.published_at = new Date().toISOString();
     }
 
-    Alert.alert(
-      isPublic ? 'Unpublish recipe?' : 'Publish recipe?',
-      isPublic
-        ? 'This will remove the recipe from public discovery. Continue?'
-        : 'Publishing will make this recipe visible to everyone. Continue?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: isPublic ? 'Unpublish' : 'Publish',
-          onPress: async () => {
-            const newVisibility = isPublic ? 'private' : 'public';
-            const update: Record<string, string | null> = { visibility: newVisibility };
-            if (!isPublic) update.published_at = new Date().toISOString();
-            setRecipe({ ...recipe, visibility: newVisibility });
-            if (!isPublic) {
-              setShowCelebration(true);
-              setPublishCount((c) => c + 1);
-            } else {
-              setPublishCount((c) => Math.max(0, c - 1));
-            }
-            await supabase.from('recipes').update(update).eq('id', recipe.id);
-          },
-        },
-      ]
-    );
+    const { error } = await supabase
+      .from('recipes')
+      .update(updates)
+      .eq('id', recipe.id);
+
+    if (!error) {
+      setRecipe({ ...recipe, visibility: newVisibility });
+    }
   };
 
-  const handleShare = () => {
+  const addRecommendation = async () => {
     if (!recipe || !user) return;
-    Alert.prompt(
-      'Share this recipe',
-      'Any changes you made? (optional)',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Share',
-          onPress: async (notes?: string) => {
-            const { error } = await supabase.from('recipe_shares').insert({
-              user_id: user.id,
-              recipe_id: recipe.id,
-              notes: notes?.trim() || null,
-            });
-            if (error) {
-              Alert.alert('Error', 'Could not share recipe');
-            } else {
-              setIsShared(true);
-              setShareNotes(notes?.trim() || null);
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            }
-          },
-        },
-      ],
-      'plain-text',
-      shareNotes || ''
-    );
+    await supabase
+      .from('recipe_shares')
+      .insert({ user_id: user.id, recipe_id: recipe.id });
+    setShareNotes('');
   };
 
-  const handleUnshare = async () => {
+  const removeRecommendation = async () => {
     if (!recipe || !user) return;
-    Alert.alert('Unshare recipe?', 'This will remove the recommendation from your followers.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Unshare',
-        style: 'destructive',
-        onPress: async () => {
-          await supabase.from('recipe_shares').delete().eq('user_id', user.id).eq('recipe_id', recipe.id);
-          setIsShared(false);
-          setShareNotes(null);
-        },
-      },
-    ]);
+    await supabase
+      .from('recipe_shares')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('recipe_id', recipe.id);
+    setShareNotes(null);
   };
 
   const shareLink = async () => {
@@ -830,38 +768,35 @@ export default function RecipeDetailScreen() {
                   onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
                 />
                 {recipe.source_type === 'manual' && !recipe.forked_from_id ? (
-                  recipe.visibility === 'public' ? (
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      style={styles.publishedButton}
-                      onPress={togglePublish}
-                    >
-                      <Text style={styles.publishedText}>Published</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <Button
-                      title={atPublishLimit ? `${publishCount}/${publishLimit}` : 'Publish'}
-                      variant="secondary"
-                      size="sm"
-                      onPress={togglePublish}
-                      disabled={atPublishLimit}
-                    />
-                  )
+                  <TouchableOpacity
+                    style={[
+                      styles.actionButton,
+                      recipe.visibility === 'public' ? styles.publicButton : styles.privateButton,
+                    ]}
+                    onPress={toggleVisibility}
+                  >
+                    {recipe.visibility !== 'public' && (
+                      <FontAwesome name="lock" size={12} color={colors.textMuted} style={{ marginRight: spacing.xs }} />
+                    )}
+                    <Text style={[
+                      styles.actionButtonText,
+                      recipe.visibility === 'public' ? styles.publicButtonText : styles.privateButtonText,
+                    ]}>
+                      {recipe.visibility === 'public' ? 'Public' : 'Private'}
+                    </Text>
+                  </TouchableOpacity>
                 ) : (
-                  isShared ? (
-                    <Button
-                      title="Shared"
-                      variant="secondary"
-                      size="sm"
-                      onPress={handleUnshare}
-                    />
+                  shareNotes !== null ? (
+                    <View style={styles.recommendedContainer}>
+                      <Text style={styles.recommendedText}>Recommended</Text>
+                      <TouchableOpacity onPress={removeRecommendation}>
+                        <Text style={styles.removeRecommendText}>Remove</Text>
+                      </TouchableOpacity>
+                    </View>
                   ) : (
-                    <Button
-                      title="Share"
-                      variant="secondary"
-                      size="sm"
-                      onPress={handleShare}
-                    />
+                    <TouchableOpacity style={styles.actionButton} onPress={addRecommendation}>
+                      <Text style={styles.actionButtonText}>Recommend</Text>
+                    </TouchableOpacity>
                   )
                 )}
                 {recipe.visibility === 'public' && (
@@ -879,13 +814,6 @@ export default function RecipeDetailScreen() {
                   onPress={deleteRecipe}
                 />
               </Animated.View>
-            )}
-
-            {/* Publish limit indicator for free users */}
-            {isOwner && userPlan === 'free' && recipe.source_type === 'manual' && !recipe.forked_from_id && (
-              <Text style={styles.publishLimitText}>
-                {publishCount}/{publishLimit} published (free plan)
-              </Text>
             )}
 
             {/* Non-owner: save + share link */}
@@ -1548,25 +1476,56 @@ const styles = StyleSheet.create({
 
   // Owner actions
   ownerActions: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
-  publishedButton: {
-    backgroundColor: colors.successBg,
-    borderWidth: 1,
-    borderColor: colors.successBorder,
+  actionButton: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     borderRadius: radii.full,
     paddingVertical: spacing.sm - 1,
     paddingHorizontal: spacing.md,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
   },
-  publishedText: {
-    ...typography.label,
+  actionButtonText: {
+    fontFamily: fontFamily.sansMedium,
+    fontSize: typography.bodySmall.fontSize,
+  },
+  publicButton: {
+    backgroundColor: colors.successBg,
+    borderWidth: 1,
+    borderColor: colors.successBorder,
+  },
+  publicButtonText: {
     color: colors.success,
-    fontWeight: '600',
+    fontFamily: fontFamily.sansMedium,
+    fontSize: typography.bodySmall.fontSize,
   },
-  publishLimitText: {
-    ...typography.caption,
+  privateButton: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  privateButtonText: {
     color: colors.textMuted,
-    marginBottom: spacing.lg,
+    fontFamily: fontFamily.sansMedium,
+    fontSize: typography.bodySmall.fontSize,
+  },
+  recommendedContainer: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.md,
+    gap: spacing.sm,
+  },
+  recommendedText: {
+    color: colors.textSecondary,
+    fontFamily: fontFamily.sansMedium,
+    fontSize: typography.bodySmall.fontSize,
+  },
+  removeRecommendText: {
+    color: colors.textMuted,
+    fontSize: typography.caption.fontSize,
+    textDecorationLine: 'underline' as const,
   },
 
   // Tags
