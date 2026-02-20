@@ -38,6 +38,37 @@ export function ShoppingListView({
   const unchecked = items.filter((i) => !i.is_checked);
   const checked = items.filter((i) => i.is_checked);
 
+  // Group unchecked items by recipe source
+  function groupByRecipe(itemsList: ShoppingItem[]) {
+    const groups: { recipeId: string | null; title: string | null; items: ShoppingItem[] }[] = [];
+    const noRecipe: ShoppingItem[] = [];
+
+    const recipeMap = new Map<string, ShoppingItem[]>();
+
+    for (const item of itemsList) {
+      if (!item.recipe_ids || item.recipe_ids.length === 0) {
+        noRecipe.push(item);
+      } else {
+        // Use first recipe id as group key
+        const rid = item.recipe_ids[0];
+        if (!recipeMap.has(rid)) recipeMap.set(rid, []);
+        recipeMap.get(rid)!.push(item);
+      }
+    }
+
+    // Manual items first
+    if (noRecipe.length > 0) {
+      groups.push({ recipeId: null, title: null, items: noRecipe });
+    }
+
+    // Then by recipe
+    Array.from(recipeMap.entries()).forEach(([rid, recipeItems]) => {
+      groups.push({ recipeId: rid, title: recipeTitles[rid] || null, items: recipeItems });
+    });
+
+    return groups;
+  }
+
   async function handleToggle(itemId: string) {
     setItems((prev) =>
       prev.map((i) =>
@@ -91,72 +122,63 @@ export function ShoppingListView({
     return qty.toFixed(1);
   }
 
-  function getAttribution(recipeIds: string[]) {
-    if (!recipeIds || recipeIds.length === 0) return null;
-    const titles = recipeIds
-      .map((id) => recipeTitles[id])
-      .filter(Boolean);
-    if (titles.length === 0) return null;
-    return titles.join(", ");
-  }
-
   function renderUncheckedItem(item: ShoppingItem) {
-    const attribution = getAttribution(item.recipe_ids);
     return (
       <li
         key={item.id}
-        className="group flex items-center gap-3 border-b border-warm-divider py-2.5 transition-opacity duration-200"
+        className="group flex items-center gap-2.5 py-2 border-b border-dotted border-border cursor-pointer transition-all hover:pl-1"
+        onClick={() => handleToggle(item.id)}
       >
+        {/* Checkbox */}
+        <span
+          className="w-4 h-4 border-[1.5px] rounded-[2px] flex-shrink-0 relative transition-all duration-200 border-border hover:border-accent hover:scale-110"
+        />
+        {/* Ingredient name */}
+        <span className="flex-1 text-[14px] text-ink">
+          {item.ingredient_name}
+        </span>
+        {/* Amount */}
+        {(item.quantity !== null || item.unit) && (
+          editingId === item.id ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleQuantityEdit(item.id);
+              }}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-baseline gap-1"
+            >
+              <input
+                type="text"
+                value={editQty}
+                onChange={(e) => setEditQty(e.target.value)}
+                onBlur={() => handleQuantityEdit(item.id)}
+                autoFocus
+                className="w-16 border-b border-border bg-transparent px-1 py-0.5 font-mono text-[12px] text-ink-secondary focus:border-accent focus:outline-none"
+              />
+              <span className="font-mono text-[12px] text-ink-muted">{item.unit || ""}</span>
+            </form>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingId(item.id);
+                setEditQty(item.quantity !== null ? String(item.quantity) : "");
+              }}
+              className="shrink-0 font-mono text-[12px] text-ink-secondary hover:text-accent transition-colors"
+            >
+              {formatQuantity(item.quantity)} {item.unit || ""}
+            </button>
+          )
+        )}
+        {/* Delete */}
         <button
-          onClick={() => handleToggle(item.id)}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-warm-border transition-colors hover:border-accent hover:bg-accent/10"
-          aria-label={`Check off ${item.ingredient_name}`}
-        >
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-2">
-            {editingId === item.id ? (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleQuantityEdit(item.id);
-                }}
-                className="flex items-baseline gap-1"
-              >
-                <input
-                  type="text"
-                  value={editQty}
-                  onChange={(e) => setEditQty(e.target.value)}
-                  onBlur={() => handleQuantityEdit(item.id)}
-                  autoFocus
-                  className="w-16 rounded border border-warm-border px-1 py-0.5 text-sm"
-                />
-                <span className="text-sm text-warm-gray">{item.unit || ""}</span>
-              </form>
-            ) : (
-              <>
-                {(item.quantity !== null || item.unit) && (
-                  <button
-                    onClick={() => {
-                      setEditingId(item.id);
-                      setEditQty(item.quantity !== null ? String(item.quantity) : "");
-                    }}
-                    className="shrink-0 font-medium hover:text-accent"
-                  >
-                    {formatQuantity(item.quantity)} {item.unit || ""}
-                  </button>
-                )}
-              </>
-            )}
-            <span>{item.ingredient_name}</span>
-          </div>
-          {attribution && (
-            <p className="truncate text-xs text-warm-gray/60">from {attribution}</p>
-          )}
-        </div>
-        <button
-          onClick={() => handleDelete(item.id)}
-          className="shrink-0 text-warm-gray/40 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete(item.id);
+          }}
+          className="shrink-0 text-ink-muted/40 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
           aria-label={`Delete ${item.ingredient_name}`}
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -171,25 +193,32 @@ export function ShoppingListView({
     return (
       <li
         key={item.id}
-        className="group flex items-center gap-3 py-2 text-warm-gray/50"
+        className="group flex items-center gap-2.5 py-2 border-b border-dotted border-border cursor-pointer transition-all"
+        onClick={() => handleToggle(item.id)}
       >
-        <button
-          onClick={() => handleToggle(item.id)}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-accent bg-accent text-white transition-colors hover:bg-accent/80"
-          aria-label={`Uncheck ${item.ingredient_name}`}
+        {/* Checkbox — checked */}
+        <span
+          className="w-4 h-4 border-[1.5px] rounded-[2px] flex-shrink-0 relative bg-accent border-accent animate-check-pop"
         >
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-          </svg>
-        </button>
-        <span className="flex-1 line-through text-sm">
-          {item.quantity !== null && `${formatQuantity(item.quantity)} `}
-          {item.unit && `${item.unit} `}
+          <span className="absolute left-[3px] top-0 w-[5px] h-[9px] border-white border-r-[1.5px] border-b-[1.5px] rotate-45" />
+        </span>
+        {/* Name — strikethrough accent */}
+        <span className="flex-1 text-[14px] text-ink-muted line-through decoration-accent">
           {item.ingredient_name}
         </span>
+        {/* Amount — muted */}
+        {(item.quantity !== null || item.unit) && (
+          <span className="shrink-0 font-mono text-[12px] text-ink-secondary opacity-40">
+            {formatQuantity(item.quantity)} {item.unit || ""}
+          </span>
+        )}
+        {/* Delete */}
         <button
-          onClick={() => handleDelete(item.id)}
-          className="shrink-0 text-warm-gray/30 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete(item.id);
+          }}
+          className="shrink-0 text-ink-muted/30 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
           aria-label={`Delete ${item.ingredient_name}`}
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -200,61 +229,91 @@ export function ShoppingListView({
     );
   }
 
+  const groups = groupByRecipe(unchecked);
+
   return (
     <div className="max-w-2xl">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Grocery List</h1>
-        {items.length > 0 && (
-          <button
-            onClick={handleClearAll}
-            className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-500 hover:bg-red-50"
-          >
-            Clear all
-          </button>
-        )}
+      {/* Header */}
+      <div className="mb-6 flex items-baseline justify-between">
+        <h1 className="font-display text-[40px] leading-[0.96] tracking-[-0.04em] text-ink">
+          Grocery List
+        </h1>
+        <div className="flex items-center gap-4">
+          {items.length > 0 && (
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
+              {unchecked.length} {unchecked.length === 1 ? "item" : "items"}
+            </span>
+          )}
+          {items.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              className="font-mono text-[10px] uppercase tracking-[0.06em] text-red-400 hover:text-red-500 transition-colors"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
       </div>
 
-      <form onSubmit={handleAdd} className="mb-6">
+      {/* Add item input — bottom-border style */}
+      <form onSubmit={handleAdd} className="mb-8">
         <input
           ref={inputRef}
           type="text"
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
           placeholder="Add an item..."
-          className="w-full rounded-md border border-warm-border px-4 py-2.5 text-sm focus:border-accent focus:outline-none"
+          className="w-full border-b-2 border-border bg-transparent py-2.5 text-[14px] placeholder:text-ink-muted focus:border-accent focus:outline-none transition-colors"
         />
       </form>
 
       {items.length === 0 ? (
         <div className="py-16 text-center">
-          <p className="text-warm-gray">Your grocery list is empty</p>
-          <p className="mt-1 text-sm text-warm-gray/60">
+          <p className="font-display text-[18px] italic text-ink-muted">Your grocery list is empty</p>
+          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
             Add items above or use the + button on recipe ingredients
           </p>
         </div>
       ) : (
         <>
-          {unchecked.length > 0 && (
-            <ul>{unchecked.map(renderUncheckedItem)}</ul>
-          )}
+          {/* Grouped unchecked items */}
+          {groups.map((group, gi) => (
+            <div key={group.recipeId ?? `manual-${gi}`} className="mb-6">
+              {group.title && (
+                <h2 className="font-display text-[18px] text-ink mb-1">
+                  {group.title}
+                </h2>
+              )}
+              {!group.title && group.recipeId === null && groups.length > 1 && (
+                <h2 className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted mb-1">
+                  Manual
+                </h2>
+              )}
+              <ul className="list-none">
+                {group.items.map(renderUncheckedItem)}
+              </ul>
+            </div>
+          ))}
 
+          {/* All done message */}
           {unchecked.length === 0 && checked.length > 0 && (
             <div className="py-8 text-center">
-              <p className="text-warm-gray">All done!</p>
+              <p className="font-display text-[18px] italic text-ink-muted">All done!</p>
             </div>
           )}
 
+          {/* Checked items — collapsed section */}
           {checked.length > 0 && (
-            <div className="mt-4 rounded-lg border border-warm-divider">
+            <div className="mt-6 border-t border-border">
               <button
                 onClick={() => setCheckedExpanded(!checkedExpanded)}
-                className="flex w-full items-center justify-between px-4 py-3 text-sm text-warm-gray/60 hover:text-warm-gray transition-colors"
+                className="flex w-full items-center justify-between py-3 transition-colors"
               >
-                <span className="font-medium">
-                  {checked.length} checked {checked.length === 1 ? "item" : "items"}
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
+                  Checked ({checked.length})
                 </span>
                 <svg
-                  className={`h-4 w-4 transition-transform duration-200 ${checkedExpanded ? "rotate-180" : ""}`}
+                  className={`h-4 w-4 text-ink-muted transition-transform duration-200 ${checkedExpanded ? "rotate-180" : ""}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={2}
@@ -264,11 +323,11 @@ export function ShoppingListView({
                 </svg>
               </button>
               {checkedExpanded && (
-                <div className="border-t border-warm-divider px-4 pb-3">
-                  <ul>{checked.map(renderCheckedItem)}</ul>
+                <div className="pb-3">
+                  <ul className="list-none">{checked.map(renderCheckedItem)}</ul>
                   <button
                     onClick={handleClearChecked}
-                    className="mt-3 text-xs text-red-400 hover:text-red-500"
+                    className="mt-3 font-mono text-[10px] uppercase tracking-[0.06em] text-red-400 hover:text-red-500 transition-colors"
                   >
                     Clear all checked
                   </button>
