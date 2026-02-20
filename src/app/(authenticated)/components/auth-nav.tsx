@@ -56,6 +56,9 @@ export function AuthNav({
         <NavLink href="/recipes" active={isActive("/recipes")}>
           Recipes
         </NavLink>
+        <NavLink href="/shopping-list" active={isActive("/shopping-list")}>
+          Groceries
+        </NavLink>
         <NavLink href="/invites" active={isActive("/invites")}>
           Invite
         </NavLink>

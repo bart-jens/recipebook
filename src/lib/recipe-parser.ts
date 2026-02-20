@@ -89,6 +89,16 @@ function parseInstructions(raw: unknown): string {
   return "";
 }
 
+function decodeHtmlEntities(s: string): string {
+  return s
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&#x27;/g, "'");
+}
+
 function parseImage(raw: unknown): string | null {
   if (!raw) return null;
   if (typeof raw === "string") return raw;
@@ -175,7 +185,7 @@ export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
   }
 
   const r: SchemaRecipe = recipe;
-  const ingredients = (r.recipeIngredient || []).map((s) => parseIngredient(s));
+  const ingredients = (r.recipeIngredient || []).map((s) => parseIngredient(decodeHtmlEntities(s)));
 
   // Extract tags from recipeCategory, recipeCuisine, and keywords
   const tags = parseTags(r);
@@ -185,9 +195,9 @@ export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
   const language = htmlLang ? htmlLang.split("-")[0].toLowerCase().slice(0, 2) : null;
 
   return {
-    title: r.name || "Untitled Recipe",
-    description: r.description || "",
-    instructions: parseInstructions(r.recipeInstructions),
+    title: decodeHtmlEntities(r.name || "Untitled Recipe"),
+    description: decodeHtmlEntities(r.description || ""),
+    instructions: decodeHtmlEntities(parseInstructions(r.recipeInstructions)),
     prep_time_minutes: parseDuration(r.prepTime),
     cook_time_minutes: parseDuration(r.cookTime),
     servings: parseServings(r.recipeYield),

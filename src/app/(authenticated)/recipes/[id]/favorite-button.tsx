@@ -1,37 +1,38 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toggleFavorite } from "./actions";
 
 export function FavoriteButton({
   recipeId,
   isFavorited,
-  hasCooked,
 }: {
   recipeId: string;
   isFavorited: boolean;
-  hasCooked: boolean;
 }) {
+  const [optimistic, setOptimistic] = useState(isFavorited);
   const [isPending, startTransition] = useTransition();
 
   function handleClick() {
+    const next = !optimistic;
+    setOptimistic(next);
     startTransition(async () => {
-      await toggleFavorite(recipeId, !isFavorited);
+      await toggleFavorite(recipeId, next);
     });
   }
 
   return (
     <button
       onClick={handleClick}
-      disabled={isPending || !hasCooked}
+      disabled={isPending}
       className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink flex items-center gap-1 transition-all active:scale-[0.94] disabled:opacity-40"
-      title={!hasCooked ? "Cook this recipe to add it to favorites" : isFavorited ? "Remove from favorites" : "Add to favorites"}
+      title={optimistic ? "Remove from favorites" : "Add to favorites"}
     >
       <svg
-        className={`h-3.5 w-3.5 ${isFavorited ? "text-accent" : ""}`}
-        fill={isFavorited ? "currentColor" : "none"}
+        className={`h-3.5 w-3.5 transition-colors ${optimistic ? "text-accent" : ""}`}
+        fill={optimistic ? "currentColor" : "none"}
         stroke="currentColor"
-        strokeWidth={isFavorited ? 0 : 1.5}
+        strokeWidth={optimistic ? 0 : 1.5}
         viewBox="0 0 20 20"
       >
         <path

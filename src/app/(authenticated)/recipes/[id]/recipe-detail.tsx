@@ -170,7 +170,7 @@ export function RecipeDetail({
         <div className="flex items-center gap-3.5">
           {isOwner ? (
             <>
-              <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
+              <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} />
               {recipe.source_type === "manual" && !recipe.forked_from_id ? (
                 <VisibilityToggle recipeId={recipe.id} isPublic={recipe.visibility === "public"} />
               ) : (
@@ -194,7 +194,7 @@ export function RecipeDetail({
           ) : (
             <>
               <SaveButton recipeId={recipe.id} isSaved={isSaved} />
-              <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} hasCooked={hasCooked} />
+              <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} />
               {recipe.visibility === "public" && (
                 <ShareLinkButton recipeId={recipe.id} title={recipe.title} />
               )}
