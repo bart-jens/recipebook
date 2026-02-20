@@ -114,11 +114,11 @@ export function ChefsTab() {
 
   if (loading) {
     return (
-      <div className="space-y-3">
+      <div className="px-5 pt-3">
         {[...Array(4)].map((_, i) => (
           <div
             key={i}
-            className="h-20 animate-pulse rounded-md bg-warm-tag"
+            className="h-16 animate-pulse border-b border-border"
           />
         ))}
       </div>
@@ -127,11 +127,11 @@ export function ChefsTab() {
 
   if (chefs.length === 0) {
     return (
-      <div className="flex flex-col items-center rounded-md border border-accent/20 bg-accent/5 p-8">
-        <ForkDot size={24} color="rgba(45,95,93,0.3)" />
-        <p className="mt-3 text-warm-gray">No Chefs found yet.</p>
-        <Link href="/invites" className="mt-1 text-sm text-accent hover:underline">
-          Invite friends to join EefEats!
+      <div className="mx-5 mt-4 border-t border-border py-8 text-center">
+        <ForkDot size={24} color="rgba(139,69,19,0.2)" />
+        <p className="mt-3 text-[13px] font-light text-ink-secondary">No chefs found yet.</p>
+        <Link href="/invites" className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent hover:text-ink transition-colors mt-1 inline-block">
+          Invite friends to join EefEats
         </Link>
       </div>
     );
@@ -139,59 +139,18 @@ export function ChefsTab() {
 
   if (unfollowedChefs.length === 0) {
     return (
-      <div>
-        <div className="flex flex-col items-center rounded-md border border-accent/20 bg-accent/5 p-8">
-          <ForkDot size={24} color="rgba(45,95,93,0.3)" />
-          <p className="mt-3 font-medium">You follow all Chefs!</p>
-          <Link href="/invites" className="mt-1 text-sm text-accent hover:underline">
+      <div className="px-5">
+        <div className="mt-4 border-t border-border py-8 text-center">
+          <ForkDot size={24} color="rgba(139,69,19,0.2)" />
+          <p className="mt-3 text-[14px] font-medium text-ink">You follow all chefs!</p>
+          <Link href="/invites" className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent hover:text-ink transition-colors mt-1 inline-block">
             Invite more friends to join EefEats
           </Link>
         </div>
         {followedChefs.length > 0 && (
-          <div className="mt-6">
-            <h3 className="mb-3 text-sm font-medium text-warm-gray">Following</h3>
-            <div className="space-y-3">
-              {followedChefs.map((chef) => (
-                <ChefCard
-                  key={chef.id}
-                  id={chef.id}
-                  displayName={chef.display_name}
-                  avatarUrl={chef.avatar_url}
-                  recipeCount={chef.recipe_count}
-                  lastCooked={chef.last_cooked}
-                  followState={chef.follow_state}
-                  onFollowChange={handleFollowChange}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="space-y-3">
-        {unfollowedChefs.map((chef) => (
-          <ChefCard
-            key={chef.id}
-            id={chef.id}
-            displayName={chef.display_name}
-            avatarUrl={chef.avatar_url}
-            recipeCount={chef.recipe_count}
-            lastCooked={chef.last_cooked}
-            followState={chef.follow_state}
-            onFollowChange={handleFollowChange}
-          />
-        ))}
-      </div>
-
-      {followedChefs.length > 0 && (
-        <div className="mt-6">
-          <h3 className="mb-3 text-sm font-medium text-warm-gray">Following</h3>
-          <div className="space-y-3">
-            {followedChefs.map((chef) => (
+          <div className="mt-2">
+            <h3 className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted mb-2 pb-1.5 border-b border-border">Following</h3>
+            {followedChefs.map((chef, i) => (
               <ChefCard
                 key={chef.id}
                 id={chef.id}
@@ -204,12 +163,52 @@ export function ChefsTab() {
               />
             ))}
           </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-5 pb-24">
+      {unfollowedChefs.map((chef, i) => (
+        <ChefCard
+          key={chef.id}
+          id={chef.id}
+          displayName={chef.display_name}
+          avatarUrl={chef.avatar_url}
+          recipeCount={chef.recipe_count}
+          lastCooked={chef.last_cooked}
+          followState={chef.follow_state}
+          onFollowChange={handleFollowChange}
+        />
+      ))}
+
+      {followedChefs.length > 0 && (
+        <div className="mt-4">
+          <h3 className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted mb-2 pb-1.5 border-b border-border">Following</h3>
+          {followedChefs.map((chef) => (
+            <ChefCard
+              key={chef.id}
+              id={chef.id}
+              displayName={chef.display_name}
+              avatarUrl={chef.avatar_url}
+              recipeCount={chef.recipe_count}
+              lastCooked={chef.last_cooked}
+              followState={chef.follow_state}
+              onFollowChange={handleFollowChange}
+            />
+          ))}
         </div>
       )}
 
-      <Link href="/invites" className="mt-6 flex flex-col items-center rounded-md border border-warm-border bg-warm-tag p-6 transition-all hover:-translate-y-px hover:shadow-sm">
-        <p className="font-medium">Know someone who loves cooking?</p>
-        <p className="mt-1 text-sm text-accent">
+      <Link
+        href="/invites"
+        className="block mt-6 py-5 border-t border-b border-border text-center transition-all hover:bg-accent-light hover:-mx-2 hover:px-2"
+      >
+        <p className="font-display text-[17px] tracking-[-0.01em] text-ink">
+          Know someone who loves cooking?
+        </p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent mt-1">
           Invite them to join EefEats
         </p>
       </Link>

@@ -32,6 +32,14 @@ interface EnrichedRecipe extends PublicRecipe {
   creator_name: string;
 }
 
+function formatTime(minutes: number | null): string | null {
+  if (!minutes) return null;
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
 export default async function DiscoverPage({
   searchParams,
 }: {
@@ -123,107 +131,84 @@ export default async function DiscoverPage({
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold">Discover</h1>
-        <p className="mt-1 text-sm text-warm-gray">
-          {tab === "chefs"
-            ? "Find Chefs to follow and see what they\u2019re cooking"
-            : "Browse recipes published by the EefEats community"}
-        </p>
+      {/* Header */}
+      <div className="px-5 pt-4 animate-fade-in-up opacity-0 anim-delay-1">
+        <div className="mono-label mb-1">Explore</div>
+        <h1 className="font-display text-[32px] tracking-[-0.03em] mb-3.5">
+          Discover
+        </h1>
       </div>
 
-      <div className="mb-6">
+      {/* Controls: Search + Tabs */}
+      <div className="animate-fade-in-up opacity-0 anim-delay-2">
         <DiscoverControls />
       </div>
 
       {tab === "chefs" ? (
-        <ChefsTab />
+        <div className="animate-fade-in-up opacity-0 anim-delay-3">
+          <ChefsTab />
+        </div>
       ) : (
         <>
-          <p className="mb-4 text-sm text-warm-gray">
-            {q
-              ? `${enriched.length} result${enriched.length !== 1 ? "s" : ""} for \u201c${q}\u201d`
-              : `${enriched.length} published recipe${enriched.length !== 1 ? "s" : ""}`}
-          </p>
+          {/* Result count */}
+          <div className="px-5 pt-3 animate-fade-in-up opacity-0 anim-delay-3">
+            <p className="font-mono text-[11px] text-ink-muted">
+              {q
+                ? `${enriched.length} result${enriched.length !== 1 ? "s" : ""} for \u201c${q}\u201d`
+                : `${enriched.length} published recipe${enriched.length !== 1 ? "s" : ""}`}
+            </p>
+          </div>
 
           {enriched.length === 0 ? (
-            <div className="flex flex-col items-center rounded-md border border-accent/20 bg-accent/5 p-8">
-              <ForkDot size={24} color="rgba(45,95,93,0.3)" />
-              <p className="mt-3 text-warm-gray">
+            <div className="mx-5 mt-4 border-t border-border py-8 text-center animate-fade-in-up opacity-0 anim-delay-4">
+              <ForkDot size={24} color="rgba(139,69,19,0.2)" />
+              <p className="mt-3 text-[13px] font-light text-ink-secondary">
                 {q ? "No recipes match your search." : "No published recipes yet. Be the first!"}
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="px-5 pb-24">
               {enriched.map((recipe, i) => {
-                const timeInfo = [
-                  recipe.prep_time_minutes && `${recipe.prep_time_minutes} min prep`,
-                  recipe.cook_time_minutes && `${recipe.cook_time_minutes} min cook`,
-                ]
-                  .filter(Boolean)
-                  .join(" · ");
-
+                const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
+                const timeStr = formatTime(totalTime);
                 const tags = (recipe.recipe_tags || []).map((t) => t.tag);
 
                 return (
                   <Link
                     key={recipe.id}
                     href={`/recipes/${recipe.id}`}
-                    className="group block overflow-hidden rounded-md bg-warm-tag border border-warm-border transition-all hover:-translate-y-px hover:shadow-sm animate-fade-in-up"
-                    style={i < 10 ? { animationDelay: `${i * 30}ms`, animationFillMode: "backwards" } : undefined}
+                    className="group flex gap-3 py-3.5 border-b border-border cursor-pointer transition-all duration-200 hover:bg-accent-light hover:-mx-2 hover:px-2 animate-fade-in-up opacity-0"
+                    style={i < 10 ? { animationDelay: `${(i + 4) * 40}ms`, animationFillMode: "backwards" } : undefined}
                   >
-                    {recipe.image_url ? (
-                      <div className="aspect-[16/10] overflow-hidden bg-warm-tag">
-                        <img
-                          src={recipe.image_url}
-                          alt={recipe.title}
-                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                        />
+                    <div className="flex-1 min-w-0">
+                      {tags[0] && (
+                        <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-accent font-medium mb-0.5">
+                          {tags[0]}
+                        </div>
+                      )}
+                      <div className="font-display text-[20px] leading-[1.12] tracking-[-0.02em] text-ink transition-colors group-hover:text-accent">
+                        {recipe.title}
                       </div>
-                    ) : (
-                      <div className="flex aspect-[16/10] items-center justify-center bg-accent/5">
-                        <ForkDot size={24} color="rgba(45,95,93,0.2)" />
-                      </div>
-                    )}
-                    <div className="p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <h2 className="font-sans text-lg font-medium">{recipe.title}</h2>
-                        <p className="mt-0.5 text-xs text-warm-gray">
-                          by {recipe.creator_name}
+                      {recipe.description && (
+                        <p className="text-[13px] font-light text-ink-secondary line-clamp-2 mb-1.5">
+                          {recipe.description}
                         </p>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
+                      )}
+                      <div className="font-mono text-[11px] text-ink-muted flex gap-2.5">
+                        <span>By {recipe.creator_name}</span>
+                        {timeStr && <span>{timeStr}</span>}
                         {recipe.avgRating != null && (
-                          <span className="flex items-center gap-1 text-xs text-warm-gray">
-                            <svg className="h-3.5 w-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            {recipe.avgRating.toFixed(1)}
-                            <span className="text-warm-gray/50">({recipe.ratingCount})</span>
-                          </span>
+                          <span>{recipe.avgRating.toFixed(1)}</span>
                         )}
                       </div>
                     </div>
-                    {recipe.description && (
-                      <p className="mt-1 text-sm text-warm-gray line-clamp-2">
-                        {recipe.description}
-                      </p>
+                    {recipe.image_url && (
+                      <img
+                        src={recipe.image_url}
+                        alt={recipe.title}
+                        className="w-[56px] h-[56px] object-cover shrink-0 self-center transition-transform duration-300 group-hover:scale-[1.08]"
+                      />
                     )}
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      {tags.map((t) => (
-                        <span
-                          key={t}
-                          className="rounded-full bg-warm-tag px-2 py-0.5 text-xs text-warm-gray"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                      {timeInfo && (
-                        <span className="text-xs text-warm-gray">{timeInfo}</span>
-                      )}
-                    </div>
-                    </div>
                   </Link>
                 );
               })}
