@@ -130,15 +130,15 @@ export default async function ProfilePage() {
           <div className="font-display text-[22px] text-ink">{totalRecipes}</div>
           <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Recipes</div>
         </Link>
-        <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+        <Link href="/recipes?filter=published" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
           <div className="font-display text-[22px] text-ink">{publicCount}</div>
           <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Published</div>
         </Link>
-        <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+        <Link href="/recipes?filter=cooked" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
           <div className="font-display text-[22px] text-ink">{timesCooked}</div>
           <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Cooked</div>
         </Link>
-        <Link href="/profile/new-followers" className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
+        <Link href="/profile/followers" className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
           <div className="font-display text-[22px] text-ink">{followerCount}</div>
           <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Followers</div>
         </Link>

@@ -22,6 +22,7 @@ interface RecipeRow {
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   updated_at: string;
+  visibility: string;
   recipe_tags: RecipeTag[];
   recipe_ratings: RecipeRating[];
 }
@@ -55,7 +56,7 @@ export default async function RecipesPage({
   const course = searchParams.course || "";
   const filter = searchParams.filter || "";
 
-  const selectFields = "id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, recipe_tags(tag), recipe_ratings(rating)";
+  const selectFields = "id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, visibility, recipe_tags(tag), recipe_ratings(rating)";
 
   // Fetch owned recipes, saved recipe IDs, favorites, and cook log in parallel
   let ownedQuery = supabase
@@ -160,6 +161,10 @@ export default async function RecipesPage({
     filtered = filtered.filter((r) => r.isFavorited);
   } else if (filter === "want-to-cook") {
     filtered = filtered.filter((r) => !r.hasCooked);
+  } else if (filter === "cooked") {
+    filtered = filtered.filter((r) => r.hasCooked);
+  } else if (filter === "published") {
+    filtered = filtered.filter((r) => r.visibility === "public");
   }
 
   // Sort: favorites first, then by chosen sort
