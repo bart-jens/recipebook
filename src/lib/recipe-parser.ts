@@ -99,6 +99,53 @@ function decodeHtmlEntities(s: string): string {
     .replace(/&#x27;/g, "'");
 }
 
+/**
+ * Sanitize JSON-LD: escape literal control characters inside string values.
+ * Many recipe sites (especially WordPress) emit invalid JSON with raw newlines
+ * in string values instead of escaped \n sequences. This tracks whether we're
+ * inside a JSON string and only escapes control characters there, leaving
+ * structural whitespace untouched.
+ */
+function sanitizeJsonLd(raw: string): string {
+  let result = "";
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+
+    if (escaped) {
+      result += c;
+      escaped = false;
+      continue;
+    }
+
+    if (c === "\\" && inString) {
+      result += c;
+      escaped = true;
+      continue;
+    }
+
+    if (c === '"') {
+      inString = !inString;
+      result += c;
+      continue;
+    }
+
+    if (inString) {
+      if (c === "\n") { result += "\\n"; continue; }
+      if (c === "\r") { result += "\\r"; continue; }
+      if (c === "\t") { result += "\\t"; continue; }
+      const code = c.charCodeAt(0);
+      if (code < 0x20) continue; // strip other control chars
+    }
+
+    result += c;
+  }
+
+  return result;
+}
+
 function parseImage(raw: unknown): string | null {
   if (!raw) return null;
   if (typeof raw === "string") return raw;
@@ -172,11 +219,19 @@ export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
   let recipe: SchemaRecipe | null = null;
   $('script[type="application/ld+json"]').each((_, el) => {
     if (recipe) return; // already found
+    const raw = $(el).html() || "";
     try {
-      const data = JSON.parse($(el).html() || "");
+      const data = JSON.parse(raw);
       recipe = findRecipeInGraph(data);
     } catch {
-      // invalid JSON, skip
+      // Many recipe sites emit invalid JSON-LD with literal control
+      // characters in string values. Try sanitizing before giving up.
+      try {
+        const data = JSON.parse(sanitizeJsonLd(raw));
+        recipe = findRecipeInGraph(data);
+      } catch {
+        // truly invalid JSON, skip
+      }
     }
   });
 
