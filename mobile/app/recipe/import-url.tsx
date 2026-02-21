@@ -156,12 +156,6 @@ export default function ImportUrlScreen() {
       );
     }
 
-    // Auto-share imported recipe (recommendation card for followers)
-    await supabase.from('recipe_shares').insert({
-      user_id: user.id,
-      recipe_id: recipe.id,
-    });
-
     // Rehost external image to our own storage (fire and forget)
     if (extractedImageUrl) {
       try {
