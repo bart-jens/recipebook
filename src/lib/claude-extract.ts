@@ -37,6 +37,7 @@ const RECIPE_PROMPT = `Extract the recipe from this image. Return ONLY valid JSO
 }
 
 Important guidelines:
+- KEEP THE RECIPE IN ITS ORIGINAL LANGUAGE. Do NOT translate to English. If the recipe is in Dutch, return Dutch text. If it's in French, return French text. Preserve the original language exactly.
 - For prep_time_minutes and cook_time_minutes: extract if stated. If not stated, estimate reasonable times based on the recipe steps and ingredients. A simple salad might be 10 min prep / 0 cook; a slow braise might be 15 min prep / 180 min cook.
 - For servings: extract if stated, otherwise estimate based on ingredient quantities.
 - For tags: include 2-5 lowercase tags covering cuisine (e.g. "italian", "thai"), meal type (e.g. "dinner", "dessert", "snack"), dietary info (e.g. "vegetarian", "gluten-free"), and cooking method (e.g. "baked", "grilled", "one-pot"). Only include tags that clearly apply.
