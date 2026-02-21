@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "./profile-form";
 import { AvatarUpload } from "./avatar-upload";
+import { DeleteAccountButton } from "./delete-account-button";
 
 export default async function EditProfilePage() {
   const supabase = createClient();
@@ -33,6 +34,7 @@ export default async function EditProfilePage() {
           is_private: profile?.is_private ?? false,
         }}
       />
+      <DeleteAccountButton />
     </div>
   );
 }
