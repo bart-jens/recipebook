@@ -15,6 +15,7 @@ import { colors, spacing, typography, fontFamily } from '@/lib/theme';
 import { ForkDot } from '@/components/ui/Logo';
 import FeedbackModal from '@/components/FeedbackModal';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
+import * as WebBrowser from 'expo-web-browser';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
 
@@ -349,6 +350,12 @@ export default function ProfileScreen() {
         </Pressable>
         <Pressable style={styles.actionButton} onPress={() => setFeedbackVisible(true)}>
           <Text style={styles.actionButtonText}>Send Feedback</Text>
+        </Pressable>
+        <Pressable style={styles.actionButtonGhost} onPress={() => WebBrowser.openBrowserAsync(`${API_BASE}/privacy`)}>
+          <Text style={styles.actionButtonGhostText}>Privacy Policy</Text>
+        </Pressable>
+        <Pressable style={styles.actionButtonGhost} onPress={() => WebBrowser.openBrowserAsync(`${API_BASE}/terms`)}>
+          <Text style={styles.actionButtonGhostText}>Terms of Service</Text>
         </Pressable>
         <Pressable style={styles.actionButtonGhost} onPress={signOut}>
           <Text style={styles.actionButtonGhostText}>Sign out</Text>
