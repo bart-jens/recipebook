@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
+  Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
@@ -14,6 +15,8 @@ import { colors, spacing, typography, fontFamily } from '@/lib/theme';
 import { ForkDot } from '@/components/ui/Logo';
 import FeedbackModal from '@/components/FeedbackModal';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
+
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
 
 interface Profile {
   display_name: string;
@@ -49,6 +52,55 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('recipes');
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account and all your recipes, ratings, and follows. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Are you sure?',
+              'All your data will be permanently deleted.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Yes, delete my account',
+                  style: 'destructive',
+                  onPress: async () => {
+                    try {
+                      const { data: { session: currentSession } } = await supabase.auth.getSession();
+                      const response = await fetch(`${API_BASE}/api/auth/delete-account`, {
+                        method: 'DELETE',
+                        headers: {
+                          'Authorization': `Bearer ${currentSession?.access_token || ''}`,
+                          'Cookie': `sb-access-token=${currentSession?.access_token || ''}; sb-refresh-token=${currentSession?.refresh_token || ''}`,
+                        },
+                      });
+
+                      if (!response.ok) {
+                        const data = await response.json();
+                        Alert.alert('Error', data.error || 'Failed to delete account');
+                        return;
+                      }
+
+                      await signOut();
+                    } catch {
+                      Alert.alert('Error', 'Could not connect to server');
+                    }
+                  },
+                },
+              ],
+            );
+          },
+        },
+      ],
+    );
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -300,6 +352,9 @@ export default function ProfileScreen() {
         </Pressable>
         <Pressable style={styles.actionButtonGhost} onPress={signOut}>
           <Text style={styles.actionButtonGhostText}>Sign out</Text>
+        </Pressable>
+        <Pressable style={styles.actionButtonGhost} onPress={handleDeleteAccount}>
+          <Text style={[styles.actionButtonGhostText, { color: colors.danger }]}>Delete Account</Text>
         </Pressable>
       </View>
 

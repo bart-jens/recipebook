@@ -11,6 +11,7 @@ interface Props {
   size?: Size;
   loading?: boolean;
   disabled?: boolean;
+  textStyle?: TextStyle;
 }
 
 export default function Button({
@@ -20,6 +21,7 @@ export default function Button({
   size = 'md',
   loading = false,
   disabled = false,
+  textStyle,
 }: Props) {
   const isDisabled = disabled || loading;
 
@@ -46,6 +48,7 @@ export default function Button({
             styles.text,
             variantTextStyles[variant],
             sizeTextStyles[size],
+            textStyle,
           ]}
         >
           {title}
