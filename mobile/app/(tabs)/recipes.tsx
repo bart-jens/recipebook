@@ -22,15 +22,14 @@ import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 import CollectionsSection from '@/components/ui/CollectionsSection';
 import { ForkDot } from '@/components/ui/Logo';
 
-type SortOption = 'updated' | 'alpha' | 'rating' | 'prep' | 'cook';
+type SortOption = 'updated' | 'alpha' | 'rating' | 'quickest';
 type FilterOption = '' | 'favorited' | 'saved' | 'published';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'updated', label: 'Recent' },
   { value: 'alpha', label: 'A-Z' },
   { value: 'rating', label: 'Top Rated' },
-  { value: 'prep', label: 'Prep' },
-  { value: 'cook', label: 'Cook' },
+  { value: 'quickest', label: 'Quickest' },
 ];
 
 const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
@@ -263,7 +262,7 @@ export default function RecipesScreen() {
     } else if (activeFilter === 'saved') {
       enriched = enriched.filter((r) => r.isSaved);
     } else if (activeFilter === 'published') {
-      enriched = enriched.filter((r) => r.visibility === 'public');
+      enriched = enriched.filter((r) => r.visibility === 'public' && !r.isSaved);
     }
 
     // Sort favorites first, then by chosen sort
@@ -271,8 +270,11 @@ export default function RecipesScreen() {
       if (a.isFavorited !== b.isFavorited) return a.isFavorited ? -1 : 1;
       if (sort === 'rating') return (b.avgRating || 0) - (a.avgRating || 0);
       if (sort === 'alpha') return a.title.localeCompare(b.title);
-      if (sort === 'prep') return (a.prep_time_minutes || 999) - (b.prep_time_minutes || 999);
-      if (sort === 'cook') return (a.cook_time_minutes || 999) - (b.cook_time_minutes || 999);
+      if (sort === 'quickest') {
+        const aTotal = (a.prep_time_minutes || 0) + (a.cook_time_minutes || 0) || 999;
+        const bTotal = (b.prep_time_minutes || 0) + (b.cook_time_minutes || 0) || 999;
+        return aTotal - bTotal;
+      }
       // Default: updated
       return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     });

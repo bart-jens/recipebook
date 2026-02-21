@@ -7,8 +7,7 @@ const SORT_OPTIONS = [
   { value: "updated", label: "Recent" },
   { value: "alpha", label: "A-Z" },
   { value: "rating", label: "Top Rated" },
-  { value: "prep", label: "Prep" },
-  { value: "cook", label: "Cook" },
+  { value: "quickest", label: "Quickest" },
 ];
 
 const FILTER_OPTIONS = [
@@ -109,8 +108,8 @@ export function RecipeListControls() {
         ))}
       </div>
 
-      {/* Filter + Course tabs */}
-      <div className="flex gap-0 border-b border-border">
+      {/* Filter tabs + Course dropdown */}
+      <div className="flex items-center border-b border-border">
         {FILTER_OPTIONS.map((opt) => (
           <button
             key={`filter-${opt.value}`}
@@ -127,23 +126,23 @@ export function RecipeListControls() {
             )}
           </button>
         ))}
-        <span className="w-px bg-border mx-2 my-1" />
-        {COURSE_OPTIONS.map((opt) => (
-          <button
-            key={`course-${opt.value}`}
-            onClick={() => updateParams({ course: opt.value })}
-            className={`relative font-mono text-[10px] uppercase tracking-[0.08em] bg-transparent border-none cursor-pointer px-0 pr-3 py-1.5 transition-colors ${
-              course === opt.value
-                ? "text-accent"
-                : "text-ink-muted hover:text-ink"
+        <div className="ml-auto relative flex items-center">
+          <select
+            value={course}
+            onChange={(e) => updateParams({ course: e.target.value })}
+            className={`font-mono text-[10px] uppercase tracking-[0.08em] bg-transparent border-none cursor-pointer outline-none py-1.5 pr-4 appearance-none ${
+              course ? "text-accent" : "text-ink-muted"
             }`}
           >
-            {opt.label}
-            {course === opt.value && (
-              <span className="absolute bottom-[-1px] left-0 right-[12px] h-[1.5px] bg-accent" />
-            )}
-          </button>
-        ))}
+            <option value="">Course</option>
+            {COURSE_OPTIONS.filter((o) => o.value).map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <svg className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-ink-muted" width="8" height="8" viewBox="0 0 8 8" fill="none">
+            <path d="M1 2.5L4 5.5L7 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
       </div>
     </div>
   );

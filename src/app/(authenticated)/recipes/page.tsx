@@ -164,7 +164,7 @@ export default async function RecipesPage({
   } else if (filter === "saved") {
     filtered = filtered.filter((r) => r.isSaved);
   } else if (filter === "published") {
-    filtered = filtered.filter((r) => r.visibility === "public");
+    filtered = filtered.filter((r) => r.visibility === "public" && !r.isSaved);
   }
 
   // Sort: favorites first, then by chosen sort
@@ -176,11 +176,10 @@ export default async function RecipesPage({
     if (sort === "alpha") {
       return a.title.localeCompare(b.title);
     }
-    if (sort === "prep") {
-      return (a.prep_time_minutes || 999) - (b.prep_time_minutes || 999);
-    }
-    if (sort === "cook") {
-      return (a.cook_time_minutes || 999) - (b.cook_time_minutes || 999);
+    if (sort === "quickest") {
+      const aTotal = (a.prep_time_minutes || 0) + (a.cook_time_minutes || 0) || 999;
+      const bTotal = (b.prep_time_minutes || 0) + (b.cook_time_minutes || 0) || 999;
+      return aTotal - bTotal;
     }
     // Default: updated
     return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
