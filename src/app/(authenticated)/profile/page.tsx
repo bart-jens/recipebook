@@ -56,7 +56,7 @@ export default async function ProfilePage() {
   return (
     <div>
       {/* Profile Top */}
-      <div className="px-5 pt-6 flex gap-4 items-start animate-fade-in-up opacity-0 anim-delay-1">
+      <div className="px-5 pt-6 flex gap-4 items-start">
         {profile?.avatar_url ? (
           <img
             src={profile.avatar_url}
@@ -98,7 +98,7 @@ export default async function ProfilePage() {
       {pendingRequestCount > 0 && (
         <Link
           href="/profile/requests"
-          className="mx-5 mt-4 flex items-center justify-between border border-accent/20 bg-accent-light py-2.5 px-3 transition-colors hover:bg-accent/10 animate-fade-in-up opacity-0 anim-delay-2"
+          className="mx-5 mt-4 flex items-center justify-between border border-accent/20 bg-accent-light py-2.5 px-3 transition-colors hover:bg-accent/10"
         >
           <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink">
             Follow requests
@@ -113,7 +113,7 @@ export default async function ProfilePage() {
       {(newFollowerCount ?? 0) > 0 && (
         <Link
           href="/profile/new-followers"
-          className="mx-5 mt-3 flex items-center justify-between border border-accent/20 bg-accent-light py-2.5 px-3 transition-colors hover:bg-accent/10 animate-fade-in-up opacity-0 anim-delay-2"
+          className="mx-5 mt-3 flex items-center justify-between border border-accent/20 bg-accent-light py-2.5 px-3 transition-colors hover:bg-accent/10"
         >
           <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink">
             New followers
@@ -125,7 +125,7 @@ export default async function ProfilePage() {
       )}
 
       {/* Stats Bar */}
-      <div className="mx-5 mt-5 flex border-t-[3px] border-t-ink border-b border-b-ink animate-fade-in-up opacity-0 anim-delay-3">
+      <div className="mx-5 mt-5 flex border-t-[3px] border-t-ink border-b border-b-ink">
         <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
           <div className="font-display text-[22px] text-ink">{totalRecipes}</div>
           <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Recipes</div>
@@ -145,7 +145,7 @@ export default async function ProfilePage() {
       </div>
 
       {/* Recipe List */}
-      <div className="px-5 pb-6 animate-fade-in-up opacity-0 anim-delay-4">
+      <div className="px-5 pb-6">
         <div className="flex items-baseline justify-between py-3">
           <h2 className="font-display text-[18px] tracking-[-0.02em]">Your Recipes</h2>
           <span className="font-mono text-[11px] text-ink-muted">{totalRecipes} total</span>
@@ -201,7 +201,7 @@ export default async function ProfilePage() {
       </div>
 
       {/* Actions */}
-      <div className="px-5 pb-12 flex flex-col gap-2 animate-fade-in-up opacity-0 anim-delay-5">
+      <div className="px-5 pb-12 flex flex-col gap-2">
         <hr className="rule-thin border-0 mb-2" />
         <div className="flex flex-wrap gap-2">
           <Link
