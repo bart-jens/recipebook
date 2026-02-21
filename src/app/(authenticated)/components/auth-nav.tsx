@@ -42,11 +42,11 @@ export function AuthNav({
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + "/");
 
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between px-5 py-3.5 bg-[rgba(246,244,239,0.92)] backdrop-blur-[20px]">
+    <nav className="sticky top-0 z-50 flex items-center gap-4 px-5 py-3.5 bg-[rgba(246,244,239,0.92)] backdrop-blur-[20px]">
       <Link href="/home" className="shrink-0">
         <LogoMark size={22} />
       </Link>
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2.5 ml-auto">
         <NavLink href="/home" active={isActive("/home")}>
           Feed
         </NavLink>
