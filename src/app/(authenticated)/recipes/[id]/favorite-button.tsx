@@ -17,7 +17,10 @@ export function FavoriteButton({
     const next = !optimistic;
     setOptimistic(next);
     startTransition(async () => {
-      await toggleFavorite(recipeId, next);
+      const result = await toggleFavorite(recipeId, next);
+      if (result?.error) {
+        setOptimistic(!next);
+      }
     });
   }
 

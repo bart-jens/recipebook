@@ -320,9 +320,11 @@ export default function RecipeDetailScreen() {
     setIsFavorited(newVal);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (newVal) {
-      await supabase.from('recipe_favorites').insert({ user_id: user.id, recipe_id: recipe.id });
+      const { error } = await supabase.from('recipe_favorites').insert({ user_id: user.id, recipe_id: recipe.id });
+      if (error) setIsFavorited(false);
     } else {
-      await supabase.from('recipe_favorites').delete().eq('user_id', user.id).eq('recipe_id', recipe.id);
+      const { error } = await supabase.from('recipe_favorites').delete().eq('user_id', user.id).eq('recipe_id', recipe.id);
+      if (error) setIsFavorited(true);
     }
   };
 
