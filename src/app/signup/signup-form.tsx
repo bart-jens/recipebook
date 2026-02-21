@@ -27,13 +27,12 @@ export function SignupForm() {
       <form action={handleSubmit} className="space-y-5">
         <div className="animate-fade-in-up [animation-delay:200ms] [animation-fill-mode:backwards]">
           <label htmlFor="code" className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
-            Invite code
+            Invite code (optional)
           </label>
           <input
             id="code"
             name="code"
             type="text"
-            required
             defaultValue={defaultCode}
             placeholder="ABCD1234"
             className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 font-mono text-base uppercase tracking-wider text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"

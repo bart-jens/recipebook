@@ -23,14 +23,14 @@ export default function SignupScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleSignup() {
-    if (!inviteCode || !email || !password) return;
+    if (!email || !password) return;
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
       return;
     }
     setLoading(true);
     setError(null);
-    const { error } = await signUp(email, password, inviteCode);
+    const { error } = await signUp(email, password, inviteCode || undefined);
     if (error) {
       setError(error);
       setLoading(false);
@@ -44,11 +44,11 @@ export default function SignupScreen() {
     >
       <View style={styles.inner}>
         <Logo height={40} />
-        <Text style={styles.subtitle}>JOIN WITH AN INVITE CODE</Text>
+        <Text style={styles.subtitle}>CREATE YOUR ACCOUNT</Text>
 
         <View style={styles.form}>
           <View style={styles.field}>
-            <Text style={styles.label}>INVITE CODE</Text>
+            <Text style={styles.label}>INVITE CODE (OPTIONAL)</Text>
             <TextInput
               style={[styles.input, styles.codeInput]}
               placeholder="ABCD1234"

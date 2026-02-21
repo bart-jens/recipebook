@@ -11,7 +11,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, inviteCode: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, inviteCode?: string) => Promise<{ error: string | null }>;
   signInWithOAuth: (provider: Provider) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
@@ -50,16 +50,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: error?.message || null };
   }
 
-  async function signUp(email: string, password: string, inviteCode: string) {
-    const code = inviteCode.trim().toUpperCase();
-    if (!code) return { error: 'Invite code is required' };
+  async function signUp(email: string, password: string, inviteCode?: string) {
+    const code = inviteCode?.trim().toUpperCase() || "";
 
     // Create user via server API (handles invite validation + auto-confirms email)
     try {
       const response = await fetch(`${API_BASE}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, inviteCode: code }),
+        body: JSON.stringify({ email, password, ...(code ? { inviteCode: code } : {}) }),
       });
 
       const data = await response.json();
