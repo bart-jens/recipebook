@@ -73,6 +73,7 @@ export default function DiscoverScreen() {
   const [allTags, setAllTags] = useState<string[]>([]);
   const [pendingFollowId, setPendingFollowId] = useState<string | null>(null);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [savedRecipeIds, setSavedRecipeIds] = useState<Set<string>>(new Set());
 
   const formatTime = (minutes: number | null) => {
     if (!minutes) return null;
@@ -194,9 +195,19 @@ export default function DiscoverScreen() {
     const enriched = await enrichRecipes(allRecipeData);
     setRecipes(enriched);
     setHasMore((recipeData || []).length >= PAGE_SIZE);
+
+    // Load saved recipe IDs for current user
+    if (user) {
+      const { data: saved } = await supabase
+        .from('saved_recipes')
+        .select('recipe_id')
+        .eq('user_id', user.id);
+      setSavedRecipeIds(new Set((saved || []).map((s) => s.recipe_id)));
+    }
+
     setLoading(false);
     setRefreshing(false);
-  }, [search, sort, selectedTag]);
+  }, [search, sort, selectedTag, user]);
 
   const fetchChefs = useCallback(async (isRefresh = false) => {
     if (!user) return;
@@ -227,6 +238,7 @@ export default function DiscoverScreen() {
       supabase
         .from('recipes')
         .select('created_by')
+        .eq('visibility', 'public')
         .in('created_by', profileIds),
       supabase
         .from('cook_log')
@@ -349,6 +361,23 @@ export default function DiscoverScreen() {
     setPendingFollowId(null);
   }, [user, chefs]);
 
+  const toggleSave = useCallback(async (recipeId: string) => {
+    if (!user) return;
+    const isSaved = savedRecipeIds.has(recipeId);
+    // Optimistic update
+    setSavedRecipeIds((prev) => {
+      const next = new Set(prev);
+      if (isSaved) next.delete(recipeId); else next.add(recipeId);
+      return next;
+    });
+    if (isSaved) {
+      await supabase.from('saved_recipes').delete().eq('user_id', user.id).eq('recipe_id', recipeId);
+    } else {
+      await supabase.from('saved_recipes').insert({ user_id: user.id, recipe_id: recipeId });
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, [user, savedRecipeIds]);
+
   useFocusEffect(
     useCallback(() => {
       if (activeTab === 'recipes') {
@@ -394,6 +423,21 @@ export default function DiscoverScreen() {
               )}
               {item.avgRating != null && (
                 <Text style={styles.resultFooterText}>{item.avgRating.toFixed(1)}</Text>
+              )}
+              {user && item.created_by !== user.id && (
+                <Pressable
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    toggleSave(item.id);
+                  }}
+                  hitSlop={8}
+                >
+                  <FontAwesome
+                    name={savedRecipeIds.has(item.id) ? 'bookmark' : 'bookmark-o'}
+                    size={12}
+                    color={savedRecipeIds.has(item.id) ? colors.accent : colors.inkMuted}
+                  />
+                </Pressable>
               )}
             </View>
           </View>

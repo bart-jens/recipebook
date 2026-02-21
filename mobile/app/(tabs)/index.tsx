@@ -7,7 +7,6 @@ import {
   Pressable,
   RefreshControl,
   ActivityIndicator,
-  Linking,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Image } from 'expo-image';
@@ -199,8 +198,7 @@ export default function HomeScreen() {
     switch (type) {
       case 'cooked': return ' cooked ';
       case 'created': return ' published ';
-      case 'saved': return ' saved ';
-      case 'rated': return ' rated ';
+      case 'favorited': return ' favorited ';
       default: return ' ';
     }
   };
@@ -228,11 +226,7 @@ export default function HomeScreen() {
   };
 
   const handleFeedItemPress = (item: FeedItem) => {
-    if (item.event_type === 'saved' && item.source_url) {
-      Linking.openURL(item.source_url);
-    } else {
-      router.push(`/recipe/${item.recipe_id}`);
-    }
+    router.push(`/recipe/${item.recipe_id}`);
   };
 
   // Derive featured recipe (first with an image) and remaining recipes
@@ -454,7 +448,12 @@ export default function HomeScreen() {
             {actionVerb(item.event_type)}
             <Text style={styles.tickerRecipe}>{item.recipe_title}</Text>
           </Text>
-          {item.event_type === 'rated' && item.rating != null && renderStars(item.rating)}
+          {item.event_type === 'cooked' && item.rating != null && renderStars(item.rating)}
+          {item.event_type === 'cooked' && (item.source_name || item.source_url) && (
+            <Text style={styles.tickerSource}>
+              via {item.source_name || (() => { try { return new URL(item.source_url!).hostname.replace(/^www\./, ''); } catch { return item.source_url; } })()}
+            </Text>
+          )}
         </View>
         <Text style={styles.tickerTime}>{formatTimeAgo(item.event_at)}</Text>
       </Pressable>
@@ -720,6 +719,11 @@ const styles = StyleSheet.create({
     color: colors.accent,
   },
   tickerTime: {
+    fontFamily: fontFamily.mono,
+    fontSize: 10,
+    color: colors.inkMuted,
+  },
+  tickerSource: {
     fontFamily: fontFamily.mono,
     fontSize: 10,
     color: colors.inkMuted,

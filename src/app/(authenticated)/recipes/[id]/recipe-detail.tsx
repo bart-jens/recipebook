@@ -10,20 +10,12 @@ import { TagEditor } from "./tag-editor";
 import { FavoriteButton } from "./favorite-button";
 import { CookingLog } from "./cooking-log";
 import { VisibilityToggle } from "./visibility-toggle";
-import { RecommendedBadge } from "./recommended-badge";
 import { ShareLinkButton } from "./share-link-button";
 import { SaveButton } from "./save-button";
 import { PhotoCarousel } from "./photo-carousel";
 import { CollectionPicker } from "./collection-picker";
 import { addRecipeToDefaultShoppingList, addIngredientToDefaultShoppingList } from "@/app/(authenticated)/shopping-list/actions";
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: "English", nl: "Dutch", fr: "French", de: "German", es: "Spanish",
-  it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Chinese", ko: "Korean",
-  th: "Thai", vi: "Vietnamese", ar: "Arabic", ru: "Russian", pl: "Polish",
-  sv: "Swedish", da: "Danish", no: "Norwegian", fi: "Finnish", tr: "Turkish",
-  el: "Greek", hi: "Hindi", id: "Indonesian", ms: "Malay", he: "Hebrew",
-};
 
 interface Ingredient {
   id: string;
@@ -101,7 +93,6 @@ export function RecipeDetail({
   isOwner,
   creatorName,
   creatorId,
-  isShared,
   photos,
 }: {
   recipe: Recipe;
@@ -114,7 +105,6 @@ export function RecipeDetail({
   isOwner: boolean;
   creatorName: string | null;
   creatorId: string | null;
-  isShared?: boolean;
   photos?: { id: string; url: string; imageType: string }[];
 }) {
   const [unitSystem, setUnitSystem] = useUnitSystem();
@@ -170,10 +160,8 @@ export function RecipeDetail({
           {isOwner ? (
             <>
               <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} />
-              {recipe.source_type === "manual" && !recipe.forked_from_id ? (
+              {recipe.source_type === "manual" && !recipe.forked_from_id && (
                 <VisibilityToggle recipeId={recipe.id} isPublic={recipe.visibility === "public"} />
-              ) : (
-                <RecommendedBadge recipeId={recipe.id} isRecommended={isShared ?? false} />
               )}
               {recipe.visibility === "public" && (
                 <ShareLinkButton recipeId={recipe.id} title={recipe.title} />
@@ -266,11 +254,6 @@ export function RecipeDetail({
           </div>
         )}
 
-        {recipe.language && (
-          <span className="inline-block font-mono text-[9px] uppercase tracking-[0.1em] border border-accent text-accent px-1.5 py-0.5 mb-1 opacity-0 animate-fade-in-up" style={{ animationDelay: "265ms" }}>
-            {LANGUAGE_NAMES[recipe.language] || recipe.language.toUpperCase()}
-          </span>
-        )}
 
         <div className="font-mono text-[10px] text-ink-muted tracking-[0.04em] mb-4 opacity-0 animate-fade-in-up" style={{ animationDelay: "270ms" }}>
           {recipe.updated_at ? `Updated ${formatDate(recipe.updated_at)}` : recipe.created_at ? formatDate(recipe.created_at) : null}

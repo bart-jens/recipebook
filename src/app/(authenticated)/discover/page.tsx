@@ -4,6 +4,7 @@ import { ForkDot } from "@/components/logo";
 import { DiscoverControls } from "./discover-controls";
 import { LoadMoreButton } from "./load-more";
 import { ChefsTab } from "./chefs-tab";
+import { DiscoverSaveButton } from "./discover-save-button";
 
 interface RecipeTag {
   tag: string;
@@ -46,6 +47,7 @@ export default async function DiscoverPage({
   searchParams: { q?: string; sort?: string; tag?: string; tab?: string };
 }) {
   const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const tab = searchParams.tab || "recipes";
   const q = searchParams.q || "";
   const sort = searchParams.sort || "newest";
@@ -121,6 +123,16 @@ export default async function DiscoverPage({
     };
   });
 
+  // Fetch saved recipe IDs for current user
+  const savedRecipeIds = new Set<string>();
+  if (user) {
+    const { data: saved } = await supabase
+      .from("saved_recipes")
+      .select("recipe_id")
+      .eq("user_id", user.id);
+    for (const s of saved || []) savedRecipeIds.add(s.recipe_id);
+  }
+
   // Sort
   if (sort === "rating") {
     enriched.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0));
@@ -194,11 +206,17 @@ export default async function DiscoverPage({
                           {recipe.description}
                         </p>
                       )}
-                      <div className="font-mono text-[11px] text-ink-muted flex gap-2.5">
+                      <div className="font-mono text-[11px] text-ink-muted flex gap-2.5 items-center">
                         <span>By {recipe.creator_name}</span>
                         {timeStr && <span>{timeStr}</span>}
                         {recipe.avgRating != null && (
                           <span>{recipe.avgRating.toFixed(1)}</span>
+                        )}
+                        {user && recipe.created_by !== user.id && (
+                          <DiscoverSaveButton
+                            recipeId={recipe.id}
+                            isSaved={savedRecipeIds.has(recipe.id)}
+                          />
                         )}
                       </div>
                     </div>

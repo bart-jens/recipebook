@@ -58,6 +58,7 @@ export function ChefsTab() {
       supabase
         .from("recipes")
         .select("created_by")
+        .eq("visibility", "public")
         .in("created_by", profileIds),
       supabase
         .from("cook_log")

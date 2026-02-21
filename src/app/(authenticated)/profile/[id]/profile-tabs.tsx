@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ForkDot } from "@/components/logo";
-import { RecommendationCard } from "../../components/recommendation-card";
 
 interface ActivityItem {
   recipe_id: string;
@@ -28,35 +27,16 @@ interface PublishedItem {
   published_at: string;
 }
 
-interface RecommendationItem {
-  share_id: string;
-  title: string;
-  source_url: string | null;
-  source_name: string | null;
-  source_type: string;
-  image_url: string | null;
-  tags: string[] | null;
-  user_rating: number | null;
-  share_notes: string | null;
-  shared_at: string;
-  recipe_id: string;
-}
-
 interface ProfileTabsProps {
   activity: ActivityItem[];
   favorites: FavoriteItem[];
   published: PublishedItem[];
-  recommendations: RecommendationItem[];
-  profileName: string;
-  profileAvatarUrl: string | null;
-  profileId: string;
 }
 
 const TABS = [
   { id: "recipes", label: "Recipes" },
   { id: "activity", label: "Activity" },
   { id: "favorites", label: "Favorites" },
-  { id: "recommendations", label: "Recs" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -76,10 +56,6 @@ export function ProfileTabs({
   activity,
   favorites,
   published,
-  recommendations,
-  profileName,
-  profileAvatarUrl,
-  profileId,
 }: ProfileTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("recipes");
 
@@ -236,35 +212,6 @@ export function ProfileTabs({
           </div>
         )}
 
-        {activeTab === "recommendations" && (
-          <div>
-            {recommendations.length === 0 ? (
-              <EmptyTab message="No recommendations yet" />
-            ) : (
-              <div className="space-y-3 mt-3">
-                {recommendations.map((card) => (
-                  <RecommendationCard
-                    key={card.share_id}
-                    shareId={card.share_id}
-                    title={card.title}
-                    sourceUrl={card.source_url}
-                    sourceName={card.source_name}
-                    sourceType={card.source_type}
-                    imageUrl={card.image_url}
-                    tags={card.tags}
-                    userRating={card.user_rating}
-                    shareNotes={card.share_notes}
-                    sharedAt={card.shared_at}
-                    sharerName={profileName}
-                    sharerAvatarUrl={profileAvatarUrl}
-                    sharerId={profileId}
-                    recipeId={card.recipe_id}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

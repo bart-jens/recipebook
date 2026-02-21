@@ -148,20 +148,6 @@ export default async function RecipeDetailPage({
 
   const isOwner = user?.id === recipe.created_by;
 
-  // Fetch share status for imported recipes
-  let shareData: { isShared: boolean } = { isShared: false };
-  if (isOwner) {
-    const { data: share } = await supabase
-      .from("recipe_shares")
-      .select("id")
-      .eq("user_id", user!.id)
-      .eq("recipe_id", recipe.id)
-      .maybeSingle();
-    if (share) {
-      shareData = { isShared: true };
-    }
-  }
-
   return (
     <RecipeDetail
       recipe={recipe}
@@ -174,7 +160,6 @@ export default async function RecipeDetailPage({
       isOwner={isOwner}
       creatorName={creatorName}
       creatorId={creatorId}
-      isShared={shareData.isShared}
       photos={recipePhotos}
     />
   );

@@ -12,18 +12,16 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, typography, fontFamily } from '@/lib/theme';
 import RecipeCard from '@/components/ui/RecipeCard';
-import RecommendationCard from '@/components/ui/RecommendationCard';
 import { ForkDot } from '@/components/ui/Logo';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
 
 type FollowState = 'not_following' | 'following' | 'requested';
-type TabId = 'recipes' | 'activity' | 'favorites' | 'recommendations';
+type TabId = 'recipes' | 'activity' | 'favorites';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'recipes', label: 'Recipes' },
   { id: 'activity', label: 'Activity' },
   { id: 'favorites', label: 'Favorites' },
-  { id: 'recommendations', label: 'Recs' },
 ];
 
 interface ChefProfile {
@@ -47,7 +45,6 @@ interface ChefProfile {
   activity: { recipe_id: string; recipe_title: string; cooked_at: string; notes: string | null }[];
   favorites: { recipe_id: string; recipe_title: string; recipe_image_url: string | null; favorited_at: string }[];
   published: { id: string; title: string; description: string | null; image_url: string | null; published_at: string }[];
-  recommendations: { share_id: string; title: string; source_url: string | null; source_name: string | null; source_type: string; image_url: string | null; tags: string[] | null; user_rating: number | null; share_notes: string | null; shared_at: string; recipe_id: string }[];
 }
 
 function formatDate(timestamp: string): string {
@@ -372,36 +369,6 @@ export default function PublicProfileScreen() {
               </View>
             )}
 
-            {/* Recommendations Tab */}
-            {activeTab === 'recommendations' && (
-              <View style={styles.tabContent}>
-                {(chefData.recommendations || []).length === 0 ? (
-                  <EmptyTab message="No recommendations yet" />
-                ) : (
-                  <View style={styles.recsList}>
-                    {chefData.recommendations.map((card) => (
-                      <RecommendationCard
-                        key={card.share_id}
-                        shareId={card.share_id}
-                        title={card.title}
-                        sourceUrl={card.source_url}
-                        sourceName={card.source_name}
-                        sourceType={card.source_type}
-                        imageUrl={card.image_url}
-                        tags={card.tags}
-                        userRating={card.user_rating}
-                        shareNotes={card.share_notes}
-                        sharedAt={card.shared_at}
-                        sharerName={profile.display_name}
-                        sharerAvatarUrl={profile.avatar_url}
-                        sharerId={id!}
-                        recipeId={card.recipe_id}
-                      />
-                    ))}
-                  </View>
-                )}
-              </View>
-            )}
           </>
         ) : (
           <View style={styles.privateMessage}>
@@ -672,12 +639,6 @@ const styles = StyleSheet.create({
     color: colors.inkSecondary,
     fontStyle: 'italic',
     marginTop: 4,
-  },
-
-  // Recommendations
-  recsList: {
-    gap: spacing.md,
-    paddingTop: spacing.md,
   },
 
   // Empty

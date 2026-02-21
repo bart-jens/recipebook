@@ -36,24 +36,15 @@ function actionVerb(type: string): string {
       return " cooked ";
     case "created":
       return " published ";
-    case "saved":
-      return " saved ";
-    case "rated":
-      return " rated ";
+    case "favorited":
+      return " favorited ";
     default:
       return " ";
   }
 }
 
 function recipeLink(item: FeedItem): string {
-  if (item.event_type === "saved" && item.source_url) {
-    return item.source_url;
-  }
   return `/recipes/${item.recipe_id}`;
-}
-
-function isExternalLink(item: FeedItem): boolean {
-  return item.event_type === "saved" && !!item.source_url;
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -107,19 +98,7 @@ export function ActivityFeed({
     <div>
       {items.map((item, i) => {
         const href = recipeLink(item);
-        const external = isExternalLink(item);
-
-        const RecipeLink = external
-          ? ({ children, className }: { children: React.ReactNode; className?: string }) => (
-              <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
-                {children}
-              </a>
-            )
-          : ({ children, className }: { children: React.ReactNode; className?: string }) => (
-              <Link href={href} className={className}>
-                {children}
-              </Link>
-            );
+        const sourceDisplay = item.source_name || (item.source_url ? new URL(item.source_url).hostname.replace(/^www\./, "") : null);
 
         return (
           <div
@@ -127,13 +106,13 @@ export function ActivityFeed({
             className="group flex gap-2.5 py-2.5 border-t border-border items-center transition-all duration-150 cursor-pointer hover:bg-accent-light hover:-mx-1.5 hover:px-1.5"
           >
             {item.recipe_image_url ? (
-              <RecipeLink className="shrink-0">
+              <Link href={href} className="shrink-0">
                 <img
                   src={item.recipe_image_url}
                   alt={item.recipe_title}
                   className="w-[36px] h-[36px] object-cover shrink-0 transition-transform duration-[250ms] group-hover:scale-110"
                 />
-              </RecipeLink>
+              </Link>
             ) : (
               <div className="w-[36px] h-[36px] bg-surface-alt shrink-0 flex items-center justify-center">
                 <span className="font-display text-[14px] text-ink-muted">
@@ -150,12 +129,17 @@ export function ActivityFeed({
                   {item.display_name}
                 </Link>
                 <span>{actionVerb(item.event_type)}</span>
-                <RecipeLink className="font-display italic text-accent hover:underline">
+                <Link href={href} className="font-display italic text-accent hover:underline">
                   {item.recipe_title}
-                </RecipeLink>
+                </Link>
               </p>
-              {item.event_type === "rated" && item.rating != null && (
+              {item.event_type === "cooked" && item.rating != null && (
                 <StarRating rating={item.rating} />
+              )}
+              {item.event_type === "cooked" && sourceDisplay && (
+                <span className="font-mono text-[10px] text-ink-muted">
+                  via {sourceDisplay}
+                </span>
               )}
             </div>
             <span className="font-mono text-[10px] text-ink-muted shrink-0">

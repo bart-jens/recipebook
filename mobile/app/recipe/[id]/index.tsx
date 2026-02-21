@@ -49,13 +49,7 @@ import { ActivityIndicator } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: 'English', nl: 'Dutch', fr: 'French', de: 'German', es: 'Spanish',
-  it: 'Italian', pt: 'Portuguese', ja: 'Japanese', zh: 'Chinese', ko: 'Korean',
-  th: 'Thai', vi: 'Vietnamese', ar: 'Arabic', ru: 'Russian', pl: 'Polish',
-  sv: 'Swedish', da: 'Danish', no: 'Norwegian', fi: 'Finnish', tr: 'Turkish',
-  el: 'Greek', hi: 'Hindi', id: 'Indonesian', ms: 'Malay', he: 'Hebrew',
-};
+
 const HERO_HEIGHT = 220;
 const HEADER_HEIGHT = 56;
 
@@ -158,7 +152,6 @@ export default function RecipeDetailScreen() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [addingTag, setAddingTag] = useState(false);
-  const [shareNotes, setShareNotes] = useState<string | null>(null);
   const [photos, setPhotos] = useState<{ id: string; url: string; imageType: string }[]>([]);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [adjustedServings, setAdjustedServings] = useState<number | null>(null);
@@ -270,20 +263,6 @@ export default function RecipeDetailScreen() {
       setCreatorName(creator?.display_name || null);
     }
 
-    // Owner-specific data
-    if (recipeData && recipeData.created_by === user?.id) {
-      // Check share status for non-publishable recipes (imports and forks)
-      if (recipeData.source_type !== 'manual' || recipeData.forked_from_id) {
-        const { data: share } = await supabase
-          .from('recipe_shares')
-          .select('notes')
-          .eq('user_id', user!.id)
-          .eq('recipe_id', id)
-          .maybeSingle();
-        setShareNotes(share ? (share.notes || '') : null);
-      }
-    }
-
     // Fetch user interaction data
     if (user) {
       const [{ data: cookData }, { data: favData }, { data: savedData }] = await Promise.all([
@@ -358,24 +337,6 @@ export default function RecipeDetailScreen() {
     if (!error) {
       setRecipe({ ...recipe, visibility: newVisibility });
     }
-  };
-
-  const addRecommendation = async () => {
-    if (!recipe || !user) return;
-    await supabase
-      .from('recipe_shares')
-      .insert({ user_id: user.id, recipe_id: recipe.id });
-    setShareNotes('');
-  };
-
-  const removeRecommendation = async () => {
-    if (!recipe || !user) return;
-    await supabase
-      .from('recipe_shares')
-      .delete()
-      .eq('user_id', user.id)
-      .eq('recipe_id', recipe.id);
-    setShareNotes(null);
   };
 
   const shareLink = async () => {
@@ -818,9 +779,7 @@ export default function RecipeDetailScreen() {
             <Animated.Text entering={FadeInDown.delay(animation.staggerDelay * 2.5).duration(300)} style={styles.detailDate}>
               {recipe.source_type !== 'manual' && (recipe.source_name || recipe.source_url)
                 ? `From ${recipe.source_name || (recipe.source_url ? new URL(recipe.source_url).hostname.replace(/^www\./, '') : '')}`
-                : recipe.language
-                  ? LANGUAGE_NAMES[recipe.language] || recipe.language.toUpperCase()
-                  : ''}
+                : ''}
             </Animated.Text>
           </View>
 
@@ -865,7 +824,7 @@ export default function RecipeDetailScreen() {
                   size="sm"
                   onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
                 />
-                {recipe.source_type === 'manual' && !recipe.forked_from_id ? (
+                {recipe.source_type === 'manual' && !recipe.forked_from_id && (
                   <TouchableOpacity
                     style={[
                       styles.actionButton,
@@ -883,19 +842,6 @@ export default function RecipeDetailScreen() {
                       {recipe.visibility === 'public' ? 'Public' : 'Private'}
                     </Text>
                   </TouchableOpacity>
-                ) : (
-                  shareNotes !== null ? (
-                    <View style={styles.recommendedContainer}>
-                      <Text style={styles.recommendedText}>Recommended</Text>
-                      <TouchableOpacity onPress={removeRecommendation}>
-                        <Text style={styles.removeRecommendText}>Remove</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <TouchableOpacity style={styles.actionButton} onPress={addRecommendation}>
-                      <Text style={styles.actionButtonText}>Recommend</Text>
-                    </TouchableOpacity>
-                  )
                 )}
                 {recipe.visibility === 'public' && (
                   <Button
@@ -1719,26 +1665,6 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.sansMedium,
     fontSize: 13,
   },
-  recommendedContainer: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.md,
-    gap: spacing.sm,
-  },
-  recommendedText: {
-    color: colors.inkSecondary,
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 13,
-  },
-  removeRecommendText: {
-    color: colors.inkMuted,
-    fontSize: 12,
-    textDecorationLine: 'underline' as const,
-  },
-
   // Tags
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm - 2, marginBottom: spacing.md, alignItems: 'center' },
   collectionButton: {

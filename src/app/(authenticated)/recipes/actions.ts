@@ -132,13 +132,5 @@ export async function createRecipe(formData: FormData) {
     }
   }
 
-  // Auto-share imported recipes (creates recommendation card for followers)
-  if (sourceType !== "manual") {
-    await supabase.from("recipe_shares").insert({
-      user_id: user.id,
-      recipe_id: recipe.id,
-    });
-  }
-
   redirect(`/recipes/${recipe.id}`);
 }

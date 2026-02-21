@@ -44,19 +44,6 @@ interface ChefProfileData {
     cook_time_minutes: number | null;
     published_at: string;
   }>;
-  recommendations: Array<{
-    share_id: string;
-    recipe_id: string;
-    share_notes: string | null;
-    shared_at: string;
-    title: string;
-    source_url: string | null;
-    source_name: string | null;
-    source_type: string;
-    image_url: string | null;
-    tags: string[] | null;
-    user_rating: number | null;
-  }>;
 }
 
 export default async function PublicProfilePage({
@@ -193,10 +180,6 @@ export default async function PublicProfilePage({
             activity={data.activity || []}
             favorites={data.favorites || []}
             published={data.published || []}
-            recommendations={data.recommendations || []}
-            profileName={profile.display_name}
-            profileAvatarUrl={profile.avatar_url}
-            profileId={params.id}
           />
         </div>
       )}
