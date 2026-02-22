@@ -2,6 +2,10 @@ import * as cheerio from "cheerio";
 import { parseIngredient, type ParsedIngredient } from "./ingredient-parser";
 import { parseDuration } from "./duration-parser";
 import { getSourceNameFromUrl } from "./source-name";
+import {
+  extractRecipeFromHtml,
+  stripHtmlForExtraction,
+} from "./claude-extract-html";
 
 export interface ParsedRecipe {
   title: string;
@@ -209,33 +213,60 @@ function parseTags(r: SchemaRecipe): string[] {
   return Array.from(tagSet).slice(0, 10);
 }
 
-export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9,nl;q=0.8",
-    },
-  });
+async function fetchRecipeHtml(url: string): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
 
-  if (!response.ok) {
-    throw new Error(`Could not fetch this URL (status ${response.status})`);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en,nl;q=0.9,*;q=0.5",
+      },
+      redirect: "follow",
+    });
+
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error(
+          "This website blocked our request. Try importing a photo of the recipe instead."
+        );
+      }
+      if (response.status === 404) {
+        throw new Error("Page not found. Check the URL and try again.");
+      }
+      if (response.status >= 500) {
+        throw new Error("This website is having issues. Try again later.");
+      }
+      throw new Error(`Could not fetch this URL (status ${response.status})`);
+    }
+
+    return await response.text();
+  } catch (e) {
+    if (e instanceof Error && e.name === "AbortError") {
+      throw new Error(
+        "This website took too long to respond. Try again later."
+      );
+    }
+    throw e;
+  } finally {
+    clearTimeout(timeout);
   }
+}
 
-  const html = await response.text();
-  const $ = cheerio.load(html);
-
-  // Find all JSON-LD scripts
+function tryJsonLd($: cheerio.CheerioAPI): SchemaRecipe | null {
   let recipe: SchemaRecipe | null = null;
   $('script[type="application/ld+json"]').each((_, el) => {
-    if (recipe) return; // already found
+    if (recipe) return;
     const raw = $(el).html() || "";
     try {
       const data = JSON.parse(raw);
       recipe = findRecipeInGraph(data);
     } catch {
-      // Many recipe sites emit invalid JSON-LD with literal control
-      // characters in string values. Try sanitizing before giving up.
       try {
         const data = JSON.parse(sanitizeJsonLd(raw));
         recipe = findRecipeInGraph(data);
@@ -244,20 +275,22 @@ export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
       }
     }
   });
+  return recipe;
+}
 
-  if (!recipe) {
-    throw new Error("No recipe found at this URL");
-  }
-
-  const r: SchemaRecipe = recipe;
-  const ingredients = (r.recipeIngredient || []).map((s) => parseIngredient(decodeHtmlEntities(s)));
-
-  // Extract tags from recipeCategory, recipeCuisine, and keywords
+function schemaToRecipe(
+  r: SchemaRecipe,
+  $: cheerio.CheerioAPI,
+  url: string
+): ParsedRecipe {
+  const ingredients = (r.recipeIngredient || []).map((s) =>
+    parseIngredient(decodeHtmlEntities(s))
+  );
   const tags = parseTags(r);
-
-  // Detect language from <html lang> attribute
   const htmlLang = $("html").attr("lang");
-  const language = htmlLang ? htmlLang.split("-")[0].toLowerCase().slice(0, 2) : null;
+  const language = htmlLang
+    ? htmlLang.split("-")[0].toLowerCase().slice(0, 2)
+    : null;
 
   return {
     title: decodeHtmlEntities(r.name || "Untitled Recipe"),
@@ -273,4 +306,156 @@ export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
     source_name: getSourceNameFromUrl(url),
     imageUrl: parseImage(r.image),
   };
+}
+
+function tryHtmlScrape(
+  $: cheerio.CheerioAPI,
+  url: string
+): ParsedRecipe | null {
+  const title =
+    $('[itemprop="name"]').first().text().trim() ||
+    $("h1").first().text().trim() ||
+    $('meta[property="og:title"]').attr("content")?.trim() ||
+    "";
+
+  const ingredients: string[] = [];
+  $('[itemprop="recipeIngredient"], [itemprop="ingredients"]').each((_, el) => {
+    const text = $(el).text().trim();
+    if (text) ingredients.push(text);
+  });
+
+  if (ingredients.length === 0) {
+    $(
+      ".wprm-recipe-ingredient, .tasty-recipe-ingredients li, .easyrecipe .ingredient, .recipe-card-ingredients li"
+    ).each((_, el) => {
+      const text = $(el).text().trim();
+      if (text) ingredients.push(text);
+    });
+  }
+
+  const steps: string[] = [];
+  $('[itemprop="recipeInstructions"]').each((_, el) => {
+    const nested = $(el).find('[itemprop="step"], [itemprop="text"], li');
+    if (nested.length > 0) {
+      nested.each((__, step) => {
+        const text = $(step).text().trim();
+        if (text) steps.push(text);
+      });
+    } else {
+      const text = $(el).text().trim();
+      if (text) steps.push(text);
+    }
+  });
+
+  if (steps.length === 0) {
+    $(
+      ".wprm-recipe-instruction, .tasty-recipe-instructions li, .easyrecipe .instruction, .recipe-card-instructions li"
+    ).each((_, el) => {
+      const text = $(el).text().trim();
+      if (text) steps.push(text);
+    });
+  }
+
+  const instructions = steps.join("\n");
+
+  if (!title || (ingredients.length === 0 && !instructions)) {
+    return null;
+  }
+
+  const description =
+    $('[itemprop="description"]').first().text().trim() ||
+    $('meta[property="og:description"]').attr("content")?.trim() ||
+    "";
+
+  const imageUrl =
+    $('[itemprop="image"]').attr("src") ||
+    $('[itemprop="image"] img').attr("src") ||
+    $('meta[property="og:image"]').attr("content") ||
+    null;
+
+  const prepTime = parseDuration(
+    $('[itemprop="prepTime"]').attr("content") ||
+      $('[itemprop="prepTime"]').attr("datetime") ||
+      null
+  );
+  const cookTime = parseDuration(
+    $('[itemprop="cookTime"]').attr("content") ||
+      $('[itemprop="cookTime"]').attr("datetime") ||
+      null
+  );
+  const servings = parseServings(
+    $('[itemprop="recipeYield"]').first().text().trim() || null
+  );
+
+  const htmlLang = $("html").attr("lang");
+  const language = htmlLang
+    ? htmlLang.split("-")[0].toLowerCase().slice(0, 2)
+    : null;
+
+  return {
+    title: decodeHtmlEntities(title),
+    description: decodeHtmlEntities(description),
+    instructions: decodeHtmlEntities(instructions),
+    prep_time_minutes: prepTime,
+    cook_time_minutes: cookTime,
+    servings,
+    language,
+    tags: [],
+    ingredients: ingredients.map((s) =>
+      parseIngredient(decodeHtmlEntities(s))
+    ),
+    source_url: url,
+    source_name: getSourceNameFromUrl(url),
+    imageUrl,
+  };
+}
+
+export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
+  const html = await fetchRecipeHtml(url);
+  const $ = cheerio.load(html);
+
+  // Tier 1: JSON-LD structured data
+  const jsonLdRecipe = tryJsonLd($);
+  if (jsonLdRecipe) {
+    return schemaToRecipe(jsonLdRecipe, $, url);
+  }
+
+  // Tier 2: HTML microdata / common recipe plugin scraping
+  const scrapedRecipe = tryHtmlScrape($, url);
+  if (scrapedRecipe) {
+    return scrapedRecipe;
+  }
+
+  // Tier 3: AI extraction via Gemini
+  const strippedText = stripHtmlForExtraction($);
+  const aiResult = await extractRecipeFromHtml(strippedText);
+  if (aiResult.data) {
+    const d = aiResult.data;
+    const htmlLang = $("html").attr("lang");
+    const language =
+      d.language ||
+      (htmlLang ? htmlLang.split("-")[0].toLowerCase().slice(0, 2) : null);
+
+    return {
+      title: d.title || "Untitled Recipe",
+      description: d.description || "",
+      instructions: d.instructions || "",
+      prep_time_minutes: d.prep_time_minutes,
+      cook_time_minutes: d.cook_time_minutes,
+      servings: d.servings,
+      language,
+      tags: d.tags || [],
+      ingredients: d.ingredients || [],
+      source_url: url,
+      source_name: getSourceNameFromUrl(url),
+      imageUrl:
+        parseImage(
+          $('meta[property="og:image"]').attr("content") || null
+        ) || null,
+    };
+  }
+
+  throw new Error(
+    "Could not extract a recipe from this page. Try importing a photo of the recipe instead."
+  );
 }
