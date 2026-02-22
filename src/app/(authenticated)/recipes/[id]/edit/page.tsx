@@ -52,7 +52,7 @@ export default async function EditRecipePage({
         <Link href={`/recipes/${recipe.id}`} className="text-sm text-warm-gray hover:text-accent">
           &larr; Back to recipe
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold">Edit Recipe</h1>
+        <h1 className="mt-2 text-2xl font-normal">Edit Recipe</h1>
       </div>
       <ImageUpload recipeId={recipe.id} currentImageUrl={recipe.image_url} />
       <EditRecipeClient initialData={initialData} initialSourceName={recipe.source_name} action={action} />

@@ -25,29 +25,29 @@ export default async function AdminLayout({
   return (
     <div>
       <div className="mb-6 flex items-center gap-4 border-b border-border pb-4">
-        <h1 className="font-display text-xl text-ink">Admin</h1>
+        <h1 className="text-[20px] font-normal text-ink">Admin</h1>
         <nav className="flex gap-1">
           <Link
             href="/admin"
-            className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:bg-surface-alt hover:text-ink"
+            className="px-3 py-1.5 text-[11px] font-normal tracking-[0.02em] text-ink-secondary hover:bg-surface-alt hover:text-ink"
           >
             Dashboard
           </Link>
           <Link
             href="/admin/users"
-            className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:bg-surface-alt hover:text-ink"
+            className="px-3 py-1.5 text-[11px] font-normal tracking-[0.02em] text-ink-secondary hover:bg-surface-alt hover:text-ink"
           >
             Users
           </Link>
           <Link
             href="/admin/invites"
-            className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:bg-surface-alt hover:text-ink"
+            className="px-3 py-1.5 text-[11px] font-normal tracking-[0.02em] text-ink-secondary hover:bg-surface-alt hover:text-ink"
           >
             Invites
           </Link>
           <Link
             href="/admin/feedback"
-            className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:bg-surface-alt hover:text-ink"
+            className="px-3 py-1.5 text-[11px] font-normal tracking-[0.02em] text-ink-secondary hover:bg-surface-alt hover:text-ink"
           >
             Feedback
           </Link>

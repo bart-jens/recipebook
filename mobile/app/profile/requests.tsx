@@ -9,7 +9,7 @@ import {
 import { Stack, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, fontFamily } from '@/lib/theme';
+import { colors, spacing, typography } from '@/lib/theme';
 import Avatar from '@/components/ui/Avatar';
 import Button from '@/components/ui/Button';
 
@@ -147,7 +147,7 @@ export default function FollowRequestsScreen() {
       <View style={styles.container}>
         {loading ? (
           <View style={styles.centered}>
-            <Text style={styles.loadingText}>LOADING...</Text>
+            <Text style={styles.loadingText}>Loading...</Text>
           </View>
         ) : requests.length === 0 ? (
           <View style={styles.centered}>
@@ -176,20 +176,16 @@ const styles = StyleSheet.create({
   list: { padding: spacing.xl },
 
   loadingText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    ...typography.metaSmall,
     color: colors.inkSecondary,
   },
   emptyTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 20,
+    ...typography.subheading,
     color: colors.ink,
     marginBottom: spacing.sm,
   },
   emptyDescription: {
-    fontFamily: fontFamily.sans,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.inkSecondary,
     textAlign: 'center',
   },
@@ -207,9 +203,7 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
   requestName: {
-    fontFamily: fontFamily.sans,
-    fontSize: 14,
-    fontWeight: '500',
+    ...typography.label,
     color: colors.ink,
     marginLeft: spacing.md,
     flex: 1,

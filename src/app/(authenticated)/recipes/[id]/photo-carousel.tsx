@@ -57,7 +57,7 @@ export function PhotoCarousel({ photos }: { photos: Photo[] }) {
         </button>
 
         {/* Counter */}
-        <div className="absolute bottom-6 right-3 font-mono text-[10px] uppercase tracking-[0.06em] bg-bg/80 backdrop-blur-sm px-2 py-0.5 text-ink-muted">
+        <div className="absolute bottom-6 right-3 text-[11px] font-normal tracking-[0.02em] bg-bg/80 backdrop-blur-sm px-2 py-0.5 text-ink-muted">
           {activeIndex + 1} / {photos.length}
         </div>
       </div>

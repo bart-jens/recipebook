@@ -12,7 +12,7 @@ import {
 import Constants from 'expo-constants';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, fontFamily } from '@/lib/theme';
+import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 
 interface Props {
@@ -67,7 +67,7 @@ export default function FeedbackModal({ visible, onClose, sourceScreen }: Props)
           <View style={styles.header}>
             <Text style={styles.title}>Send Feedback</Text>
             <TouchableOpacity onPress={handleClose} hitSlop={12}>
-              <Text style={styles.closeButton}>CLOSE</Text>
+              <Text style={styles.closeButton}>Close</Text>
             </TouchableOpacity>
           </View>
 
@@ -122,19 +122,16 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    fontFamily: fontFamily.display,
+    ...typography.heading,
     fontSize: 22,
     color: colors.ink,
   },
   closeButton: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    ...typography.meta,
     color: colors.inkSecondary,
   },
   input: {
-    fontFamily: fontFamily.sans,
-    fontSize: 14,
+    ...typography.label,
     color: colors.ink,
     borderBottomWidth: 2,
     borderBottomColor: colors.ink,
@@ -147,8 +144,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   successText: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 14,
+    ...typography.label,
     color: colors.olive,
   },
 });

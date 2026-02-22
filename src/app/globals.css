@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500&family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,400;1,300;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -23,18 +23,6 @@
 
   .rule-thin {
     @apply h-px bg-border;
-  }
-
-  .mono-label {
-    @apply font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted;
-  }
-
-  .mono-meta {
-    @apply font-mono text-[11px] text-ink-muted;
-  }
-
-  .serif-title {
-    @apply font-display tracking-[-0.02em] text-ink;
   }
 
   .anim-delay-1 { animation-delay: 40ms; }

@@ -8,11 +8,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ["Instrument Serif", "Georgia", "serif"],
         body: ["Inter Tight", "system-ui", "sans-serif"],
-        mono: ["Geist Mono", "monospace"],
         sans: ["Inter Tight", "system-ui", "sans-serif"],
-        // Backward-compat alias (used by consumers that reference font-logo)
         logo: ["Inter Tight", "system-ui", "sans-serif"],
       },
       colors: {

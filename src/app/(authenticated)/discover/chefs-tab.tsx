@@ -131,7 +131,7 @@ export function ChefsTab() {
       <div className="mx-5 mt-4 border-t border-border py-8 text-center">
         <ForkDot size={24} color="rgba(139,69,19,0.2)" />
         <p className="mt-3 text-[13px] font-light text-ink-secondary">No chefs found yet.</p>
-        <Link href="/invites" className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent hover:text-ink transition-colors mt-1 inline-block">
+        <Link href="/invites" className="text-[11px] font-normal tracking-[0.02em] text-accent hover:text-ink transition-colors mt-1 inline-block">
           Invite friends to join EefEats
         </Link>
       </div>
@@ -143,14 +143,14 @@ export function ChefsTab() {
       <div className="px-5">
         <div className="mt-4 border-t border-border py-8 text-center">
           <ForkDot size={24} color="rgba(139,69,19,0.2)" />
-          <p className="mt-3 text-[14px] font-medium text-ink">You follow all chefs!</p>
-          <Link href="/invites" className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent hover:text-ink transition-colors mt-1 inline-block">
+          <p className="mt-3 text-[14px] font-normal text-ink">You follow all chefs!</p>
+          <Link href="/invites" className="text-[11px] font-normal tracking-[0.02em] text-accent hover:text-ink transition-colors mt-1 inline-block">
             Invite more friends to join EefEats
           </Link>
         </div>
         {followedChefs.length > 0 && (
           <div className="mt-2">
-            <h3 className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted mb-2 pb-1.5 border-b border-border">Following</h3>
+            <h3 className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-2 pb-1.5 border-b border-border">Following</h3>
             {followedChefs.map((chef) => (
               <ChefCard
                 key={chef.id}
@@ -186,7 +186,7 @@ export function ChefsTab() {
 
       {followedChefs.length > 0 && (
         <div className="mt-4">
-          <h3 className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted mb-2 pb-1.5 border-b border-border">Following</h3>
+          <h3 className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-2 pb-1.5 border-b border-border">Following</h3>
           {followedChefs.map((chef) => (
             <ChefCard
               key={chef.id}
@@ -206,10 +206,10 @@ export function ChefsTab() {
         href="/invites"
         className="block mt-6 py-5 border-t border-b border-border text-center transition-all hover:bg-accent-light hover:-mx-2 hover:px-2"
       >
-        <p className="font-display text-[17px] tracking-[-0.01em] text-ink">
+        <p className="text-[20px] font-normal text-ink">
           Know someone who loves cooking?
         </p>
-        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent mt-1">
+        <p className="text-[11px] font-normal tracking-[0.02em] text-accent mt-1">
           Invite them to join EefEats
         </p>
       </Link>

@@ -68,9 +68,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   text: {
-    fontFamily: fontFamily.mono,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    fontFamily: fontFamily.sans,
+    letterSpacing: 0.2,
   },
 });
 

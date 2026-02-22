@@ -1401,10 +1401,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   centered: { justifyContent: 'center', alignItems: 'center' },
   scrollContent: { paddingBottom: spacing.xxxl },
-  emptyText: { fontSize: 16, color: colors.inkSecondary, fontFamily: fontFamily.sansMedium },
-  emptySubtext: { fontSize: 14, color: colors.inkSecondary, marginTop: spacing.xs, textAlign: 'center' as const },
+  emptyText: { ...typography.body, color: colors.inkSecondary },
+  emptySubtext: { ...typography.label, color: colors.inkSecondary, marginTop: spacing.xs, textAlign: 'center' as const },
   backLink: { marginTop: spacing.md },
-  backLinkText: { fontSize: 14, color: colors.accent, fontFamily: fontFamily.sansMedium },
+  backLinkText: { ...typography.label, color: colors.accent },
 
   // Parallax hero
   heroContainer: {
@@ -1447,10 +1447,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   pageCounterText: {
-    fontSize: 11,
-    fontFamily: fontFamily.mono,
+    ...typography.metaSmall,
     color: colors.white,
-    letterSpacing: 0.4,
   },
 
   // Custom header
@@ -1474,8 +1472,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 17,
+    ...typography.body,
+    fontFamily: fontFamily.sans,
     color: colors.ink,
     marginHorizontal: spacing.md,
   },
@@ -1496,8 +1494,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   addImageText: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.inkMuted,
     marginTop: spacing.sm,
   },
@@ -1510,10 +1507,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   detailCategory: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
+    ...typography.metaSmall,
     color: colors.accent,
     marginBottom: 6,
   },
@@ -1524,25 +1518,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   detailTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 40,
-    lineHeight: 40,
-    letterSpacing: -1.6,
+    ...typography.title,
     color: colors.ink,
     flex: 1,
     marginRight: spacing.sm,
   },
   detailByline: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.inkSecondary,
     marginBottom: 4,
   },
   detailDate: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
+    ...typography.metaSmall,
     color: colors.inkMuted,
-    letterSpacing: 0.4,
     marginBottom: 18,
   },
 
@@ -1567,16 +1555,12 @@ const styles = StyleSheet.create({
     borderRightWidth: 0,
   },
   statValue: {
-    fontFamily: fontFamily.display,
-    fontSize: 20,
+    ...typography.subheading,
     color: colors.ink,
     lineHeight: 22,
   },
   statLabel: {
-    fontFamily: fontFamily.mono,
-    fontSize: 9,
-    textTransform: 'uppercase',
-    letterSpacing: 0.9,
+    ...typography.metaSmall,
     color: colors.inkMuted,
     marginTop: 1,
   },
@@ -1590,20 +1574,16 @@ const styles = StyleSheet.create({
 
   // Description / intro
   detailIntro: {
-    fontFamily: fontFamily.displayItalic,
-    fontSize: 18,
+    ...typography.body,
     color: colors.inkSecondary,
-    lineHeight: 26,
     marginBottom: 28,
   },
 
   // Source link
   sourceLink: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.accent,
     textDecorationLine: 'underline',
-    letterSpacing: 0.4,
   },
 
   // Creator & aggregate rating
@@ -1626,8 +1606,7 @@ const styles = StyleSheet.create({
     color: colors.border,
   },
   aggregateText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
 
@@ -1642,8 +1621,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   actionButtonText: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 13,
+    ...typography.bodySmall,
+    fontFamily: fontFamily.sans,
   },
   publicButton: {
     backgroundColor: colors.successBg,
@@ -1652,8 +1631,8 @@ const styles = StyleSheet.create({
   },
   publicButtonText: {
     color: colors.success,
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 13,
+    ...typography.bodySmall,
+    fontFamily: fontFamily.sans,
   },
   privateButton: {
     backgroundColor: colors.surface,
@@ -1662,8 +1641,8 @@ const styles = StyleSheet.create({
   },
   privateButtonText: {
     color: colors.inkMuted,
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 13,
+    ...typography.bodySmall,
+    fontFamily: fontFamily.sans,
   },
   // Tags
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm - 2, marginBottom: spacing.md, alignItems: 'center' },
@@ -1679,8 +1658,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   collectionButtonText: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 14,
+    ...typography.label,
     color: colors.inkSecondary,
   },
   addTagButton: {
@@ -1690,8 +1668,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   addTagText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.accent,
   },
   tagInputWrap: {
@@ -1704,8 +1681,7 @@ const styles = StyleSheet.create({
     minWidth: 80,
   },
   tagInput: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.ink,
     padding: 0,
     margin: 0,
@@ -1722,10 +1698,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   servingsLabel: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   servingsControls: {
@@ -1742,23 +1715,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   servingsButtonText: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 16,
+    ...typography.body,
+    fontFamily: fontFamily.sans,
     color: colors.accent,
   },
   servingsCount: {
-    fontFamily: fontFamily.display,
-    fontSize: 20,
+    ...typography.subheading,
     color: colors.ink,
     minWidth: 24,
     textAlign: 'center',
   },
   servingsReset: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
+    ...typography.metaSmall,
     color: colors.accent,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
   },
 
   // Sections
@@ -1766,10 +1735,7 @@ const styles = StyleSheet.create({
 
   // Section label (mono uppercase with bottom border)
   sectionLabel: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
+    ...typography.metaSmall,
     color: colors.inkMuted,
     marginBottom: 10,
     paddingBottom: 6,
@@ -1801,11 +1767,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   unitOptionText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
+    ...typography.metaSmall,
     color: colors.inkSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
   },
   unitOptionTextActive: {
     color: colors.white,
@@ -1838,8 +1801,7 @@ const styles = StyleSheet.create({
   },
   ingName: {
     flex: 1,
-    fontFamily: fontFamily.sans,
-    fontSize: 14,
+    ...typography.label,
     color: colors.ink,
   },
   ingNameChecked: {
@@ -1848,8 +1810,7 @@ const styles = StyleSheet.create({
     textDecorationColor: colors.accent,
   },
   ingAmount: {
-    fontFamily: fontFamily.mono,
-    fontSize: 12,
+    ...typography.meta,
     color: colors.inkSecondary,
   },
   ingAmountChecked: {
@@ -1865,16 +1826,15 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   stepNumber: {
-    fontFamily: fontFamily.display,
-    fontSize: 28,
+    ...typography.heading,
     color: colors.border,
     lineHeight: 28,
     width: 36,
   },
   stepText: {
     flex: 1,
+    ...typography.label,
     fontFamily: fontFamily.sansLight,
-    fontSize: 14,
     color: colors.inkSecondary,
     lineHeight: 22,
     paddingTop: 4,
@@ -1889,8 +1849,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   } as ViewStyle,
   cookFormLabel: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 14,
+    ...typography.label,
     color: colors.ink,
     marginBottom: spacing.sm,
   },
@@ -1898,8 +1857,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radii.sm,
     padding: spacing.md,
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.ink,
     minHeight: 60,
     textAlignVertical: 'top',
@@ -1913,8 +1871,8 @@ const styles = StyleSheet.create({
   },
 
   emptyLog: {
-    fontFamily: fontFamily.displayItalic,
-    fontSize: 14,
+    ...typography.label,
+    fontFamily: fontFamily.sansLight,
     color: colors.inkMuted,
     marginTop: spacing.xs,
   },
@@ -1927,8 +1885,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   } as ViewStyle,
   logEntryHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  logDate: { fontFamily: fontFamily.mono, fontSize: 11, color: colors.ink, letterSpacing: 0.4 },
-  logNotes: { fontFamily: fontFamily.sansLight, fontSize: 13, color: colors.inkSecondary, marginTop: spacing.sm - 2, lineHeight: 18 },
+  logDate: { ...typography.metaSmall, color: colors.ink },
+  logNotes: { ...typography.bodySmall, color: colors.inkSecondary, marginTop: spacing.sm - 2, lineHeight: 18 },
 
   // Add to shopping list
   ingredientAddButton: {
@@ -1957,11 +1915,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.successBg,
   },
   addToListText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.accent,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
   },
   addToListTextDone: {
     color: colors.success,

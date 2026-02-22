@@ -149,7 +149,7 @@ export function RecipeDetail({
       <nav className="sticky top-0 z-50 flex items-center justify-between px-5 py-3 backdrop-blur-[20px] bg-[rgba(246,244,239,0.92)]">
         <Link
           href="/recipes"
-          className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-muted hover:text-ink flex items-center gap-1.5 transition-colors active:translate-x-[-3px]"
+          className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink flex items-center gap-1.5 transition-colors active:translate-x-[-3px]"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -168,7 +168,7 @@ export function RecipeDetail({
               )}
               <Link
                 href={`/recipes/${recipe.id}/edit`}
-                className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink flex items-center gap-1 transition-colors active:scale-[0.94]"
+                className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink flex items-center gap-1 transition-colors active:scale-[0.94]"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -211,23 +211,23 @@ export function RecipeDetail({
       {/* Header */}
       <div className={`px-5 relative ${heroImage && !hasMultiplePhotos ? "-mt-4" : "pt-4"}`}>
         {category && (
-          <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-accent font-medium mb-1.5 opacity-0 animate-fade-in-up" style={{ animationDelay: "150ms" }}>
+          <div className="text-[11px] font-normal tracking-[0.02em] text-accent mb-1.5 opacity-0 animate-fade-in-up" style={{ animationDelay: "150ms" }}>
             {category}
           </div>
         )}
-        <h1 className="font-display text-[40px] leading-[0.96] tracking-[-0.04em] text-ink mb-2.5 opacity-0 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
+        <h1 className="text-[36px] font-light tracking-[-0.03em] leading-[1.1] text-ink mb-2.5 opacity-0 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
           {recipe.title}
         </h1>
         <div className="text-[13px] font-light text-ink-secondary mb-1 opacity-0 animate-fade-in-up" style={{ animationDelay: "250ms" }}>
           {creatorName && creatorId ? (
             <>
               By{" "}
-              <Link href={`/profile/${creatorId}`} className="font-semibold text-ink hover:text-accent transition-colors">
+              <Link href={`/profile/${creatorId}`} className="font-normal text-ink hover:text-accent transition-colors">
                 {creatorName}
               </Link>
             </>
           ) : isOwner ? (
-            <>By <span className="font-semibold text-ink">you</span></>
+            <>By <span className="font-normal text-ink">you</span></>
           ) : null}
           {cookEntries.length > 0 && (
             <> · Cooked {cookEntries.length} time{cookEntries.length !== 1 ? "s" : ""}</>
@@ -255,7 +255,7 @@ export function RecipeDetail({
         )}
 
 
-        <div className="font-mono text-[10px] text-ink-muted tracking-[0.04em] mb-4 opacity-0 animate-fade-in-up" style={{ animationDelay: "270ms" }}>
+        <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-4 opacity-0 animate-fade-in-up" style={{ animationDelay: "270ms" }}>
           {recipe.updated_at ? `Updated ${formatDate(recipe.updated_at)}` : recipe.created_at ? formatDate(recipe.created_at) : null}
         </div>
       </div>
@@ -265,19 +265,19 @@ export function RecipeDetail({
         <div className="mx-5 border-t-[3px] border-t-ink border-b border-b-ink flex opacity-0 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
           {recipe.prep_time_minutes && (
             <div className="flex-1 py-2.5 px-3 text-center border-r border-border hover:bg-accent-light transition-colors">
-              <div className="font-display text-[20px] text-ink">{formatTime(recipe.prep_time_minutes)}</div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Prep</div>
+              <div className="text-[20px] font-normal text-ink">{formatTime(recipe.prep_time_minutes)}</div>
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Prep</div>
             </div>
           )}
           {recipe.cook_time_minutes && (
             <div className="flex-1 py-2.5 px-3 text-center border-r border-border hover:bg-accent-light transition-colors">
-              <div className="font-display text-[20px] text-ink">{formatTime(recipe.cook_time_minutes)}</div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Cook</div>
+              <div className="text-[20px] font-normal text-ink">{formatTime(recipe.cook_time_minutes)}</div>
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cook</div>
             </div>
           )}
           {recipe.servings && (
             <div className="flex-1 py-2.5 px-3 text-center border-r border-border hover:bg-accent-light transition-colors cursor-pointer group">
-              <div className="font-display text-[20px] text-ink flex items-center justify-center gap-1">
+              <div className="text-[20px] font-normal text-ink flex items-center justify-center gap-1">
                 <button
                   onClick={() => setServings(Math.max(1, servings - 1))}
                   className="opacity-0 group-hover:opacity-100 text-ink-muted hover:text-accent text-[14px] transition-opacity"
@@ -292,7 +292,7 @@ export function RecipeDetail({
                   +
                 </button>
               </div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
                 Serves
                 {servings !== recipe.servings && (
                   <button
@@ -307,14 +307,14 @@ export function RecipeDetail({
           )}
           {avgRating != null && (
             <div className="flex-1 py-2.5 px-3 text-center hover:bg-accent-light transition-colors">
-              <div className="font-display text-[20px] text-ink">{avgRating.toFixed(1)}</div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Rating</div>
+              <div className="text-[20px] font-normal text-ink">{avgRating.toFixed(1)}</div>
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Rating</div>
             </div>
           )}
           {recipe.prep_time_minutes && recipe.cook_time_minutes && (
             <div className="flex-1 py-2.5 px-3 text-center hover:bg-accent-light transition-colors">
-              <div className="font-display text-[20px] text-ink">{formatTime(recipe.prep_time_minutes + recipe.cook_time_minutes)}</div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Total</div>
+              <div className="text-[20px] font-normal text-ink">{formatTime(recipe.prep_time_minutes + recipe.cook_time_minutes)}</div>
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Total</div>
             </div>
           )}
         </div>
@@ -332,7 +332,7 @@ export function RecipeDetail({
             {tags.map((t) => (
               <span
                 key={t.id}
-                className="font-mono text-[9px] uppercase tracking-[0.06em] border border-border text-ink-muted px-2 py-0.5"
+                className="text-[11px] font-normal tracking-[0.02em] border border-border text-ink-muted px-2 py-0.5"
               >
                 {t.tag}
               </span>
@@ -348,7 +348,7 @@ export function RecipeDetail({
       <div className="px-5 pt-6 pb-24">
         {/* Intro / Description */}
         {recipe.description && (
-          <p className="font-display text-[18px] italic text-ink-secondary leading-[1.45] max-w-[360px] mb-7 opacity-0 animate-fade-in-up" style={{ animationDelay: "350ms" }}>
+          <p className="text-[15px] font-light text-ink-secondary leading-[1.45] max-w-[360px] mb-7 opacity-0 animate-fade-in-up" style={{ animationDelay: "350ms" }}>
             {recipe.description}
           </p>
         )}
@@ -369,7 +369,7 @@ export function RecipeDetail({
                   </svg>
                 ))}
               </div>
-              <span className="font-mono text-[11px] text-ink-muted">
+              <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
                 {avgRating!.toFixed(1)} ({ratings.length} {ratings.length === 1 ? "rating" : "ratings"})
               </span>
             </div>
@@ -379,7 +379,7 @@ export function RecipeDetail({
         {/* Ingredients */}
         {ingredients.length > 0 && (
           <div className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: "400ms" }}>
-            <div className="flex items-center justify-between mono-label mb-2.5 pb-1.5 border-b border-border">
+            <div className="flex items-center justify-between text-[11px] font-normal tracking-[0.02em] mb-2.5 pb-1.5 border-b border-border">
               <span>Ingredients</span>
               <UnitToggle system={unitSystem} onChange={setUnitSystem} />
             </div>
@@ -416,7 +416,7 @@ export function RecipeDetail({
                       {ing.notes && <span className="text-ink-muted text-[12px]"> ({ing.notes})</span>}
                     </span>
                     {/* Amount */}
-                    <span className={`font-mono text-[12px] text-ink-secondary flex-shrink-0 transition-opacity ${
+                    <span className={`text-[12px] font-normal tracking-[0.02em] text-ink-secondary flex-shrink-0 transition-opacity ${
                       isChecked ? "opacity-40" : ""
                     }`}>
                       {formatQuantity(converted.quantity)} {converted.unit}
@@ -475,7 +475,7 @@ export function RecipeDetail({
                 }
               }}
               disabled={addingAll || addedAll}
-              className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-accent transition-colors disabled:opacity-50"
+              className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-accent transition-colors disabled:opacity-50"
             >
               {addedAll ? `Added all ${ingredients.length} items` : addingAll ? "Adding..." : "Add all to Grocery List"}
             </button>
@@ -485,7 +485,7 @@ export function RecipeDetail({
         {/* Steps / Method */}
         {instructions.length > 0 && (
           <div className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: "450ms" }}>
-            <div className="mono-label mb-2.5 pb-1.5 border-b border-border">Method</div>
+            <div className="text-[11px] font-normal tracking-[0.02em] mb-2.5 pb-1.5 border-b border-border">Method</div>
             {instructions.length === 1 ? (
               <div className="text-[14px] font-light text-ink-secondary leading-[1.6] whitespace-pre-line">
                 {instructions[0]}
@@ -497,7 +497,7 @@ export function RecipeDetail({
                     key={i}
                     className="grid grid-cols-[36px_1fr] gap-3 py-4 border-b border-border group transition-all hover:pl-1"
                   >
-                    <span className="font-display text-[28px] leading-none text-border group-hover:text-accent transition-colors">
+                    <span className="text-[26px] font-normal tracking-[-0.01em] leading-none text-border group-hover:text-accent transition-colors">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <p className="text-[14px] font-light text-ink-secondary leading-[1.6] pt-1">

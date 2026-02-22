@@ -33,7 +33,7 @@ export default async function AdminDashboard() {
 
   return (
     <div>
-      <h2 className="mb-4 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+      <h2 className="mb-4 text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
         Platform Overview
       </h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -42,8 +42,8 @@ export default async function AdminDashboard() {
             key={stat.label}
             className="border border-border bg-surface p-4"
           >
-            <p className="font-display text-3xl text-ink">{stat.value}</p>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary">{stat.label}</p>
+            <p className="text-[36px] font-light tracking-[-0.03em] text-ink">{stat.value}</p>
+            <p className="text-[11px] font-normal tracking-[0.02em] text-ink-secondary">{stat.label}</p>
           </div>
         ))}
       </div>

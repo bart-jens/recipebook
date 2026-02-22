@@ -16,7 +16,7 @@ import { useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { colors, spacing, fontFamily, animation } from '@/lib/theme';
+import { colors, spacing, typography, animation } from '@/lib/theme';
 import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 import CollectionsSection from '@/components/ui/CollectionsSection';
@@ -319,7 +319,7 @@ export default function RecipesScreen() {
             <View style={styles.titleRow}>
               <View style={styles.titleWrap}>
                 {tag && (
-                  <Text style={styles.resultCategory}>{tag.toUpperCase()}</Text>
+                  <Text style={styles.resultCategory}>{tag}</Text>
                 )}
                 <Text style={styles.resultTitle} numberOfLines={2}>{item.title}</Text>
               </View>
@@ -348,7 +348,7 @@ export default function RecipesScreen() {
     <View>
       {/* Header: overline + serif title */}
       <Animated.View entering={FadeInDown.duration(400)} style={styles.header}>
-        <Text style={styles.overline}>YOUR LIBRARY</Text>
+        <Text style={styles.overline}>Your Library</Text>
         <View style={styles.headerRow}>
           <Text style={styles.title}>Recipes</Text>
           <View style={styles.actionButtons}>
@@ -356,13 +356,13 @@ export default function RecipesScreen() {
               style={styles.actionButton}
               onPress={() => setShowImportMenu(true)}
             >
-              <Text style={styles.actionButtonText}>IMPORT</Text>
+              <Text style={styles.actionButtonText}>Import</Text>
             </Pressable>
             <Pressable
               style={styles.actionButtonPrimary}
               onPress={() => router.push('/recipe/new')}
             >
-              <Text style={styles.actionButtonPrimaryText}>CREATE</Text>
+              <Text style={styles.actionButtonPrimaryText}>Create</Text>
             </Pressable>
           </View>
         </View>
@@ -406,7 +406,7 @@ export default function RecipesScreen() {
               onPress={() => setSort(opt.value)}
             >
               <Text style={[styles.filterTabText, sort === opt.value && styles.filterTabTextActive]}>
-                {opt.label.toUpperCase()}
+                {opt.label}
               </Text>
               {sort === opt.value && <View style={styles.filterTabLine} />}
             </Pressable>
@@ -427,7 +427,7 @@ export default function RecipesScreen() {
             onPress={() => setActiveFilter(opt.value)}
           >
             <Text style={[styles.secondaryTabText, activeFilter === opt.value && styles.secondaryTabTextActive]}>
-              {opt.label.toUpperCase()}
+              {opt.label}
             </Text>
             {activeFilter === opt.value && <View style={styles.secondaryTabLine} />}
           </Pressable>
@@ -440,7 +440,7 @@ export default function RecipesScreen() {
             onPress={() => setSelectedCourse(opt.value || null)}
           >
             <Text style={[styles.secondaryTabText, (selectedCourse || '') === opt.value && (opt.value ? styles.courseTabTextActive : styles.secondaryTabTextActive)]}>
-              {opt.label.toUpperCase()}
+              {opt.label}
             </Text>
             {(selectedCourse || '') === opt.value && <View style={opt.value ? styles.courseTabLine : styles.secondaryTabLine} />}
           </Pressable>
@@ -542,10 +542,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   overline: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
+    ...typography.metaSmall,
     color: colors.inkMuted,
     marginBottom: 4,
   },
@@ -556,9 +553,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   title: {
-    fontFamily: fontFamily.display,
-    fontSize: 32,
-    letterSpacing: -1,
+    ...typography.title,
     color: colors.ink,
   },
   actionButtons: {
@@ -572,10 +567,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   actionButtonText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.66,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   actionButtonPrimary: {
@@ -586,10 +578,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   actionButtonPrimaryText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.66,
+    ...typography.metaSmall,
     color: colors.bg,
   },
 
@@ -607,8 +596,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontFamily: fontFamily.sansLight,
-    fontSize: 15,
+    ...typography.body,
     color: colors.ink,
     paddingVertical: 0,
   },
@@ -626,10 +614,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   filterTabText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.66,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   filterTabTextActive: {
@@ -658,10 +643,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   secondaryTabText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   secondaryTabTextActive: {
@@ -699,8 +681,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   count: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
 
@@ -737,18 +718,12 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   resultCategory: {
-    fontFamily: fontFamily.monoMedium,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.0,
+    ...typography.metaSmall,
     color: colors.accent,
     marginBottom: 2,
   },
   resultTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 20,
-    lineHeight: 23,
-    letterSpacing: -0.4,
+    ...typography.subheading,
     color: colors.ink,
     marginBottom: 3,
   },
@@ -761,8 +736,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   resultFooterText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
 
@@ -780,9 +754,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxxl,
   },
   importMenuTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 20,
-    lineHeight: 24,
+    ...typography.subheading,
     color: colors.ink,
     marginBottom: spacing.lg,
   },
@@ -798,13 +770,11 @@ const styles = StyleSheet.create({
   },
   importOptionText: { flex: 1 },
   importOptionTitle: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 14,
+    ...typography.label,
     color: colors.ink,
   },
   importOptionDesc: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.inkSecondary,
     marginTop: 2,
   },

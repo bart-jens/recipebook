@@ -21,7 +21,7 @@ export function VisibilityToggle({ recipeId, isPublic: initialPublic }: { recipe
     <button
       onClick={handleToggle}
       disabled={loading}
-      className={`font-mono text-[10px] uppercase tracking-[0.06em] flex items-center gap-1 transition-all active:scale-[0.94] disabled:opacity-40 ${
+      className={`text-[11px] font-normal tracking-[0.02em] flex items-center gap-1 transition-all active:scale-[0.94] disabled:opacity-40 ${
         isPublic
           ? "text-olive"
           : "text-ink-muted hover:text-ink"

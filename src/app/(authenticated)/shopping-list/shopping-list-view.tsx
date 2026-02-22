@@ -134,7 +134,7 @@ export function ShoppingListView({
           className="w-4 h-4 border-[1.5px] rounded-[2px] flex-shrink-0 relative transition-all duration-200 border-border hover:border-accent hover:scale-110"
         />
         {/* Ingredient name */}
-        <span className="flex-1 text-[14px] text-ink">
+        <span className="flex-1 text-[14px] font-normal text-ink">
           {item.ingredient_name}
         </span>
         {/* Amount */}
@@ -155,9 +155,9 @@ export function ShoppingListView({
                 onChange={(e) => setEditQty(e.target.value)}
                 onBlur={() => handleQuantityEdit(item.id)}
                 autoFocus
-                className="w-16 border-b border-border bg-transparent px-1 py-0.5 font-mono text-[12px] text-ink-secondary focus:border-accent focus:outline-none"
+                className="w-16 border-b border-border bg-transparent px-1 py-0.5 text-[12px] font-normal tracking-[0.02em] text-ink-secondary focus:border-accent focus:outline-none"
               />
-              <span className="font-mono text-[12px] text-ink-muted">{item.unit || ""}</span>
+              <span className="text-[12px] font-normal tracking-[0.02em] text-ink-muted">{item.unit || ""}</span>
             </form>
           ) : (
             <button
@@ -166,7 +166,7 @@ export function ShoppingListView({
                 setEditingId(item.id);
                 setEditQty(item.quantity !== null ? String(item.quantity) : "");
               }}
-              className="shrink-0 font-mono text-[12px] text-ink-secondary hover:text-accent transition-colors"
+              className="shrink-0 text-[12px] font-normal tracking-[0.02em] text-ink-secondary hover:text-accent transition-colors"
             >
               {formatQuantity(item.quantity)} {item.unit || ""}
             </button>
@@ -203,12 +203,12 @@ export function ShoppingListView({
           <span className="absolute left-[3px] top-0 w-[5px] h-[9px] border-white border-r-[1.5px] border-b-[1.5px] rotate-45" />
         </span>
         {/* Name — strikethrough accent */}
-        <span className="flex-1 text-[14px] text-ink-muted line-through decoration-accent">
+        <span className="flex-1 text-[14px] font-normal text-ink-muted line-through decoration-accent">
           {item.ingredient_name}
         </span>
         {/* Amount — muted */}
         {(item.quantity !== null || item.unit) && (
-          <span className="shrink-0 font-mono text-[12px] text-ink-secondary opacity-40">
+          <span className="shrink-0 text-[12px] font-normal tracking-[0.02em] text-ink-secondary opacity-40">
             {formatQuantity(item.quantity)} {item.unit || ""}
           </span>
         )}
@@ -235,19 +235,19 @@ export function ShoppingListView({
     <div className="max-w-2xl">
       {/* Header */}
       <div className="mb-6 flex items-baseline justify-between">
-        <h1 className="font-display text-[40px] leading-[0.96] tracking-[-0.04em] text-ink">
+        <h1 className="text-[36px] font-light tracking-[-0.03em] text-ink">
           Grocery List
         </h1>
         <div className="flex items-center gap-4">
           {items.length > 0 && (
-            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
+            <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
               {unchecked.length} {unchecked.length === 1 ? "item" : "items"}
             </span>
           )}
           {items.length > 0 && (
             <button
               onClick={handleClearAll}
-              className="font-mono text-[10px] uppercase tracking-[0.06em] text-red-400 hover:text-red-500 transition-colors"
+              className="text-[11px] font-normal tracking-[0.02em] text-red-400 hover:text-red-500 transition-colors"
             >
               Clear all
             </button>
@@ -263,14 +263,14 @@ export function ShoppingListView({
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
           placeholder="Add an item..."
-          className="w-full border-b-2 border-border bg-transparent py-2.5 text-[14px] placeholder:text-ink-muted focus:border-accent focus:outline-none transition-colors"
+          className="w-full border-b-2 border-border bg-transparent py-2.5 text-[14px] font-normal placeholder:text-ink-muted focus:border-accent focus:outline-none transition-colors"
         />
       </form>
 
       {items.length === 0 ? (
         <div className="py-16 text-center">
-          <p className="font-display text-[18px] italic text-ink-muted">Your grocery list is empty</p>
-          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
+          <p className="text-[20px] font-normal text-ink-muted">Your grocery list is empty</p>
+          <p className="mt-2 text-[11px] font-normal tracking-[0.02em] text-ink-muted">
             Add items above or use the + button on recipe ingredients
           </p>
         </div>
@@ -280,12 +280,12 @@ export function ShoppingListView({
           {groups.map((group, gi) => (
             <div key={group.recipeId ?? `manual-${gi}`} className="mb-6">
               {group.title && (
-                <h2 className="font-display text-[18px] text-ink mb-1">
+                <h2 className="text-[20px] font-normal text-ink mb-1">
                   {group.title}
                 </h2>
               )}
               {!group.title && group.recipeId === null && groups.length > 1 && (
-                <h2 className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted mb-1">
+                <h2 className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-1">
                   Manual
                 </h2>
               )}
@@ -298,7 +298,7 @@ export function ShoppingListView({
           {/* All done message */}
           {unchecked.length === 0 && checked.length > 0 && (
             <div className="py-8 text-center">
-              <p className="font-display text-[18px] italic text-ink-muted">All done!</p>
+              <p className="text-[20px] font-normal text-ink-muted">All done!</p>
             </div>
           )}
 
@@ -309,7 +309,7 @@ export function ShoppingListView({
                 onClick={() => setCheckedExpanded(!checkedExpanded)}
                 className="flex w-full items-center justify-between py-3 transition-colors"
               >
-                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
+                <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
                   Checked ({checked.length})
                 </span>
                 <svg
@@ -327,7 +327,7 @@ export function ShoppingListView({
                   <ul className="list-none">{checked.map(renderCheckedItem)}</ul>
                   <button
                     onClick={handleClearChecked}
-                    className="mt-3 font-mono text-[10px] uppercase tracking-[0.06em] text-red-400 hover:text-red-500 transition-colors"
+                    className="mt-3 text-[11px] font-normal tracking-[0.02em] text-red-400 hover:text-red-500 transition-colors"
                   >
                     Clear all checked
                   </button>

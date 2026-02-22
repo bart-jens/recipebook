@@ -58,7 +58,7 @@ export function Logo({ className }: LogoProps) {
     >
       <ForkMark size={20} className="text-ink" />
       <span
-        className="font-body font-bold text-ink"
+        className="font-normal text-ink"
         style={{ fontSize: 17, lineHeight: 1, letterSpacing: "-0.03em", marginLeft: 7 }}
       >
         EefEats

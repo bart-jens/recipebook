@@ -20,12 +20,12 @@ export default async function NewFollowersPage() {
   return (
     <div className="max-w-2xl">
       <div className="mb-8">
-        <Link href="/profile" className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:text-accent">
+        <Link href="/profile" className="text-[12px] font-normal tracking-[0.02em] text-ink-secondary hover:text-accent">
           &larr; Back to profile
         </Link>
       </div>
 
-      <h1 className="mb-6 font-display text-3xl text-ink">New Followers</h1>
+      <h1 className="mb-6 text-[26px] font-normal tracking-[-0.01em] text-ink">New Followers</h1>
 
       {(newFollowers || []).length === 0 ? (
         <p className="font-body text-sm text-ink-muted">No new followers.</p>
@@ -44,11 +44,11 @@ export default async function NewFollowersPage() {
                   className="h-10 w-10 rounded-full object-cover"
                 />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-alt font-display text-sm text-ink-secondary">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-alt text-sm font-normal text-ink-secondary">
                   {(follower.display_name || "?")[0].toUpperCase()}
                 </div>
               )}
-              <span className="font-body text-sm font-medium text-ink">
+              <span className="text-[15px] font-light text-ink">
                 {follower.display_name || "Unknown"}
               </span>
             </Link>

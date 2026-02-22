@@ -120,11 +120,11 @@ export function LoadMoreButton({
           >
             <div className="flex-1 min-w-0">
               {recipe.tags[0] && (
-                <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-accent font-medium mb-0.5">
+                <div className="text-[11px] font-normal tracking-[0.02em] text-accent mb-0.5">
                   {recipe.tags[0]}
                 </div>
               )}
-              <div className="font-display text-[20px] leading-[1.12] tracking-[-0.02em] text-ink transition-colors group-hover:text-accent">
+              <div className="text-[20px] font-normal leading-[1.12] text-ink transition-colors group-hover:text-accent">
                 {recipe.title}
               </div>
               {recipe.description && (
@@ -132,7 +132,7 @@ export function LoadMoreButton({
                   {recipe.description}
                 </p>
               )}
-              <div className="font-mono text-[11px] text-ink-muted flex gap-2.5">
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted flex gap-2.5">
                 <span>By {recipe.creator_name}</span>
                 {timeStr && <span>{timeStr}</span>}
               </div>
@@ -153,7 +153,7 @@ export function LoadMoreButton({
           <button
             onClick={loadMore}
             disabled={loading}
-            className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent hover:text-ink transition-colors disabled:opacity-50"
+            className="text-[11px] font-normal tracking-[0.02em] text-accent hover:text-ink transition-colors disabled:opacity-50"
           >
             {loading ? "Loading..." : "Load more"}
           </button>

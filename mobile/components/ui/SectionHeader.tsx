@@ -25,12 +25,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   title: {
-    ...typography.sectionTitle,
+    ...typography.subheading,
     color: colors.ink,
   },
   count: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
 });

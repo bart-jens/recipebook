@@ -35,9 +35,9 @@ export function InviteList({ invites }: { invites: Invite[] }) {
         >
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <p className="truncate font-body text-sm font-medium text-ink">{inv.email}</p>
+              <p className="truncate text-[15px] font-light text-ink">{inv.email}</p>
               <span
-                className={`shrink-0 font-mono text-[10px] uppercase tracking-widest ${
+                className={`shrink-0 text-[11px] font-normal tracking-[0.02em] ${
                   inv.usedAt
                     ? "text-olive"
                     : "text-ink-muted"
@@ -46,9 +46,9 @@ export function InviteList({ invites }: { invites: Invite[] }) {
                 {inv.usedAt ? "Joined" : "Pending"}
               </span>
             </div>
-            <p className="font-mono text-[10px] text-ink-secondary">
+            <p className="text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
               Invited by {inv.inviterName} &middot;{" "}
-              <span className="uppercase tracking-widest">{inv.code}</span> &middot;{" "}
+              <span>{inv.code}</span> &middot;{" "}
               {new Date(inv.createdAt).toLocaleDateString()}
             </p>
           </div>
@@ -57,17 +57,17 @@ export function InviteList({ invites }: { invites: Invite[] }) {
             <div className="ml-4 shrink-0">
               {confirmId === inv.id ? (
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-red-600">Revoke?</span>
+                  <span className="text-[11px] font-normal tracking-[0.02em] text-red-600">Revoke?</span>
                   <button
                     onClick={() => handleRevoke(inv.id)}
                     disabled={isPending}
-                    className="bg-red-600 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-white hover:bg-red-700 disabled:opacity-50"
+                    className="bg-red-600 px-2 py-1 text-[11px] font-normal tracking-[0.02em] text-white hover:bg-red-700 disabled:opacity-50"
                   >
                     {isPending ? "..." : "Yes"}
                   </button>
                   <button
                     onClick={() => setConfirmId(null)}
-                    className="border border-border px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:border-ink hover:text-ink"
+                    className="border border-border px-2 py-1 text-[11px] font-normal tracking-[0.02em] text-ink-secondary hover:border-ink hover:text-ink"
                   >
                     No
                   </button>
@@ -75,7 +75,7 @@ export function InviteList({ invites }: { invites: Invite[] }) {
               ) : (
                 <button
                   onClick={() => setConfirmId(inv.id)}
-                  className="px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-red-600 hover:bg-red-50"
+                  className="px-2 py-1 text-[11px] font-normal tracking-[0.02em] text-red-600 hover:bg-red-50"
                 >
                   Revoke
                 </button>
@@ -86,7 +86,7 @@ export function InviteList({ invites }: { invites: Invite[] }) {
       ))}
 
       {invites.length === 0 && (
-        <p className="py-8 text-center font-body text-sm text-ink-muted">No invites found</p>
+        <p className="py-8 text-center text-[13px] font-light text-ink-muted">No invites found</p>
       )}
     </div>
   );

@@ -190,7 +190,7 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
 
         <View style={styles.sectionHeader}>
           <View style={styles.sectionTitleContainer}>
-            <Text style={styles.sectionTitle}>INGREDIENTS</Text>
+            <Text style={styles.sectionTitle}>Ingredients</Text>
           </View>
           <TouchableOpacity
             onPress={addIngredient}
@@ -263,7 +263,7 @@ export default function RecipeForm({ initialData, onSubmit, submitLabel, loading
         ))}
 
         <View style={styles.preparationHeader}>
-          <Text style={styles.sectionTitle}>PREPARATION</Text>
+          <Text style={styles.sectionTitle}>Preparation</Text>
         </View>
         <TextInput
           style={[styles.input, styles.instructionsArea]}
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionTitle: {
-    ...typography.sectionTitle,
+    ...typography.subheading,
     color: colors.textSecondary,
   },
   preparationHeader: {

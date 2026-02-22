@@ -115,7 +115,7 @@ export function ActivityFeed({
               </Link>
             ) : (
               <div className="w-[36px] h-[36px] bg-surface-alt shrink-0 flex items-center justify-center">
-                <span className="font-display text-[14px] text-ink-muted">
+                <span className="text-[14px] font-normal text-ink-muted">
                   {item.display_name[0]?.toUpperCase()}
                 </span>
               </div>
@@ -124,12 +124,12 @@ export function ActivityFeed({
               <p className="text-[13px] font-light text-ink leading-[1.35]">
                 <Link
                   href={`/profile/${item.user_id}`}
-                  className="font-semibold hover:text-accent"
+                  className="font-normal hover:text-accent"
                 >
                   {item.display_name}
                 </Link>
                 <span>{actionVerb(item.event_type)}</span>
-                <Link href={href} className="font-display italic text-accent hover:underline">
+                <Link href={href} className="font-normal text-accent hover:underline">
                   {item.recipe_title}
                 </Link>
               </p>
@@ -137,12 +137,12 @@ export function ActivityFeed({
                 <StarRating rating={item.rating} />
               )}
               {item.event_type === "cooked" && sourceDisplay && (
-                <span className="font-mono text-[10px] text-ink-muted">
+                <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
                   via {sourceDisplay}
                 </span>
               )}
             </div>
-            <span className="font-mono text-[10px] text-ink-muted shrink-0">
+            <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted shrink-0">
               {formatTimeAgo(item.event_at)}
             </span>
           </div>
@@ -152,7 +152,7 @@ export function ActivityFeed({
         <button
           onClick={loadMore}
           disabled={loading}
-          className="mt-3 w-full border-t border-border py-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-muted hover:text-accent transition-colors disabled:opacity-50"
+          className="mt-3 w-full border-t border-border py-2.5 text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-accent transition-colors disabled:opacity-50"
         >
           {loading ? "Loading..." : "Load more"}
         </button>

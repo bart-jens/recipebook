@@ -60,13 +60,13 @@ export default async function PublicRecipePage({ params }: Props) {
   if (!recipe) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <p className="font-display text-2xl text-ink">This recipe is private or doesn&apos;t exist</p>
-        <p className="mt-2 font-body text-sm text-ink-secondary">
+        <p className="text-[26px] font-normal tracking-[-0.01em] text-ink">This recipe is private or doesn&apos;t exist</p>
+        <p className="mt-2 text-[15px] font-light text-ink-secondary">
           Sign up for EefEats to discover and share recipes with friends.
         </p>
         <Link
           href="/signup"
-          className="mt-6 inline-block bg-ink px-6 py-2.5 font-mono text-[10px] uppercase tracking-widest text-white transition-opacity hover:opacity-80"
+          className="mt-6 inline-block bg-ink px-6 py-2.5 text-[14px] font-normal text-white transition-opacity hover:opacity-80"
         >
           Sign up for EefEats
         </Link>
@@ -109,19 +109,19 @@ export default async function PublicRecipePage({ params }: Props) {
       )}
 
       {creator?.display_name && (
-        <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+        <p className="mb-2 text-[12px] font-normal tracking-[0.02em] text-ink-secondary">
           By {creator.display_name}
         </p>
       )}
 
-      <h1 className="mb-4 font-display text-4xl leading-tight text-ink">{recipe.title}</h1>
+      <h1 className="mb-4 text-[36px] font-light tracking-[-0.03em] leading-tight text-ink">{recipe.title}</h1>
 
       {(tags || []).length > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
           {(tags || []).map((t) => (
             <span
               key={t.id}
-              className="border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary"
+              className="border border-border px-3 py-1 text-[11px] font-normal tracking-[0.02em] text-ink-secondary"
             >
               {t.tag}
             </span>
@@ -130,7 +130,7 @@ export default async function PublicRecipePage({ params }: Props) {
       )}
 
       {recipe.source_name && (
-        <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+        <p className="mb-4 text-[12px] font-normal tracking-[0.02em] text-ink-secondary">
           {recipe.source_url ? (
             <a
               href={recipe.source_url}
@@ -154,22 +154,22 @@ export default async function PublicRecipePage({ params }: Props) {
 
       <div className="mb-8 flex flex-wrap gap-3">
         {recipe.prep_time_minutes && (
-          <span className="border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+          <span className="border border-border px-3 py-1 text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
             Prep: {recipe.prep_time_minutes} min
           </span>
         )}
         {recipe.cook_time_minutes && (
-          <span className="border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+          <span className="border border-border px-3 py-1 text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
             Cook: {recipe.cook_time_minutes} min
           </span>
         )}
         {recipe.servings && (
-          <span className="border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+          <span className="border border-border px-3 py-1 text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
             Servings: {recipe.servings}
           </span>
         )}
         {recipe.prep_time_minutes && recipe.cook_time_minutes && (
-          <span className="bg-accent px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-white">
+          <span className="bg-accent px-3 py-1 text-[11px] font-normal tracking-[0.02em] text-white">
             Total: {recipe.prep_time_minutes + recipe.cook_time_minutes} min
           </span>
         )}
@@ -178,12 +178,12 @@ export default async function PublicRecipePage({ params }: Props) {
       {(ingredients || []).length > 0 && (
         <div className="mb-10">
           <div className="mb-4 border-b border-border pb-2">
-            <h2 className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary">Ingredients</h2>
+            <h2 className="text-[11px] font-normal tracking-[0.02em] text-ink-secondary">Ingredients</h2>
           </div>
           <ul className="space-y-2">
             {(ingredients || []).map((ing) => (
               <li key={ing.id} className="flex items-baseline gap-2 border-b border-border pb-2">
-                <span className="min-w-[4rem] text-right font-body font-medium text-ink">
+                <span className="min-w-[4rem] text-right text-[15px] font-normal text-ink">
                   {formatQuantity(ing.quantity)} {ing.unit || ""}
                 </span>
                 <span className="font-body text-ink-secondary">{ing.ingredient_name}</span>
@@ -197,7 +197,7 @@ export default async function PublicRecipePage({ params }: Props) {
       {instructions.length > 0 && (
         <div className="mb-10">
           <div className="mb-4 border-b border-border pb-2">
-            <h2 className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary">Preparation</h2>
+            <h2 className="text-[11px] font-normal tracking-[0.02em] text-ink-secondary">Preparation</h2>
           </div>
           {instructions.length === 1 ? (
             <div className="font-body leading-relaxed text-ink-secondary whitespace-pre-line">
@@ -207,7 +207,7 @@ export default async function PublicRecipePage({ params }: Props) {
             <ol className="space-y-5">
               {instructions.map((step, i) => (
                 <li key={i} className="flex gap-4">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-ink font-mono text-xs text-white">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-ink text-[12px] font-normal text-white">
                     {i + 1}
                   </span>
                   <p className="font-body leading-relaxed text-ink-secondary pt-0.5">{step}</p>
@@ -219,13 +219,13 @@ export default async function PublicRecipePage({ params }: Props) {
       )}
 
       <div className="mt-12 border border-border bg-surface-alt p-6 text-center">
-        <p className="font-display text-xl text-ink">Want to save this recipe?</p>
-        <p className="mt-1 font-body text-sm text-ink-secondary">
+        <p className="text-[20px] font-normal text-ink">Want to save this recipe?</p>
+        <p className="mt-1 text-[15px] font-light text-ink-secondary">
           Join EefEats to save recipes, track what you cook, and discover new favorites.
         </p>
         <Link
           href="/signup"
-          className="mt-4 inline-block bg-ink px-6 py-2.5 font-mono text-[10px] uppercase tracking-widest text-white transition-opacity hover:opacity-80"
+          className="mt-4 inline-block bg-ink px-6 py-2.5 text-[14px] font-normal text-white transition-opacity hover:opacity-80"
         >
           Sign up for EefEats
         </Link>

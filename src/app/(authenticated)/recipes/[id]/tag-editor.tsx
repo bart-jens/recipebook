@@ -36,7 +36,7 @@ export function TagEditor({
         {tags.map((t) => (
           <span
             key={t.id}
-            className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.06em] border border-border text-ink-muted px-2 py-0.5"
+            className="flex items-center gap-1 text-[11px] font-normal tracking-[0.02em] border border-border text-ink-muted px-2 py-0.5"
           >
             {t.tag}
             <button
@@ -55,7 +55,7 @@ export function TagEditor({
           onKeyDown={handleKeyDown}
           placeholder="Add tag..."
           disabled={isPending}
-          className="font-mono text-[10px] uppercase tracking-[0.06em] border border-dashed border-border bg-transparent px-2 py-0.5 text-ink placeholder:text-ink-muted/40 focus:border-accent focus:outline-none"
+          className="text-[11px] font-normal tracking-[0.02em] border border-dashed border-border bg-transparent px-2 py-0.5 text-ink placeholder:text-ink-muted/40 focus:border-accent focus:outline-none"
         />
       </div>
     </div>

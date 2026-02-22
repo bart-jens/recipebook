@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import StarRating from './StarRating';
 import { ForkDot } from './Logo';
-import { colors, spacing, typography, fontFamily, animation } from '@/lib/theme';
+import { colors, spacing, typography, animation } from '@/lib/theme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -128,8 +128,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   placeholderLetter: {
-    fontFamily: fontFamily.sansBold,
-    fontSize: 36,
+    ...typography.title,
     color: colors.accentWashIcon,
   },
   content: {
@@ -141,9 +140,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   title: {
-    fontFamily: fontFamily.display,
-    fontSize: 17,
-    lineHeight: 22,
+    ...typography.subheading,
     color: colors.ink,
     flex: 1,
   },
@@ -154,7 +151,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   creatorName: {
-    ...typography.monoMeta,
+    ...typography.meta,
     color: colors.inkSecondary,
     marginBottom: spacing.xs,
   },
@@ -169,7 +166,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   metaText: {
-    ...typography.monoMeta,
+    ...typography.meta,
     color: colors.inkMuted,
   },
 });

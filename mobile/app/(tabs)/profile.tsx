@@ -11,7 +11,7 @@ import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, fontFamily } from '@/lib/theme';
+import { colors, spacing, typography } from '@/lib/theme';
 import { ForkDot } from '@/components/ui/Logo';
 import FeedbackModal from '@/components/FeedbackModal';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     borderRadius: 32,
   },
   avatarInitial: {
-    fontFamily: fontFamily.display,
+    ...typography.heading,
     fontSize: 24,
     color: colors.bg,
   },
@@ -411,24 +411,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileName: {
-    fontFamily: fontFamily.display,
-    fontSize: 28,
-    lineHeight: 28,
+    ...typography.heading,
     color: colors.ink,
   },
   privateBadge: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    ...typography.metaSmall,
     color: colors.inkMuted,
     marginTop: 4,
   },
   profileBio: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.inkSecondary,
-    lineHeight: 19,
     marginTop: 4,
   },
 
@@ -453,15 +446,11 @@ const styles = StyleSheet.create({
     borderRightWidth: 0,
   },
   statValue: {
-    fontFamily: fontFamily.display,
-    fontSize: 22,
+    ...typography.subheading,
     color: colors.ink,
   },
   statLabel: {
-    fontFamily: fontFamily.mono,
-    fontSize: 9,
-    textTransform: 'uppercase',
-    letterSpacing: 0.9,
+    ...typography.metaSmall,
     color: colors.inkMuted,
     marginTop: 1,
   },
@@ -479,10 +468,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   bannerText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    ...typography.metaSmall,
     color: colors.ink,
   },
   bannerBadge: {
@@ -495,8 +481,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   bannerBadgeText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
+    ...typography.metaSmall,
     color: colors.bg,
   },
 
@@ -513,10 +498,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   planBadgeText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 9,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
 
@@ -538,10 +520,7 @@ const styles = StyleSheet.create({
     marginBottom: -1,
   },
   tabText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.66,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   tabTextActive: {
@@ -578,9 +557,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   recipeTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 17,
-    lineHeight: 20,
+    ...typography.body,
     color: colors.ink,
     marginBottom: 2,
   },
@@ -601,10 +578,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   recipeBadgeText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 9,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    ...typography.metaSmall,
   },
   recipeBadgeTextPub: {
     color: colors.olive,
@@ -620,8 +594,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyTabText: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.inkMuted,
   },
 
@@ -638,10 +611,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionButtonText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    ...typography.metaSmall,
     color: colors.ink,
   },
   actionButtonGhost: {
@@ -649,10 +619,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionButtonGhostText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
 });

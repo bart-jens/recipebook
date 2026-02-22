@@ -145,8 +145,8 @@ export default async function DiscoverPage({
     <div>
       {/* Header */}
       <div className="px-5 pt-4 animate-fade-in-up opacity-0 anim-delay-1">
-        <div className="mono-label mb-1">Explore</div>
-        <h1 className="font-display text-[32px] tracking-[-0.03em] mb-3.5">
+        <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-1">Explore</div>
+        <h1 className="text-[36px] font-light tracking-[-0.03em] mb-3.5">
           Discover
         </h1>
       </div>
@@ -164,7 +164,7 @@ export default async function DiscoverPage({
         <>
           {/* Result count */}
           <div className="px-5 pt-3 animate-fade-in-up opacity-0 anim-delay-3">
-            <p className="font-mono text-[11px] text-ink-muted">
+            <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
               {q
                 ? `${enriched.length} result${enriched.length !== 1 ? "s" : ""} for \u201c${q}\u201d`
                 : `${enriched.length} published recipe${enriched.length !== 1 ? "s" : ""}`}
@@ -193,11 +193,11 @@ export default async function DiscoverPage({
                   >
                     <div className="flex-1 min-w-0">
                       {tags[0] && (
-                        <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-accent font-medium mb-0.5">
+                        <div className="text-[11px] font-normal tracking-[0.02em] text-accent mb-0.5">
                           {tags[0]}
                         </div>
                       )}
-                      <div className="font-display text-[20px] leading-[1.12] tracking-[-0.02em] text-ink transition-colors group-hover:text-accent">
+                      <div className="text-[20px] font-normal leading-[1.12] text-ink transition-colors group-hover:text-accent">
                         {recipe.title}
                       </div>
                       {recipe.description && (
@@ -205,7 +205,7 @@ export default async function DiscoverPage({
                           {recipe.description}
                         </p>
                       )}
-                      <div className="font-mono text-[11px] text-ink-muted flex gap-2.5 items-center">
+                      <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted flex gap-2.5 items-center">
                         <span>By {recipe.creator_name}</span>
                         {timeStr && <span>{timeStr}</span>}
                         {recipe.avgRating != null && (

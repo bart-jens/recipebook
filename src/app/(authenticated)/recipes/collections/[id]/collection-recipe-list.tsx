@@ -84,7 +84,7 @@ export function CollectionRecipeList({
                     </div>
                   )}
                   <div className="flex-1">
-                    <h3 className="font-sans text-base font-medium">{recipe.title}</h3>
+                    <h3 className="font-sans text-base font-normal">{recipe.title}</h3>
                     {recipe.description && (
                       <p className="mt-0.5 text-sm text-warm-gray line-clamp-1">{recipe.description}</p>
                     )}

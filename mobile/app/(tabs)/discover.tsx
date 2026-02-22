@@ -17,7 +17,7 @@ import { Link, router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import * as Haptics from 'expo-haptics';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, fontFamily, animation } from '@/lib/theme';
+import { colors, spacing, typography, animation } from '@/lib/theme';
 import ChefCard from '@/components/ui/ChefCard';
 import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
@@ -410,7 +410,7 @@ export default function DiscoverScreen() {
         >
           <View style={styles.resultContent}>
             {tag && (
-              <Text style={styles.resultCategory}>{tag.toUpperCase()}</Text>
+              <Text style={styles.resultCategory}>{tag}</Text>
             )}
             <Text style={styles.resultTitle} numberOfLines={2}>{item.title}</Text>
             {item.description && (
@@ -500,7 +500,7 @@ export default function DiscoverScreen() {
               <Text style={styles.allFollowedSubtitle}>Invite more friends to join EefEats</Text>
             </Link>
           </View>
-          <Text style={styles.chefSectionTitle}>FOLLOWING</Text>
+          <Text style={styles.chefSectionTitle}>Following</Text>
           {followedChefs.map((chef, index) => (
             <Animated.View
               key={chef.id}
@@ -554,7 +554,7 @@ export default function DiscoverScreen() {
         ))}
         {followedChefs.length > 0 && (
           <>
-            <Text style={styles.chefSectionTitle}>FOLLOWING</Text>
+            <Text style={styles.chefSectionTitle}>Following</Text>
             {followedChefs.map((chef, index) => (
               <Animated.View
                 key={chef.id}
@@ -588,13 +588,13 @@ export default function DiscoverScreen() {
     const tabs: { key: string; label: string; isActive: boolean; onPress: () => void }[] = [
       {
         key: 'tab-recipes',
-        label: 'RECIPES',
+        label: 'Recipes',
         isActive: activeTab === 'recipes',
         onPress: () => handleTabChange('recipes'),
       },
       {
         key: 'tab-chefs',
-        label: 'CHEFS',
+        label: 'Chefs',
         isActive: activeTab === 'chefs',
         onPress: () => handleTabChange('chefs'),
       },
@@ -604,7 +604,7 @@ export default function DiscoverScreen() {
       for (const opt of SORT_OPTIONS) {
         tabs.push({
           key: `sort-${opt.value}`,
-          label: opt.label.toUpperCase(),
+          label: opt.label,
           isActive: sort === opt.value,
           onPress: () => setSort(opt.value),
         });
@@ -649,7 +649,7 @@ export default function DiscoverScreen() {
             style={styles.tagPill}
             onPress={() => setSelectedTag(null)}
           >
-            <Text style={styles.tagClearText}>CLEAR</Text>
+            <Text style={styles.tagClearText}>Clear</Text>
           </Pressable>
         )}
         {allTags.map((tag) => (
@@ -659,7 +659,7 @@ export default function DiscoverScreen() {
             onPress={() => setSelectedTag(selectedTag === tag ? null : tag)}
           >
             <Text style={[styles.tagPillText, selectedTag === tag && styles.tagPillTextActive]}>
-              {tag.toUpperCase()}
+              {tag}
             </Text>
             {selectedTag === tag && <View style={styles.tagActiveLine} />}
           </Pressable>
@@ -672,7 +672,7 @@ export default function DiscoverScreen() {
     <View>
       {/* Header: overline + title */}
       <Animated.View entering={FadeInDown.duration(400)} style={styles.header}>
-        <Text style={styles.overline}>EXPLORE</Text>
+        <Text style={styles.overline}>Explore</Text>
         <Text style={styles.title}>Discover</Text>
 
         {/* Search bar — bottom-border style */}
@@ -767,17 +767,12 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   overline: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
+    ...typography.meta,
     color: colors.inkMuted,
     marginBottom: 4,
   },
   title: {
-    fontFamily: fontFamily.display,
-    fontSize: 32,
-    letterSpacing: -1,
+    ...typography.title,
     color: colors.ink,
     marginBottom: 14,
   },
@@ -796,8 +791,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontFamily: fontFamily.sansLight,
-    fontSize: 15,
+    ...typography.body,
     color: colors.ink,
     paddingVertical: 0,
   },
@@ -815,10 +809,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   filterTabText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.66,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   filterTabTextActive: {
@@ -845,20 +836,14 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   tagPillText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   tagPillTextActive: {
     color: colors.accent,
   },
   tagClearText: {
-    fontFamily: fontFamily.monoMedium,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    ...typography.metaSmall,
     color: colors.accent,
   },
   tagActiveLine: {
@@ -887,25 +872,17 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   resultCategory: {
-    fontFamily: fontFamily.monoMedium,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.0,
+    ...typography.metaSmall,
     color: colors.accent,
     marginBottom: 2,
   },
   resultTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 20,
-    lineHeight: 23,
-    letterSpacing: -0.4,
+    ...typography.subheading,
     color: colors.ink,
     marginBottom: 3,
   },
   resultDesc: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
-    lineHeight: 18,
+    ...typography.bodySmall,
     color: colors.inkSecondary,
     marginBottom: 6,
   },
@@ -914,8 +891,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   resultFooterText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   resultThumb: {
@@ -940,10 +916,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   chefSectionTitle: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
+    ...typography.meta,
     color: colors.inkMuted,
     marginTop: spacing.lg,
     marginBottom: spacing.md,
@@ -956,14 +929,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   allFollowedTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 18,
+    ...typography.subheading,
     color: colors.ink,
     marginTop: spacing.md,
   },
   allFollowedSubtitle: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.accent,
     marginTop: spacing.xs,
   },
@@ -975,13 +946,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   inviteTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 18,
+    ...typography.subheading,
     color: colors.ink,
   },
   inviteSubtitle: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.accent,
     marginTop: spacing.xs,
   },

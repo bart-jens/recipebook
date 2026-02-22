@@ -26,7 +26,7 @@ export function SaveButton({
     <button
       onClick={handleClick}
       disabled={isPending}
-      className={`font-mono text-[10px] uppercase tracking-[0.06em] flex items-center gap-1 transition-all active:scale-[0.94] disabled:opacity-40 ${
+      className={`text-[11px] font-normal tracking-[0.02em] flex items-center gap-1 transition-all active:scale-[0.94] disabled:opacity-40 ${
         isSaved ? "text-accent" : "text-ink-muted hover:text-ink"
       }`}
     >

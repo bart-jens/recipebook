@@ -9,7 +9,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { colors, fontFamily, animation } from '@/lib/theme';
+import { colors, fontFamily, typography, animation } from '@/lib/theme';
 import { Logo } from '@/components/ui/Logo';
 
 function AnimatedTabBarIcon({
@@ -148,10 +148,8 @@ export default function TabLayout() {
           elevation: 0,
         },
         tabBarLabelStyle: {
-          fontFamily: fontFamily.mono,
+          ...typography.metaSmall,
           fontSize: 9,
-          textTransform: 'uppercase',
-          letterSpacing: 0.54,
         },
         tabBarButton: (props) => <AnimatedTabButton {...props} />,
         headerStyle: {

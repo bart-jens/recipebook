@@ -38,13 +38,13 @@ export default async function FollowersPage() {
   return (
     <div>
       <div className="px-5 pt-4 animate-fade-in-up opacity-0 anim-delay-1">
-        <Link href="/profile" className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:text-accent">
+        <Link href="/profile" className="text-[11px] font-normal tracking-[0.02em] text-ink-secondary hover:text-accent">
           &larr; Back to profile
         </Link>
-        <h1 className="mt-3 font-display text-[28px] tracking-[-0.03em] mb-1">
+        <h1 className="mt-3 text-[26px] font-normal tracking-[-0.01em] mb-1">
           Followers
         </h1>
-        <p className="font-mono text-[11px] text-ink-muted">
+        <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
           {followers.length} follower{followers.length !== 1 ? "s" : ""}
         </p>
       </div>
@@ -72,7 +72,7 @@ export default async function FollowersPage() {
                     className="h-10 w-10 rounded-full object-cover shrink-0"
                   />
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-bg font-display text-[14px] shrink-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-bg text-[14px] font-normal shrink-0">
                     {(follower.display_name || "?")[0].toUpperCase()}
                   </div>
                 )}

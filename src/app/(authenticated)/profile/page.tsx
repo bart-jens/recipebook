@@ -66,7 +66,7 @@ export default async function ProfilePage() {
           />
         ) : (
           <div
-            className="w-16 h-16 rounded-full bg-ink text-bg font-display text-[24px] flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-[1.08]"
+            className="w-16 h-16 rounded-full bg-ink text-bg font-normal text-[26px] tracking-[-0.01em] flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-[1.08]"
             style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
           >
             {(profile?.display_name || "?")[0].toUpperCase()}
@@ -74,10 +74,10 @@ export default async function ProfilePage() {
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
-            <h1 className="font-display text-[28px] leading-none tracking-[-0.03em] text-ink">
+            <h1 className="text-[36px] font-light leading-none tracking-[-0.03em] text-ink">
               {profile?.display_name || "Anonymous"}
             </h1>
-            <span className="font-mono text-[9px] uppercase tracking-[0.06em] px-1 py-0.5 border border-border text-ink-muted">
+            <span className="text-[11px] font-normal tracking-[0.02em] px-1 py-0.5 border border-border text-ink-muted">
               {profile?.plan === "premium" ? "Premium" : "Free"}
             </span>
           </div>
@@ -87,7 +87,7 @@ export default async function ProfilePage() {
             </p>
           )}
           {profile?.is_private && (
-            <p className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">
+            <p className="mt-0.5 text-[11px] font-normal tracking-[0.02em] text-ink-muted">
               Private account
             </p>
           )}
@@ -100,10 +100,10 @@ export default async function ProfilePage() {
           href="/profile/requests"
           className="mx-5 mt-4 flex items-center justify-between border border-accent/20 bg-accent-light py-2.5 px-3 transition-colors hover:bg-accent/10"
         >
-          <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink">
+          <span className="text-[11px] font-normal tracking-[0.02em] text-ink">
             Follow requests
           </span>
-          <span className="font-mono text-[11px] bg-accent text-white px-1.5 py-0.5 min-w-[20px] text-center">
+          <span className="text-[11px] font-normal bg-accent text-white px-1.5 py-0.5 min-w-[20px] text-center">
             {pendingRequestCount}
           </span>
         </Link>
@@ -115,10 +115,10 @@ export default async function ProfilePage() {
           href="/profile/new-followers"
           className="mx-5 mt-3 flex items-center justify-between border border-accent/20 bg-accent-light py-2.5 px-3 transition-colors hover:bg-accent/10"
         >
-          <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink">
+          <span className="text-[11px] font-normal tracking-[0.02em] text-ink">
             New followers
           </span>
-          <span className="font-mono text-[11px] bg-accent text-white px-1.5 py-0.5 min-w-[20px] text-center">
+          <span className="text-[11px] font-normal bg-accent text-white px-1.5 py-0.5 min-w-[20px] text-center">
             {newFollowerCount! > 9 ? "9+" : newFollowerCount}
           </span>
         </Link>
@@ -127,28 +127,28 @@ export default async function ProfilePage() {
       {/* Stats Bar */}
       <div className="mx-5 mt-5 flex border-t-[3px] border-t-ink border-b border-b-ink">
         <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-          <div className="font-display text-[22px] text-ink">{totalRecipes}</div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Recipes</div>
+          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{totalRecipes}</div>
+          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Recipes</div>
         </Link>
         <Link href="/recipes?filter=published" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-          <div className="font-display text-[22px] text-ink">{publicCount}</div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Published</div>
+          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{publicCount}</div>
+          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Published</div>
         </Link>
         <Link href="/recipes?filter=cooked" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-          <div className="font-display text-[22px] text-ink">{timesCooked}</div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Cooked</div>
+          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{timesCooked}</div>
+          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cooked</div>
         </Link>
         <Link href="/profile/followers" className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
-          <div className="font-display text-[22px] text-ink">{followerCount}</div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Followers</div>
+          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{followerCount}</div>
+          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Followers</div>
         </Link>
       </div>
 
       {/* Recipe List */}
       <div className="px-5 pb-6">
         <div className="flex items-baseline justify-between py-3">
-          <h2 className="font-display text-[18px] tracking-[-0.02em]">Your Recipes</h2>
-          <span className="font-mono text-[11px] text-ink-muted">{totalRecipes} total</span>
+          <h2 className="text-[20px] font-normal">Your Recipes</h2>
+          <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">{totalRecipes} total</span>
         </div>
 
         {totalRecipes === 0 ? (
@@ -179,12 +179,12 @@ export default async function ProfilePage() {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="font-display text-[17px] leading-[1.2] tracking-[-0.01em] text-ink">
+                  <div className="text-[20px] font-normal leading-[1.2] text-ink">
                     {recipe.title}
                   </div>
-                  <div className="font-mono text-[11px] text-ink-muted flex gap-2 items-center mt-0.5">
+                  <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted flex gap-2 items-center mt-0.5">
                     <span
-                      className={`font-mono text-[9px] uppercase tracking-[0.06em] px-1 py-0.5 border ${
+                      className={`text-[11px] font-normal tracking-[0.02em] px-1 py-0.5 border ${
                         recipe.visibility === "public"
                           ? "border-olive text-olive"
                           : "border-border text-ink-muted"
@@ -206,13 +206,13 @@ export default async function ProfilePage() {
         <div className="flex flex-wrap gap-2">
           <Link
             href="/profile/edit"
-            className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 border border-ink text-ink hover:bg-ink hover:text-bg transition-colors"
+            className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-ink text-ink hover:bg-ink hover:text-bg transition-colors"
           >
             Edit Profile
           </Link>
           <Link
             href="/invites"
-            className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
+            className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
           >
             Invite Friends
           </Link>

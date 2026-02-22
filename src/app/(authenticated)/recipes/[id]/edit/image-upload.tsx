@@ -90,7 +90,7 @@ export function ImageUpload({
 
   return (
     <div className="mb-6">
-      <label className="block text-sm font-medium text-warm-gray mb-2">
+      <label className="block text-sm font-normal text-warm-gray mb-2">
         Recipe Photo
       </label>
       {imageUrl ? (

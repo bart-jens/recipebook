@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   title: {
-    fontFamily: fontFamily.display,
+    ...typography.subheading,
     fontSize: 18,
     lineHeight: 22,
     color: colors.ink,
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   subtitle: {
-    ...typography.bodyLight,
+    ...typography.bodySmall,
     color: colors.inkSecondary,
     textAlign: 'center',
     maxWidth: 260,
@@ -67,10 +67,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   actionLabel: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    ...typography.metaSmall,
     color: colors.white,
   },
 });
