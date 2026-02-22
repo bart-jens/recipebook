@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import Avatar from './Avatar';
-import { colors, spacing, typography, fontFamily } from '@/lib/theme';
+import { colors, spacing, typography } from '@/lib/theme';
 
 interface Props {
   id: string;
@@ -81,13 +81,11 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   name: {
-    fontFamily: fontFamily.display,
-    fontSize: 18,
-    lineHeight: 22,
+    ...typography.subheading,
     color: colors.ink,
   },
   meta: {
-    ...typography.monoMeta,
+    ...typography.meta,
     color: colors.inkSecondary,
     marginTop: 2,
   },
@@ -102,10 +100,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   followText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    ...typography.metaSmall,
     color: colors.white,
   },
   followingText: {
