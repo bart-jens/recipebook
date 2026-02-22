@@ -104,113 +104,61 @@ export default async function HomePage() {
       ? favoriteRecipes
       : ((recentRecipes || []) as HomeRecipe[]);
 
-  // Featured: first recipe with an image
-  const featuredIndex = allRecipes.findIndex((r) => r.image_url);
-  const featured = featuredIndex >= 0 ? allRecipes[featuredIndex] : null;
-  const indexRecipes = allRecipes.filter((_, i) => i !== featuredIndex);
-
   const totalRecipeCount = allRecipes.length;
 
   return (
     <div>
-      {/* 1. Featured Recipe */}
-      {featured && (
-        <div className="px-5 pt-3.5 pb-5 animate-fade-in-up opacity-0 anim-delay-3">
-          <div className="text-[11px] font-normal tracking-[0.02em] mb-2.5">Featured</div>
-          <div className="grid grid-cols-[1fr_130px] gap-4">
-            <div>
-              {featured.recipe_tags?.[0] && (
-                <div className="text-[11px] font-normal tracking-[0.02em] text-accent mb-1">
-                  {featured.recipe_tags[0].tag}
-                </div>
-              )}
-              <Link
-                href={`/recipes/${featured.id}`}
-                className="block text-[26px] font-normal tracking-[-0.01em] leading-[1.2] text-ink hover:text-accent transition-colors mb-2"
-              >
-                {featured.title}
-              </Link>
-              {featured.description && (
-                <p className="text-[13px] font-light text-ink-secondary line-clamp-2 mb-2">
-                  {featured.description}
-                </p>
-              )}
-              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted flex items-center gap-2.5">
-                <span>By {displayName}</span>
-                {formatTime(featured.cook_time_minutes) && (
-                  <>
-                    <span className="w-[3px] h-[3px] rounded-full bg-border" />
-                    <span>{formatTime(featured.cook_time_minutes)}</span>
-                  </>
-                )}
-              </div>
-            </div>
-            <Link href={`/recipes/${featured.id}`} className="block">
-              <img
-                src={featured.image_url!}
-                alt={featured.title}
-                className="w-[130px] h-[170px] object-cover transition-transform duration-[400ms] hover:scale-[1.04]"
-              />
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Thin Rule */}
-      <hr className="rule-thin mx-5 border-0 animate-fade-in opacity-0 anim-delay-4" />
-
-      {/* 5. Numbered Recipe Index */}
-      {indexRecipes.length > 0 && (
-        <div className="px-5 animate-fade-in-up opacity-0 anim-delay-5">
-          <div className="flex items-baseline justify-between py-3">
-            <h2 className="text-[20px] font-normal">
-              Your Recipes
-            </h2>
+      {/* Recipe Carousel */}
+      {allRecipes.length > 0 && (
+        <div className="animate-fade-in-up opacity-0 anim-delay-3">
+          <div className="flex items-baseline justify-between px-5 pt-3.5 pb-2">
+            <h2 className="text-[20px] font-normal">Your Recipes</h2>
             <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
               {totalRecipeCount} total
             </span>
           </div>
-          {indexRecipes.map((recipe, i) => (
-            <Link
-              key={recipe.id}
-              href={`/recipes/${recipe.id}`}
-              className="group flex gap-3 py-3 border-t border-border cursor-pointer transition-all duration-200 hover:bg-accent-light hover:-mx-2.5 hover:px-2.5"
-            >
-              <div className="text-[36px] font-light tracking-[-0.03em] leading-none text-border min-w-[28px] pt-0.5 transition-colors group-hover:text-accent">
-                {i + 1}
-              </div>
-              <div className="flex-1 min-w-0">
-                {recipe.recipe_tags?.[0] && (
-                  <div className="text-[11px] font-normal tracking-[0.02em] text-accent mb-px">
-                    {recipe.recipe_tags[0].tag}
-                  </div>
+          <div className="flex gap-3 overflow-x-auto px-5 pb-4 scrollbar-hide">
+            {allRecipes.map((recipe) => (
+              <Link
+                key={recipe.id}
+                href={`/recipes/${recipe.id}`}
+                className="group shrink-0 w-[140px] cursor-pointer"
+              >
+                {recipe.image_url ? (
+                  <img
+                    src={recipe.image_url}
+                    alt={recipe.title}
+                    className="w-[140px] h-[140px] object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                  />
+                ) : (
+                  <div className="w-[140px] h-[140px] bg-surface-alt" />
                 )}
-                <div className="text-[20px] font-normal leading-[1.15] text-ink mb-[3px] transition-colors group-hover:text-accent">
-                  {recipe.title}
-                </div>
-                <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted flex gap-2.5">
-                  {formatTime(recipe.cook_time_minutes) && (
-                    <span>{formatTime(recipe.cook_time_minutes)}</span>
+                <div className="pt-2">
+                  {recipe.recipe_tags?.[0] && (
+                    <div className="text-[11px] font-normal tracking-[0.02em] text-accent mb-0.5">
+                      {recipe.recipe_tags[0].tag}
+                    </div>
+                  )}
+                  <div className="text-[14px] font-normal leading-[1.2] text-ink line-clamp-2 transition-colors group-hover:text-accent">
+                    {recipe.title}
+                  </div>
+                  {(recipe.cook_time_minutes || recipe.prep_time_minutes) && (
+                    <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mt-0.5">
+                      {formatTime(recipe.cook_time_minutes || recipe.prep_time_minutes)}
+                    </div>
                   )}
                 </div>
-              </div>
-              {recipe.image_url && (
-                <img
-                  src={recipe.image_url}
-                  alt={recipe.title}
-                  className="w-[56px] h-[56px] object-cover shrink-0 self-center transition-transform duration-300 group-hover:scale-[1.08]"
-                />
-              )}
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* 6. Thin Rule */}
-      <hr className="rule-thin mx-5 border-0 mt-3 animate-fade-in opacity-0 anim-delay-6" />
+      {/* Thin Rule */}
+      <hr className="rule-thin mx-5 border-0 animate-fade-in opacity-0 anim-delay-4" />
 
-      {/* 7. Activity Ticker */}
-      <div className="px-5 pb-24 animate-fade-in-up opacity-0 anim-delay-7">
+      {/* Activity */}
+      <div className="px-5 pb-24 animate-fade-in-up opacity-0 anim-delay-5">
         <div className="py-3">
           <h2 className="text-[20px] font-normal">
             Activity
