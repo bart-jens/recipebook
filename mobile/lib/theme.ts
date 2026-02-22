@@ -65,38 +65,43 @@ export const spacing = {
 } as const;
 
 export const fontFamily = {
-  display: 'InstrumentSerif_400Regular',
-  displayItalic: 'InstrumentSerif_400Regular_Italic',
   sans: 'InterTight_400Regular',
   sansLight: 'InterTight_300Light',
-  sansMedium: 'InterTight_500Medium',
-  sansBold: 'InterTight_700Bold',
-  mono: 'GeistMono_400Regular',
-  monoMedium: 'GeistMono_500Medium',
-  logo: 'InterTight_700Bold',
+  logo: 'InterTight_400Regular',
   system: Platform.OS === 'ios' ? 'System' : 'Roboto',
-  // Backward compat aliases
-  serif: 'InstrumentSerif_400Regular',
-  serifSemiBold: 'InstrumentSerif_400Regular',
-  serifBold: 'InstrumentSerif_400Regular',
+  // Backward compat aliases — all point to sans now
+  display: 'InterTight_400Regular',
+  displayItalic: 'InterTight_400Regular',
+  mono: 'InterTight_400Regular',
+  monoMedium: 'InterTight_400Regular',
+  sansMedium: 'InterTight_400Regular',
+  sansBold: 'InterTight_400Regular',
+  serif: 'InterTight_400Regular',
+  serifSemiBold: 'InterTight_400Regular',
+  serifBold: 'InterTight_400Regular',
 } as const;
 
 export const typography: Record<string, TextStyle> = {
-  display: { fontSize: 40, fontFamily: fontFamily.display, lineHeight: 40 },
-  displaySmall: { fontSize: 28, fontFamily: fontFamily.display, lineHeight: 30 },
-  sectionTitle: { fontSize: 18, fontFamily: fontFamily.display, lineHeight: 22 },
-  h1: { fontSize: 32, fontFamily: fontFamily.display, lineHeight: 34 },
-  h2: { fontSize: 28, fontFamily: fontFamily.display, lineHeight: 30 },
-  h3: { fontSize: 20, fontFamily: fontFamily.display, lineHeight: 24 },
-  body: { fontSize: 14, fontFamily: fontFamily.sans, lineHeight: 21 },
+  title: { fontSize: 36, fontFamily: fontFamily.sansLight, lineHeight: 40, letterSpacing: -0.03 * 36 },
+  heading: { fontSize: 26, fontFamily: fontFamily.sans, lineHeight: 31, letterSpacing: -0.01 * 26 },
+  subheading: { fontSize: 20, fontFamily: fontFamily.sans, lineHeight: 26 },
+  body: { fontSize: 15, fontFamily: fontFamily.sansLight, lineHeight: 24 },
   bodySmall: { fontSize: 13, fontFamily: fontFamily.sansLight, lineHeight: 19 },
+  label: { fontSize: 14, fontFamily: fontFamily.sans, lineHeight: 20 },
+  meta: { fontSize: 12, fontFamily: fontFamily.sans, lineHeight: 16, letterSpacing: 0.02 * 12 },
+  metaSmall: { fontSize: 11, fontFamily: fontFamily.sans, lineHeight: 15, letterSpacing: 0.02 * 11 },
+  // Backward compat aliases — map old names to new tokens
+  display: { fontSize: 36, fontFamily: fontFamily.sansLight, lineHeight: 40, letterSpacing: -0.03 * 36 },
+  displaySmall: { fontSize: 26, fontFamily: fontFamily.sans, lineHeight: 31, letterSpacing: -0.01 * 26 },
+  sectionTitle: { fontSize: 20, fontFamily: fontFamily.sans, lineHeight: 26 },
+  h1: { fontSize: 36, fontFamily: fontFamily.sansLight, lineHeight: 40, letterSpacing: -0.03 * 36 },
+  h2: { fontSize: 26, fontFamily: fontFamily.sans, lineHeight: 31, letterSpacing: -0.01 * 26 },
+  h3: { fontSize: 20, fontFamily: fontFamily.sans, lineHeight: 26 },
   bodyLight: { fontSize: 13, fontFamily: fontFamily.sansLight, lineHeight: 19 },
-  label: { fontSize: 14, fontFamily: fontFamily.sansMedium, lineHeight: 20 },
-  caption: { fontSize: 12, fontFamily: fontFamily.sans, lineHeight: 16 },
-  monoLabel: { fontSize: 10, fontFamily: fontFamily.mono, textTransform: 'uppercase', letterSpacing: 1.4 },
-  monoMeta: { fontSize: 11, fontFamily: fontFamily.mono },
-  heading: { fontSize: 22, fontFamily: fontFamily.display, lineHeight: 26 },
-  headingSmall: { fontSize: 18, fontFamily: fontFamily.display, lineHeight: 22 },
+  caption: { fontSize: 12, fontFamily: fontFamily.sans, lineHeight: 16, letterSpacing: 0.02 * 12 },
+  monoLabel: { fontSize: 11, fontFamily: fontFamily.sans, lineHeight: 15, letterSpacing: 0.02 * 11 },
+  monoMeta: { fontSize: 12, fontFamily: fontFamily.sans, lineHeight: 16, letterSpacing: 0.02 * 12 },
+  headingSmall: { fontSize: 20, fontFamily: fontFamily.sans, lineHeight: 26 },
 } as const;
 
 export const radii = {
