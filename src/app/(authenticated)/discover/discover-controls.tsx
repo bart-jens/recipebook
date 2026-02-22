@@ -92,7 +92,7 @@ export function DiscoverControls() {
           <div className="mt-2">
             <button
               onClick={() => updateParams({ tag: "" })}
-              className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.06em] text-accent hover:text-ink transition-colors"
+              className="inline-flex items-center gap-1 text-[11px] font-normal tracking-[0.02em] text-accent hover:text-ink transition-colors"
             >
               {tag}
               <span className="ml-0.5 text-ink-muted">&times;</span>
@@ -101,13 +101,13 @@ export function DiscoverControls() {
         )}
       </div>
 
-      {/* Filter tabs — mono uppercase with active underline */}
+      {/* Filter tabs */}
       <div className="flex gap-0 px-5 border-b border-border">
         {TABS.map((t) => (
           <button
             key={t.value}
             onClick={() => handleTabClick(t.value)}
-            className={`relative font-mono text-[11px] uppercase tracking-[0.06em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
+            className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
               activeTab === t.value
                 ? "text-ink"
                 : "text-ink-muted hover:text-ink"

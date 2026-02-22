@@ -60,7 +60,7 @@ export function ChefCard({
             className="h-11 w-11 rounded-full object-cover transition-transform duration-300 hover:scale-[1.08]"
           />
         ) : (
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-bg font-display text-[18px]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-bg text-[20px] font-normal">
             {displayName[0]?.toUpperCase()}
           </div>
         )}
@@ -68,11 +68,11 @@ export function ChefCard({
       <div className="min-w-0 flex-1">
         <Link
           href={`/profile/${id}`}
-          className="block truncate font-display text-[18px] leading-[1.2] tracking-[-0.01em] text-ink hover:text-accent transition-colors"
+          className="block truncate text-[20px] font-normal leading-[1.2] text-ink hover:text-accent transition-colors"
         >
           {displayName}
         </Link>
-        <p className="font-mono text-[11px] text-ink-muted flex gap-2">
+        <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted flex gap-2">
           <span>{recipeCount} recipe{recipeCount !== 1 ? "s" : ""}</span>
           {lastCooked && (
             <span>Cooked {formatTimeAgo(lastCooked)}</span>
@@ -82,7 +82,7 @@ export function ChefCard({
       <button
         onClick={handleFollow}
         disabled={isPending}
-        className={`shrink-0 font-mono text-[10px] uppercase tracking-[0.06em] px-3 py-1.5 transition-all disabled:opacity-50 ${
+        className={`shrink-0 text-[11px] font-normal tracking-[0.02em] px-3 py-1.5 transition-all disabled:opacity-50 ${
           followState === "following"
             ? "border border-border text-ink-muted hover:border-accent hover:text-accent"
             : "bg-ink text-bg hover:bg-accent"
