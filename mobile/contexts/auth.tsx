@@ -137,9 +137,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ],
         nonce: hashedNonce,
       });
+      if (!credential.identityToken) {
+        return { error: 'Apple did not return an identity token' };
+      }
       const { error } = await supabase.auth.signInWithIdToken({
         provider: 'apple',
-        token: credential.identityToken!,
+        token: credential.identityToken,
         nonce,
       });
       if (error) return { error: error.message };
