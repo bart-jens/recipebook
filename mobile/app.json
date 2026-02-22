@@ -19,9 +19,11 @@
       "buildNumber": "1",
       "infoPlist": {
         "NSCameraUsageDescription": "EefEats uses the camera to scan recipes from photos.",
-        "NSPhotoLibraryUsageDescription": "EefEats accesses your photo library to import recipe photos and set your profile picture."
+        "NSPhotoLibraryUsageDescription": "EefEats accesses your photo library to import recipe photos and set your profile picture.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "privacyManifests": {
+        "NSPrivacyTracking": false,
         "NSPrivacyAccessedAPITypes": [
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
@@ -47,8 +49,7 @@
             "NSPrivacyCollectedDataTypeTracking": false,
             "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
           }
-        ],
-        "NSPrivacyTracking": false
+        ]
       }
     },
     "android": {
@@ -70,6 +71,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5e756d63-6901-4ed7-9adc-218bac9e7fa1"
+      }
     }
   }
 }
