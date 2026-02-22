@@ -18,10 +18,10 @@ export { ErrorBoundary } from 'expo-router';
 SplashScreen.preventAutoHideAsync();
 
 function DeepLinkHandler() {
-  const { isPasswordReset, clearPasswordReset } = useAuth();
+  const { isPasswordReset, clearPasswordReset, loading } = useAuth();
 
   useEffect(() => {
-    function handleUrl(url: string) {
+    async function handleUrl(url: string) {
       if (!url.includes('reset-password')) return;
       const fragment = url.split('#')[1];
       if (!fragment) return;
@@ -29,7 +29,8 @@ function DeepLinkHandler() {
       const accessToken = params.get('access_token');
       const refreshToken = params.get('refresh_token');
       if (accessToken && refreshToken) {
-        supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+        const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+        if (error) console.warn('[DeepLink] setSession failed:', error.message);
       }
     }
 
@@ -42,10 +43,11 @@ function DeepLinkHandler() {
   }, []);
 
   useEffect(() => {
-    if (isPasswordReset) {
+    if (!loading && isPasswordReset) {
+      clearPasswordReset();
       router.push('/(auth)/reset-password');
     }
-  }, [isPasswordReset]);
+  }, [isPasswordReset, loading]);
 
   return null;
 }
