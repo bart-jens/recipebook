@@ -180,7 +180,7 @@ export default async function DiscoverPage({
             </div>
           ) : (
             <div className="px-5 pb-24">
-              {enriched.map((recipe, i) => {
+              {enriched.map((recipe) => {
                 const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
                 const timeStr = formatTime(totalTime);
                 const tags = (recipe.recipe_tags || []).map((t) => t.tag);

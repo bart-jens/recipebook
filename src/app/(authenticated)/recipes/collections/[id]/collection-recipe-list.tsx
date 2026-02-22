@@ -57,7 +57,7 @@ export function CollectionRecipeList({
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((recipe, i) => {
+          {filtered.map((recipe) => {
             const timeInfo = [
               recipe.prep_time_minutes && `${recipe.prep_time_minutes} min prep`,
               recipe.cook_time_minutes && `${recipe.cook_time_minutes} min cook`,
