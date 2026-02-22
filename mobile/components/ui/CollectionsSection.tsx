@@ -14,7 +14,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, fontFamily } from '@/lib/theme';
+import { colors, spacing, typography } from '@/lib/theme';
 import { ForkDot } from './Logo';
 
 
@@ -98,7 +98,7 @@ export default function CollectionsSection({ collections, userPlan, onRefresh }:
             </View>
           ) : (
             <Pressable onPress={() => setShowCreate(true)} style={styles.newButton}>
-              <Text style={styles.newButtonText}>NEW</Text>
+              <Text style={styles.newButtonText}>New</Text>
             </Pressable>
           )}
         </View>
@@ -181,14 +181,14 @@ export default function CollectionsSection({ collections, userPlan, onRefresh }:
                 disabled={!newName.trim() || creating}
               >
                 <Text style={styles.createBtnText}>
-                  {creating ? 'CREATING...' : 'CREATE'}
+                  {creating ? 'Creating...' : 'Create'}
                 </Text>
               </Pressable>
               <Pressable
                 style={styles.cancelBtn}
                 onPress={() => setShowCreate(false)}
               >
-                <Text style={styles.cancelBtnText}>CANCEL</Text>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
               </Pressable>
             </View>
           </View>
@@ -212,9 +212,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   sectionTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 18,
-    letterSpacing: -0.4,
+    ...typography.subheading,
     color: colors.ink,
   },
   headerRight: {
@@ -223,8 +221,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   countText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   newButton: {
@@ -234,10 +231,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   newButtonText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.66,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   limitBadge: {
@@ -247,10 +241,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   limitText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 9,
-    textTransform: 'uppercase',
-    letterSpacing: 0.66,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   scrollContent: {
@@ -279,15 +270,11 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   cardName: {
-    fontFamily: fontFamily.display,
-    fontSize: 15,
-    lineHeight: 18,
-    letterSpacing: -0.2,
+    ...typography.label,
     color: colors.ink,
   },
   cardCount: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
+    ...typography.metaSmall,
     color: colors.inkMuted,
     marginTop: 2,
   },
@@ -304,9 +291,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxxl,
   },
   modalTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 20,
-    lineHeight: 24,
+    ...typography.subheading,
     color: colors.ink,
     marginBottom: spacing.lg,
   },
@@ -317,8 +302,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   input: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 15,
+    ...typography.body,
     color: colors.ink,
     paddingVertical: 0,
   },
@@ -329,8 +313,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   inputSecondary: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.ink,
     paddingVertical: 0,
   },
@@ -346,10 +329,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   createBtnText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.66,
+    ...typography.metaSmall,
     color: '#FFFFFF',
   },
   cancelBtn: {
@@ -360,10 +340,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelBtnText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.66,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   btnDisabled: {
