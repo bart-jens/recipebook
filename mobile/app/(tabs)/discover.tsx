@@ -389,7 +389,11 @@ export default function DiscoverScreen() {
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
-    setLoading(true);
+    if (tab === 'recipes' && allRecipes.length === 0) {
+      setLoading(true);
+    } else if (tab === 'chefs' && chefs.length === 0) {
+      setLoading(true);
+    }
   };
 
   const unfollowedChefs = chefs.filter((c) => c.follow_state === 'not_following');
@@ -582,55 +586,47 @@ export default function DiscoverScreen() {
     );
   };
 
-  // Build all filter tabs: Recipes, Chefs, then sort options + tags when on recipes tab
-  const renderFilterTabs = () => {
-    const tabs: { key: string; label: string; isActive: boolean; onPress: () => void }[] = [
-      {
-        key: 'tab-recipes',
-        label: 'Recipes',
-        isActive: activeTab === 'recipes',
-        onPress: () => handleTabChange('recipes'),
-      },
-      {
-        key: 'tab-chefs',
-        label: 'Chefs',
-        isActive: activeTab === 'chefs',
-        onPress: () => handleTabChange('chefs'),
-      },
-    ];
+  const renderMainTabs = () => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.filterRow}
+    >
+      {[
+        { key: 'tab-recipes', label: 'Recipes', isActive: activeTab === 'recipes', onPress: () => handleTabChange('recipes') },
+        { key: 'tab-chefs', label: 'Chefs', isActive: activeTab === 'chefs', onPress: () => handleTabChange('chefs') },
+      ].map((tab) => (
+        <Pressable key={tab.key} style={styles.filterTab} onPress={tab.onPress}>
+          <Text style={[styles.filterTabText, tab.isActive && styles.filterTabTextActive]}>
+            {tab.label}
+          </Text>
+          {tab.isActive && <View style={styles.filterTabLine} />}
+        </Pressable>
+      ))}
+    </ScrollView>
+  );
 
-    if (activeTab === 'recipes') {
-      for (const opt of SORT_OPTIONS) {
-        tabs.push({
-          key: `sort-${opt.value}`,
-          label: opt.label,
-          isActive: sort === opt.value,
-          onPress: () => setSort(opt.value),
-        });
-      }
-    }
-
+  const renderSortTabs = () => {
+    if (activeTab !== 'recipes') return null;
     return (
-      <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterRow}
-        >
-          {tabs.map((tab) => (
-            <Pressable
-              key={tab.key}
-              style={styles.filterTab}
-              onPress={tab.onPress}
-            >
-              <Text style={[styles.filterTabText, tab.isActive && styles.filterTabTextActive]}>
-                {tab.label}
-              </Text>
-              {tab.isActive && <View style={styles.filterTabLine} />}
-            </Pressable>
-          ))}
-        </ScrollView>
-      </Animated.View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.sortRow}
+      >
+        {SORT_OPTIONS.map((opt) => (
+          <Pressable
+            key={`sort-${opt.value}`}
+            style={styles.sortTab}
+            onPress={() => setSort(opt.value)}
+          >
+            <Text style={[styles.sortTabText, sort === opt.value && styles.sortTabTextActive]}>
+              {opt.label}
+            </Text>
+            {sort === opt.value && <View style={styles.sortTabLine} />}
+          </Pressable>
+        ))}
+      </ScrollView>
     );
   };
 
@@ -671,37 +667,36 @@ export default function DiscoverScreen() {
 
   const renderHeader = () => (
     <View>
-      {/* Header: overline + title */}
-      <Animated.View entering={FadeInDown.duration(400)} style={styles.header}>
-        {/* Search bar — bottom-border style */}
-        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
-          <View style={[styles.searchWrap, searchFocused && styles.searchWrapFocused]}>
-            <FontAwesome name="search" size={14} color={colors.inkMuted} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search recipes or chefs"
-              placeholderTextColor={colors.inkMuted}
-              value={search}
-              onChangeText={setSearch}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              returnKeyType="search"
-            />
-            <Pressable
-              onPress={() => setShowFilters((v) => !v)}
-              style={styles.filterButton}
-              hitSlop={8}
-            >
-              <FontAwesome name="sliders" size={12} color={showFilters ? colors.ink : colors.inkMuted} />
-              <Text style={[styles.filterButtonText, showFilters && styles.filterButtonTextActive]}>Filter</Text>
-              {hasActiveFilter && <View style={styles.filterDot} />}
-            </Pressable>
-          </View>
-        </Animated.View>
-      </Animated.View>
+      <View style={styles.header}>
+        <View style={[styles.searchWrap, searchFocused && styles.searchWrapFocused]}>
+          <FontAwesome name="search" size={14} color={colors.inkMuted} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search recipes or chefs"
+            placeholderTextColor={colors.inkMuted}
+            value={search}
+            onChangeText={setSearch}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
+            returnKeyType="search"
+          />
+          <Pressable
+            onPress={() => setShowFilters((v) => !v)}
+            style={styles.filterButton}
+            hitSlop={8}
+          >
+            <FontAwesome name="sliders" size={12} color={showFilters ? colors.ink : colors.inkMuted} />
+            <Text style={[styles.filterButtonText, showFilters && styles.filterButtonTextActive]}>Filter</Text>
+            {hasActiveFilter && <View style={styles.filterDot} />}
+          </Pressable>
+        </View>
+      </View>
 
-      {/* Filter tabs — always visible */}
-      {renderFilterTabs()}
+      {/* Main tabs — always visible */}
+      {renderMainTabs()}
+
+      {/* Sort tabs — only when Recipes active */}
+      {renderSortTabs()}
 
       {/* Tag filter row — behind filter toggle */}
       {showFilters && renderTagRow()}
@@ -846,6 +841,34 @@ const styles = StyleSheet.create({
     left: 0,
     right: 14,
     height: 2,
+    backgroundColor: colors.ink,
+  },
+
+  // Sort tabs (secondary row)
+  sortRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  sortTab: {
+    paddingVertical: 6,
+    paddingRight: 12,
+    position: 'relative',
+  },
+  sortTabText: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+  },
+  sortTabTextActive: {
+    color: colors.ink,
+  },
+  sortTabLine: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    right: 12,
+    height: 1.5,
     backgroundColor: colors.ink,
   },
 

@@ -346,7 +346,7 @@ export default function RecipesScreen() {
   const renderHeader = () => (
     <View>
       {/* Header: overline + serif title */}
-      <Animated.View entering={FadeInDown.duration(400)} style={styles.header}>
+      <View style={styles.header}>
         <Text style={styles.overline}>Your Library</Text>
         <View style={styles.headerRow}>
           <Text style={styles.title}>Recipes</Text>
@@ -367,34 +367,32 @@ export default function RecipesScreen() {
         </View>
 
         {/* Search bar — bottom-border style */}
-        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
-          <View style={[styles.searchWrap, searchFocused && styles.searchWrapFocused]}>
-            <FontAwesome name="search" size={14} color={colors.inkMuted} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search recipes, ingredients, tags..."
-              placeholderTextColor={colors.inkMuted}
-              value={search}
-              onChangeText={setSearch}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              returnKeyType="search"
-            />
-            <Pressable
-              style={styles.filterToggle}
-              onPress={() => setShowFilters((v) => !v)}
-            >
-              <FontAwesome name="sliders" size={12} color={showFilters ? colors.ink : colors.inkMuted} />
-              <Text style={[styles.filterToggleText, showFilters && styles.filterToggleTextActive]}>
-                Filter
-              </Text>
-              {(sort !== 'updated' || selectedCourse !== null) && (
-                <View style={styles.filterDot} />
-              )}
-            </Pressable>
-          </View>
-        </Animated.View>
-      </Animated.View>
+        <View style={[styles.searchWrap, searchFocused && styles.searchWrapFocused]}>
+          <FontAwesome name="search" size={14} color={colors.inkMuted} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search recipes, ingredients, tags..."
+            placeholderTextColor={colors.inkMuted}
+            value={search}
+            onChangeText={setSearch}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
+            returnKeyType="search"
+          />
+          <Pressable
+            style={styles.filterToggle}
+            onPress={() => setShowFilters((v) => !v)}
+          >
+            <FontAwesome name="sliders" size={12} color={showFilters ? colors.ink : colors.inkMuted} />
+            <Text style={[styles.filterToggleText, showFilters && styles.filterToggleTextActive]}>
+              Filter
+            </Text>
+            {(sort !== 'updated' || selectedCourse !== null) && (
+              <View style={styles.filterDot} />
+            )}
+          </Pressable>
+        </View>
+      </View>
 
       {/* Collections */}
       <CollectionsSection
@@ -426,26 +424,24 @@ export default function RecipesScreen() {
       {showFilters && (
         <>
           {/* Sort tabs */}
-          <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.filterRow}
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <Pressable
-                  key={opt.value}
-                  style={styles.filterTab}
-                  onPress={() => setSort(opt.value)}
-                >
-                  <Text style={[styles.filterTabText, sort === opt.value && styles.filterTabTextActive]}>
-                    {opt.label}
-                  </Text>
-                  {sort === opt.value && <View style={styles.filterTabLine} />}
-                </Pressable>
-              ))}
-            </ScrollView>
-          </Animated.View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterRow}
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <Pressable
+                key={opt.value}
+                style={styles.filterTab}
+                onPress={() => setSort(opt.value)}
+              >
+                <Text style={[styles.filterTabText, sort === opt.value && styles.filterTabTextActive]}>
+                  {opt.label}
+                </Text>
+                {sort === opt.value && <View style={styles.filterTabLine} />}
+              </Pressable>
+            ))}
+          </ScrollView>
 
           {/* Course tabs */}
           <ScrollView

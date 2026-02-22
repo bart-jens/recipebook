@@ -226,15 +226,15 @@ export default function ProfileScreen() {
           <Text style={styles.statValue}>{stats.recipes}</Text>
           <Text style={styles.statLabel}>Recipes</Text>
         </Pressable>
-        <Pressable style={styles.stat} onPress={() => {}}>
+        <Pressable style={styles.stat} onPress={() => router.push('/(tabs)/recipes')}>
           <Text style={styles.statValue}>{stats.cooked}</Text>
           <Text style={styles.statLabel}>Cooked</Text>
         </Pressable>
-        <Pressable style={styles.stat} onPress={() => router.push('/(tabs)/discover')}>
+        <Pressable style={styles.stat} onPress={() => router.push({ pathname: '/(tabs)/discover', params: { tab: 'chefs' } })}>
           <Text style={styles.statValue}>{stats.following}</Text>
           <Text style={styles.statLabel}>Following</Text>
         </Pressable>
-        <Pressable style={[styles.stat, styles.statLast]} onPress={() => router.push('/profile/new-followers')}>
+        <Pressable style={[styles.stat, styles.statLast]} onPress={() => router.push('/profile/followers')}>
           <Text style={styles.statValue}>{stats.followers}</Text>
           <Text style={styles.statLabel}>Followers</Text>
         </Pressable>

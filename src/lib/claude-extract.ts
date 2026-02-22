@@ -20,7 +20,7 @@ const RECIPE_PROMPT = `Extract the recipe from this image. Return ONLY valid JSO
 {
   "title": "Recipe title",
   "description": "Brief 1-2 sentence description of the dish",
-  "instructions": "Step-by-step instructions, each step on a new line",
+  "instructions": "Step-by-step instructions, each step on a new line. Do NOT include step numbers, bullets, or dashes at the start of each step — the UI adds numbering automatically",
   "prep_time_minutes": null or number,
   "cook_time_minutes": null or number,
   "servings": null or number,

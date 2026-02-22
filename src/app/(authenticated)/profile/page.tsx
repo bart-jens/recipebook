@@ -155,7 +155,7 @@ export default async function ProfilePage() {
           <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{followingCount}</div>
           <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Following</div>
         </Link>
-        <Link href="/profile/new-followers" className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
+        <Link href="/profile/followers" className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
           <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{followerCount}</div>
           <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Followers</div>
         </Link>

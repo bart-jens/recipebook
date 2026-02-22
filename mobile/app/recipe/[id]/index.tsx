@@ -665,7 +665,7 @@ export default function RecipeDetailScreen() {
   const instructions = recipe.instructions
     ? recipe.instructions
         .split(/\n/)
-        .map((l) => l.trim())
+        .map((l) => l.trim().replace(/^(?:\d+[\.\)]\s*|[-*\u2022\u2013\u2014]\s*|step\s+\d+[:\.\)]*\s*)/i, ''))
         .filter(Boolean)
     : [];
 

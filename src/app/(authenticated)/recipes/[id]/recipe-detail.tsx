@@ -64,8 +64,12 @@ interface RatingEntry {
   created_at: string;
 }
 
+function stripLeadingMarker(line: string): string {
+  return line.replace(/^(?:\d+[\.\)]\s*|[-*\u2022\u2013\u2014]\s*|step\s+\d+[:\.\)]*\s*)/i, '');
+}
+
 function formatInstructions(text: string): string[] {
-  const lines = text.split(/\n/).map((l) => l.trim()).filter(Boolean);
+  const lines = text.split(/\n/).map((l) => stripLeadingMarker(l.trim())).filter(Boolean);
   if (lines.length > 1) return lines;
   return [text];
 }
