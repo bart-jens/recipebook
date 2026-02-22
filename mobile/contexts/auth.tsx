@@ -3,6 +3,8 @@ import { Session, User, Provider } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
 
@@ -13,6 +15,11 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, inviteCode?: string) => Promise<{ error: string | null }>;
   signInWithOAuth: (provider: Provider) => Promise<{ error: string | null }>;
+  signInWithApple: () => Promise<{ error: string | null }>;
+  resetPassword: (email: string) => Promise<{ error: string | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
+  isPasswordReset: boolean;
+  clearPasswordReset: () => void;
   signOut: () => Promise<void>;
 }
 
@@ -23,12 +30,18 @@ const AuthContext = createContext<AuthContextType>({
   signIn: async () => ({ error: null }),
   signUp: async () => ({ error: null }),
   signInWithOAuth: async () => ({ error: null }),
+  signInWithApple: async () => ({ error: null }),
+  resetPassword: async () => ({ error: null }),
+  updatePassword: async () => ({ error: null }),
+  isPasswordReset: false,
+  clearPasswordReset: () => {},
   signOut: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -38,8 +51,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      if (event === 'PASSWORD_RESET') {
+        setIsPasswordReset(true);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -107,6 +123,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function signInWithApple() {
+    try {
+      const nonce = Crypto.randomUUID();
+      const hashedNonce = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        nonce,
+      );
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashedNonce,
+      });
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken!,
+        nonce,
+      });
+      if (error) return { error: error.message };
+      return { error: null };
+    } catch (e: any) {
+      if (e.code === 'ERR_REQUEST_CANCELED') {
+        return { error: null }; // User cancelled — not an error
+      }
+      return { error: e.message || 'Sign in with Apple failed' };
+    }
+  }
+
+  async function resetPassword(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'eefeats://reset-password',
+    });
+    return { error: error?.message || null };
+  }
+
+  async function updatePassword(newPassword: string) {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    return { error: error?.message || null };
+  }
+
+  function clearPasswordReset() {
+    setIsPasswordReset(false);
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
   }
@@ -120,6 +181,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         signInWithOAuth,
+        signInWithApple,
+        resetPassword,
+        updatePassword,
+        isPasswordReset,
+        clearPasswordReset,
         signOut,
       }}
     >
