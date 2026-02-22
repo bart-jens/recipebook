@@ -332,15 +332,19 @@ export default function HomeScreen() {
         style={styles.tickerItem}
         onPress={() => handleFeedItemPress(item)}
       >
-        {item.recipe_image_url ? (
+        {item.avatar_url ? (
           <Image
-            source={{ uri: item.recipe_image_url }}
-            style={styles.tickerThumb}
+            source={{ uri: item.avatar_url }}
+            style={styles.tickerAvatar}
             contentFit="cover"
             transition={200}
           />
         ) : (
-          <View style={[styles.tickerThumb, { backgroundColor: colors.surfaceAlt }]} />
+          <View style={styles.tickerAvatarFallback}>
+            <Text style={styles.tickerAvatarLetter}>
+              {item.display_name[0]?.toUpperCase()}
+            </Text>
+          </View>
         )}
         <View style={styles.tickerBody}>
           <Text style={styles.tickerText} numberOfLines={2}>
@@ -471,10 +475,23 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     alignItems: 'center',
   },
-  tickerThumb: {
+  tickerAvatar: {
     width: 36,
     height: 36,
-    borderRadius: 0,
+    borderRadius: 18,
+  },
+  tickerAvatarFallback: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  tickerAvatarLetter: {
+    fontSize: 14,
+    fontFamily: fontFamily.sans,
+    color: colors.inkMuted,
   },
   tickerBody: {
     flex: 1,

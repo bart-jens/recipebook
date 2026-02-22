@@ -109,31 +109,21 @@ export function ActivityFeed({
             key={`${item.event_type}-${item.recipe_id}-${item.event_at}-${i}`}
             className="group flex gap-2.5 py-2.5 border-t border-border items-center transition-all duration-150 cursor-pointer hover:bg-accent-light hover:-mx-1.5 hover:px-1.5"
           >
-            {item.recipe_image_url ? (
-              !isExternal ? (
-                <Link href={href} className="shrink-0">
-                  <img
-                    src={item.recipe_image_url}
-                    alt={item.recipe_title}
-                    className="w-[36px] h-[36px] object-cover shrink-0 transition-transform duration-[250ms] group-hover:scale-110"
-                  />
-                </Link>
+            <Link href={`/profile/${item.user_id}`} className="shrink-0">
+              {item.avatar_url ? (
+                <img
+                  src={item.avatar_url}
+                  alt={item.display_name}
+                  className="w-[36px] h-[36px] rounded-full object-cover shrink-0 transition-transform duration-[250ms] group-hover:scale-110"
+                />
               ) : (
-                <a href={href} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                  <img
-                    src={item.recipe_image_url}
-                    alt={item.recipe_title}
-                    className="w-[36px] h-[36px] object-cover shrink-0 transition-transform duration-[250ms] group-hover:scale-110"
-                  />
-                </a>
-              )
-            ) : (
-              <div className="w-[36px] h-[36px] bg-surface-alt shrink-0 flex items-center justify-center">
-                <span className="text-[14px] font-normal text-ink-muted">
-                  {item.display_name[0]?.toUpperCase()}
-                </span>
-              </div>
-            )}
+                <div className="w-[36px] h-[36px] rounded-full bg-surface-alt shrink-0 flex items-center justify-center">
+                  <span className="text-[14px] font-normal text-ink-muted">
+                    {item.display_name[0]?.toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </Link>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-light text-ink leading-[1.35]">
                 <Link
