@@ -48,7 +48,7 @@ export default function ForgotPasswordScreen() {
             <Text style={styles.successBody}>
               We sent a password reset link to {email}. Open it on your phone to set a new password.
             </Text>
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
               <Text style={styles.backLink}>Back to sign in</Text>
             </TouchableOpacity>
           </View>
@@ -83,7 +83,7 @@ export default function ForgotPasswordScreen() {
                 )}
               </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
               <Text style={styles.backLink}>Back to sign in</Text>
             </TouchableOpacity>
           </>
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: spacing.sm,
   },
-  buttonDisabled: { opacity: 0.4 },
+  buttonDisabled: { opacity: 0.6 },
   buttonText: { ...typography.metaSmall, color: colors.white },
   backLink: {
     marginTop: spacing.xxl,

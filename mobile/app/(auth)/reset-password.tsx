@@ -106,6 +106,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: spacing.sm,
   },
-  buttonDisabled: { opacity: 0.4 },
+  buttonDisabled: { opacity: 0.6 },
   buttonText: { ...typography.metaSmall, color: colors.white },
 });
