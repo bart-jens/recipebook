@@ -390,7 +390,7 @@ export default function RecipesScreen() {
               <Text style={[styles.filterToggleText, showFilters && styles.filterToggleTextActive]}>
                 Filter
               </Text>
-              {(sort !== 'updated' || activeFilter !== '' || selectedCourse !== null) && (
+              {(sort !== 'updated' || selectedCourse !== null) && (
                 <View style={styles.filterDot} />
               )}
             </Pressable>
@@ -404,6 +404,26 @@ export default function RecipesScreen() {
         userPlan={collectionPlan}
         onRefresh={fetchCollections}
       />
+
+      {/* Filter tabs — always visible */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.secondaryFilterRow}
+      >
+        {FILTER_OPTIONS.map((opt) => (
+          <Pressable
+            key={`filter-${opt.value}`}
+            style={styles.secondaryTab}
+            onPress={() => setActiveFilter(opt.value)}
+          >
+            <Text style={[styles.secondaryTabText, activeFilter === opt.value && styles.secondaryTabTextActive]}>
+              {opt.label}
+            </Text>
+            {activeFilter === opt.value && <View style={styles.secondaryTabLine} />}
+          </Pressable>
+        ))}
+      </ScrollView>
 
       {showFilters && (
         <>
@@ -429,25 +449,12 @@ export default function RecipesScreen() {
             </ScrollView>
           </Animated.View>
 
-          {/* Filter tabs */}
+          {/* Course tabs */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.secondaryFilterRow}
           >
-            {FILTER_OPTIONS.map((opt) => (
-              <Pressable
-                key={`filter-${opt.value}`}
-                style={styles.secondaryTab}
-                onPress={() => setActiveFilter(opt.value)}
-              >
-                <Text style={[styles.secondaryTabText, activeFilter === opt.value && styles.secondaryTabTextActive]}>
-                  {opt.label}
-                </Text>
-                {activeFilter === opt.value && <View style={styles.secondaryTabLine} />}
-              </Pressable>
-            ))}
-            <View style={styles.tabDivider} />
             {COURSE_OPTIONS.map((opt) => (
               <Pressable
                 key={`course-${opt.value}`}

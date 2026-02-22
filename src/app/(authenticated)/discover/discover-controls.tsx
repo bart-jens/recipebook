@@ -47,7 +47,7 @@ export function DiscoverControls() {
   // Determine active tab value — combine tab and sort into unified tabs
   const activeTab = tab === "chefs" ? "chefs" : sort === "rating" ? "rating" : sort === "newest" || sort === "" ? (tab === "recipes" || tab === "" ? "recipes" : tab) : "recipes";
 
-  const hasActiveFilter = activeTab !== "recipes";
+  const hasActiveFilter = !!tag;
 
   function handleTabClick(value: string) {
     if (value === "chefs") {
@@ -129,27 +129,25 @@ export function DiscoverControls() {
         )}
       </div>
 
-      {/* Filter tabs */}
-      {showFilters && (
-        <div className="flex gap-0 px-5 border-b border-border">
-          {TABS.map((t) => (
-            <button
-              key={t.value}
-              onClick={() => handleTabClick(t.value)}
-              className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
-                activeTab === t.value
-                  ? "text-ink"
-                  : "text-ink-muted hover:text-ink"
-              }`}
-            >
-              {t.label}
-              {activeTab === t.value && (
-                <span className="absolute bottom-[-1px] left-0 right-[14px] h-0.5 bg-ink" />
-              )}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Filter tabs — always visible */}
+      <div className="flex gap-0 px-5 border-b border-border">
+        {TABS.map((t) => (
+          <button
+            key={t.value}
+            onClick={() => handleTabClick(t.value)}
+            className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
+              activeTab === t.value
+                ? "text-ink"
+                : "text-ink-muted hover:text-ink"
+            }`}
+          >
+            {t.label}
+            {activeTab === t.value && (
+              <span className="absolute bottom-[-1px] left-0 right-[14px] h-0.5 bg-ink" />
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

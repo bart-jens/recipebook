@@ -41,7 +41,7 @@ export function RecipeListControls() {
   const course = searchParams.get("course") || "";
   const filter = searchParams.get("filter") || "";
 
-  const hasActiveFilter = sort !== "updated" || filter !== "" || course !== "";
+  const hasActiveFilter = sort !== "updated" || course !== "";
 
   function updateParams(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -116,9 +116,29 @@ export function RecipeListControls() {
         </button>
       </div>
 
+      {/* Filter tabs — always visible */}
+      <div className="flex items-center border-b border-border">
+        {FILTER_OPTIONS.map((opt) => (
+          <button
+            key={`filter-${opt.value}`}
+            onClick={() => updateParams({ filter: opt.value })}
+            className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3 py-1.5 transition-colors ${
+              filter === opt.value
+                ? "text-ink"
+                : "text-ink-muted hover:text-ink"
+            }`}
+          >
+            {opt.label}
+            {filter === opt.value && (
+              <span className="absolute bottom-[-1px] left-0 right-[12px] h-[1.5px] bg-ink" />
+            )}
+          </button>
+        ))}
+      </div>
+
       {showFilters && (
         <>
-          {/* Sort tabs with active underline */}
+          {/* Sort tabs */}
           <div className="flex gap-0 border-b border-border mt-0">
             {SORT_OPTIONS.map((opt) => (
               <button
@@ -138,25 +158,9 @@ export function RecipeListControls() {
             ))}
           </div>
 
-          {/* Filter tabs + Course dropdown */}
+          {/* Course dropdown */}
           <div className="flex items-center border-b border-border">
-            {FILTER_OPTIONS.map((opt) => (
-              <button
-                key={`filter-${opt.value}`}
-                onClick={() => updateParams({ filter: opt.value })}
-                className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3 py-1.5 transition-colors ${
-                  filter === opt.value
-                    ? "text-ink"
-                    : "text-ink-muted hover:text-ink"
-                }`}
-              >
-                {opt.label}
-                {filter === opt.value && (
-                  <span className="absolute bottom-[-1px] left-0 right-[12px] h-[1.5px] bg-ink" />
-                )}
-              </button>
-            ))}
-            <div className="ml-auto relative flex items-center">
+            <div className="relative flex items-center">
               <select
                 value={course}
                 onChange={(e) => updateParams({ course: e.target.value })}

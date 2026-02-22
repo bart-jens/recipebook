@@ -210,9 +210,15 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <Pressable style={[styles.actionButton, { marginHorizontal: 20, marginTop: 16 }]} onPress={() => router.push('/invites')}>
-        <Text style={styles.actionButtonText}>Invite Friends</Text>
-      </Pressable>
+      {/* Quick Actions */}
+      <View style={styles.quickActions}>
+        <Pressable style={styles.quickActionButton} onPress={() => router.push('/invites')}>
+          <Text style={styles.quickActionText}>Invite Friends</Text>
+        </Pressable>
+        <Pressable style={styles.quickActionButton} onPress={() => router.push('/(tabs)/shopping-list')}>
+          <Text style={styles.quickActionText}>Grocery List</Text>
+        </Pressable>
+      </View>
 
       {/* Stats Bar */}
       <View style={styles.statsBar}>
@@ -220,13 +226,13 @@ export default function ProfileScreen() {
           <Text style={styles.statValue}>{stats.recipes}</Text>
           <Text style={styles.statLabel}>Recipes</Text>
         </Pressable>
-        <Pressable style={styles.stat} onPress={() => router.push('/(tabs)/discover')}>
-          <Text style={styles.statValue}>{stats.following}</Text>
-          <Text style={styles.statLabel}>Following</Text>
-        </Pressable>
         <Pressable style={styles.stat} onPress={() => {}}>
           <Text style={styles.statValue}>{stats.cooked}</Text>
           <Text style={styles.statLabel}>Cooked</Text>
+        </Pressable>
+        <Pressable style={styles.stat} onPress={() => router.push('/(tabs)/discover')}>
+          <Text style={styles.statValue}>{stats.following}</Text>
+          <Text style={styles.statLabel}>Following</Text>
         </Pressable>
         <Pressable style={[styles.stat, styles.statLast]} onPress={() => router.push('/profile/new-followers')}>
           <Text style={styles.statValue}>{stats.followers}</Text>
@@ -260,15 +266,6 @@ export default function ProfileScreen() {
           </View>
         </Pressable>
       )}
-
-      {/* Plan Badge */}
-      <View style={styles.planRow}>
-        <View style={styles.planBadge}>
-          <Text style={styles.planBadgeText}>
-            {profile?.plan === 'premium' ? 'Premium plan' : 'Free plan'}
-          </Text>
-        </View>
-      </View>
 
       {/* Nav Tabs */}
       <View style={styles.tabBar}>
@@ -346,9 +343,6 @@ export default function ProfileScreen() {
 
       {/* Actions */}
       <View style={styles.actions}>
-        <Pressable style={styles.actionButton} onPress={() => router.push('/(tabs)/shopping-list')}>
-          <Text style={styles.actionButtonText}>Grocery List</Text>
-        </Pressable>
         <Pressable style={styles.actionButton} onPress={() => router.push('/profile/edit')}>
           <Text style={styles.actionButtonText}>Edit Profile</Text>
         </Pressable>
@@ -489,21 +483,23 @@ const styles = StyleSheet.create({
     color: colors.bg,
   },
 
-  // Plan
-  planRow: {
-    paddingHorizontal: 20,
+  // Quick Actions
+  quickActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginHorizontal: 20,
     marginTop: 16,
   },
-  planBadge: {
-    alignSelf: 'flex-start',
+  quickActionButton: {
+    flex: 1,
     borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    borderColor: colors.ink,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
-  planBadgeText: {
+  quickActionText: {
     ...typography.metaSmall,
-    color: colors.inkMuted,
+    color: colors.ink,
   },
 
   // Nav Tabs

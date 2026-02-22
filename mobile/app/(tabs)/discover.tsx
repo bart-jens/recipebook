@@ -669,7 +669,7 @@ export default function DiscoverScreen() {
     );
   };
 
-  const hasActiveFilter = activeTab !== 'recipes' || sort !== 'newest' || selectedTag !== null;
+  const hasActiveFilter = selectedTag !== null;
 
   const renderHeader = () => (
     <View>
@@ -702,10 +702,10 @@ export default function DiscoverScreen() {
         </Animated.View>
       </Animated.View>
 
-      {/* Filter tabs */}
-      {showFilters && renderFilterTabs()}
+      {/* Filter tabs — always visible */}
+      {renderFilterTabs()}
 
-      {/* Tag filter row */}
+      {/* Tag filter row — behind filter toggle */}
       {showFilters && renderTagRow()}
     </View>
   );
