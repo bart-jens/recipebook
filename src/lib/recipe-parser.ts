@@ -96,7 +96,16 @@ function decodeHtmlEntities(s: string): string {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#039;/g, "'")
-    .replace(/&#x27;/g, "'");
+    .replace(/&#x27;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&mdash;/g, "\u2014")
+    .replace(/&ndash;/g, "\u2013")
+    .replace(/&deg;/g, "\u00B0")
+    .replace(/&frac12;/g, "\u00BD")
+    .replace(/&frac14;/g, "\u00BC")
+    .replace(/&frac34;/g, "\u00BE")
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)));
 }
 
 /**
@@ -203,8 +212,9 @@ function parseTags(r: SchemaRecipe): string[] {
 export async function parseRecipeUrl(url: string): Promise<ParsedRecipe> {
   const response = await fetch(url, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; RecipeBook/1.0)",
-      Accept: "text/html",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9,nl;q=0.8",
     },
   });
 

@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EefEats — V2: The Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&family=Geist+Mono:wght@400;500&display=swap" rel="text/css">
+<style>
+  :root {
+    --bg: #F8F6F1;
+    --surface: #FFFFFF;
+    --surface-alt: #EFECE4;
+    --ink: #141210;
+    --ink-secondary: #5C5850;
+    --ink-muted: #9C978C;
+    --border: #D6D2C8;
+    --border-strong: #141210;
+    --accent: #6B4C3B;
+    --accent-light: rgba(107, 76, 59, 0.07);
+    --accent-medium: rgba(107, 76, 59, 0.15);
+    --sage: #7B8F6A;
+    --sage-light: rgba(123, 143, 106, 0.12);
+
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Inter Tight', system-ui, sans-serif;
+    --font-mono: 'Geist Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  ::selection { background: var(--accent); color: white; }
+
+  /* ========== ANIMATIONS ========== */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes lineGrow {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  @keyframes heroParallax {
+    from { transform: scale(1.08); }
+    to { transform: scale(1); }
+  }
+  @keyframes checkSpring {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.25); }
+    70% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+
+  .anim-up {
+    animation: fadeInUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+  .anim-fade {
+    animation: fadeIn 0.4s ease forwards;
+    opacity: 0;
+  }
+  .anim-line {
+    animation: lineGrow 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+
+  /* ========== LAYOUT ========== */
+  .app-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+    padding-bottom: 80px;
+  }
+
+  /* ========== LOGO ========== */
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 20px;
+  }
+  .logo-text {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .logo-whisk {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  /* ========== PAGE SWITCH (top-right) ========== */
+  .page-switch {
+    position: fixed;
+    top: 12px;
+    right: max(12px, calc((100vw - 480px) / 2 + 12px));
+    display: flex;
+    gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .page-switch button {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 5px 10px;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.2s ease;
+  }
+  .page-switch button.active {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .page-switch button:active {
+    transform: scale(0.9);
+  }
+
+  /* ========== TAB BAR (bottom) ========== */
+  .tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 64px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    padding: 0 8px;
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border: none;
+    background: none;
+    transition: all 0.2s ease;
+  }
+  .tab-item:active {
+    transform: scale(0.9);
+  }
+  .tab-item svg {
+    width: 22px;
+    height: 22px;
+    color: var(--ink-muted);
+    transition: color 0.2s ease;
+  }
+  .tab-item span {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-muted);
+    transition: color 0.2s ease;
+  }
+  .tab-item.active svg { color: var(--accent); }
+  .tab-item.active span { color: var(--accent); }
+
+  /* ========== PAGE CONTAINERS ========== */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ========== HOME PAGE ========== */
+  .greeting-bar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 8px 20px 10px;
+  }
+  .greeting-text {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--ink);
+  }
+  .greeting-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--ink-muted);
+    letter-spacing: 0.02em;
+  }
+  .greeting-rule {
+    height: 1px;
+    background: var(--border);
+    margin: 0 20px 20px;
+  }
+
+  /* Featured recipe */
+  .featured {
+    padding: 0 20px 24px;
+  }
+  .featured-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+  .featured-card {
+    display: flex;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    padding: 12px;
+    margin: -12px;
+    border-radius: 8px;
+  }
+  .featured-card:hover {
+    background: var(--accent-light);
+  }
+  .featured-img {
+    width: 130px;
+    height: 160px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+  .featured-card:hover .featured-img {
+    transform: scale(1.03);
+  }
+  .featured-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .featured-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .featured-excerpt {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--ink-secondary);
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .featured-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: auto;
+  }
+
+  /* Section headers */
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0 20px 10px;
+  }
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+  }
+  .section-link {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .section-rule {
+    height: 1px;
+    background: var(--border);
+    margin: 0 20px;
+  }
+
+  /* Recipe Index */
+  .recipe-index {
+    padding: 0 20px;
+  }
+  .index-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 8px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border-radius: 6px;
+    margin: 0 -8px;
+  }
+  .index-item:hover {
+    background: var(--accent-light);
+    padding: 18px 8px;
+  }
+  .index-number {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    width: 28px;
+    text-align: right;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+  }
+  .index-item:hover .index-number {
+    color: var(--accent);
+  }
+  .index-img {
+    width: 56px;
+    height: 56px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+  .index-item:hover .index-img {
+    transform: scale(1.06);
+  }
+  .index-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .index-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+  .index-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: 3px;
+  }
+
+  /* Activity */
+  .activity-list {
+    padding: 0 20px 20px;
+  }
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px dotted var(--border);
+  }
+  .activity-item:last-child {
+    border-bottom: none;
+  }
+  .activity-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .activity-content {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--ink-secondary);
+  }
+  .activity-content strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .activity-content em {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--accent);
+    font-size: 14px;
+  }
+  .activity-time {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* ========== RECIPE DETAIL ========== */
+  .detail-hero-wrap {
+    position: relative;
+    overflow: hidden;
+    height: 220px;
+  }
+  .detail-hero {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: heroParallax 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .detail-hero-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(transparent, var(--bg));
+  }
+  .detail-top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    z-index: 10;
+  }
+  .detail-back {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--bg);
+    text-decoration: none;
+    cursor: pointer;
+    background: rgba(0,0,0,0.3);
+    padding: 5px 10px;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+    border: none;
+    transition: background 0.2s;
+  }
+  .detail-back:hover {
+    background: rgba(0,0,0,0.5);
+  }
+  .detail-actions {
+    display: flex;
+    gap: 12px;
+  }
+  .detail-action-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--bg);
+    text-decoration: none;
+    cursor: pointer;
+    background: rgba(0,0,0,0.3);
+    padding: 5px 10px;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+    border: none;
+    transition: background 0.2s;
+  }
+  .detail-action-btn:hover {
+    background: rgba(0,0,0,0.5);
+  }
+  .detail-header {
+    padding: 8px 20px 0;
+  }
+  .detail-category {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .detail-title {
+    font-family: var(--font-display);
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  .detail-stats {
+    display: flex;
+    border-top: 3px solid var(--ink);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    margin: 0 20px 20px;
+  }
+  .detail-stat {
+    flex: 1;
+    text-align: center;
+  }
+  .detail-stat:not(:last-child) {
+    border-right: 1px solid var(--border);
+  }
+  .detail-stat-value {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .detail-stat-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+  }
+  .detail-description {
+    padding: 0 20px 20px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink-secondary);
+    border-left: 2px solid var(--accent);
+    margin: 0 20px 24px;
+    padding: 0 16px;
+  }
+
+  /* Ingredients */
+  .detail-section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    padding: 0 20px 8px;
+  }
+  .ingredients-list {
+    padding: 0 20px 24px;
+    list-style: none;
+  }
+  .ingredient-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px dotted var(--border);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+  .ingredient-check {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: transparent;
+  }
+  .ingredient-check:hover {
+    transform: scale(1.15);
+  }
+  .ingredient-check svg {
+    width: 14px;
+    height: 14px;
+    opacity: 0;
+    color: white;
+    transition: opacity 0.15s ease;
+  }
+  .ingredient-item.checked .ingredient-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    animation: checkSpring 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .ingredient-item.checked .ingredient-check svg {
+    opacity: 1;
+  }
+  .ingredient-name {
+    flex: 1;
+    font-size: 14px;
+    color: var(--ink);
+    transition: all 0.2s ease;
+  }
+  .ingredient-item.checked .ingredient-name {
+    text-decoration: line-through;
+    color: var(--ink-muted);
+  }
+  .ingredient-amount {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-muted);
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  /* Steps */
+  .steps-list {
+    padding: 0 20px 40px;
+    list-style: none;
+  }
+  .step-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .step-number {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 40px;
+    transition: color 0.25s ease;
+  }
+  .step-item:hover .step-number {
+    color: var(--accent);
+  }
+  .step-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-secondary);
+    padding-top: 6px;
+  }
+
+  /* ========== DISCOVER PAGE ========== */
+  .discover-header {
+    padding: 14px 20px 0;
+  }
+  .discover-title {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+  .discover-search {
+    position: relative;
+    padding: 0 20px 16px;
+  }
+  .discover-search input {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 15px;
+    padding: 10px 0;
+    border: none;
+    border-bottom: 2px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  .discover-search input::placeholder {
+    color: var(--ink-muted);
+  }
+  .discover-search input:focus {
+    border-bottom-color: var(--accent);
+  }
+  .discover-filters {
+    display: flex;
+    gap: 16px;
+    padding: 0 20px 20px;
+  }
+  .filter-tab {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 0;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+  }
+  .filter-tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+  .filter-tab:hover {
+    color: var(--ink-secondary);
+  }
+
+  .discover-results {
+    padding: 0 20px 20px;
+  }
+  .discover-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 8px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border-radius: 6px;
+    margin: 0 -8px;
+  }
+  .discover-item:hover {
+    background: var(--accent-light);
+    padding: 18px 8px;
+  }
+  .discover-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .discover-item-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+  .discover-item-desc {
+    font-size: 13px;
+    color: var(--ink-secondary);
+    margin-top: 3px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .discover-item-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: 4px;
+  }
+  .discover-item-img {
+    width: 56px;
+    height: 56px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+  .discover-item:hover .discover-item-img {
+    transform: scale(1.06);
+  }
+
+  /* ========== PROFILE PAGE ========== */
+  .profile-header {
+    padding: 20px 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .profile-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .profile-avatar:hover {
+    transform: scale(1.1);
+  }
+  .profile-info {
+    flex: 1;
+  }
+  .profile-name {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.15;
+  }
+  .profile-bio {
+    font-size: 13px;
+    color: var(--ink-secondary);
+    margin-top: 3px;
+  }
+  .profile-stats {
+    display: flex;
+    border-top: 3px solid var(--ink);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    margin: 20px 20px 0;
+  }
+  .profile-stat {
+    flex: 1;
+    text-align: center;
+  }
+  .profile-stat:not(:last-child) {
+    border-right: 1px solid var(--border);
+  }
+  .profile-stat-value {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .profile-stat-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+  }
+  .profile-tabs {
+    display: flex;
+    gap: 20px;
+    padding: 16px 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .profile-tab {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s ease;
+  }
+  .profile-tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .profile-recipes {
+    padding: 0 20px 20px;
+  }
+  .profile-recipe-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .profile-recipe-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .profile-recipe-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .profile-recipe-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+  .profile-recipe-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid;
+  }
+  .badge-published {
+    color: var(--sage);
+    border-color: var(--sage);
+    background: var(--sage-light);
+  }
+  .badge-private {
+    color: var(--ink-muted);
+    border-color: var(--border);
+    background: transparent;
+  }
+
+  /* ========== NAV AVATAR ========== */
+  .tab-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .tab-item:hover .tab-avatar {
+    transform: scale(1.1);
+  }
+
+  /* Spacing helpers */
+  .mt-20 { margin-top: 20px; }
+  .mb-12 { margin-bottom: 12px; }
+  .px-20 { padding-left: 20px; padding-right: 20px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Page Switch -->
+  <div class="page-switch">
+    <button class="active" data-page="home" onclick="showPage('home')">Home</button>
+    <button data-page="recipe" onclick="showPage('recipe')">Recipe</button>
+    <button data-page="discover" onclick="showPage('discover')">Discover</button>
+    <button data-page="profile" onclick="showPage('profile')">Profile</button>
+  </div>
+
+  <!-- ==================== HOME PAGE ==================== -->
+  <div id="page-home" class="page active">
+
+    <!-- Logo -->
+    <div class="logo anim-up" style="animation-delay: 0.05s">
+      <svg class="logo-whisk" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <line x1="10" y1="18" x2="7" y2="4"/>
+        <line x1="10" y1="18" x2="10" y2="2"/>
+        <line x1="10" y1="18" x2="13" y2="4"/>
+      </svg>
+      <span class="logo-text">EefEats</span>
+    </div>
+
+    <!-- Greeting -->
+    <div class="greeting-bar anim-up" style="animation-delay: 0.1s">
+      <span class="greeting-text">Good evening, Bart</span>
+      <span class="greeting-date">Feb 19, 2026</span>
+    </div>
+    <div class="greeting-rule anim-line" style="animation-delay: 0.2s"></div>
+
+    <!-- Featured Recipe -->
+    <div class="featured anim-up" style="animation-delay: 0.25s">
+      <div class="featured-label">Featured</div>
+      <div class="featured-card" onclick="showPage('recipe')">
+        <img class="featured-img" src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=300&h=400&fit=crop" alt="Lamb Shoulder">
+        <div class="featured-body">
+          <div class="featured-title">Lamb Shoulder with Pomegranate & Mint</div>
+          <div class="featured-excerpt">Slow-roasted until fork-tender, finished with a bright pomegranate glaze and fresh mint.</div>
+          <div class="featured-meta">Main Course / 3h 30m / 5.0 / by Bart</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recipe Index -->
+    <div class="section-header anim-up" style="animation-delay: 0.35s">
+      <span class="section-title">Your Recipes</span>
+      <a class="section-link">View all</a>
+    </div>
+    <div class="section-rule anim-line" style="animation-delay: 0.4s"></div>
+
+    <div class="recipe-index">
+      <div class="index-item anim-up" style="animation-delay: 0.45s">
+        <span class="index-number">1</span>
+        <img class="index-img" src="https://images.unsplash.com/photo-1590412200988-a436970781fa?w=130&h=130&fit=crop" alt="Shakshuka">
+        <div class="index-body">
+          <div class="index-title">Shakshuka with Feta & Za'atar</div>
+          <div class="index-meta">Breakfast / 35 min / 12x cooked / 4.0</div>
+        </div>
+      </div>
+      <div class="index-item anim-up" style="animation-delay: 0.52s">
+        <span class="index-number">2</span>
+        <img class="index-img" src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=130&h=130&fit=crop" alt="Cookies">
+        <div class="index-body">
+          <div class="index-title">Brown Butter Chocolate Chip Cookies</div>
+          <div class="index-meta">Dessert / 40 min / 8x cooked / 5.0</div>
+        </div>
+      </div>
+      <div class="index-item anim-up" style="animation-delay: 0.59s">
+        <span class="index-number">3</span>
+        <img class="index-img" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=130&h=130&fit=crop" alt="Ramen">
+        <div class="index-body">
+          <div class="index-title">Tonkotsu Ramen</div>
+          <div class="index-meta">Main / 45 min / 6x cooked / 4.5</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity -->
+    <div class="section-header mt-20 anim-up" style="animation-delay: 0.65s">
+      <span class="section-title">Activity</span>
+      <a class="section-link">See all</a>
+    </div>
+    <div class="section-rule anim-line" style="animation-delay: 0.7s"></div>
+
+    <div class="activity-list">
+      <div class="activity-item anim-up" style="animation-delay: 0.75s">
+        <img class="activity-thumb" src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=80&h=80&fit=crop" alt="Risotto">
+        <div class="activity-content">
+          <strong>Eva</strong> cooked <em>Mushroom Risotto</em> and rated it 5 stars
+        </div>
+        <span class="activity-time">2h ago</span>
+      </div>
+      <div class="activity-item anim-up" style="animation-delay: 0.82s">
+        <img class="activity-thumb" src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=80&h=80&fit=crop" alt="Pasta">
+        <div class="activity-content">
+          <strong>Marco</strong> published <em>Pasta alla Norma</em>
+        </div>
+        <span class="activity-time">1d ago</span>
+      </div>
+      <div class="activity-item anim-up" style="animation-delay: 0.89s">
+        <img class="activity-thumb" src="https://images.unsplash.com/photo-1585478259715-876acc5be8eb?w=80&h=80&fit=crop" alt="Bread">
+        <div class="activity-content">
+          <strong>Sophie</strong> rated <em>Sourdough Bread</em> 4 stars
+        </div>
+        <span class="activity-time">2d ago</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==================== RECIPE DETAIL ==================== -->
+  <div id="page-recipe" class="page">
+
+    <div class="detail-hero-wrap anim-fade" style="animation-delay: 0.05s">
+      <img class="detail-hero" src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=600&h=350&fit=crop" alt="Lamb Shoulder">
+      <div class="detail-hero-fade"></div>
+      <div class="detail-top-bar">
+        <button class="detail-back" onclick="showPage('home')">&#8592; Back</button>
+        <div class="detail-actions">
+          <button class="detail-action-btn">Share</button>
+          <button class="detail-action-btn">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-header anim-up" style="animation-delay: 0.15s">
+      <div class="detail-category">Main Course</div>
+      <h1 class="detail-title">Lamb Shoulder with Pomegranate & Mint</h1>
+    </div>
+
+    <div class="detail-stats anim-up" style="animation-delay: 0.25s">
+      <div class="detail-stat">
+        <div class="detail-stat-value">3h 30m</div>
+        <div class="detail-stat-label">Time</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-value">4</div>
+        <div class="detail-stat-label">Servings</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-value">5.0</div>
+        <div class="detail-stat-label">Rating</div>
+      </div>
+    </div>
+
+    <div class="detail-description anim-up" style="animation-delay: 0.32s">
+      Slow-roasted until the meat pulls apart effortlessly, then finished with a jewel-bright pomegranate molasses glaze and a scattering of fresh mint. A centerpiece dish that fills the whole house with warmth.
+    </div>
+
+    <div class="detail-section-label anim-up" style="animation-delay: 0.38s">Ingredients</div>
+    <ul class="ingredients-list">
+      <li class="ingredient-item anim-up" style="animation-delay: 0.42s" onclick="toggleIng(this)">
+        <div class="ingredient-check">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 7 5.5 10 11.5 4"/></svg>
+        </div>
+        <span class="ingredient-name">Bone-in lamb shoulder</span>
+        <span class="ingredient-amount">1.8 kg</span>
+      </li>
+      <li class="ingredient-item anim-up" style="animation-delay: 0.46s" onclick="toggleIng(this)">
+        <div class="ingredient-check">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 7 5.5 10 11.5 4"/></svg>
+        </div>
+        <span class="ingredient-name">Pomegranate molasses</span>
+        <span class="ingredient-amount">3 tbsp</span>
+      </li>
+      <li class="ingredient-item anim-up" style="animation-delay: 0.50s" onclick="toggleIng(this)">
+        <div class="ingredient-check">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 7 5.5 10 11.5 4"/></svg>
+        </div>
+        <span class="ingredient-name">Fresh mint leaves</span>
+        <span class="ingredient-amount">1 bunch</span>
+      </li>
+      <li class="ingredient-item anim-up" style="animation-delay: 0.54s" onclick="toggleIng(this)">
+        <div class="ingredient-check">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 7 5.5 10 11.5 4"/></svg>
+        </div>
+        <span class="ingredient-name">Garlic cloves, crushed</span>
+        <span class="ingredient-amount">6</span>
+      </li>
+      <li class="ingredient-item anim-up" style="animation-delay: 0.58s" onclick="toggleIng(this)">
+        <div class="ingredient-check">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 7 5.5 10 11.5 4"/></svg>
+        </div>
+        <span class="ingredient-name">Cumin seeds</span>
+        <span class="ingredient-amount">2 tsp</span>
+      </li>
+      <li class="ingredient-item anim-up" style="animation-delay: 0.62s" onclick="toggleIng(this)">
+        <div class="ingredient-check">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 7 5.5 10 11.5 4"/></svg>
+        </div>
+        <span class="ingredient-name">Olive oil</span>
+        <span class="ingredient-amount">3 tbsp</span>
+      </li>
+      <li class="ingredient-item anim-up" style="animation-delay: 0.66s" onclick="toggleIng(this)">
+        <div class="ingredient-check">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 7 5.5 10 11.5 4"/></svg>
+        </div>
+        <span class="ingredient-name">Pomegranate seeds</span>
+        <span class="ingredient-amount">1/2 cup</span>
+      </li>
+      <li class="ingredient-item anim-up" style="animation-delay: 0.70s" onclick="toggleIng(this)">
+        <div class="ingredient-check">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 7 5.5 10 11.5 4"/></svg>
+        </div>
+        <span class="ingredient-name">Flaky sea salt</span>
+        <span class="ingredient-amount">to taste</span>
+      </li>
+    </ul>
+
+    <div class="detail-section-label anim-up" style="animation-delay: 0.74s">Method</div>
+    <ol class="steps-list">
+      <li class="step-item anim-up" style="animation-delay: 0.78s">
+        <span class="step-number">01</span>
+        <p class="step-text">Pat the lamb shoulder dry. Score the fat side in a crosshatch pattern. Rub all over with olive oil, crushed garlic, cumin seeds, and a generous amount of salt. Let it come to room temperature for 30 minutes.</p>
+      </li>
+      <li class="step-item anim-up" style="animation-delay: 0.84s">
+        <span class="step-number">02</span>
+        <p class="step-text">Preheat the oven to 160 C (320 F). Place the lamb in a deep roasting pan, fat side up. Add a splash of water to the bottom. Cover tightly with foil and roast for 3 hours.</p>
+      </li>
+      <li class="step-item anim-up" style="animation-delay: 0.90s">
+        <span class="step-number">03</span>
+        <p class="step-text">Remove the foil. Brush the top generously with pomegranate molasses. Increase the oven to 200 C (390 F) and roast uncovered for 20 more minutes until deeply caramelized.</p>
+      </li>
+      <li class="step-item anim-up" style="animation-delay: 0.96s">
+        <span class="step-number">04</span>
+        <p class="step-text">Rest the lamb for 15 minutes. Pull the meat into rough shreds using two forks. Scatter with pomegranate seeds, torn fresh mint, and a final drizzle of pomegranate molasses. Finish with flaky sea salt.</p>
+      </li>
+    </ol>
+
+  </div>
+
+  <!-- ==================== DISCOVER PAGE ==================== -->
+  <div id="page-discover" class="page">
+
+    <!-- Logo -->
+    <div class="logo anim-up" style="animation-delay: 0.05s">
+      <svg class="logo-whisk" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <line x1="10" y1="18" x2="7" y2="4"/>
+        <line x1="10" y1="18" x2="10" y2="2"/>
+        <line x1="10" y1="18" x2="13" y2="4"/>
+      </svg>
+      <span class="logo-text">EefEats</span>
+    </div>
+
+    <div class="discover-header anim-up" style="animation-delay: 0.1s">
+      <h1 class="discover-title">Discover</h1>
+    </div>
+
+    <div class="discover-search anim-up" style="animation-delay: 0.18s">
+      <input type="text" placeholder="Search recipes, chefs, ingredients...">
+    </div>
+
+    <div class="discover-filters anim-up" style="animation-delay: 0.25s">
+      <button class="filter-tab active">All</button>
+      <button class="filter-tab">Breakfast</button>
+      <button class="filter-tab">Mains</button>
+      <button class="filter-tab">Desserts</button>
+      <button class="filter-tab">Quick</button>
+    </div>
+
+    <div class="discover-results">
+      <div class="discover-item anim-up" style="animation-delay: 0.32s">
+        <div class="discover-body">
+          <div class="discover-item-title">Burrata with Grilled Peaches</div>
+          <div class="discover-item-desc">Creamy burrata paired with charred summer peaches, basil oil, and a balsamic reduction.</div>
+          <div class="discover-item-meta">Appetizer / Eva / 15 min / 4.9</div>
+        </div>
+        <img class="discover-item-img" src="https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=130&h=130&fit=crop" alt="Burrata">
+      </div>
+      <div class="discover-item anim-up" style="animation-delay: 0.39s">
+        <div class="discover-body">
+          <div class="discover-item-title">Miso-Glazed Salmon</div>
+          <div class="discover-item-desc">White miso and mirin-glazed salmon with pickled cucumber and sesame rice.</div>
+          <div class="discover-item-meta">Main / Marco / 30 min / 4.2</div>
+        </div>
+        <img class="discover-item-img" src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=130&h=130&fit=crop" alt="Salmon">
+      </div>
+      <div class="discover-item anim-up" style="animation-delay: 0.46s">
+        <div class="discover-body">
+          <div class="discover-item-title">Pistachio Panna Cotta</div>
+          <div class="discover-item-desc">Silky pistachio-infused panna cotta with a bright raspberry coulis and crushed nuts.</div>
+          <div class="discover-item-meta">Dessert / Sophie / 4h / 5.0</div>
+        </div>
+        <img class="discover-item-img" src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=130&h=130&fit=crop" alt="Panna cotta">
+      </div>
+      <div class="discover-item anim-up" style="animation-delay: 0.53s">
+        <div class="discover-body">
+          <div class="discover-item-title">Cardamom French Toast</div>
+          <div class="discover-item-desc">Thick brioche soaked in cardamom-spiced custard, pan-fried golden with maple and berries.</div>
+          <div class="discover-item-meta">Breakfast / Eva / 25 min / 4.7</div>
+        </div>
+        <img class="discover-item-img" src="https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=130&h=130&fit=crop" alt="French Toast">
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==================== PROFILE PAGE ==================== -->
+  <div id="page-profile" class="page">
+
+    <!-- Logo -->
+    <div class="logo anim-up" style="animation-delay: 0.05s">
+      <svg class="logo-whisk" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <line x1="10" y1="18" x2="7" y2="4"/>
+        <line x1="10" y1="18" x2="10" y2="2"/>
+        <line x1="10" y1="18" x2="13" y2="4"/>
+      </svg>
+      <span class="logo-text">EefEats</span>
+    </div>
+
+    <div class="profile-header anim-up" style="animation-delay: 0.1s">
+      <div class="profile-avatar">B</div>
+      <div class="profile-info">
+        <div class="profile-name">Bart</div>
+        <div class="profile-bio">Home cook, recipe collector. Building EefEats.</div>
+      </div>
+    </div>
+
+    <div class="profile-stats anim-up" style="animation-delay: 0.2s">
+      <div class="profile-stat">
+        <div class="profile-stat-value">24</div>
+        <div class="profile-stat-label">Recipes</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-value">142</div>
+        <div class="profile-stat-label">Cooked</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-value">18</div>
+        <div class="profile-stat-label">Followers</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-value">31</div>
+        <div class="profile-stat-label">Following</div>
+      </div>
+    </div>
+
+    <div class="profile-tabs anim-up" style="animation-delay: 0.28s">
+      <button class="profile-tab active">Recipes</button>
+      <button class="profile-tab">Cooked</button>
+      <button class="profile-tab">Saved</button>
+    </div>
+
+    <div class="profile-recipes">
+      <div class="profile-recipe-item anim-up" style="animation-delay: 0.35s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=130&h=130&fit=crop" alt="Lamb">
+        <div class="profile-recipe-body">
+          <div class="profile-recipe-title">Lamb Shoulder with Pomegranate & Mint</div>
+          <div class="profile-recipe-meta">
+            Main Course / 5.0
+            <span class="badge badge-published">Published</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-recipe-item anim-up" style="animation-delay: 0.42s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1590412200988-a436970781fa?w=130&h=130&fit=crop" alt="Shakshuka">
+        <div class="profile-recipe-body">
+          <div class="profile-recipe-title">Shakshuka with Feta & Za'atar</div>
+          <div class="profile-recipe-meta">
+            Breakfast / 4.0
+            <span class="badge badge-published">Published</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-recipe-item anim-up" style="animation-delay: 0.49s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=130&h=130&fit=crop" alt="Cookies">
+        <div class="profile-recipe-body">
+          <div class="profile-recipe-title">Brown Butter Chocolate Chip Cookies</div>
+          <div class="profile-recipe-meta">
+            Dessert / 5.0
+            <span class="badge badge-private">Private</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-recipe-item anim-up" style="animation-delay: 0.56s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=130&h=130&fit=crop" alt="Ramen">
+        <div class="profile-recipe-body">
+          <div class="profile-recipe-title">Tonkotsu Ramen</div>
+          <div class="profile-recipe-meta">
+            Main / 4.5
+            <span class="badge badge-published">Published</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-recipe-item anim-up" style="animation-delay: 0.63s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=80&h=80&fit=crop" alt="Risotto">
+        <div class="profile-recipe-body">
+          <div class="profile-recipe-title">Mushroom Risotto</div>
+          <div class="profile-recipe-meta">
+            Main / 4.8
+            <span class="badge badge-private">Private</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==================== TAB BAR ==================== -->
+  <nav class="tab-bar">
+    <button class="tab-item active" data-page="home" onclick="showPage('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>Home</span>
+    </button>
+    <button class="tab-item" data-page="discover" onclick="showPage('discover')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <span>Discover</span>
+    </button>
+    <button class="tab-item" data-page="recipe" onclick="showPage('recipe')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        <line x1="8" y1="7" x2="16" y2="7"/>
+        <line x1="8" y1="11" x2="14" y2="11"/>
+      </svg>
+      <span>Recipes</span>
+    </button>
+    <button class="tab-item" data-page="groceries" onclick="void(0)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      <span>Groceries</span>
+    </button>
+    <button class="tab-item" data-page="profile" onclick="showPage('profile')">
+      <div class="tab-avatar">B</div>
+      <span>Profile</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+function showPage(page) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(function(p) {
+    p.classList.remove('active');
+  });
+
+  // Show target page
+  var target = document.getElementById('page-' + page);
+  if (target) {
+    target.classList.add('active');
+  }
+
+  // Update page switch
+  document.querySelectorAll('.page-switch button').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-page') === page);
+  });
+
+  // Update tab bar
+  document.querySelectorAll('.tab-item').forEach(function(tab) {
+    tab.classList.toggle('active', tab.getAttribute('data-page') === page);
+  });
+
+  // Re-trigger animations
+  if (target) {
+    var animEls = target.querySelectorAll('.anim-up, .anim-fade, .anim-line');
+    animEls.forEach(function(el) {
+      el.style.animation = 'none';
+      el.offsetHeight; // force reflow
+      el.style.animation = '';
+    });
+  }
+}
+
+function toggleIng(li) {
+  li.classList.toggle('checked');
+}
+</script>
+
+</body>
+</html>

@@ -37,6 +37,17 @@ const DOMAIN_MAP: Record<string, string> = {
   "chefsteps.com": "ChefSteps",
   "kenji.com": "J. Kenji Lopez-Alt",
   "instagram.com": "Instagram",
+  // Dutch
+  "ah.nl": "Albert Heijn Allerhande",
+  "leukerecepten.nl": "Leuke Recepten",
+  "24kitchen.nl": "24Kitchen",
+  "smulweb.nl": "Smulweb",
+  "jumbo.com": "Jumbo",
+  "laurasbakery.nl": "Laura's Bakery",
+  "ohmyfoodness.nl": "OhMyFoodness",
+  "francescakookt.nl": "Francesca Kookt",
+  "rutgerbakt.nl": "Rutger Bakt",
+  "culy.nl": "Culy",
 };
 
 /**

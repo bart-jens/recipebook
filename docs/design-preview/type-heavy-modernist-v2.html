@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EefEats — Type-Heavy Modernist (Updated)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500&family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&display=swap" rel="text/css">
+<style>
+  :root {
+    --bg: #F6F4EF;
+    --surface: #FFFFFF;
+    --surface-alt: #EDEADE;
+    --ink: #141210;
+    --ink-secondary: #5C5850;
+    --ink-muted: #9C978C;
+    --border: #D6D2C8;
+    --border-strong: #141210;
+    --accent: #8B4513;
+    --accent-light: rgba(139, 69, 19, 0.07);
+    --olive: #4A5D3A;
+    --olive-light: rgba(74, 93, 58, 0.08);
+
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-body: 'Inter Tight', system-ui, sans-serif;
+    --font-mono: 'Geist Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  ::selection { background: var(--accent); color: white; }
+
+  /* ========== ANIMATIONS ========== */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-14px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes lineGrow {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  @keyframes heroZoom {
+    from { transform: scale(1.08); }
+    to { transform: scale(1); }
+  }
+  @keyframes checkPop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+  @keyframes strikeThrough {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.94); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes starFill {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .anim-up { animation: fadeInUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+  .anim-fade { animation: fadeIn 0.4s ease forwards; opacity: 0; }
+  .anim-left { animation: slideInLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+  .anim-scale { animation: scaleIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+  .anim-line { animation: lineGrow 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; transform-origin: left; transform: scaleX(0); }
+
+  /* ========== LAYOUT ========== */
+  .app-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+  }
+
+  /* ========== LOGO ========== */
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .logo-mark {
+    width: 20px;
+    height: 20px;
+  }
+  .logo-mark svg { width: 100%; height: 100%; }
+  .logo-text {
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+
+  /* ========== NAV ========== */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: rgba(246, 244, 239, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .nav-link {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    position: relative;
+  }
+  .nav-link:hover, .nav-link.active { color: var(--ink); }
+  .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 1.5px;
+    background: var(--ink);
+  }
+  .nav-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .nav-avatar:hover { transform: scale(1.12); }
+
+  /* ========== RULES ========== */
+  .rule-thick { height: 3px; background: var(--ink); border: none; margin: 0; }
+  .rule-thin { height: 1px; background: var(--border); border: none; margin: 0; }
+  .rule-double { height: 0; border: none; border-top: 3px solid var(--ink); border-bottom: 1px solid var(--ink); padding-top: 3px; margin: 0; }
+
+  /* ========== COMPACT MASTHEAD (greeting) ========== */
+  .masthead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .masthead-greeting {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-secondary);
+  }
+  .masthead-date {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+  }
+
+  /* ========== FEATURED ========== */
+  .featured {
+    padding: 14px 20px 20px;
+  }
+  .featured-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-muted);
+    margin-bottom: 10px;
+  }
+  .featured-layout {
+    display: grid;
+    grid-template-columns: 1fr 130px;
+    gap: 16px;
+  }
+  .featured-category {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .featured-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .featured-title:hover { color: var(--accent); }
+  .featured-excerpt {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--ink-secondary);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .featured-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .featured-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border); }
+  .featured-img {
+    width: 130px;
+    height: 170px;
+    object-fit: cover;
+    cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .featured-img:hover { transform: scale(1.04); }
+
+  /* ========== INDEX ========== */
+  .index-section { padding: 0 20px; }
+  .index-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 12px 0 8px;
+  }
+  .index-title { font-family: var(--font-display); font-size: 18px; letter-spacing: -0.02em; }
+  .index-count { font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); }
+  .index-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .index-item:hover {
+    margin: 0 -10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background: var(--accent-light);
+  }
+  .index-item:active { transform: scale(0.995); }
+  .index-number {
+    font-family: var(--font-display);
+    font-size: 32px;
+    line-height: 1;
+    color: var(--border);
+    min-width: 28px;
+    padding-top: 2px;
+    transition: color 0.2s;
+  }
+  .index-item:hover .index-number { color: var(--accent); }
+  .index-content { flex: 1; min-width: 0; }
+  .index-item-cat {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 1px;
+  }
+  .index-item-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 3px;
+    transition: color 0.2s;
+  }
+  .index-item:hover .index-item-title { color: var(--accent); }
+  .index-item-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: flex;
+    gap: 10px;
+  }
+  .index-item-thumb {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    flex-shrink: 0;
+    align-self: center;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .index-item:hover .index-item-thumb { transform: scale(1.08); }
+
+  /* ========== ACTIVITY (with small images) ========== */
+  .ticker-section { padding: 0 20px; margin-top: 4px; padding-bottom: 100px; }
+  .ticker-header {
+    padding: 12px 0 8px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .ticker-title { font-family: var(--font-display); font-size: 18px; letter-spacing: -0.02em; }
+  .ticker-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    align-items: center;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+  }
+  .ticker-item:hover {
+    background: var(--accent-light);
+    margin: 0 -6px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .ticker-thumb {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    flex-shrink: 0;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .ticker-item:hover .ticker-thumb { transform: scale(1.1); }
+  .ticker-body { flex: 1; min-width: 0; }
+  .ticker-text {
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 300;
+    line-height: 1.35;
+  }
+  .ticker-text strong { font-weight: 600; }
+  .ticker-text .recipe-ref { font-family: var(--font-display); font-style: italic; color: var(--accent); }
+  .ticker-time {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+    flex-shrink: 0;
+  }
+  .ticker-stars {
+    display: inline-flex;
+    gap: 1px;
+    margin-top: 1px;
+  }
+  .ticker-star { color: var(--accent); font-size: 11px; }
+  .ticker-star.empty { color: var(--border); }
+
+  /* ========== DETAIL ========== */
+  .page-detail { display: none; }
+  .detail-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: rgba(246, 244, 239, 0.92);
+    backdrop-filter: blur(20px);
+  }
+  .detail-back {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s;
+    padding: 4px 0;
+  }
+  .detail-back:hover { color: var(--ink); }
+  .detail-back:active { transform: translateX(-3px); }
+  .detail-actions-bar {
+    display: flex;
+    gap: 14px;
+  }
+  .detail-action {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .detail-action:hover { color: var(--ink); }
+  .detail-action:active { transform: scale(0.94); }
+
+  .detail-hero-wrap {
+    overflow: hidden;
+    height: 220px;
+    position: relative;
+  }
+  .detail-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: heroZoom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .detail-hero-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(to top, var(--bg), transparent);
+  }
+
+  .detail-header { padding: 0 20px; margin-top: -16px; position: relative; }
+  .detail-category {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .detail-title {
+    font-family: var(--font-display);
+    font-size: 40px;
+    line-height: 0.96;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .detail-title em { font-style: italic; }
+  .detail-byline {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--ink-secondary);
+    margin-bottom: 4px;
+  }
+  .detail-byline strong { font-weight: 600; color: var(--ink); }
+  .detail-date {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 18px;
+  }
+
+  .detail-stats-bar {
+    display: flex;
+    margin: 0 20px;
+    border-top: 3px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+  .detail-stat {
+    flex: 1;
+    padding: 10px 12px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    transition: background 0.15s;
+    cursor: default;
+  }
+  .detail-stat:last-child { border-right: none; }
+  .detail-stat:hover { background: var(--accent-light); }
+  .detail-stat-val { font-family: var(--font-display); font-size: 20px; color: var(--ink); line-height: 1.1; }
+  .detail-stat-lbl { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); margin-top: 1px; }
+
+  .detail-body { padding: 24px 20px 100px; }
+  .detail-intro {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--ink-secondary);
+    margin-bottom: 28px;
+    max-width: 360px;
+  }
+  .detail-section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-muted);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Ingredients with interactive checkboxes */
+  .detail-ingredients { list-style: none; margin-bottom: 32px; }
+  .detail-ingredients li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px dotted var(--border);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .detail-ingredients li:last-child { border-bottom: none; }
+  .detail-ingredients li:hover { padding-left: 4px; }
+  .ing-check {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    flex-shrink: 0;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+  .ing-check:hover { border-color: var(--accent); transform: scale(1.15); }
+  .ing-check.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+    animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .ing-check.checked::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 5px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+  }
+  .ing-name {
+    color: var(--ink);
+    flex: 1;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .ing-name.checked {
+    color: var(--ink-muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--accent);
+  }
+  .ing-amount {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-secondary);
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+  }
+  .ing-amount.checked { opacity: 0.4; }
+
+  /* Steps with hover-activated numbers */
+  .detail-steps { list-style: none; counter-reset: step; margin-bottom: 32px; }
+  .detail-steps li {
+    counter-increment: step;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+    transition: all 0.15s;
+  }
+  .detail-steps li:last-child { border-bottom: none; }
+  .detail-steps li:hover { padding-left: 4px; }
+  .step-num {
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--border);
+    line-height: 1;
+    transition: color 0.25s;
+  }
+  .detail-steps li:hover .step-num { color: var(--accent); }
+  .step-text {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--ink-secondary);
+    padding-top: 4px;
+  }
+
+  /* ========== DISCOVER (with small images) ========== */
+  .page-discover { display: none; }
+  .discover-header { padding: 16px 20px; }
+  .discover-overline {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-muted);
+    margin-bottom: 4px;
+  }
+  .discover-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    letter-spacing: -0.03em;
+    margin-bottom: 14px;
+  }
+  .discover-search-wrap {
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 6px;
+    gap: 8px;
+    transition: border-color 0.25s;
+  }
+  .discover-search-wrap:focus-within { border-color: var(--accent); }
+  .discover-search-wrap input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: none;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--ink);
+  }
+  .discover-search-wrap input::placeholder { color: var(--ink-muted); }
+  .discover-search-wrap svg { color: var(--ink-muted); }
+  .discover-filters {
+    display: flex;
+    gap: 0;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .discover-filter {
+    padding: 8px 14px 8px 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+  }
+  .discover-filter.active { color: var(--ink); }
+  .discover-filter.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 14px;
+    height: 2px;
+    background: var(--ink);
+  }
+  .discover-filter:hover { color: var(--ink); }
+
+  .discover-results { padding: 0 20px 100px; }
+  .discover-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .discover-item:hover {
+    margin: 0 -8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    background: var(--accent-light);
+  }
+  .discover-item:active { transform: scale(0.995); }
+  .discover-item-content { flex: 1; min-width: 0; }
+  .discover-item-cat {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .discover-item-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin-bottom: 3px;
+    transition: color 0.2s;
+  }
+  .discover-item:hover .discover-item-title { color: var(--accent); }
+  .discover-item-desc {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--ink-secondary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .discover-item-footer {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: flex;
+    gap: 10px;
+  }
+  .discover-item-thumb {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    flex-shrink: 0;
+    align-self: center;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .discover-item:hover .discover-item-thumb { transform: scale(1.08); }
+
+  /* ========== PROFILE ========== */
+  .page-profile { display: none; }
+  .profile-top {
+    padding: 24px 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .profile-avatar-lg {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg);
+    font-family: var(--font-display);
+    font-size: 24px;
+    background: var(--ink);
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .profile-avatar-lg:hover { transform: scale(1.08); }
+  .profile-info { flex: 1; }
+  .profile-name {
+    font-family: var(--font-display);
+    font-size: 28px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 4px;
+  }
+  .profile-bio {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--ink-secondary);
+    line-height: 1.45;
+  }
+  .profile-stats {
+    display: flex;
+    padding: 0 20px;
+    border-top: 3px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+  .profile-stat {
+    flex: 1;
+    padding: 10px 0;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .profile-stat:last-child { border-right: none; }
+  .profile-stat:hover { background: var(--accent-light); }
+  .profile-stat-val { font-family: var(--font-display); font-size: 22px; color: var(--ink); }
+  .profile-stat-lbl { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); }
+  .profile-nav {
+    display: flex;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .profile-nav-item {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 10px 14px 10px 0;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+  }
+  .profile-nav-item.active { color: var(--ink); }
+  .profile-nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 14px;
+    height: 2px;
+    background: var(--ink);
+  }
+  .profile-recipes { padding: 0 20px 100px; }
+  .profile-recipe {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .profile-recipe:hover { padding-left: 4px; }
+  .profile-recipe-img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    flex-shrink: 0;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .profile-recipe:hover .profile-recipe-img { transform: scale(1.08); }
+  .profile-recipe-info { flex: 1; }
+  .profile-recipe-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+  }
+  .profile-recipe-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: flex;
+    gap: 8px;
+  }
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 1px 5px;
+    border: 1px solid;
+  }
+  .badge-pub { border-color: var(--olive); color: var(--olive); }
+  .badge-priv { border-color: var(--border); color: var(--ink-muted); }
+
+  /* ========== TAB BAR ========== */
+  .tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: rgba(246, 244, 239, 0.94);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 5px 0 calc(5px + env(safe-area-inset-bottom, 0px));
+    z-index: 100;
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 5px 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--ink-muted);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .tab-item.active { color: var(--ink); }
+  .tab-item:active { transform: scale(0.88); }
+  .tab-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ========== PAGE SWITCHER ========== */
+  .page-switch {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 999;
+    display: flex;
+    gap: 2px;
+    background: var(--ink);
+    padding: 3px;
+  }
+  .page-switch button {
+    padding: 6px 10px;
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    color: rgba(255,255,255,0.35);
+    background: transparent;
+    transition: all 0.15s;
+  }
+  .page-switch button.active { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.9); }
+  .page-switch button:hover:not(.active) { color: rgba(255,255,255,0.6); }
+</style>
+</head>
+<body>
+
+<!-- Shared SVG defs -->
+<svg style="position:absolute;width:0;height:0" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="fm">
+      <rect width="24" height="24" fill="white"/>
+      <!-- 4 slender tines -->
+      <line x1="8.5" y1="5" x2="8.5" y2="10.5" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="10.8" y1="5" x2="10.8" y2="10.5" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="13.2" y1="5" x2="13.2" y2="10.5" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="15.5" y1="5" x2="15.5" y2="10.5" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- bridge connecting tines -->
+      <path d="M8.5 10.5 Q8.5 13 12 13 Q15.5 13 15.5 10.5" stroke="black" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- handle -->
+      <line x1="12" y1="13" x2="12" y2="19.5" stroke="black" stroke-width="1.8" stroke-linecap="round"/>
+    </mask>
+  </defs>
+</svg>
+
+<div class="page-switch">
+  <button class="active" onclick="showPage('home')">Home</button>
+  <button onclick="showPage('detail')">Recipe</button>
+  <button onclick="showPage('discover')">Discover</button>
+  <button onclick="showPage('profile')">Profile</button>
+</div>
+
+<div class="app-shell">
+
+  <!-- ==================== HOME ==================== -->
+  <div id="page-home">
+    <nav class="nav">
+      <div class="logo anim-left" style="animation-delay:0.05s">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="11" fill="var(--ink)" mask="url(#fm)"/>
+          </svg>
+        </div>
+        <span class="logo-text">EefEats</span>
+      </div>
+      <div class="nav-right">
+        <a href="#" class="nav-link active">Feed</a>
+        <a href="#" class="nav-link">Browse</a>
+        <div class="nav-avatar">B</div>
+      </div>
+    </nav>
+
+    <hr class="rule-thick anim-line" style="animation-delay:0.08s">
+
+    <!-- Compact greeting -->
+    <div class="masthead anim-fade" style="animation-delay:0.12s">
+      <div class="masthead-greeting">Good evening, Bart</div>
+      <div class="masthead-date">Feb 20, 2026</div>
+    </div>
+
+    <hr class="rule-double anim-line" style="margin:0 20px;animation-delay:0.15s">
+
+    <!-- Featured -->
+    <div class="featured">
+      <div class="featured-label anim-up" style="animation-delay:0.18s">Featured</div>
+      <div class="featured-layout anim-up" style="animation-delay:0.22s">
+        <div>
+          <div class="featured-category">Main Course</div>
+          <div class="featured-title">Lamb Shoulder with Pomegranate &amp; Mint</div>
+          <div class="featured-excerpt">Slow-roasted until falling apart, finished with a bright pomegranate molasses glaze and fresh herbs.</div>
+          <div class="featured-meta">
+            <span>By Bart</span><span class="dot"></span><span>3h 30m</span><span class="dot"></span><span>5.0</span>
+          </div>
+        </div>
+        <img class="featured-img" src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=300&h=400&fit=crop" alt="">
+      </div>
+    </div>
+
+    <hr class="rule-thin anim-line" style="margin:0 20px;animation-delay:0.25s">
+
+    <!-- Index -->
+    <div class="index-section">
+      <div class="index-header anim-up" style="animation-delay:0.28s">
+        <div class="index-title">Your Recipes</div>
+        <div class="index-count">24 total</div>
+      </div>
+      <div class="index-item anim-up" style="animation-delay:0.32s">
+        <div class="index-number">1</div>
+        <div class="index-content">
+          <div class="index-item-cat">Breakfast</div>
+          <div class="index-item-title">Shakshuka with Feta &amp; Za'atar</div>
+          <div class="index-item-meta"><span>35 min</span><span>Cooked 12x</span><span>4.0</span></div>
+        </div>
+        <img class="index-item-thumb" src="https://images.unsplash.com/photo-1590412200988-a436970781fa?w=130&h=130&fit=crop" alt="">
+      </div>
+      <div class="index-item anim-up" style="animation-delay:0.36s">
+        <div class="index-number">2</div>
+        <div class="index-content">
+          <div class="index-item-cat">Dessert</div>
+          <div class="index-item-title">Brown Butter Chocolate Chip Cookies</div>
+          <div class="index-item-meta"><span>40 min</span><span>Cooked 8x</span><span>5.0</span></div>
+        </div>
+        <img class="index-item-thumb" src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=130&h=130&fit=crop" alt="">
+      </div>
+      <div class="index-item anim-up" style="animation-delay:0.4s">
+        <div class="index-number">3</div>
+        <div class="index-content">
+          <div class="index-item-cat">Main Course</div>
+          <div class="index-item-title">Tonkotsu Ramen</div>
+          <div class="index-item-meta"><span>45 min</span><span>Cooked 6x</span><span>4.5</span></div>
+        </div>
+        <img class="index-item-thumb" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=130&h=130&fit=crop" alt="">
+      </div>
+    </div>
+
+    <hr class="rule-thin anim-line" style="margin:12px 20px 0;animation-delay:0.44s">
+
+    <!-- Activity with small recipe images -->
+    <div class="ticker-section">
+      <div class="ticker-header anim-up" style="animation-delay:0.48s">
+        <div class="ticker-title">Activity</div>
+      </div>
+      <div class="ticker-item anim-up" style="animation-delay:0.52s">
+        <img class="ticker-thumb" src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=80&h=80&fit=crop" alt="">
+        <div class="ticker-body">
+          <div class="ticker-text"><strong>Eva</strong> cooked <span class="recipe-ref">Mushroom Risotto</span></div>
+          <div class="ticker-stars">
+            <span class="ticker-star">&#9733;</span><span class="ticker-star">&#9733;</span><span class="ticker-star">&#9733;</span><span class="ticker-star">&#9733;</span><span class="ticker-star">&#9733;</span>
+          </div>
+        </div>
+        <div class="ticker-time">2h</div>
+      </div>
+      <div class="ticker-item anim-up" style="animation-delay:0.56s">
+        <img class="ticker-thumb" src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=80&h=80&fit=crop" alt="">
+        <div class="ticker-body">
+          <div class="ticker-text"><strong>Marco</strong> published <span class="recipe-ref">Pasta alla Norma</span></div>
+        </div>
+        <div class="ticker-time">1d</div>
+      </div>
+      <div class="ticker-item anim-up" style="animation-delay:0.6s">
+        <img class="ticker-thumb" src="https://images.unsplash.com/photo-1585478259715-876acc5be8eb?w=80&h=80&fit=crop" alt="">
+        <div class="ticker-body">
+          <div class="ticker-text"><strong>Sophie</strong> rated <span class="recipe-ref">Sourdough Bread</span></div>
+          <div class="ticker-stars">
+            <span class="ticker-star">&#9733;</span><span class="ticker-star">&#9733;</span><span class="ticker-star">&#9733;</span><span class="ticker-star">&#9733;</span><span class="ticker-star empty">&#9733;</span>
+          </div>
+        </div>
+        <div class="ticker-time">2d</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DETAIL ==================== -->
+  <div id="page-detail" class="page-detail">
+    <div class="detail-nav">
+      <button class="detail-back anim-fade" style="animation-delay:0.05s">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back
+      </button>
+      <div class="detail-actions-bar anim-fade" style="animation-delay:0.08s">
+        <button class="detail-action">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Share
+        </button>
+        <button class="detail-action">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          Save
+        </button>
+      </div>
+    </div>
+
+    <div class="detail-hero-wrap">
+      <img class="detail-hero-img" src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=600&h=350&fit=crop" alt="">
+      <div class="detail-hero-fade"></div>
+    </div>
+
+    <div class="detail-header">
+      <div class="detail-category anim-up" style="animation-delay:0.15s">Main Course</div>
+      <h1 class="detail-title anim-up" style="animation-delay:0.2s">Lamb Shoulder<br>with <em>Pomegranate &amp; Mint</em></h1>
+      <div class="detail-byline anim-up" style="animation-delay:0.25s">By <strong>Bart</strong> &middot; Cooked 4 times</div>
+      <div class="detail-date anim-up" style="animation-delay:0.27s">Updated Feb 16, 2026</div>
+    </div>
+
+    <div class="detail-stats-bar anim-up" style="animation-delay:0.3s">
+      <div class="detail-stat"><div class="detail-stat-val">30m</div><div class="detail-stat-lbl">Prep</div></div>
+      <div class="detail-stat"><div class="detail-stat-val">3h</div><div class="detail-stat-lbl">Cook</div></div>
+      <div class="detail-stat"><div class="detail-stat-val">6</div><div class="detail-stat-lbl">Serves</div></div>
+      <div class="detail-stat"><div class="detail-stat-val">5.0</div><div class="detail-stat-lbl">Rating</div></div>
+    </div>
+
+    <div class="detail-body">
+      <p class="detail-intro anim-up" style="animation-delay:0.35s">Slow-roasted until falling apart, finished with a bright pomegranate molasses glaze and fresh herbs from the garden.</p>
+
+      <div class="anim-up" style="animation-delay:0.4s">
+        <div class="detail-section-label">Ingredients</div>
+        <ul class="detail-ingredients">
+          <li onclick="toggleIng(this)"><span class="ing-check"></span><span class="ing-name">Lamb shoulder, bone-in</span><span class="ing-amount">1.5 kg</span></li>
+          <li onclick="toggleIng(this)"><span class="ing-check"></span><span class="ing-name">Pomegranate molasses</span><span class="ing-amount">3 tbsp</span></li>
+          <li onclick="toggleIng(this)"><span class="ing-check"></span><span class="ing-name">Olive oil</span><span class="ing-amount">2 tbsp</span></li>
+          <li onclick="toggleIng(this)"><span class="ing-check"></span><span class="ing-name">Garlic, halved</span><span class="ing-amount">1 head</span></li>
+          <li onclick="toggleIng(this)"><span class="ing-check"></span><span class="ing-name">Cumin, ground</span><span class="ing-amount">2 tsp</span></li>
+          <li onclick="toggleIng(this)"><span class="ing-check"></span><span class="ing-name">Cinnamon</span><span class="ing-amount">1 tsp</span></li>
+          <li onclick="toggleIng(this)"><span class="ing-check"></span><span class="ing-name">Fresh mint leaves</span><span class="ing-amount">handful</span></li>
+          <li onclick="toggleIng(this)"><span class="ing-check"></span><span class="ing-name">Pomegranate seeds</span><span class="ing-amount">100 g</span></li>
+        </ul>
+      </div>
+
+      <div class="anim-up" style="animation-delay:0.45s">
+        <div class="detail-section-label">Method</div>
+        <ol class="detail-steps">
+          <li><div class="step-num">01</div><div class="step-text">Preheat the oven to 160C. Score the lamb shoulder in a crosshatch pattern and rub generously with olive oil, cumin, cinnamon, salt and pepper.</div></li>
+          <li><div class="step-num">02</div><div class="step-text">Place the lamb in a deep roasting tray with the halved garlic head. Cover tightly with foil and roast for 3 hours until the meat is falling off the bone.</div></li>
+          <li><div class="step-num">03</div><div class="step-text">Remove foil for the last 30 minutes. Brush with pomegranate molasses and increase heat to 200C to caramelize the glaze.</div></li>
+          <li><div class="step-num">04</div><div class="step-text">Rest for 15 minutes, then scatter with pomegranate seeds and torn fresh mint. Pull apart with two forks and serve family-style.</div></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DISCOVER ==================== -->
+  <div id="page-discover" class="page-discover">
+    <nav class="nav">
+      <div class="logo">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="11" fill="var(--ink)" mask="url(#fm)"/>
+          </svg>
+        </div>
+        <span class="logo-text">EefEats</span>
+      </div>
+    </nav>
+    <hr class="rule-thick">
+
+    <div class="discover-header">
+      <div class="discover-overline anim-up" style="animation-delay:0.05s">Explore</div>
+      <div class="discover-title anim-up" style="animation-delay:0.08s">Discover</div>
+      <div class="discover-search-wrap anim-up" style="animation-delay:0.12s">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search recipes or chefs">
+      </div>
+    </div>
+
+    <div class="discover-filters anim-up" style="animation-delay:0.16s">
+      <button class="discover-filter active">Recipes</button>
+      <button class="discover-filter">Chefs</button>
+      <button class="discover-filter">Newest</button>
+      <button class="discover-filter">Top Rated</button>
+    </div>
+
+    <div class="discover-results">
+      <div class="discover-item anim-up" style="animation-delay:0.2s">
+        <div class="discover-item-content">
+          <div class="discover-item-cat">Appetizer</div>
+          <div class="discover-item-title">Burrata with Grilled Peaches &amp; Basil Oil</div>
+          <div class="discover-item-desc">Creamy burrata meets caramelized summer peaches, drizzled with homemade basil oil and flaky sea salt.</div>
+          <div class="discover-item-footer"><span>By Eva</span><span>15 min</span><span>4.9</span></div>
+        </div>
+        <img class="discover-item-thumb" src="https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=130&h=130&fit=crop" alt="">
+      </div>
+      <div class="discover-item anim-up" style="animation-delay:0.24s">
+        <div class="discover-item-content">
+          <div class="discover-item-cat">Main Course</div>
+          <div class="discover-item-title">Miso-Glazed Salmon with Pickled Radish</div>
+          <div class="discover-item-desc">Sweet white miso marinade, crispy skin, served over steamed rice with quick-pickled radish.</div>
+          <div class="discover-item-footer"><span>By Marco</span><span>30 min</span><span>4.2</span></div>
+        </div>
+        <img class="discover-item-thumb" src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=130&h=130&fit=crop" alt="">
+      </div>
+      <div class="discover-item anim-up" style="animation-delay:0.28s">
+        <div class="discover-item-content">
+          <div class="discover-item-cat">Dessert</div>
+          <div class="discover-item-title">Pistachio &amp; Rosewater Panna Cotta</div>
+          <div class="discover-item-desc">Silky panna cotta infused with rosewater, topped with crushed pistachios and a drizzle of honey.</div>
+          <div class="discover-item-footer"><span>By Sophie</span><span>4h (set)</span><span>5.0</span></div>
+        </div>
+        <img class="discover-item-thumb" src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=130&h=130&fit=crop" alt="">
+      </div>
+      <div class="discover-item anim-up" style="animation-delay:0.32s">
+        <div class="discover-item-content">
+          <div class="discover-item-cat">Breakfast</div>
+          <div class="discover-item-title">Cardamom French Toast with Maple Labne</div>
+          <div class="discover-item-desc">Thick brioche soaked in cardamom custard, griddle-fried golden, with tangy maple labne.</div>
+          <div class="discover-item-footer"><span>By Eva</span><span>25 min</span><span>4.7</span></div>
+        </div>
+        <img class="discover-item-thumb" src="https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=130&h=130&fit=crop" alt="">
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PROFILE ==================== -->
+  <div id="page-profile" class="page-profile">
+    <nav class="nav">
+      <div class="logo">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="11" fill="var(--ink)" mask="url(#fm)"/>
+          </svg>
+        </div>
+        <span class="logo-text">EefEats</span>
+      </div>
+      <div class="nav-right">
+        <a href="#" class="nav-link">Settings</a>
+      </div>
+    </nav>
+    <hr class="rule-thick">
+
+    <div class="profile-top anim-up" style="animation-delay:0.08s">
+      <div class="profile-avatar-lg">B</div>
+      <div class="profile-info">
+        <div class="profile-name">Bart</div>
+        <div class="profile-bio">Home cook. Building EefEats for me and my wife.</div>
+      </div>
+    </div>
+
+    <div class="profile-stats anim-up" style="animation-delay:0.12s">
+      <div class="profile-stat"><div class="profile-stat-val">24</div><div class="profile-stat-lbl">Recipes</div></div>
+      <div class="profile-stat"><div class="profile-stat-val">8</div><div class="profile-stat-lbl">Published</div></div>
+      <div class="profile-stat"><div class="profile-stat-val">47</div><div class="profile-stat-lbl">Cooked</div></div>
+      <div class="profile-stat"><div class="profile-stat-val">12</div><div class="profile-stat-lbl">Followers</div></div>
+    </div>
+
+    <div class="profile-nav anim-up" style="animation-delay:0.16s">
+      <button class="profile-nav-item active">Recipes</button>
+      <button class="profile-nav-item">Activity</button>
+      <button class="profile-nav-item">Favorites</button>
+    </div>
+
+    <div class="profile-recipes">
+      <div class="profile-recipe anim-up" style="animation-delay:0.2s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=110&h=110&fit=crop" alt="">
+        <div class="profile-recipe-info">
+          <div class="profile-recipe-title">Lamb Shoulder with Pomegranate &amp; Mint</div>
+          <div class="profile-recipe-meta"><span class="badge badge-pub">Published</span><span>4x cooked</span></div>
+        </div>
+      </div>
+      <div class="profile-recipe anim-up" style="animation-delay:0.24s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1590412200988-a436970781fa?w=110&h=110&fit=crop" alt="">
+        <div class="profile-recipe-info">
+          <div class="profile-recipe-title">Shakshuka with Feta &amp; Za'atar</div>
+          <div class="profile-recipe-meta"><span class="badge badge-pub">Published</span><span>12x cooked</span></div>
+        </div>
+      </div>
+      <div class="profile-recipe anim-up" style="animation-delay:0.28s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=110&h=110&fit=crop" alt="">
+        <div class="profile-recipe-info">
+          <div class="profile-recipe-title">Brown Butter Chocolate Chip Cookies</div>
+          <div class="profile-recipe-meta"><span class="badge badge-priv">Private</span><span>8x cooked</span></div>
+        </div>
+      </div>
+      <div class="profile-recipe anim-up" style="animation-delay:0.32s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=110&h=110&fit=crop" alt="">
+        <div class="profile-recipe-info">
+          <div class="profile-recipe-title">Tonkotsu Ramen</div>
+          <div class="profile-recipe-meta"><span class="badge badge-pub">Published</span><span>6x cooked</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-item active" onclick="showPage('home')">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="tab-label">Home</span>
+    </button>
+    <button class="tab-item" onclick="showPage('discover')">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <span class="tab-label">Discover</span>
+    </button>
+    <button class="tab-item">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span class="tab-label">Recipes</span>
+    </button>
+    <button class="tab-item">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span class="tab-label">Groceries</span>
+    </button>
+    <button class="tab-item" onclick="showPage('profile')">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="tab-label">Profile</span>
+    </button>
+  </div>
+</div>
+
+<script>
+function showPage(page) {
+  document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
+  document.getElementById('page-' + page).style.display = 'block';
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  const tabMap = { home: 0, discover: 1, profile: 4 };
+  if (tabMap[page] !== undefined) document.querySelectorAll('.tab-item')[tabMap[page]].classList.add('active');
+  document.querySelectorAll('.page-switch button').forEach(b => b.classList.remove('active'));
+  const switchMap = { home: 0, detail: 1, discover: 2, profile: 3 };
+  document.querySelectorAll('.page-switch button')[switchMap[page]].classList.add('active');
+  document.getElementById('page-' + page).querySelectorAll('[class*="anim-"]').forEach(el => {
+    el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+  });
+}
+function toggleIng(li) {
+  const check = li.querySelector('.ing-check');
+  const name = li.querySelector('.ing-name');
+  const amount = li.querySelector('.ing-amount');
+  check.classList.toggle('checked');
+  name.classList.toggle('checked');
+  amount.classList.toggle('checked');
+}
+</script>
+</body>
+</html>

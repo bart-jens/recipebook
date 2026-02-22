@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EefEats — V3: The Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4F3EE;
+    --surface: #FFFFFF;
+    --surface-alt: #ECEAE4;
+    --ink: #0F0F0E;
+    --ink-secondary: #4A4A48;
+    --ink-muted: #8A8A86;
+    --border: #D4D2CC;
+    --border-strong: #0F0F0E;
+    --accent: #C25835;
+    --accent-light: rgba(194, 88, 53, 0.08);
+    --teal: #3A6B5E;
+
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SF Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  ::selection { background: var(--accent); color: white; }
+
+  /* ========== ANIMATIONS ========== */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes lineGrow {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  @keyframes checkSweep {
+    from { text-decoration-color: transparent; }
+    to { text-decoration-color: var(--ink-muted); }
+  }
+
+  .anim-up { animation: fadeInUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards; opacity: 0; }
+  .anim-fade { animation: fadeIn 0.3s ease forwards; opacity: 0; }
+  .anim-left { animation: slideInLeft 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards; opacity: 0; }
+  .anim-scale { animation: scaleIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; opacity: 0; }
+  .anim-line { animation: lineGrow 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; transform-origin: left; transform: scaleX(0); }
+
+  /* ========== LAYOUT ========== */
+  .app-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+  }
+
+  /* ========== LOGO ========== */
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .logo svg { flex-shrink: 0; }
+  .logo-text {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+  }
+
+  /* ========== HEADER ========== */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-switch {
+    display: flex;
+    gap: 2px;
+    background: var(--surface-alt);
+    border-radius: 6px;
+    padding: 2px;
+  }
+  .page-switch button {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    letter-spacing: -0.01em;
+  }
+  .page-switch button.active {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .page-switch button:hover:not(.active) { color: var(--ink-secondary); }
+
+  /* ========== PAGES ========== */
+  .page { display: none; padding-bottom: 90px; }
+  .page.active { display: block; }
+
+  /* ========== TAB BAR ========== */
+  .tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 6px 0 22px;
+    z-index: 100;
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border: none;
+    background: none;
+    transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .tab-item:active { transform: scale(0.92); }
+  .tab-item svg { width: 22px; height: 22px; color: var(--ink-muted); transition: color 0.15s ease; }
+  .tab-item span {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    transition: color 0.15s ease;
+  }
+  .tab-item.active svg { color: var(--accent); }
+  .tab-item.active span { color: var(--accent); }
+
+  /* ========== STATUS BAR / GREETING ========== */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-alt);
+  }
+  .status-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--ink-muted);
+    letter-spacing: 0.01em;
+  }
+  .status-summary {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-secondary);
+  }
+  .status-summary .hl { color: var(--accent); }
+
+  /* ========== FEATURED RECIPE (TEXT-ONLY) ========== */
+  .featured {
+    padding: 24px 20px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .featured-inner {
+    border-left: 3px solid var(--accent);
+    padding-left: 20px;
+  }
+  .featured-cat {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .featured-title {
+    font-family: var(--font-display);
+    font-size: 34px;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+  .featured-excerpt {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-secondary);
+    margin-bottom: 12px;
+    font-weight: 300;
+  }
+  .featured-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+  .featured-meta .dot { color: var(--border); }
+
+  /* ========== SECTION HEADERS ========== */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 8px;
+  }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+  }
+  .section-action {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+  }
+
+  /* ========== RECIPE INDEX (Dense List) ========== */
+  .recipe-index { border-bottom: 1px solid var(--border); }
+  .index-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.1s ease;
+    position: relative;
+  }
+  .index-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: var(--accent);
+    transition: width 0.1s ease;
+  }
+  .index-row:hover::before { width: 3px; }
+  .index-row:hover { padding-left: 23px; background: var(--accent-light); }
+  .index-row:last-child { border-bottom: none; }
+  .index-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .index-body { flex: 1; min-width: 0; }
+  .index-cat {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+  .index-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+  .index-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    gap: 2px;
+  }
+  .index-meta-time {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+  .index-meta-stats {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+  }
+  .index-meta-stats .star { color: var(--accent); }
+
+  /* ========== ACTIVITY LOG (Git-log style) ========== */
+  .activity-log { border-bottom: 1px solid var(--border); }
+  .log-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .log-text {
+    flex: 1;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--ink-secondary);
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .log-text strong { color: var(--ink); font-weight: 600; }
+  .log-text em {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--accent);
+  }
+  .log-time {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* ========== RECIPE DETAIL ========== */
+  .detail-top {
+    padding: 20px 20px 16px;
+  }
+  .detail-cat {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .detail-title {
+    font-family: var(--font-display);
+    font-size: 44px;
+    line-height: 1.05;
+    color: var(--ink);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+  .detail-byline {
+    font-size: 13px;
+    color: var(--ink-secondary);
+    font-weight: 300;
+  }
+  .detail-byline strong { font-weight: 600; color: var(--ink); }
+  .detail-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: 4px;
+  }
+
+  .detail-image {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Stats grid (mono) */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-cell {
+    padding: 12px 16px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-val {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    margin-top: 4px;
+  }
+
+  /* Ingredients */
+  .ing-section { padding: 0; border-bottom: 1px solid var(--border); }
+  .ing-head {
+    padding: 14px 20px 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+  }
+  .ing-list { list-style: none; }
+  .ing-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 20px;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s ease;
+    gap: 10px;
+  }
+  .ing-item:hover { background: var(--accent-light); }
+  .ing-check {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s ease;
+  }
+  .ing-item.checked .ing-check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .ing-check svg { opacity: 0; transition: opacity 0.1s ease; }
+  .ing-item.checked .ing-check svg { opacity: 1; }
+  .ing-amount {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    width: 70px;
+    flex-shrink: 0;
+  }
+  .ing-name {
+    font-size: 13px;
+    color: var(--ink-secondary);
+    transition: all 0.2s ease;
+  }
+  .ing-item.checked .ing-name {
+    text-decoration: line-through;
+    color: var(--ink-muted);
+  }
+
+  /* Steps */
+  .steps-section { padding: 0; border-bottom: 1px solid var(--border); }
+  .steps-head {
+    padding: 14px 20px 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+  }
+  .step-item {
+    padding: 10px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+  }
+  .step-num {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    flex-shrink: 0;
+    width: 24px;
+    line-height: 1.55;
+  }
+  .step-text {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-secondary);
+  }
+
+  /* ========== DISCOVER ========== */
+  .discover-header { padding: 20px 20px 16px; }
+  .discover-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .search-wrap {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .search-input {
+    width: 100%;
+    padding: 10px 0 10px 28px;
+    border: none;
+    border-bottom: 2px solid var(--border);
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .search-input::placeholder {
+    font-family: var(--font-mono);
+    color: var(--ink-muted);
+    font-size: 12px;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-icon {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-muted);
+  }
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .filter-chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all 0.1s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .filter-chip.active {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: var(--surface);
+  }
+  .filter-badge {
+    font-size: 9px;
+    background: var(--accent);
+    color: white;
+    border-radius: 2px;
+    padding: 1px 4px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  /* Discover results */
+  .discover-results { border-top: 1px solid var(--border); }
+  .discover-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.1s ease;
+    position: relative;
+  }
+  .discover-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: var(--accent);
+    transition: width 0.1s ease;
+  }
+  .discover-row:hover::before { width: 3px; }
+  .discover-row:hover { padding-left: 23px; background: var(--accent-light); }
+  .discover-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .discover-body { flex: 1; min-width: 0; }
+  .discover-line1 {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .discover-cat {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+  .discover-name {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .discover-line2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+    margin-top: 1px;
+  }
+  .discover-line2 .star { color: var(--accent); }
+  .discover-line2 .dot { margin: 0 1px; }
+
+  /* ========== PROFILE ========== */
+  .profile-header {
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .profile-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--surface-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--ink);
+    flex-shrink: 0;
+    border: 2px solid var(--border);
+  }
+  .profile-info { flex: 1; }
+  .profile-name {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .profile-bio {
+    font-size: 13px;
+    color: var(--ink-muted);
+    font-weight: 300;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .profile-stats-line {
+    padding: 10px 20px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-secondary);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-alt);
+  }
+  .profile-stats-line strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .profile-stats-line .sep { color: var(--border); margin: 0 4px; }
+
+  /* Profile tabs */
+  .profile-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .profile-tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    position: relative;
+    transition: color 0.15s ease;
+  }
+  .profile-tab.active { color: var(--ink); }
+  .profile-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  /* Profile recipe list */
+  .profile-recipes { }
+  .profile-recipe-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.1s ease;
+    position: relative;
+  }
+  .profile-recipe-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: var(--accent);
+    transition: width 0.1s ease;
+  }
+  .profile-recipe-row:hover::before { width: 3px; }
+  .profile-recipe-row:hover { padding-left: 23px; background: var(--accent-light); }
+  .profile-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 3px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .profile-recipe-body { flex: 1; min-width: 0; }
+  .profile-recipe-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .profile-recipe-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 1px;
+  }
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 6px;
+    border-radius: 2px;
+    border: 1px solid;
+    line-height: 1.2;
+  }
+  .badge-published { color: var(--teal); border-color: var(--teal); }
+  .badge-draft { color: var(--ink-muted); border-color: var(--border); }
+
+  /* ========== UTILITIES ========== */
+  .px-20 { padding-left: 20px; padding-right: 20px; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- HEADER -->
+  <header class="header anim-fade">
+    <div class="logo">
+      <svg width="18" height="20" viewBox="0 0 18 20" fill="none">
+        <path d="M9 18C9 18 3 14 3 8.5C3 6 5 4 7 3" stroke="#0F0F0E" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M9 18C9 18 15 14 15 8.5C15 6 13 4 11 3" stroke="#0F0F0E" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M9 16V6" stroke="#C25835" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="logo-text">EefEats</span>
+    </div>
+    <div class="page-switch">
+      <button class="active" onclick="showPage('home')">Home</button>
+      <button onclick="showPage('recipe')">Recipe</button>
+      <button onclick="showPage('discover')">Discover</button>
+      <button onclick="showPage('profile')">Profile</button>
+    </div>
+  </header>
+
+  <!-- ============ HOME PAGE ============ -->
+  <div id="page-home" class="page active">
+
+    <!-- Status bar -->
+    <div class="status-bar anim-fade" style="animation-delay:0.05s">
+      <span class="status-date">2026-02-19 Wed</span>
+      <span class="status-summary"><span class="hl">3</span> updated / <span class="hl">12</span> cooked this week</span>
+    </div>
+
+    <!-- Featured -->
+    <div class="featured anim-up" style="animation-delay:0.1s">
+      <div class="featured-inner">
+        <div class="featured-cat">Main Course</div>
+        <h1 class="featured-title">Lamb Shoulder with Pomegranate &amp; Mint</h1>
+        <p class="featured-excerpt">Slow-roasted lamb shoulder glazed with pomegranate molasses, finished with fresh mint and toasted pine nuts. A centerpiece dish.</p>
+        <div class="featured-meta">
+          <span>by Bart</span>
+          <span class="dot">/</span>
+          <span>3h 30m</span>
+          <span class="dot">/</span>
+          <span>5.0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recipe Index -->
+    <div class="section-head anim-fade" style="animation-delay:0.15s">
+      <span class="section-label">Recipe Index</span>
+      <a href="#" class="section-action">View all</a>
+    </div>
+    <div class="recipe-index">
+      <div class="index-row anim-left" style="animation-delay:0.175s">
+        <img class="index-thumb" src="https://images.unsplash.com/photo-1590412200988-a436970781fa?w=100&h=100&fit=crop" alt="Shakshuka">
+        <div class="index-body">
+          <div class="index-cat">Breakfast</div>
+          <div class="index-title">Shakshuka</div>
+        </div>
+        <div class="index-meta">
+          <span class="index-meta-time">35min</span>
+          <span class="index-meta-stats">12x <span class="star">4.0</span></span>
+        </div>
+      </div>
+      <div class="index-row anim-left" style="animation-delay:0.2s">
+        <img class="index-thumb" src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=100&h=100&fit=crop" alt="Cookies">
+        <div class="index-body">
+          <div class="index-cat">Dessert</div>
+          <div class="index-title">Chocolate Chip Cookies</div>
+        </div>
+        <div class="index-meta">
+          <span class="index-meta-time">40min</span>
+          <span class="index-meta-stats">8x <span class="star">5.0</span></span>
+        </div>
+      </div>
+      <div class="index-row anim-left" style="animation-delay:0.225s">
+        <img class="index-thumb" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=100&h=100&fit=crop" alt="Ramen">
+        <div class="index-body">
+          <div class="index-cat">Main Course</div>
+          <div class="index-title">Tonkotsu Ramen</div>
+        </div>
+        <div class="index-meta">
+          <span class="index-meta-time">45min</span>
+          <span class="index-meta-stats">6x <span class="star">4.5</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Line divider -->
+    <div style="padding:0 20px;"><div class="anim-line" style="height:1px;background:var(--border);animation-delay:0.25s"></div></div>
+
+    <!-- Activity Log -->
+    <div class="section-head anim-fade" style="animation-delay:0.275s">
+      <span class="section-label">Activity</span>
+      <a href="#" class="section-action">All</a>
+    </div>
+    <div class="activity-log">
+      <div class="log-row anim-left" style="animation-delay:0.3s">
+        <img class="log-thumb" src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=60&h=60&fit=crop" alt="Risotto">
+        <span class="log-text"><strong>Eva</strong> cooked <em>Mushroom Risotto</em> &middot; 5 stars</span>
+        <span class="log-time">2h</span>
+      </div>
+      <div class="log-row anim-left" style="animation-delay:0.325s">
+        <img class="log-thumb" src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=60&h=60&fit=crop" alt="Pasta">
+        <span class="log-text"><strong>Marco</strong> saved <em>Pasta alla Norma</em></span>
+        <span class="log-time">1d</span>
+      </div>
+      <div class="log-row anim-left" style="animation-delay:0.35s">
+        <img class="log-thumb" src="https://images.unsplash.com/photo-1585478259715-876acc5be8eb?w=60&h=60&fit=crop" alt="Sourdough">
+        <span class="log-text"><strong>Sophie</strong> published <em>Sourdough Bread</em> &middot; 4 stars</span>
+        <span class="log-time">2d</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RECIPE DETAIL ============ -->
+  <div id="page-recipe" class="page">
+
+    <div class="detail-top anim-up" style="animation-delay:0.05s">
+      <div class="detail-cat">Main Course</div>
+      <h1 class="detail-title">Lamb Shoulder with Pomegranate &amp; Mint</h1>
+      <div class="detail-byline">by <strong>Bart</strong></div>
+      <div class="detail-date">Published 2026-01-14</div>
+    </div>
+
+    <div class="detail-image anim-scale" style="animation-delay:0.1s">
+      <img src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=800&h=400&fit=crop" alt="Lamb Shoulder">
+    </div>
+
+    <div class="stats-grid anim-fade" style="animation-delay:0.15s">
+      <div class="stat-cell">
+        <div class="stat-val">3:30</div>
+        <div class="stat-label">Time</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val">6</div>
+        <div class="stat-label">Serves</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val">Med</div>
+        <div class="stat-label">Level</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val">5.0</div>
+        <div class="stat-label">Rating</div>
+      </div>
+    </div>
+
+    <!-- Ingredients -->
+    <div class="ing-section">
+      <div class="ing-head anim-fade" style="animation-delay:0.175s">Ingredients</div>
+      <ul class="ing-list">
+        <li class="ing-item anim-left" style="animation-delay:0.2s" onclick="toggleIng(this)">
+          <div class="ing-check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="ing-amount">2 kg</span>
+          <span class="ing-name">Lamb shoulder, bone-in</span>
+        </li>
+        <li class="ing-item anim-left" style="animation-delay:0.225s" onclick="toggleIng(this)">
+          <div class="ing-check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="ing-amount">80 ml</span>
+          <span class="ing-name">Pomegranate molasses</span>
+        </li>
+        <li class="ing-item anim-left" style="animation-delay:0.25s" onclick="toggleIng(this)">
+          <div class="ing-check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="ing-amount">1 bunch</span>
+          <span class="ing-name">Fresh mint leaves</span>
+        </li>
+        <li class="ing-item anim-left" style="animation-delay:0.275s" onclick="toggleIng(this)">
+          <div class="ing-check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="ing-amount">50 g</span>
+          <span class="ing-name">Pine nuts, toasted</span>
+        </li>
+        <li class="ing-item anim-left" style="animation-delay:0.3s" onclick="toggleIng(this)">
+          <div class="ing-check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="ing-amount">4 cloves</span>
+          <span class="ing-name">Garlic, crushed</span>
+        </li>
+        <li class="ing-item anim-left" style="animation-delay:0.325s" onclick="toggleIng(this)">
+          <div class="ing-check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="ing-amount">2 tbsp</span>
+          <span class="ing-name">Olive oil</span>
+        </li>
+        <li class="ing-item anim-left" style="animation-delay:0.35s" onclick="toggleIng(this)">
+          <div class="ing-check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="ing-amount">1 tsp</span>
+          <span class="ing-name">Ground cumin</span>
+        </li>
+        <li class="ing-item anim-left" style="animation-delay:0.375s" onclick="toggleIng(this)">
+          <div class="ing-check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="ing-amount">to taste</span>
+          <span class="ing-name">Salt and black pepper</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Steps -->
+    <div class="steps-section">
+      <div class="steps-head anim-fade" style="animation-delay:0.4s">Method</div>
+      <div class="step-item anim-left" style="animation-delay:0.425s">
+        <span class="step-num">01</span>
+        <p class="step-text">Score the lamb shoulder deeply, rub with olive oil, garlic, cumin, salt and pepper. Let it rest at room temperature for 30 minutes.</p>
+      </div>
+      <div class="step-item anim-left" style="animation-delay:0.45s">
+        <span class="step-num">02</span>
+        <p class="step-text">Brush generously with pomegranate molasses. Place in a roasting tin with 200ml water, cover tightly with foil.</p>
+      </div>
+      <div class="step-item anim-left" style="animation-delay:0.475s">
+        <span class="step-num">03</span>
+        <p class="step-text">Roast at 160C for 3 hours, basting every 45 minutes. Remove foil for the final 30 minutes to develop a sticky glaze.</p>
+      </div>
+      <div class="step-item anim-left" style="animation-delay:0.5s">
+        <span class="step-num">04</span>
+        <p class="step-text">Rest the lamb for 15 minutes. Pull into rough chunks, scatter with torn mint leaves and toasted pine nuts. Drizzle with pan juices.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DISCOVER ============ -->
+  <div id="page-discover" class="page">
+
+    <div class="discover-header">
+      <h1 class="discover-title anim-up" style="animation-delay:0.05s">Discover</h1>
+
+      <div class="search-wrap anim-fade" style="animation-delay:0.1s">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="search recipes, chefs, ingredients...">
+      </div>
+
+      <div class="filter-row anim-fade" style="animation-delay:0.15s">
+        <button class="filter-chip active">All <span class="filter-badge">4</span></button>
+        <button class="filter-chip">Main</button>
+        <button class="filter-chip">Breakfast</button>
+        <button class="filter-chip">Dessert</button>
+        <button class="filter-chip">Appetizer</button>
+      </div>
+    </div>
+
+    <div class="discover-results">
+      <div class="discover-row anim-left" style="animation-delay:0.175s">
+        <img class="discover-thumb" src="https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=100&h=100&fit=crop" alt="Burrata">
+        <div class="discover-body">
+          <div class="discover-line1">
+            <span class="discover-cat">Appetizer</span>
+            <span class="discover-name">Burrata with Roasted Tomatoes</span>
+          </div>
+          <div class="discover-line2">
+            <span>Eva</span>
+            <span class="dot">/</span>
+            <span>15min</span>
+            <span class="dot">/</span>
+            <span class="star">4.9</span>
+          </div>
+        </div>
+      </div>
+      <div class="discover-row anim-left" style="animation-delay:0.2s">
+        <img class="discover-thumb" src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=100&h=100&fit=crop" alt="Salmon">
+        <div class="discover-body">
+          <div class="discover-line1">
+            <span class="discover-cat">Main Course</span>
+            <span class="discover-name">Miso-Glazed Salmon</span>
+          </div>
+          <div class="discover-line2">
+            <span>Marco</span>
+            <span class="dot">/</span>
+            <span>30min</span>
+            <span class="dot">/</span>
+            <span class="star">4.2</span>
+          </div>
+        </div>
+      </div>
+      <div class="discover-row anim-left" style="animation-delay:0.225s">
+        <img class="discover-thumb" src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=100&h=100&fit=crop" alt="Panna Cotta">
+        <div class="discover-body">
+          <div class="discover-line1">
+            <span class="discover-cat">Dessert</span>
+            <span class="discover-name">Vanilla Panna Cotta</span>
+          </div>
+          <div class="discover-line2">
+            <span>Sophie</span>
+            <span class="dot">/</span>
+            <span>4h</span>
+            <span class="dot">/</span>
+            <span class="star">5.0</span>
+          </div>
+        </div>
+      </div>
+      <div class="discover-row anim-left" style="animation-delay:0.25s">
+        <img class="discover-thumb" src="https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=100&h=100&fit=crop" alt="French Toast">
+        <div class="discover-body">
+          <div class="discover-line1">
+            <span class="discover-cat">Breakfast</span>
+            <span class="discover-name">Brioche French Toast</span>
+          </div>
+          <div class="discover-line2">
+            <span>Eva</span>
+            <span class="dot">/</span>
+            <span>25min</span>
+            <span class="dot">/</span>
+            <span class="star">4.7</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PROFILE ============ -->
+  <div id="page-profile" class="page">
+
+    <div class="profile-header anim-up" style="animation-delay:0.05s">
+      <div class="profile-avatar">B</div>
+      <div class="profile-info">
+        <div class="profile-name">Bart</div>
+        <div class="profile-bio">Home cook. Building a recipe book, one dish at a time.</div>
+      </div>
+    </div>
+
+    <div class="profile-stats-line anim-fade" style="animation-delay:0.1s">
+      <strong>24</strong> recipes <span class="sep">/</span>
+      <strong>8</strong> published <span class="sep">/</span>
+      <strong>47</strong> cooked <span class="sep">/</span>
+      <strong>12</strong> followers
+    </div>
+
+    <div class="profile-tabs anim-fade" style="animation-delay:0.15s">
+      <button class="profile-tab active">Recipes</button>
+      <button class="profile-tab">Cooked</button>
+      <button class="profile-tab">Saved</button>
+    </div>
+
+    <div class="profile-recipes">
+      <div class="profile-recipe-row anim-left" style="animation-delay:0.175s">
+        <img class="profile-thumb" src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=100&h=100&fit=crop" alt="Lamb">
+        <div class="profile-recipe-body">
+          <div class="profile-recipe-title">Lamb Shoulder with Pomegranate &amp; Mint</div>
+          <div class="profile-recipe-meta">
+            <span>Main Course</span>
+            <span>/</span>
+            <span>3h 30m</span>
+            <span>/</span>
+            <span>5.0</span>
+          </div>
+        </div>
+        <span class="badge badge-published">Published</span>
+      </div>
+      <div class="profile-recipe-row anim-left" style="animation-delay:0.2s">
+        <img class="profile-thumb" src="https://images.unsplash.com/photo-1590412200988-a436970781fa?w=100&h=100&fit=crop" alt="Shakshuka">
+        <div class="profile-recipe-body">
+          <div class="profile-recipe-title">Shakshuka</div>
+          <div class="profile-recipe-meta">
+            <span>Breakfast</span>
+            <span>/</span>
+            <span>35min</span>
+            <span>/</span>
+            <span>4.0</span>
+          </div>
+        </div>
+        <span class="badge badge-published">Published</span>
+      </div>
+      <div class="profile-recipe-row anim-left" style="animation-delay:0.225s">
+        <img class="profile-thumb" src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=100&h=100&fit=crop" alt="Cookies">
+        <div class="profile-recipe-body">
+          <div class="profile-recipe-title">Chocolate Chip Cookies</div>
+          <div class="profile-recipe-meta">
+            <span>Dessert</span>
+            <span>/</span>
+            <span>40min</span>
+            <span>/</span>
+            <span>5.0</span>
+          </div>
+        </div>
+        <span class="badge badge-draft">Draft</span>
+      </div>
+      <div class="profile-recipe-row anim-left" style="animation-delay:0.25s">
+        <img class="profile-thumb" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=100&h=100&fit=crop" alt="Ramen">
+        <div class="profile-recipe-body">
+          <div class="profile-recipe-title">Tonkotsu Ramen</div>
+          <div class="profile-recipe-meta">
+            <span>Main Course</span>
+            <span>/</span>
+            <span>45min</span>
+            <span>/</span>
+            <span>4.5</span>
+          </div>
+        </div>
+        <span class="badge badge-published">Published</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB BAR ============ -->
+  <nav class="tab-bar">
+    <button class="tab-item active" onclick="showPage('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+        <path d="M9 21V12h6v9"/>
+      </svg>
+      <span>Home</span>
+    </button>
+    <button class="tab-item" onclick="showPage('discover')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <span>Discover</span>
+    </button>
+    <button class="tab-item" onclick="showPage('recipe')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16v16H4z"/>
+        <path d="M8 8h8M8 12h8M8 16h4"/>
+      </svg>
+      <span>Recipes</span>
+    </button>
+    <button class="tab-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>
+      <span>Groceries</span>
+    </button>
+    <button class="tab-item" onclick="showPage('profile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7"/>
+      </svg>
+      <span>Profile</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+function showPage(page) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+  // Show target
+  const target = document.getElementById('page-' + page);
+  if (target) target.classList.add('active');
+
+  // Update page switch buttons
+  document.querySelectorAll('.page-switch button').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase() === page);
+  });
+
+  // Update tab bar
+  const tabMap = { home: 0, discover: 1, recipe: 2, profile: 4 };
+  document.querySelectorAll('.tab-item').forEach((tab, i) => {
+    tab.classList.toggle('active', i === tabMap[page]);
+  });
+
+  // Re-trigger animations
+  target.querySelectorAll('[class*="anim-"]').forEach(el => {
+    el.style.animation = 'none';
+    el.offsetHeight; // force reflow
+    el.style.animation = '';
+  });
+}
+
+function toggleIng(el) {
+  el.classList.toggle('checked');
+}
+</script>
+</body>
+</html>

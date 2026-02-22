@@ -57,14 +57,14 @@ export function IngredientRows({ ingredients, onChange }: IngredientRowsProps) {
               placeholder="Qty"
               value={ing.quantity}
               onChange={(e) => update(i, "quantity", e.target.value)}
-              className={`w-20 ${inputClass}`}
+              className={`w-16 shrink-0 sm:w-20 ${inputClass}`}
             />
             <input
               type="text"
               placeholder="Unit"
               value={ing.unit}
               onChange={(e) => update(i, "unit", e.target.value)}
-              className={`w-24 ${inputClass}`}
+              className={`w-16 shrink-0 sm:w-24 ${inputClass}`}
             />
             <input
               type="text"
@@ -72,7 +72,7 @@ export function IngredientRows({ ingredients, onChange }: IngredientRowsProps) {
               required
               value={ing.ingredient_name}
               onChange={(e) => update(i, "ingredient_name", e.target.value)}
-              className={`flex-1 ${inputClass}`}
+              className={`min-w-0 flex-1 ${inputClass}`}
             />
           </div>
           <div className="flex gap-2">

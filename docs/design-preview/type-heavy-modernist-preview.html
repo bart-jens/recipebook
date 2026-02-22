@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EefEats — Type-Heavy Modernist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500&family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&display=swap" rel="text/css">
+<style>
+  :root {
+    --bg: #F6F4EF;
+    --surface: #FFFFFF;
+    --surface-alt: #EDEADE;
+    --ink: #141210;
+    --ink-secondary: #5C5850;
+    --ink-muted: #9C978C;
+    --border: #D6D2C8;
+    --border-strong: #141210;
+    --accent: #8B4513;
+    --accent-light: rgba(139, 69, 19, 0.08);
+    --olive: #4A5D3A;
+    --olive-light: rgba(74, 93, 58, 0.08);
+
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-body: 'Inter Tight', system-ui, sans-serif;
+    --font-mono: 'Geist Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: white;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes revealLine {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(100%); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .anim-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+  }
+
+  .anim-fade {
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+  }
+
+  .anim-line {
+    animation: revealLine 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    transform-origin: left;
+  }
+
+  /* ========== LAYOUT ========== */
+  .app-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+  }
+
+  /* ========== NAV ========== */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: rgba(246, 244, 239, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-style: italic;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nav-link {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-secondary);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .nav-link:hover { color: var(--ink); }
+
+  .nav-link.active {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* ========== THICK RULES ========== */
+  .rule-thick {
+    height: 3px;
+    background: var(--ink);
+    border: none;
+    margin: 0;
+  }
+
+  .rule-thin {
+    height: 1px;
+    background: var(--border);
+    border: none;
+    margin: 0;
+  }
+
+  .rule-double {
+    height: 0;
+    border: none;
+    border-top: 3px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding-top: 3px;
+    margin: 0;
+  }
+
+  /* ========== HOME ========== */
+  .home-hero {
+    padding: 40px 20px 32px;
+  }
+
+  .home-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+
+  .home-headline {
+    font-family: var(--font-display);
+    font-size: 52px;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+
+  .home-headline em {
+    font-style: italic;
+  }
+
+  .home-sub {
+    font-size: 15px;
+    color: var(--ink-secondary);
+    font-weight: 300;
+    line-height: 1.5;
+    max-width: 320px;
+  }
+
+  /* ========== FEATURED RECIPE (editorial block) ========== */
+  .featured {
+    padding: 0 20px;
+    margin-bottom: 32px;
+  }
+
+  .featured-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+    padding-top: 16px;
+  }
+
+  .featured-layout {
+    display: grid;
+    grid-template-columns: 1fr 140px;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .featured-text {}
+
+  .featured-category {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .featured-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+
+  .featured-title:hover { color: var(--accent); }
+
+  .featured-excerpt {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--ink-secondary);
+    line-height: 1.55;
+    margin-bottom: 10px;
+  }
+
+  .featured-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .featured-meta .dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .featured-img {
+    width: 140px;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* ========== RECIPE INDEX (newspaper columns) ========== */
+  .index-section {
+    padding: 0 20px;
+  }
+
+  .index-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 14px 0 10px;
+  }
+
+  .index-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .index-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .index-list {}
+
+  .index-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.1s;
+  }
+
+  .index-item:hover { margin: 0 -8px; padding-left: 8px; padding-right: 8px; background: var(--accent-light); }
+
+  .index-number {
+    font-family: var(--font-display);
+    font-size: 36px;
+    line-height: 1;
+    color: var(--border);
+    min-width: 32px;
+    padding-top: 2px;
+  }
+
+  .index-content { flex: 1; }
+
+  .index-item-cat {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .index-item-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 4px;
+    transition: color 0.15s;
+  }
+
+  .index-item:hover .index-item-title { color: var(--accent); }
+
+  .index-item-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: flex;
+    gap: 10px;
+  }
+
+  .index-item-thumb {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  /* ========== ACTIVITY (ticker style) ========== */
+  .ticker-section {
+    padding: 0 20px;
+    margin-top: 8px;
+    padding-bottom: 100px;
+  }
+
+  .ticker-header {
+    padding: 14px 0 10px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .ticker-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .ticker-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .ticker-time {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+    min-width: 44px;
+    padding-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .ticker-text {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 300;
+    line-height: 1.45;
+  }
+
+  .ticker-text strong { font-weight: 600; }
+
+  .ticker-text .recipe-ref {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .ticker-rating {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  /* ========== RECIPE DETAIL ========== */
+  .page-detail { display: none; }
+
+  .detail-header {
+    padding: 20px 20px 0;
+  }
+
+  .detail-back {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s;
+  }
+
+  .detail-back:hover { color: var(--ink); }
+
+  .detail-category {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .detail-title {
+    font-family: var(--font-display);
+    font-size: 48px;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+
+  .detail-title em { font-style: italic; }
+
+  .detail-byline {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--ink-secondary);
+    margin-bottom: 6px;
+  }
+
+  .detail-byline strong { font-weight: 600; color: var(--ink); }
+
+  .detail-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+    margin-bottom: 24px;
+  }
+
+  .detail-hero-img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .detail-stats-bar {
+    display: flex;
+    border-top: 3px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .detail-stat {
+    flex: 1;
+    padding: 12px 16px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .detail-stat:last-child { border-right: none; }
+
+  .detail-stat-val {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+
+  .detail-stat-lbl {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-muted);
+    margin-top: 2px;
+  }
+
+  .detail-body {
+    padding: 28px 20px 100px;
+  }
+
+  .detail-intro {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--ink-secondary);
+    margin-bottom: 32px;
+    max-width: 360px;
+  }
+
+  .detail-section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .detail-ingredients {
+    list-style: none;
+    margin-bottom: 36px;
+  }
+
+  .detail-ingredients li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--border);
+    font-size: 14px;
+  }
+
+  .detail-ingredients li:last-child { border-bottom: none; }
+
+  .ing-name {
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  .ing-amount {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-secondary);
+    flex-shrink: 0;
+    margin-left: 16px;
+  }
+
+  .detail-steps {
+    list-style: none;
+    counter-reset: step;
+    margin-bottom: 36px;
+  }
+
+  .detail-steps li {
+    counter-increment: step;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 12px;
+  }
+
+  .detail-steps li:last-child { border-bottom: none; }
+
+  .detail-steps li::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--border);
+    line-height: 1;
+  }
+
+  .step-text {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--ink-secondary);
+    padding-top: 4px;
+  }
+
+  /* ========== DISCOVER ========== */
+  .page-discover { display: none; }
+
+  .discover-hero {
+    padding: 32px 20px;
+  }
+
+  .discover-overline {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+  }
+
+  .discover-headline {
+    font-family: var(--font-display);
+    font-size: 44px;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 20px;
+  }
+
+  .discover-search-wrap {
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 8px;
+    gap: 10px;
+  }
+
+  .discover-search-wrap input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: none;
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--ink);
+  }
+
+  .discover-search-wrap input::placeholder { color: var(--ink-muted); }
+
+  .discover-search-wrap svg { color: var(--ink-muted); }
+
+  .discover-filters {
+    display: flex;
+    gap: 0;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .discover-filter {
+    padding: 10px 16px 10px 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s;
+    position: relative;
+  }
+
+  .discover-filter.active {
+    color: var(--ink);
+  }
+
+  .discover-filter.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 16px;
+    height: 2px;
+    background: var(--ink);
+  }
+
+  .discover-results {
+    padding: 0 20px 100px;
+  }
+
+  .discover-result {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+
+  .discover-result:hover .discover-result-title { color: var(--accent); }
+
+  .discover-result-cat {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .discover-result-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+    transition: color 0.15s;
+  }
+
+  .discover-result-desc {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--ink-secondary);
+    line-height: 1.5;
+    margin-bottom: 8px;
+    max-width: 90%;
+  }
+
+  .discover-result-footer {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: flex;
+    gap: 14px;
+  }
+
+  /* ========== CHEFS (discover sub-section) ========== */
+  .chef-grid {
+    padding: 16px 20px 100px;
+  }
+
+  .chef-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .chef-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .chef-info { flex: 1; }
+
+  .chef-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+  }
+
+  .chef-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+
+  .chef-follow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 6px 14px;
+    border: 1px solid var(--ink);
+    background: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .chef-follow:hover {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .chef-follow.following {
+    background: none;
+    border-color: var(--border);
+    color: var(--ink-muted);
+  }
+
+  /* ========== PROFILE ========== */
+  .page-profile { display: none; }
+
+  .profile-top {
+    padding: 32px 20px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .profile-avatar-lg {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: var(--font-display);
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .profile-info { flex: 1; }
+
+  .profile-name {
+    font-family: var(--font-display);
+    font-size: 32px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 6px;
+  }
+
+  .profile-bio {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--ink-secondary);
+    line-height: 1.5;
+  }
+
+  .profile-stats {
+    display: flex;
+    padding: 0 20px;
+    gap: 0;
+    border-top: 3px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .profile-stat {
+    flex: 1;
+    padding: 12px 0;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+
+  .profile-stat:last-child { border-right: none; }
+
+  .profile-stat-val {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--ink);
+  }
+
+  .profile-stat-lbl {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-muted);
+  }
+
+  .profile-nav {
+    display: flex;
+    padding: 0 20px;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .profile-nav-item {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 12px 16px 12px 0;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.15s;
+  }
+
+  .profile-nav-item.active { color: var(--ink); }
+
+  .profile-nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 16px;
+    height: 2px;
+    background: var(--ink);
+  }
+
+  .profile-recipes {
+    padding: 0 20px 100px;
+  }
+
+  .profile-recipe {
+    display: flex;
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+
+  .profile-recipe-img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .profile-recipe-info { flex: 1; }
+
+  .profile-recipe-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+  }
+
+  .profile-recipe-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: flex;
+    gap: 10px;
+  }
+
+  .badge-published {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 2px 6px;
+    border: 1px solid var(--olive);
+    color: var(--olive);
+  }
+
+  .badge-private {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    color: var(--ink-muted);
+  }
+
+  /* ========== TAB BAR ========== */
+  .tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: rgba(246, 244, 239, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
+    z-index: 100;
+  }
+
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 14px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--ink-muted);
+    transition: color 0.15s;
+  }
+
+  .tab-item.active { color: var(--ink); }
+
+  .tab-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ========== PAGE SWITCHER ========== */
+  .page-switch {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 999;
+    display: flex;
+    gap: 2px;
+    background: var(--ink);
+    padding: 3px;
+    border-radius: 2px;
+  }
+
+  .page-switch button {
+    padding: 7px 12px;
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    color: rgba(255,255,255,0.4);
+    background: transparent;
+    transition: all 0.15s;
+  }
+
+  .page-switch button.active {
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.9);
+  }
+
+  .page-switch button:hover:not(.active) { color: rgba(255,255,255,0.6); }
+</style>
+</head>
+<body>
+
+<div class="page-switch">
+  <button class="active" onclick="showPage('home')">Home</button>
+  <button onclick="showPage('detail')">Recipe</button>
+  <button onclick="showPage('discover')">Discover</button>
+  <button onclick="showPage('profile')">Profile</button>
+</div>
+
+<div class="app-shell">
+
+  <!-- ==================== HOME ==================== -->
+  <div id="page-home">
+    <nav class="nav">
+      <div class="nav-logo">EefEats</div>
+      <div class="nav-right">
+        <a href="#" class="nav-link active">Feed</a>
+        <a href="#" class="nav-link">Browse</a>
+      </div>
+    </nav>
+
+    <hr class="rule-thick anim-line" style="animation-delay: 0.05s">
+
+    <div class="home-hero">
+      <div class="home-date anim-up" style="animation-delay: 0.1s">Wednesday, Feb 19, 2026</div>
+      <h1 class="home-headline anim-up" style="animation-delay: 0.15s">Good evening,<br><em>Bart.</em></h1>
+      <p class="home-sub anim-up" style="animation-delay: 0.2s">3 new recipes from your chefs this week. Your Shakshuka remains the most cooked.</p>
+    </div>
+
+    <hr class="rule-double" style="margin: 0 20px;">
+
+    <!-- Featured -->
+    <div class="featured">
+      <div class="featured-label anim-up" style="animation-delay: 0.25s">Editor's Pick</div>
+      <div class="featured-layout anim-up" style="animation-delay: 0.3s">
+        <div class="featured-text">
+          <div class="featured-category">Main Course</div>
+          <div class="featured-title">Lamb Shoulder with Pomegranate &amp; Mint</div>
+          <div class="featured-excerpt">Slow-roasted until falling apart, finished with a bright pomegranate molasses glaze and fresh herbs from the garden.</div>
+          <div class="featured-meta">
+            <span>By Bart</span>
+            <span class="dot"></span>
+            <span>3h 30m</span>
+            <span class="dot"></span>
+            <span>5.0</span>
+          </div>
+        </div>
+        <img class="featured-img" src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=300&h=400&fit=crop" alt="">
+      </div>
+    </div>
+
+    <hr class="rule-thin" style="margin: 0 20px;">
+
+    <!-- Index -->
+    <div class="index-section">
+      <div class="index-header anim-up" style="animation-delay: 0.35s">
+        <div class="index-title">Your Recipes</div>
+        <div class="index-count">24 total</div>
+      </div>
+
+      <div class="index-item anim-up" style="animation-delay: 0.4s">
+        <div class="index-number">1</div>
+        <div class="index-content">
+          <div class="index-item-cat">Breakfast</div>
+          <div class="index-item-title">Shakshuka with Feta &amp; Za'atar</div>
+          <div class="index-item-meta">
+            <span>35 min</span>
+            <span>Cooked 12x</span>
+            <span>4.0</span>
+          </div>
+        </div>
+        <img class="index-item-thumb" src="https://images.unsplash.com/photo-1590412200988-a436970781fa?w=140&h=140&fit=crop" alt="">
+      </div>
+
+      <div class="index-item anim-up" style="animation-delay: 0.45s">
+        <div class="index-number">2</div>
+        <div class="index-content">
+          <div class="index-item-cat">Dessert</div>
+          <div class="index-item-title">Brown Butter Chocolate Chip Cookies</div>
+          <div class="index-item-meta">
+            <span>40 min</span>
+            <span>Cooked 8x</span>
+            <span>5.0</span>
+          </div>
+        </div>
+        <img class="index-item-thumb" src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=140&h=140&fit=crop" alt="">
+      </div>
+
+      <div class="index-item anim-up" style="animation-delay: 0.5s">
+        <div class="index-number">3</div>
+        <div class="index-content">
+          <div class="index-item-cat">Main Course</div>
+          <div class="index-item-title">Tonkotsu Ramen</div>
+          <div class="index-item-meta">
+            <span>45 min</span>
+            <span>Cooked 6x</span>
+            <span>4.5</span>
+          </div>
+        </div>
+        <img class="index-item-thumb" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=140&h=140&fit=crop" alt="">
+      </div>
+    </div>
+
+    <hr class="rule-thin" style="margin: 16px 20px 0;">
+
+    <!-- Activity Ticker -->
+    <div class="ticker-section">
+      <div class="ticker-header anim-up" style="animation-delay: 0.55s">
+        <div class="ticker-title">Activity</div>
+      </div>
+
+      <div class="ticker-item anim-up" style="animation-delay: 0.6s">
+        <div class="ticker-time">2h ago</div>
+        <div>
+          <div class="ticker-text"><strong>Eva</strong> cooked <span class="recipe-ref">Mushroom Risotto</span></div>
+          <div class="ticker-rating">5/5</div>
+        </div>
+      </div>
+
+      <div class="ticker-item anim-up" style="animation-delay: 0.65s">
+        <div class="ticker-time">1d ago</div>
+        <div>
+          <div class="ticker-text"><strong>Marco</strong> published <span class="recipe-ref">Pasta alla Norma</span></div>
+        </div>
+      </div>
+
+      <div class="ticker-item anim-up" style="animation-delay: 0.7s">
+        <div class="ticker-time">2d ago</div>
+        <div>
+          <div class="ticker-text"><strong>Sophie</strong> rated <span class="recipe-ref">Sourdough Bread</span></div>
+          <div class="ticker-rating">4/5</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== RECIPE DETAIL ==================== -->
+  <div id="page-detail" class="page-detail">
+    <nav class="nav">
+      <div class="nav-logo">EefEats</div>
+    </nav>
+
+    <div class="detail-header">
+      <button class="detail-back anim-fade" style="animation-delay: 0.05s">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back
+      </button>
+      <div class="detail-category anim-up" style="animation-delay: 0.1s">Main Course</div>
+      <h1 class="detail-title anim-up" style="animation-delay: 0.15s">Lamb Shoulder<br>with <em>Pomegranate<br>&amp; Mint</em></h1>
+      <div class="detail-byline anim-up" style="animation-delay: 0.2s">By <strong>Bart</strong> &#183; Cooked 4 times</div>
+      <div class="detail-date anim-up" style="animation-delay: 0.22s">Updated Feb 16, 2026</div>
+    </div>
+
+    <img class="detail-hero-img anim-fade" style="animation-delay: 0.25s" src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=600&h=300&fit=crop" alt="">
+
+    <div class="detail-stats-bar anim-up" style="animation-delay: 0.3s">
+      <div class="detail-stat">
+        <div class="detail-stat-val">30m</div>
+        <div class="detail-stat-lbl">Prep</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-val">3h</div>
+        <div class="detail-stat-lbl">Cook</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-val">6</div>
+        <div class="detail-stat-lbl">Serves</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-val">5.0</div>
+        <div class="detail-stat-lbl">Rating</div>
+      </div>
+    </div>
+
+    <div class="detail-body">
+      <p class="detail-intro anim-up" style="animation-delay: 0.35s">Slow-roasted until falling apart, finished with a bright pomegranate molasses glaze and fresh herbs from the garden.</p>
+
+      <div class="anim-up" style="animation-delay: 0.4s">
+        <div class="detail-section-label">Ingredients</div>
+        <ul class="detail-ingredients">
+          <li><span class="ing-name">Lamb shoulder, bone-in</span><span class="ing-amount">1.5 kg</span></li>
+          <li><span class="ing-name">Pomegranate molasses</span><span class="ing-amount">3 tbsp</span></li>
+          <li><span class="ing-name">Olive oil</span><span class="ing-amount">2 tbsp</span></li>
+          <li><span class="ing-name">Garlic, halved</span><span class="ing-amount">1 head</span></li>
+          <li><span class="ing-name">Cumin, ground</span><span class="ing-amount">2 tsp</span></li>
+          <li><span class="ing-name">Cinnamon</span><span class="ing-amount">1 tsp</span></li>
+          <li><span class="ing-name">Fresh mint leaves</span><span class="ing-amount">handful</span></li>
+          <li><span class="ing-name">Pomegranate seeds</span><span class="ing-amount">100 g</span></li>
+        </ul>
+      </div>
+
+      <div class="anim-up" style="animation-delay: 0.45s">
+        <div class="detail-section-label">Method</div>
+        <ol class="detail-steps">
+          <li><div class="step-text">Preheat the oven to 160C. Score the lamb shoulder in a crosshatch pattern and rub generously with olive oil, cumin, cinnamon, salt and pepper.</div></li>
+          <li><div class="step-text">Place the lamb in a deep roasting tray with the halved garlic head. Cover tightly with foil and roast for 3 hours until the meat is falling off the bone.</div></li>
+          <li><div class="step-text">Remove foil for the last 30 minutes. Brush with pomegranate molasses and increase heat to 200C to caramelize the glaze.</div></li>
+          <li><div class="step-text">Rest for 15 minutes, then scatter with pomegranate seeds and torn fresh mint. Pull apart with two forks and serve family-style.</div></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DISCOVER ==================== -->
+  <div id="page-discover" class="page-discover">
+    <nav class="nav">
+      <div class="nav-logo">EefEats</div>
+    </nav>
+
+    <hr class="rule-thick">
+
+    <div class="discover-hero">
+      <div class="discover-overline anim-up" style="animation-delay: 0.05s">Explore</div>
+      <h1 class="discover-headline anim-up" style="animation-delay: 0.1s">Discover</h1>
+      <div class="discover-search-wrap anim-up" style="animation-delay: 0.15s">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search recipes or chefs">
+      </div>
+    </div>
+
+    <div class="discover-filters anim-up" style="animation-delay: 0.2s">
+      <button class="discover-filter active">Recipes</button>
+      <button class="discover-filter">Chefs</button>
+      <button class="discover-filter">Newest</button>
+      <button class="discover-filter">Top Rated</button>
+    </div>
+
+    <div class="discover-results">
+      <div class="discover-result anim-up" style="animation-delay: 0.25s">
+        <div class="discover-result-cat">Appetizer</div>
+        <div class="discover-result-title">Burrata with Grilled Peaches &amp; Basil Oil</div>
+        <div class="discover-result-desc">Creamy burrata meets caramelized summer peaches, drizzled with homemade basil oil and flaky sea salt.</div>
+        <div class="discover-result-footer">
+          <span>By Eva</span>
+          <span>15 min</span>
+          <span>4.9</span>
+        </div>
+      </div>
+
+      <div class="discover-result anim-up" style="animation-delay: 0.3s">
+        <div class="discover-result-cat">Main Course</div>
+        <div class="discover-result-title">Miso-Glazed Salmon with Pickled Radish</div>
+        <div class="discover-result-desc">Sweet white miso marinade, crispy skin, served over steamed rice with quick-pickled radish and sesame.</div>
+        <div class="discover-result-footer">
+          <span>By Marco</span>
+          <span>30 min</span>
+          <span>4.2</span>
+        </div>
+      </div>
+
+      <div class="discover-result anim-up" style="animation-delay: 0.35s">
+        <div class="discover-result-cat">Dessert</div>
+        <div class="discover-result-title">Pistachio &amp; Rosewater Panna Cotta</div>
+        <div class="discover-result-desc">Silky panna cotta infused with rosewater, topped with crushed pistachios and a drizzle of honey.</div>
+        <div class="discover-result-footer">
+          <span>By Sophie</span>
+          <span>4h (set)</span>
+          <span>5.0</span>
+        </div>
+      </div>
+
+      <div class="discover-result anim-up" style="animation-delay: 0.4s">
+        <div class="discover-result-cat">Breakfast</div>
+        <div class="discover-result-title">Cardamom French Toast with Maple Labne</div>
+        <div class="discover-result-desc">Thick brioche soaked in cardamom custard, griddle-fried golden, served with tangy maple labne.</div>
+        <div class="discover-result-footer">
+          <span>By Eva</span>
+          <span>25 min</span>
+          <span>4.7</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PROFILE ==================== -->
+  <div id="page-profile" class="page-profile">
+    <nav class="nav">
+      <div class="nav-logo">EefEats</div>
+      <div class="nav-right">
+        <a href="#" class="nav-link">Settings</a>
+      </div>
+    </nav>
+
+    <hr class="rule-thick">
+
+    <div class="profile-top anim-up" style="animation-delay: 0.1s">
+      <div class="profile-avatar-lg" style="background: var(--accent);">B</div>
+      <div class="profile-info">
+        <div class="profile-name">Bart</div>
+        <div class="profile-bio">Home cook. Building EefEats for me and my wife.</div>
+      </div>
+    </div>
+
+    <div class="profile-stats anim-up" style="animation-delay: 0.15s">
+      <div class="profile-stat">
+        <div class="profile-stat-val">24</div>
+        <div class="profile-stat-lbl">Recipes</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val">8</div>
+        <div class="profile-stat-lbl">Published</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val">47</div>
+        <div class="profile-stat-lbl">Cooked</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val">12</div>
+        <div class="profile-stat-lbl">Followers</div>
+      </div>
+    </div>
+
+    <div class="profile-nav anim-up" style="animation-delay: 0.2s">
+      <button class="profile-nav-item active">Recipes</button>
+      <button class="profile-nav-item">Activity</button>
+      <button class="profile-nav-item">Favorites</button>
+    </div>
+
+    <div class="profile-recipes">
+      <div class="profile-recipe anim-up" style="animation-delay: 0.25s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=120&h=120&fit=crop" alt="">
+        <div class="profile-recipe-info">
+          <div class="profile-recipe-title">Lamb Shoulder with Pomegranate &amp; Mint</div>
+          <div class="profile-recipe-meta">
+            <span class="badge-published">Published</span>
+            <span>Cooked 4x</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-recipe anim-up" style="animation-delay: 0.3s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1590412200988-a436970781fa?w=120&h=120&fit=crop" alt="">
+        <div class="profile-recipe-info">
+          <div class="profile-recipe-title">Shakshuka with Feta &amp; Za'atar</div>
+          <div class="profile-recipe-meta">
+            <span class="badge-published">Published</span>
+            <span>Cooked 12x</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-recipe anim-up" style="animation-delay: 0.35s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=120&h=120&fit=crop" alt="">
+        <div class="profile-recipe-info">
+          <div class="profile-recipe-title">Brown Butter Chocolate Chip Cookies</div>
+          <div class="profile-recipe-meta">
+            <span class="badge-private">Private</span>
+            <span>Cooked 8x</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-recipe anim-up" style="animation-delay: 0.4s">
+        <img class="profile-recipe-img" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=120&h=120&fit=crop" alt="">
+        <div class="profile-recipe-info">
+          <div class="profile-recipe-title">Tonkotsu Ramen</div>
+          <div class="profile-recipe-meta">
+            <span class="badge-published">Published</span>
+            <span>Cooked 6x</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-item active" onclick="showPage('home')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="tab-label">Home</span>
+    </button>
+    <button class="tab-item" onclick="showPage('discover')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <span class="tab-label">Discover</span>
+    </button>
+    <button class="tab-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span class="tab-label">Recipes</span>
+    </button>
+    <button class="tab-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span class="tab-label">Groceries</span>
+    </button>
+    <button class="tab-item" onclick="showPage('profile')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="tab-label">Profile</span>
+    </button>
+  </div>
+</div>
+
+<script>
+function showPage(page) {
+  document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
+  document.getElementById('page-' + page).style.display = 'block';
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  const tabMap = { home: 0, discover: 1, profile: 4 };
+  if (tabMap[page] !== undefined) document.querySelectorAll('.tab-item')[tabMap[page]].classList.add('active');
+  document.querySelectorAll('.page-switch button').forEach(b => b.classList.remove('active'));
+  const switchMap = { home: 0, detail: 1, discover: 2, profile: 3 };
+  document.querySelectorAll('.page-switch button')[switchMap[page]].classList.add('active');
+  document.getElementById('page-' + page).querySelectorAll('[class*="anim-"]').forEach(el => {
+    el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+  });
+}
+</script>
+</body>
+</html>
