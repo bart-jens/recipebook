@@ -17,6 +17,7 @@ interface FeedItem {
   source_url: string | null;
   source_name: string | null;
   rating: number | null;
+  recipe_visibility: string | null;
 }
 
 function formatTimeAgo(timestamp: string): string {
@@ -43,8 +44,10 @@ function actionVerb(type: string): string {
   }
 }
 
-function recipeLink(item: FeedItem): string {
-  return `/recipes/${item.recipe_id}`;
+function recipeLink(item: FeedItem): string | null {
+  if (item.recipe_visibility === "public") return `/recipes/${item.recipe_id}`;
+  if (item.source_url) return item.source_url;
+  return null;
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -98,7 +101,8 @@ export function ActivityFeed({
     <div>
       {items.map((item, i) => {
         const href = recipeLink(item);
-        const sourceDisplay = item.source_name || (item.source_url ? new URL(item.source_url).hostname.replace(/^www\./, "") : null);
+        const isExternal = href != null && href.startsWith("http");
+        const sourceDisplay = item.source_name || (item.source_url ? (() => { try { return new URL(item.source_url).hostname.replace(/^www\./, ""); } catch { return item.source_url; } })() : null);
 
         return (
           <div
@@ -106,13 +110,21 @@ export function ActivityFeed({
             className="group flex gap-2.5 py-2.5 border-t border-border items-center transition-all duration-150 cursor-pointer hover:bg-accent-light hover:-mx-1.5 hover:px-1.5"
           >
             {item.recipe_image_url ? (
-              <Link href={href} className="shrink-0">
+              href && !isExternal ? (
+                <Link href={href} className="shrink-0">
+                  <img
+                    src={item.recipe_image_url}
+                    alt={item.recipe_title}
+                    className="w-[36px] h-[36px] object-cover shrink-0 transition-transform duration-[250ms] group-hover:scale-110"
+                  />
+                </Link>
+              ) : (
                 <img
                   src={item.recipe_image_url}
                   alt={item.recipe_title}
-                  className="w-[36px] h-[36px] object-cover shrink-0 transition-transform duration-[250ms] group-hover:scale-110"
+                  className="w-[36px] h-[36px] object-cover shrink-0"
                 />
-              </Link>
+              )
             ) : (
               <div className="w-[36px] h-[36px] bg-surface-alt shrink-0 flex items-center justify-center">
                 <span className="text-[14px] font-normal text-ink-muted">
@@ -129,14 +141,22 @@ export function ActivityFeed({
                   {item.display_name}
                 </Link>
                 <span>{actionVerb(item.event_type)}</span>
-                <Link href={href} className="font-normal text-accent hover:underline">
-                  {item.recipe_title}
-                </Link>
+                {href && !isExternal ? (
+                  <Link href={href} className="font-normal text-accent hover:underline">
+                    {item.recipe_title}
+                  </Link>
+                ) : isExternal ? (
+                  <a href={href!} target="_blank" rel="noopener noreferrer" className="font-normal text-accent hover:underline">
+                    {item.recipe_title}
+                  </a>
+                ) : (
+                  <span className="font-normal">{item.recipe_title}</span>
+                )}
               </p>
               {item.event_type === "cooked" && item.rating != null && (
                 <StarRating rating={item.rating} />
               )}
-              {item.event_type === "cooked" && sourceDisplay && (
+              {sourceDisplay && (
                 <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
                   via {sourceDisplay}
                 </span>

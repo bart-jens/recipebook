@@ -8,6 +8,7 @@ import {
   Pressable,
   RefreshControl,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Image } from 'expo-image';
@@ -32,6 +33,7 @@ interface FeedItem {
   source_url: string | null;
   source_name: string | null;
   rating: number | null;
+  recipe_visibility: string | null;
 }
 
 interface SuggestionRecipe {
@@ -212,7 +214,11 @@ export default function HomeScreen() {
   };
 
   const handleFeedItemPress = (item: FeedItem) => {
-    router.push(`/recipe/${item.recipe_id}`);
+    if (item.recipe_visibility === 'public') {
+      router.push(`/recipe/${item.recipe_id}`);
+    } else if (item.source_url) {
+      Linking.openURL(item.source_url);
+    }
   };
 
   const renderStars = (rating: number) => {
@@ -357,7 +363,7 @@ export default function HomeScreen() {
             <Text style={styles.tickerRecipe}>{item.recipe_title}</Text>
           </Text>
           {item.event_type === 'cooked' && item.rating != null && renderStars(item.rating)}
-          {item.event_type === 'cooked' && (item.source_name || item.source_url) && (
+          {(item.source_name || item.source_url) && (
             <Text style={styles.tickerSource}>
               via {item.source_name || (() => { try { return new URL(item.source_url!).hostname.replace(/^www\./, ''); } catch { return item.source_url; } })()}
             </Text>
