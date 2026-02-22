@@ -15,7 +15,7 @@ import { router, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, fontFamily, animation } from '@/lib/theme';
+import { colors, spacing, fontFamily, typography, animation } from '@/lib/theme';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
 
 interface FeedItem {
@@ -176,13 +176,6 @@ export default function HomeScreen() {
     );
   }
 
-  const greeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
-
   const formatTimeAgo = (timestamp: string) => {
     const diff = Date.now() - new Date(timestamp).getTime();
     const minutes = Math.floor(diff / 60000);
@@ -201,14 +194,6 @@ export default function HomeScreen() {
       case 'favorited': return ' favorited ';
       default: return ' ';
     }
-  };
-
-  const formatDate = () => {
-    return new Date().toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }).toUpperCase();
   };
 
   const formatTime = (minutes: number | null) => {
@@ -252,31 +237,18 @@ export default function HomeScreen() {
   // Sections rendered as header (masthead, featured, index) and footer (activity)
   const renderHeader = () => (
     <View>
-      {/* 1. Compact Masthead */}
-      <Animated.View entering={FadeInDown.duration(400)} style={styles.masthead}>
-        <Text style={styles.mastheadGreeting}>
-          {greeting()}, {displayName || 'Chef'}
-        </Text>
-        <Text style={styles.mastheadDate}>{formatDate()}</Text>
-      </Animated.View>
-
-      {/* 2. Thick Rule */}
-      <Animated.View entering={FadeInDown.delay(animation.staggerDelay).duration(400)}>
-        <View style={styles.ruleThick} />
-      </Animated.View>
-
-      {/* 3. Featured Recipe */}
+      {/* Featured Recipe */}
       {featuredRecipe && (
         <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
           <Pressable
             style={styles.featured}
             onPress={() => router.push(`/recipe/${featuredRecipe.id}`)}
           >
-            <Text style={styles.featuredLabel}>FEATURED</Text>
+            <Text style={styles.featuredLabel}>Featured</Text>
             <View style={styles.featuredLayout}>
               <View style={styles.featuredText}>
                 {getTag(featuredRecipe) && (
-                  <Text style={styles.featuredCategory}>{getTag(featuredRecipe)!.toUpperCase()}</Text>
+                  <Text style={styles.featuredCategory}>{getTag(featuredRecipe)}</Text>
                 )}
                 <Text style={styles.featuredTitle} numberOfLines={3}>
                   {featuredRecipe.title}
@@ -342,7 +314,7 @@ export default function HomeScreen() {
                 <Text style={styles.indexNumber}>{idx + 1}</Text>
                 <View style={styles.indexContent}>
                   {getTag(recipe) && (
-                    <Text style={styles.indexCategory}>{getTag(recipe)!.toUpperCase()}</Text>
+                    <Text style={styles.indexCategory}>{getTag(recipe)}</Text>
                   )}
                   <Text style={styles.indexItemTitle} numberOfLines={2}>
                     {recipe.title}
@@ -498,46 +470,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
 
-  // 1. Compact Masthead
-  masthead: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  mastheadGreeting: {
-    fontFamily: fontFamily.displayItalic,
-    fontSize: 15,
-    color: colors.inkSecondary,
-  },
-  mastheadDate: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.0,
-    color: colors.inkMuted,
-  },
-
-  // 2. Thick Rule
-  ruleThick: {
-    height: 3,
-    backgroundColor: colors.ink,
-  },
-
-  // 3. Featured Recipe
+  // Featured Recipe
   featured: {
     paddingHorizontal: 20,
     paddingTop: 14,
     paddingBottom: 20,
   },
   featuredLabel: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
+    ...typography.metaSmall,
     color: colors.inkMuted,
     marginBottom: 10,
   },
@@ -549,25 +489,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   featuredCategory: {
-    fontFamily: fontFamily.monoMedium,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.0,
+    ...typography.metaSmall,
     color: colors.accent,
     marginBottom: 4,
   },
   featuredTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 28,
-    lineHeight: 30,
-    letterSpacing: -0.8,
+    ...typography.heading,
     color: colors.ink,
     marginBottom: 8,
   },
   featuredExcerpt: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
-    lineHeight: 19,
+    ...typography.bodySmall,
     color: colors.inkSecondary,
     marginBottom: 8,
   },
@@ -577,8 +509,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   featuredMetaText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   metaDot: {
@@ -612,14 +543,11 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   indexTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 18,
-    letterSpacing: -0.4,
+    ...typography.subheading,
     color: colors.ink,
   },
   indexCount: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   indexItem: {
@@ -630,9 +558,8 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
   },
   indexNumber: {
-    fontFamily: fontFamily.display,
-    fontSize: 32,
-    lineHeight: 32,
+    ...typography.title,
+    lineHeight: 36,
     color: colors.border,
     minWidth: 28,
     paddingTop: 2,
@@ -642,18 +569,12 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   indexCategory: {
-    fontFamily: fontFamily.monoMedium,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.0,
+    ...typography.metaSmall,
     color: colors.accent,
     marginBottom: 1,
   },
   indexItemTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 20,
-    lineHeight: 23,
-    letterSpacing: -0.4,
+    ...typography.subheading,
     color: colors.ink,
     marginBottom: 3,
   },
@@ -662,8 +583,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   indexMetaText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   indexThumb: {
@@ -680,9 +600,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   tickerTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 18,
-    letterSpacing: -0.4,
+    ...typography.subheading,
     color: colors.ink,
   },
   tickerItem: {
@@ -704,28 +622,24 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   tickerText: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 13,
-    lineHeight: 18,
+    ...typography.bodySmall,
     color: colors.ink,
   },
   tickerName: {
-    fontFamily: fontFamily.sansBold,
+    fontFamily: fontFamily.sans,
     fontSize: 13,
   },
   tickerRecipe: {
-    fontFamily: fontFamily.displayItalic,
+    fontFamily: fontFamily.sans,
     fontSize: 13,
     color: colors.accent,
   },
   tickerTime: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   tickerSource: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   starsRow: {
@@ -753,8 +667,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   promptTitle: {
-    fontFamily: fontFamily.sansLight,
-    fontSize: 14,
+    ...typography.label,
     color: colors.inkSecondary,
     textAlign: 'center',
     marginBottom: 12,
@@ -765,10 +678,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ink,
   },
   promptButtonText: {
-    fontFamily: fontFamily.monoMedium,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    ...typography.metaSmall,
     color: colors.bg,
   },
 });
