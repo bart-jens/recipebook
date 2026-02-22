@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,14 +10,13 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography, animation } from '@/lib/theme';
+import { colors, spacing, typography } from '@/lib/theme';
 import ChefCard from '@/components/ui/ChefCard';
 import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
@@ -75,6 +74,8 @@ export default function DiscoverScreen() {
   const [searchFocused, setSearchFocused] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [savedRecipeIds, setSavedRecipeIds] = useState<Set<string>>(new Set());
+  const hasLoadedRecipes = useRef(false);
+  const hasLoadedChefs = useRef(false);
 
   const formatTime = (minutes: number | null) => {
     if (!minutes) return null;
@@ -133,7 +134,8 @@ export default function DiscoverScreen() {
   };
 
   const fetchRecipes = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true); else setLoading(true);
+    if (isRefresh) setRefreshing(true);
+    else if (!hasLoadedRecipes.current) setLoading(true);
 
     let query = supabase
       .from('recipes')
@@ -173,6 +175,7 @@ export default function DiscoverScreen() {
       setAllRecipes([]);
       setAllTags([]);
       setHasMore(false);
+      hasLoadedRecipes.current = true;
       setLoading(false);
       setRefreshing(false);
       return;
@@ -191,13 +194,15 @@ export default function DiscoverScreen() {
       setSavedRecipeIds(new Set((saved || []).map((s) => s.recipe_id)));
     }
 
+    hasLoadedRecipes.current = true;
     setLoading(false);
     setRefreshing(false);
   }, [search, user]);
 
   const fetchChefs = useCallback(async (isRefresh = false) => {
     if (!user) return;
-    if (isRefresh) setRefreshing(true); else setLoading(true);
+    if (isRefresh) setRefreshing(true);
+    else if (!hasLoadedChefs.current) setLoading(true);
 
     const { data: following } = await supabase
       .from('user_follows')
@@ -213,6 +218,7 @@ export default function DiscoverScreen() {
 
     if (!profiles || profiles.length === 0) {
       setChefs([]);
+      hasLoadedChefs.current = true;
       setLoading(false);
       setRefreshing(false);
       return;
@@ -264,6 +270,7 @@ export default function DiscoverScreen() {
     });
 
     setChefs(enriched);
+    hasLoadedChefs.current = true;
     setLoading(false);
     setRefreshing(false);
   }, [user]);
@@ -389,9 +396,9 @@ export default function DiscoverScreen() {
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
-    if (tab === 'recipes' && allRecipes.length === 0) {
+    if (tab === 'recipes' && !hasLoadedRecipes.current) {
       setLoading(true);
-    } else if (tab === 'chefs' && chefs.length === 0) {
+    } else if (tab === 'chefs' && !hasLoadedChefs.current) {
       setLoading(true);
     }
   };
@@ -404,9 +411,6 @@ export default function DiscoverScreen() {
     const tag = item.tags.length > 0 ? item.tags[0] : null;
 
     return (
-      <Animated.View
-        entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
-      >
         <Pressable
           style={styles.resultItem}
           onPress={() => router.push(`/recipe/${item.id}`)}
@@ -455,7 +459,6 @@ export default function DiscoverScreen() {
             <View style={[styles.resultThumb, { backgroundColor: colors.surfaceAlt }]} />
           )}
         </Pressable>
-      </Animated.View>
     );
   };
 
@@ -505,9 +508,8 @@ export default function DiscoverScreen() {
           </View>
           <Text style={styles.chefSectionTitle}>Following</Text>
           {followedChefs.map((chef, index) => (
-            <Animated.View
+            <View
               key={chef.id}
-              entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
               style={styles.chefCardWrapper}
             >
               <ChefCard
@@ -520,7 +522,7 @@ export default function DiscoverScreen() {
                 onFollowPress={handleFollowPress}
                 isPending={pendingFollowId === chef.id}
               />
-            </Animated.View>
+            </View>
           ))}
         </ScrollView>
       );
@@ -537,10 +539,9 @@ export default function DiscoverScreen() {
           />
         }
       >
-        {unfollowedChefs.map((chef, index) => (
-          <Animated.View
+        {unfollowedChefs.map((chef) => (
+          <View
             key={chef.id}
-            entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
             style={styles.chefCardWrapper}
           >
             <ChefCard
@@ -553,15 +554,14 @@ export default function DiscoverScreen() {
               onFollowPress={handleFollowPress}
               isPending={pendingFollowId === chef.id}
             />
-          </Animated.View>
+          </View>
         ))}
         {followedChefs.length > 0 && (
           <>
             <Text style={styles.chefSectionTitle}>Following</Text>
-            {followedChefs.map((chef, index) => (
-              <Animated.View
+            {followedChefs.map((chef) => (
+              <View
                 key={chef.id}
-                entering={index < animation.staggerMax ? FadeInDown.delay((unfollowedChefs.length + index) * animation.staggerDelay).duration(400) : undefined}
                 style={styles.chefCardWrapper}
               >
                 <ChefCard
@@ -574,7 +574,7 @@ export default function DiscoverScreen() {
                   onFollowPress={handleFollowPress}
                   isPending={pendingFollowId === chef.id}
                 />
-              </Animated.View>
+              </View>
             ))}
           </>
         )}

@@ -10,14 +10,13 @@ import {
   ActivityIndicator,
   Linking,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, fontFamily, typography, animation } from '@/lib/theme';
+import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
 
 interface FeedItem {
@@ -218,6 +217,9 @@ export default function HomeScreen() {
       router.push(`/recipe/${item.recipe_id}`);
     } else if (item.source_url) {
       Linking.openURL(item.source_url);
+    } else {
+      // Best effort: navigate to recipe (may show private/error)
+      router.push(`/recipe/${item.recipe_id}`);
     }
   };
 
@@ -242,7 +244,7 @@ export default function HomeScreen() {
     <View>
       {/* Recipe Carousel */}
       {suggestions.length > 0 && (
-        <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
+        <View>
           <View style={styles.carouselHeader}>
             <Text style={styles.carouselTitle}>Your Recipes</Text>
             <Text style={styles.carouselCount}>{suggestions.length} total</Text>
@@ -284,7 +286,7 @@ export default function HomeScreen() {
               </Pressable>
             ))}
           </ScrollView>
-        </Animated.View>
+        </View>
       )}
 
       {/* Thin Rule before activity */}
@@ -292,17 +294,11 @@ export default function HomeScreen() {
 
       {/* 6. Activity Ticker Header */}
       {feedItems.length > 0 ? (
-        <Animated.View
-          entering={FadeInDown.delay(animation.staggerDelay * 6).duration(400)}
-          style={styles.tickerHeader}
-        >
+        <View style={styles.tickerHeader}>
           <Text style={styles.tickerTitle}>Activity</Text>
-        </Animated.View>
+        </View>
       ) : followingCount === 0 ? (
-        <Animated.View
-          entering={FadeInDown.delay(animation.staggerDelay * 4).duration(400)}
-          style={styles.promptSection}
-        >
+        <View style={styles.promptSection}>
           <Text style={styles.tickerTitle}>Activity</Text>
           <View style={styles.promptCard}>
             <Text style={styles.promptTitle}>Follow some chefs to see what they are cooking</Text>
@@ -313,12 +309,9 @@ export default function HomeScreen() {
               <Text style={styles.promptButtonText}>Discover Chefs</Text>
             </Pressable>
           </View>
-        </Animated.View>
+        </View>
       ) : feedItems.length === 0 ? (
-        <Animated.View
-          entering={FadeInDown.delay(animation.staggerDelay * 4).duration(400)}
-          style={styles.promptSection}
-        >
+        <View style={styles.promptSection}>
           <Text style={styles.tickerTitle}>Activity</Text>
           <View style={styles.promptCard}>
             <Text style={styles.promptTitle}>Your chefs have not been cooking lately</Text>
@@ -329,19 +322,12 @@ export default function HomeScreen() {
               <Text style={styles.promptButtonText}>My recipes</Text>
             </Pressable>
           </View>
-        </Animated.View>
+        </View>
       ) : null}
     </View>
   );
 
   const renderTickerItem = ({ item, index }: { item: FeedItem; index: number }) => (
-    <Animated.View
-      entering={
-        index < animation.staggerMax
-          ? FadeInDown.delay(index * animation.staggerDelay).duration(400)
-          : undefined
-      }
-    >
       <Pressable
         style={styles.tickerItem}
         onPress={() => handleFeedItemPress(item)}
@@ -371,7 +357,6 @@ export default function HomeScreen() {
         </View>
         <Text style={styles.tickerTime}>{formatTimeAgo(item.event_at)}</Text>
       </Pressable>
-    </Animated.View>
   );
 
   const renderFooter = () => (

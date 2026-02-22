@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,13 +10,12 @@ import {
   Pressable,
   ScrollView,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { colors, spacing, typography, animation } from '@/lib/theme';
+import { colors, spacing, typography } from '@/lib/theme';
 import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 import CollectionsSection from '@/components/ui/CollectionsSection';
@@ -88,6 +87,7 @@ export default function RecipesScreen() {
   const [searchFocused, setSearchFocused] = useState(false);
   const [collections, setCollections] = useState<{ id: string; name: string; description: string | null; recipe_count: number; cover_url: string | null }[]>([]);
   const [collectionPlan, setCollectionPlan] = useState('free');
+  const hasLoadedOnce = useRef(false);
 
   const fetchCollections = useCallback(async () => {
     if (!user) return;
@@ -147,7 +147,7 @@ export default function RecipesScreen() {
 
   const fetchRecipes = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
+    if (!hasLoadedOnce.current) setLoading(true);
 
     const selectFields = 'id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, visibility, recipe_tags(tag)';
 
@@ -251,6 +251,7 @@ export default function RecipesScreen() {
     });
 
     setAllRecipes(enriched);
+    hasLoadedOnce.current = true;
     setLoading(false);
   }, [user, search]);
 
@@ -295,9 +296,6 @@ export default function RecipesScreen() {
     const tag = item.tags.length > 0 ? item.tags[0] : null;
 
     return (
-      <Animated.View
-        entering={index < animation.staggerMax ? FadeInDown.delay(index * animation.staggerDelay).duration(400) : undefined}
-      >
         <Pressable
           style={styles.resultItem}
           onPress={() => router.push(`/recipe/${item.id}`)}
@@ -339,7 +337,6 @@ export default function RecipesScreen() {
             </View>
           </View>
         </Pressable>
-      </Animated.View>
     );
   };
 
