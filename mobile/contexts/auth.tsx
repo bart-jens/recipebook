@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      if (event === 'PASSWORD_RESET') {
+      if (event === 'PASSWORD_RECOVERY') {
         setIsPasswordReset(true);
       }
     });
