@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B: Warm Minimal — EefEats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-secondary: #555;
+    --ink-muted: #999;
+    --bg: #f5f2ed;
+    --border: #ddd8d0;
+    --accent: #8b4513;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 20px 24px 80px;
+  }
+
+  /* --- TYPE SCALE (single family, light emphasis) --- */
+  .t-title    { font-size: 36px; font-weight: 300; letter-spacing: -0.03em; line-height: 1.1; }
+  .t-heading  { font-size: 26px; font-weight: 400; letter-spacing: -0.01em; line-height: 1.2; }
+  .t-subhead  { font-size: 20px; font-weight: 400; letter-spacing: 0; line-height: 1.3; }
+  .t-body     { font-size: 15px; font-weight: 300; letter-spacing: 0; line-height: 1.6; }
+  .t-bodySmall{ font-size: 13px; font-weight: 300; letter-spacing: 0; line-height: 1.5; }
+  .t-label    { font-size: 14px; font-weight: 400; letter-spacing: 0; line-height: 1.4; }
+  .t-meta     { font-size: 12px; font-weight: 400; letter-spacing: 0.02em; }
+  .t-metaSmall{ font-size: 11px; font-weight: 400; letter-spacing: 0.02em; }
+
+  .muted { color: var(--ink-muted); }
+  .secondary { color: var(--ink-secondary); }
+  .accent { color: var(--accent); }
+
+  /* --- NAV --- */
+  nav {
+    display: flex;
+    gap: 28px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+  nav a {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--ink-muted);
+    text-decoration: none;
+  }
+  nav a.active {
+    color: var(--ink);
+    border-bottom: 1.5px solid var(--ink);
+    padding-bottom: 2px;
+  }
+
+  /* --- MASTHEAD --- */
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+  }
+
+  /* --- RULES --- */
+  .rule-double {
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--border);
+    height: 8px;
+    margin: 20px 0;
+  }
+  .rule { border-top: 1px solid var(--border); margin: 28px 0; }
+
+  /* --- FEATURED --- */
+  .featured {
+    display: grid;
+    grid-template-columns: 1fr 140px;
+    gap: 24px;
+    padding: 20px 0;
+  }
+  .featured-img {
+    width: 140px;
+    height: 170px;
+    background: #d4c8b8;
+    border-radius: 4px;
+  }
+  .featured-tag { margin-bottom: 8px; }
+  .featured-title { margin-bottom: 10px; }
+  .featured-desc { margin-bottom: 14px; }
+
+  /* --- RECIPE INDEX --- */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .count-badge {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--ink-muted);
+  }
+
+  .recipe-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 56px;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+  }
+  .recipe-num {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--ink-muted);
+  }
+  .recipe-thumb {
+    width: 56px;
+    height: 56px;
+    background: #d4c8b8;
+    border-radius: 4px;
+  }
+  .recipe-tag { margin-bottom: 3px; }
+
+  /* --- ACTIVITY --- */
+  .activity-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+  }
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--ink);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg);
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  /* --- STATS BAR --- */
+  .stats-bar {
+    display: flex;
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--border);
+    margin: 20px 0;
+  }
+  .stat {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-value { font-size: 26px; font-weight: 300; letter-spacing: -0.01em; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="t-label active">Feed</a>
+  <a href="#" class="t-label">Browse</a>
+  <a href="#" class="t-label">Recipes</a>
+  <a href="#" class="t-label">Groceries</a>
+</nav>
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="t-title">Good morning, Bart</div>
+  <div class="t-meta muted">Fri 21 Feb</div>
+</div>
+
+<div class="rule-double"></div>
+
+<!-- FEATURED -->
+<div class="featured">
+  <div>
+    <div class="t-metaSmall accent featured-tag">Japanese</div>
+    <div class="t-heading featured-title">Tonijn Tataki met Snelle Ponzu</div>
+    <div class="t-body secondary featured-desc">Super zachte tonijn met frisse sojasaus, sesamzaadjes en een vleugje limoen.</div>
+    <div class="t-meta muted">15 min &middot; By mago</div>
+  </div>
+  <div class="featured-img"></div>
+</div>
+
+<div class="rule"></div>
+
+<!-- YOUR RECIPES -->
+<div class="section-header">
+  <div class="t-heading">Your Recipes</div>
+  <div class="count-badge">12 recipes</div>
+</div>
+
+<div class="recipe-row">
+  <div class="recipe-num">1</div>
+  <div>
+    <div class="t-metaSmall accent recipe-tag">Italian</div>
+    <div class="t-subhead">Cacio e Pepe</div>
+    <div class="t-meta muted">25 min</div>
+  </div>
+  <div class="recipe-thumb"></div>
+</div>
+
+<div class="recipe-row">
+  <div class="recipe-num">2</div>
+  <div>
+    <div class="t-metaSmall accent recipe-tag">Thai</div>
+    <div class="t-subhead">Green Curry with Tofu</div>
+    <div class="t-meta muted">35 min</div>
+  </div>
+  <div class="recipe-thumb"></div>
+</div>
+
+<div class="recipe-row">
+  <div class="recipe-num">3</div>
+  <div>
+    <div class="t-metaSmall accent recipe-tag">Mexican</div>
+    <div class="t-subhead">Birria Tacos</div>
+    <div class="t-meta muted">2h 30 min</div>
+  </div>
+  <div class="recipe-thumb"></div>
+</div>
+
+<div class="recipe-row">
+  <div class="recipe-num">4</div>
+  <div>
+    <div class="t-metaSmall accent recipe-tag">Dutch</div>
+    <div class="t-subhead">Stamppot Boerenkool</div>
+    <div class="t-meta muted">40 min</div>
+  </div>
+  <div class="recipe-thumb"></div>
+</div>
+
+<div class="rule"></div>
+
+<!-- ACTIVITY -->
+<div class="section-header">
+  <div class="t-heading">Activity</div>
+</div>
+
+<div class="activity-item">
+  <div class="avatar">M</div>
+  <div>
+    <div class="t-body"><span style="font-weight:400">mago</span> cooked <span style="font-weight:400">Tonijn Tataki</span></div>
+    <div class="t-meta muted" style="margin-top:4px">2h ago</div>
+  </div>
+</div>
+
+<div class="activity-item">
+  <div class="avatar">L</div>
+  <div>
+    <div class="t-body"><span style="font-weight:400">lmhessels</span> saved <span style="font-weight:400">Cacio e Pepe</span></div>
+    <div class="t-meta muted" style="margin-top:4px">Yesterday</div>
+  </div>
+</div>
+
+<div class="rule"></div>
+
+<!-- PROFILE PREVIEW -->
+<div style="margin-top: 28px;">
+  <div class="t-heading" style="margin-bottom: 20px;">Profile Preview</div>
+  <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+    <div class="avatar" style="width:56px;height:56px;font-size:20px;font-weight:300;">B</div>
+    <div>
+      <div class="t-heading">barthessels</div>
+      <div class="t-bodySmall secondary">Home cook, recipe collector</div>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-value">12</div>
+      <div class="t-metaSmall muted" style="margin-top:3px">Recipes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">8</div>
+      <div class="t-metaSmall muted" style="margin-top:3px">Cooked</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">6</div>
+      <div class="t-metaSmall muted" style="margin-top:3px">Followers</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">3</div>
+      <div class="t-metaSmall muted" style="margin-top:3px">Following</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
