@@ -194,23 +194,23 @@ export default async function RecipesPage({
 
   return (
     <div>
-      {/* Header: overline + serif title + action buttons */}
+      {/* Header: label + title + action buttons */}
       <div className="px-5 pt-4 animate-fade-in-up opacity-0 anim-delay-1">
-        <div className="mono-label mb-1">Your Library</div>
+        <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-1">Your Library</div>
         <div className="flex items-baseline justify-between mb-3.5">
-          <h1 className="font-display text-[32px] tracking-[-0.03em]">
+          <h1 className="text-[36px] font-light tracking-[-0.03em]">
             Recipes
           </h1>
           <div className="flex gap-2">
             <Link
               href="/recipes/import"
-              className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
+              className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
             >
               Import
             </Link>
             <Link
               href="/recipes/new"
-              className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 border border-ink bg-ink text-bg hover:bg-accent hover:border-accent transition-colors"
+              className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-ink bg-ink text-bg hover:bg-accent hover:border-accent transition-colors"
             >
               Create
             </Link>
@@ -234,7 +234,7 @@ export default async function RecipesPage({
 
       {/* Result count */}
       <div className="px-5 pt-3 animate-fade-in-up opacity-0 anim-delay-4">
-        <p className="font-mono text-[11px] text-ink-muted">
+        <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
           {q
             ? `${totalCount} result${totalCount !== 1 ? "s" : ""} for \u201c${q}\u201d`
             : `${totalCount} recipe${totalCount !== 1 ? "s" : ""}`}
@@ -252,14 +252,14 @@ export default async function RecipesPage({
             <div className="mt-2 flex gap-3 justify-center">
               <Link
                 href="/recipes/import"
-                className="font-mono text-[11px] uppercase tracking-[0.06em] text-accent hover:underline"
+                className="text-[11px] font-normal tracking-[0.02em] text-accent hover:underline"
               >
                 Import a recipe
               </Link>
               <span className="text-ink-muted">or</span>
               <Link
                 href="/recipes/new"
-                className="font-mono text-[11px] uppercase tracking-[0.06em] text-accent hover:underline"
+                className="text-[11px] font-normal tracking-[0.02em] text-accent hover:underline"
               >
                 Create your own
               </Link>
@@ -295,11 +295,11 @@ export default async function RecipesPage({
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       {tags[0] && (
-                        <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-accent font-medium mb-0.5">
+                        <div className="text-[11px] font-normal tracking-[0.02em] text-accent mb-0.5">
                           {tags[0]}
                         </div>
                       )}
-                      <div className="font-display text-[20px] leading-[1.12] tracking-[-0.02em] text-ink transition-colors group-hover:text-accent truncate">
+                      <div className="text-[20px] font-normal leading-[1.12] text-ink transition-colors group-hover:text-accent truncate">
                         {recipe.title}
                       </div>
                     </div>
@@ -311,7 +311,7 @@ export default async function RecipesPage({
                       )}
                     </div>
                   </div>
-                  <div className="font-mono text-[11px] text-ink-muted flex gap-2.5 mt-0.5">
+                  <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted flex gap-2.5 mt-0.5">
                     {timeStr && <span>{timeStr}</span>}
                     {recipe.avgRating != null && (
                       <span>{recipe.avgRating.toFixed(1)}</span>

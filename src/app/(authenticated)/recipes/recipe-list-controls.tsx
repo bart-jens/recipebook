@@ -88,13 +88,13 @@ export function RecipeListControls() {
         )}
       </div>
 
-      {/* Sort tabs — mono uppercase with active underline */}
+      {/* Sort tabs with active underline */}
       <div className="flex gap-0 border-b border-border mt-0">
         {SORT_OPTIONS.map((opt) => (
           <button
             key={opt.value}
             onClick={() => updateParams({ sort: opt.value })}
-            className={`relative font-mono text-[11px] uppercase tracking-[0.06em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
+            className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
               sort === opt.value
                 ? "text-ink"
                 : "text-ink-muted hover:text-ink"
@@ -114,7 +114,7 @@ export function RecipeListControls() {
           <button
             key={`filter-${opt.value}`}
             onClick={() => updateParams({ filter: opt.value })}
-            className={`relative font-mono text-[10px] uppercase tracking-[0.08em] bg-transparent border-none cursor-pointer px-0 pr-3 py-1.5 transition-colors ${
+            className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3 py-1.5 transition-colors ${
               filter === opt.value
                 ? "text-ink"
                 : "text-ink-muted hover:text-ink"
@@ -130,7 +130,7 @@ export function RecipeListControls() {
           <select
             value={course}
             onChange={(e) => updateParams({ course: e.target.value })}
-            className={`font-mono text-[10px] uppercase tracking-[0.08em] bg-transparent border-none cursor-pointer outline-none py-1.5 pr-4 appearance-none ${
+            className={`text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer outline-none py-1.5 pr-4 appearance-none ${
               course ? "text-accent" : "text-ink-muted"
             }`}
           >

@@ -82,15 +82,15 @@ export function CollectionsSection({
   return (
     <div className="mb-6">
       <div className="flex items-baseline justify-between mb-2">
-        <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink">Collections</h2>
+        <h2 className="text-[20px] font-normal text-ink">Collections</h2>
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[11px] text-ink-muted">{collections.length} total</span>
+          <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">{collections.length} total</span>
           {atLimit ? (
-            <span className="font-mono text-[9px] uppercase tracking-[0.06em] px-1.5 py-0.5 border border-border text-ink-muted">5/5</span>
+            <span className="text-[11px] font-normal tracking-[0.02em] px-1.5 py-0.5 border border-border text-ink-muted">5/5</span>
           ) : (
             <button
               onClick={() => setShowCreate(true)}
-              className="font-mono text-[11px] uppercase tracking-[0.06em] px-2.5 py-1.5 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
+              className="text-[11px] font-normal tracking-[0.02em] px-2.5 py-1.5 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
             >
               New
             </button>
@@ -120,14 +120,14 @@ export function CollectionsSection({
             <button
               type="submit"
               disabled={isPending || !newName.trim()}
-              className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 bg-accent text-white hover:bg-[#6D360F] transition-colors disabled:opacity-50"
+              className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 bg-accent text-white hover:bg-[#6D360F] transition-colors disabled:opacity-50"
             >
               {isPending ? "Creating..." : "Create"}
             </button>
             <button
               type="button"
               onClick={() => { setShowCreate(false); setError(null); }}
-              className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-2 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
+              className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
             >
               Cancel
             </button>
@@ -146,13 +146,13 @@ export function CollectionsSection({
                     <button
                       onClick={() => handleDelete(collection.id)}
                       disabled={isPending}
-                      className="font-mono text-[9px] uppercase tracking-[0.06em] px-2 py-1 bg-red-600 text-white disabled:opacity-50"
+                      className="text-[11px] font-normal tracking-[0.02em] px-2 py-1 bg-red-600 text-white disabled:opacity-50"
                     >
                       {isPending ? "..." : "Delete"}
                     </button>
                     <button
                       onClick={() => setDeletingId(null)}
-                      className="font-mono text-[9px] uppercase tracking-[0.06em] px-2 py-1 border border-border text-ink-muted"
+                      className="text-[11px] font-normal tracking-[0.02em] px-2 py-1 border border-border text-ink-muted"
                     >
                       Cancel
                     </button>
@@ -175,13 +175,13 @@ export function CollectionsSection({
                     <button
                       onClick={() => handleRename(collection.id)}
                       disabled={isPending}
-                      className="font-mono text-[9px] uppercase tracking-[0.06em] text-accent hover:underline"
+                      className="text-[11px] font-normal tracking-[0.02em] text-accent hover:underline"
                     >
                       Save
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
-                      className="font-mono text-[9px] uppercase tracking-[0.06em] text-ink-muted hover:underline"
+                      className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:underline"
                     >
                       Cancel
                     </button>
@@ -206,8 +206,8 @@ export function CollectionsSection({
                     </div>
                   )}
                   <div className="p-2.5">
-                    <h3 className="font-display text-[15px] leading-[1.2] tracking-[-0.01em] text-ink truncate">{collection.name}</h3>
-                    <p className="font-mono text-[10px] text-ink-muted mt-0.5">
+                    <h3 className="text-[15px] font-light leading-[1.2] text-ink truncate">{collection.name}</h3>
+                    <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mt-0.5">
                       {collection.recipe_count} recipe{collection.recipe_count !== 1 ? "s" : ""}
                     </p>
                   </div>
@@ -221,7 +221,7 @@ export function CollectionsSection({
                       setEditingId(collection.id);
                       setEditName(collection.name);
                     }}
-                    className="font-mono text-[9px] uppercase tracking-[0.06em] bg-surface/90 px-1.5 py-0.5 text-ink-muted hover:text-accent"
+                    className="text-[11px] font-normal tracking-[0.02em] bg-surface/90 px-1.5 py-0.5 text-ink-muted hover:text-accent"
                   >
                     Rename
                   </button>
@@ -230,7 +230,7 @@ export function CollectionsSection({
                       e.preventDefault();
                       setDeletingId(collection.id);
                     }}
-                    className="font-mono text-[9px] uppercase tracking-[0.06em] bg-surface/90 px-1.5 py-0.5 text-ink-muted hover:text-red-600"
+                    className="text-[11px] font-normal tracking-[0.02em] bg-surface/90 px-1.5 py-0.5 text-ink-muted hover:text-red-600"
                   >
                     Delete
                   </button>
