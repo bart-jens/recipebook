@@ -28,7 +28,15 @@ export default async function NewFollowersPage() {
       <h1 className="mb-6 text-[26px] font-normal tracking-[-0.01em] text-ink">New Followers</h1>
 
       {(newFollowers || []).length === 0 ? (
-        <p className="font-body text-sm text-ink-muted">No new followers.</p>
+        <div>
+          <p className="font-body text-sm text-ink-muted">No new followers.</p>
+          <Link
+            href="/invites"
+            className="mt-4 inline-block border border-border px-5 py-2 text-[13px] font-normal tracking-[0.01em] text-ink-secondary transition-colors hover:border-border-strong hover:text-ink"
+          >
+            Invite Friends
+          </Link>
+        </div>
       ) : (
         <div className="space-y-3">
           {(newFollowers || []).map((follower) => (
@@ -55,6 +63,15 @@ export default async function NewFollowersPage() {
           ))}
         </div>
       )}
+
+      <div className="mt-8">
+        <Link
+          href="/invites"
+          className="inline-block border border-border px-5 py-2 text-[13px] font-normal tracking-[0.01em] text-ink-secondary transition-colors hover:border-border-strong hover:text-ink"
+        >
+          Invite Friends
+        </Link>
+      </div>
     </div>
   );
 }

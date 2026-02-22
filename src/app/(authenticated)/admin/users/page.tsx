@@ -22,9 +22,16 @@ export default async function AdminUsersPage({
   );
 
   // Get recipe counts per user
+  // Use exact count per user via individual queries grouped by the profiles we already have
+  const { count: totalRecipes } = await admin
+    .from("recipes")
+    .select("id", { count: "exact", head: true });
+
+  // Fetch all recipe created_by values (override default 1000-row limit)
   const { data: recipeCounts } = await admin
     .from("recipes")
-    .select("created_by");
+    .select("created_by")
+    .limit(totalRecipes ?? 10000);
 
   const countMap = new Map<string, number>();
   for (const r of recipeCounts || []) {

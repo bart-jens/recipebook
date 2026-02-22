@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 
 const SORT_OPTIONS = [
   { value: "updated", label: "Recent" },
@@ -34,10 +34,14 @@ export function RecipeListControls() {
   const [isPending, startTransition] = useTransition();
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
+  const [showFilters, setShowFilters] = useState(false);
+
   const q = searchParams.get("q") || "";
   const sort = searchParams.get("sort") || "updated";
   const course = searchParams.get("course") || "";
   const filter = searchParams.get("filter") || "";
+
+  const hasActiveFilter = sort !== "updated" || filter !== "" || course !== "";
 
   function updateParams(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -86,64 +90,92 @@ export function RecipeListControls() {
         {isPending && (
           <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-accent" />
         )}
-      </div>
-
-      {/* Sort tabs with active underline */}
-      <div className="flex gap-0 border-b border-border mt-0">
-        {SORT_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => updateParams({ sort: opt.value })}
-            className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
-              sort === opt.value
-                ? "text-ink"
-                : "text-ink-muted hover:text-ink"
-            }`}
+        <button
+          onClick={() => setShowFilters((v) => !v)}
+          className={`shrink-0 flex items-center gap-1 text-[11px] font-normal tracking-[0.02em] transition-colors ${
+            showFilters ? "text-ink" : "text-ink-muted hover:text-ink"
+          }`}
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="shrink-0"
           >
-            {opt.label}
-            {sort === opt.value && (
-              <span className="absolute bottom-[-1px] left-0 right-[14px] h-0.5 bg-ink" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Filter tabs + Course dropdown */}
-      <div className="flex items-center border-b border-border">
-        {FILTER_OPTIONS.map((opt) => (
-          <button
-            key={`filter-${opt.value}`}
-            onClick={() => updateParams({ filter: opt.value })}
-            className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3 py-1.5 transition-colors ${
-              filter === opt.value
-                ? "text-ink"
-                : "text-ink-muted hover:text-ink"
-            }`}
-          >
-            {opt.label}
-            {filter === opt.value && (
-              <span className="absolute bottom-[-1px] left-0 right-[12px] h-[1.5px] bg-ink" />
-            )}
-          </button>
-        ))}
-        <div className="ml-auto relative flex items-center">
-          <select
-            value={course}
-            onChange={(e) => updateParams({ course: e.target.value })}
-            className={`text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer outline-none py-1.5 pr-4 appearance-none ${
-              course ? "text-accent" : "text-ink-muted"
-            }`}
-          >
-            <option value="">Course</option>
-            {COURSE_OPTIONS.filter((o) => o.value).map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <svg className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-ink-muted" width="8" height="8" viewBox="0 0 8 8" fill="none">
-            <path d="M1 2.5L4 5.5L7 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="7" y1="12" x2="17" y2="12" />
+            <line x1="10" y1="18" x2="14" y2="18" />
           </svg>
-        </div>
+          Filter
+          {hasActiveFilter && (
+            <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+          )}
+        </button>
       </div>
+
+      {showFilters && (
+        <>
+          {/* Sort tabs with active underline */}
+          <div className="flex gap-0 border-b border-border mt-0">
+            {SORT_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => updateParams({ sort: opt.value })}
+                className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
+                  sort === opt.value
+                    ? "text-ink"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                {opt.label}
+                {sort === opt.value && (
+                  <span className="absolute bottom-[-1px] left-0 right-[14px] h-0.5 bg-ink" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Filter tabs + Course dropdown */}
+          <div className="flex items-center border-b border-border">
+            {FILTER_OPTIONS.map((opt) => (
+              <button
+                key={`filter-${opt.value}`}
+                onClick={() => updateParams({ filter: opt.value })}
+                className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3 py-1.5 transition-colors ${
+                  filter === opt.value
+                    ? "text-ink"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                {opt.label}
+                {filter === opt.value && (
+                  <span className="absolute bottom-[-1px] left-0 right-[12px] h-[1.5px] bg-ink" />
+                )}
+              </button>
+            ))}
+            <div className="ml-auto relative flex items-center">
+              <select
+                value={course}
+                onChange={(e) => updateParams({ course: e.target.value })}
+                className={`text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer outline-none py-1.5 pr-4 appearance-none ${
+                  course ? "text-accent" : "text-ink-muted"
+                }`}
+              >
+                <option value="">Course</option>
+                {COURSE_OPTIONS.filter((o) => o.value).map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <svg className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-ink-muted" width="8" height="8" viewBox="0 0 8 8" fill="none">
+                <path d="M1 2.5L4 5.5L7 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

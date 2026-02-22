@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   FlatList,
+  ScrollView,
   Pressable,
   RefreshControl,
   ActivityIndicator,
@@ -214,10 +215,6 @@ export default function HomeScreen() {
     router.push(`/recipe/${item.recipe_id}`);
   };
 
-  // Derive featured recipe (first with an image) and remaining recipes
-  const featuredRecipe = suggestions.find((r) => r.image_url) || suggestions[0] || null;
-  const indexRecipes = suggestions.filter((r) => r !== featuredRecipe);
-
   const renderStars = (rating: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -234,115 +231,54 @@ export default function HomeScreen() {
     return <View style={styles.starsRow}>{stars}</View>;
   };
 
-  // Sections rendered as header (masthead, featured, index) and footer (activity)
+  // Sections rendered as header (carousel) and footer (activity)
   const renderHeader = () => (
     <View>
-      {/* Featured Recipe */}
-      {featuredRecipe && (
+      {/* Recipe Carousel */}
+      {suggestions.length > 0 && (
         <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
-          <Pressable
-            style={styles.featured}
-            onPress={() => router.push(`/recipe/${featuredRecipe.id}`)}
+          <View style={styles.carouselHeader}>
+            <Text style={styles.carouselTitle}>Your Recipes</Text>
+            <Text style={styles.carouselCount}>{suggestions.length} total</Text>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.carouselScroll}
           >
-            <Text style={styles.featuredLabel}>Featured</Text>
-            <View style={styles.featuredLayout}>
-              <View style={styles.featuredText}>
-                {getTag(featuredRecipe) && (
-                  <Text style={styles.featuredCategory}>{getTag(featuredRecipe)}</Text>
-                )}
-                <Text style={styles.featuredTitle} numberOfLines={3}>
-                  {featuredRecipe.title}
-                </Text>
-                {featuredRecipe.description && (
-                  <Text style={styles.featuredExcerpt} numberOfLines={2}>
-                    {featuredRecipe.description}
-                  </Text>
-                )}
-                <View style={styles.featuredMeta}>
-                  {displayName ? <Text style={styles.featuredMetaText}>By {displayName}</Text> : null}
-                  {featuredRecipe.cook_time_minutes ? (
-                    <>
-                      <View style={styles.metaDot} />
-                      <Text style={styles.featuredMetaText}>
-                        {formatTime(featuredRecipe.cook_time_minutes)}
-                      </Text>
-                    </>
-                  ) : null}
-                </View>
-              </View>
-              {featuredRecipe.image_url ? (
-                <Image
-                  source={{ uri: featuredRecipe.image_url }}
-                  style={styles.featuredImage}
-                  contentFit="cover"
-                  transition={200}
-                />
-              ) : (
-                <View style={[styles.featuredImage, { backgroundColor: colors.surfaceAlt }]} />
-              )}
-            </View>
-          </Pressable>
-        </Animated.View>
-      )}
-
-      {/* 4. Thin Rule */}
-      <View style={styles.ruleThin} />
-
-      {/* 5. Numbered Recipe Index */}
-      {indexRecipes.length > 0 && (
-        <View style={styles.indexSection}>
-          <Animated.View
-            entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}
-            style={styles.indexHeader}
-          >
-            <Text style={styles.indexTitle}>Your Recipes</Text>
-            <Text style={styles.indexCount}>{suggestions.length} total</Text>
-          </Animated.View>
-          {indexRecipes.map((recipe, idx) => (
-            <Animated.View
-              key={recipe.id}
-              entering={
-                idx < animation.staggerMax
-                  ? FadeInDown.delay(animation.staggerDelay * (4 + idx)).duration(400)
-                  : undefined
-              }
-            >
+            {suggestions.map((recipe) => (
               <Pressable
-                style={styles.indexItem}
+                key={recipe.id}
+                style={styles.carouselCard}
                 onPress={() => router.push(`/recipe/${recipe.id}`)}
               >
-                <Text style={styles.indexNumber}>{idx + 1}</Text>
-                <View style={styles.indexContent}>
-                  {getTag(recipe) && (
-                    <Text style={styles.indexCategory}>{getTag(recipe)}</Text>
-                  )}
-                  <Text style={styles.indexItemTitle} numberOfLines={2}>
-                    {recipe.title}
-                  </Text>
-                  <View style={styles.indexItemMeta}>
-                    {recipe.cook_time_minutes ? (
-                      <Text style={styles.indexMetaText}>
-                        {formatTime(recipe.cook_time_minutes)}
-                      </Text>
-                    ) : recipe.prep_time_minutes ? (
-                      <Text style={styles.indexMetaText}>
-                        {formatTime(recipe.prep_time_minutes)}
-                      </Text>
-                    ) : null}
-                  </View>
-                </View>
-                {recipe.image_url && (
+                {recipe.image_url ? (
                   <Image
                     source={{ uri: recipe.image_url }}
-                    style={styles.indexThumb}
+                    style={styles.carouselImage}
                     contentFit="cover"
                     transition={200}
                   />
+                ) : (
+                  <View style={[styles.carouselImage, { backgroundColor: colors.surfaceAlt }]} />
                 )}
+                <View style={styles.carouselCardBody}>
+                  {getTag(recipe) && (
+                    <Text style={styles.carouselTag}>{getTag(recipe)}</Text>
+                  )}
+                  <Text style={styles.carouselCardTitle} numberOfLines={2}>
+                    {recipe.title}
+                  </Text>
+                  {(recipe.cook_time_minutes || recipe.prep_time_minutes) && (
+                    <Text style={styles.carouselTime}>
+                      {formatTime(recipe.cook_time_minutes || recipe.prep_time_minutes)}
+                    </Text>
+                  )}
+                </View>
               </Pressable>
-            </Animated.View>
-          ))}
-        </View>
+            ))}
+          </ScrollView>
+        </Animated.View>
       )}
 
       {/* Thin Rule before activity */}
@@ -470,127 +406,59 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
 
-  // Featured Recipe
-  featured: {
+  // Recipe Carousel
+  carouselHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 14,
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
-  featuredLabel: {
-    ...typography.metaSmall,
-    color: colors.inkMuted,
-    marginBottom: 10,
-  },
-  featuredLayout: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  featuredText: {
-    flex: 1,
-  },
-  featuredCategory: {
-    ...typography.metaSmall,
-    color: colors.accent,
-    marginBottom: 4,
-  },
-  featuredTitle: {
-    ...typography.heading,
+  carouselTitle: {
+    ...typography.subheading,
     color: colors.ink,
-    marginBottom: 8,
   },
-  featuredExcerpt: {
-    ...typography.bodySmall,
-    color: colors.inkSecondary,
-    marginBottom: 8,
-  },
-  featuredMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  featuredMetaText: {
+  carouselCount: {
     ...typography.metaSmall,
     color: colors.inkMuted,
   },
-  metaDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: colors.border,
+  carouselScroll: {
+    paddingHorizontal: 20,
+    gap: 12,
+    paddingBottom: 16,
   },
-  featuredImage: {
-    width: 130,
-    height: 170,
+  carouselCard: {
+    width: 140,
+  },
+  carouselImage: {
+    width: 140,
+    height: 140,
     borderRadius: 0,
   },
+  carouselCardBody: {
+    paddingTop: 8,
+  },
+  carouselTag: {
+    ...typography.metaSmall,
+    color: colors.accent,
+    marginBottom: 2,
+  },
+  carouselCardTitle: {
+    ...typography.label,
+    color: colors.ink,
+    marginBottom: 2,
+  },
+  carouselTime: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+  },
 
-  // 4. Thin Rule
+  // Thin Rule
   ruleThin: {
     height: 1,
     backgroundColor: colors.border,
     marginHorizontal: 20,
-  },
-
-  // 5. Numbered Recipe Index
-  indexSection: {
-    paddingHorizontal: 20,
-  },
-  indexHeader: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  indexTitle: {
-    ...typography.subheading,
-    color: colors.ink,
-  },
-  indexCount: {
-    ...typography.metaSmall,
-    color: colors.inkMuted,
-  },
-  indexItem: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  indexNumber: {
-    ...typography.title,
-    lineHeight: 36,
-    color: colors.border,
-    minWidth: 28,
-    paddingTop: 2,
-  },
-  indexContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-  indexCategory: {
-    ...typography.metaSmall,
-    color: colors.accent,
-    marginBottom: 1,
-  },
-  indexItemTitle: {
-    ...typography.subheading,
-    color: colors.ink,
-    marginBottom: 3,
-  },
-  indexItemMeta: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  indexMetaText: {
-    ...typography.metaSmall,
-    color: colors.inkMuted,
-  },
-  indexThumb: {
-    width: 56,
-    height: 56,
-    borderRadius: 0,
-    alignSelf: 'center',
   },
 
   // 6. Activity Ticker

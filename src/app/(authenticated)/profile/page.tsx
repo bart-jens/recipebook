@@ -205,6 +205,12 @@ export default async function ProfilePage() {
         <hr className="rule-thin border-0 mb-2" />
         <div className="flex flex-wrap gap-2">
           <Link
+            href="/shopping-list"
+            className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-ink text-ink hover:bg-ink hover:text-bg transition-colors"
+          >
+            Grocery List
+          </Link>
+          <Link
             href="/profile/edit"
             className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-ink text-ink hover:bg-ink hover:text-bg transition-colors"
           >
@@ -218,6 +224,26 @@ export default async function ProfilePage() {
           </Link>
           <FeedbackButton sourceScreen="profile" />
           <SignOutButton />
+        </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+          <Link
+            href="/privacy"
+            className="font-mono text-[11px] uppercase tracking-[0.06em] py-2 text-ink-muted hover:text-ink transition-colors"
+          >
+            Privacy Policy
+          </Link>
+          <Link
+            href="/terms"
+            className="font-mono text-[11px] uppercase tracking-[0.06em] py-2 text-ink-muted hover:text-ink transition-colors"
+          >
+            Terms of Service
+          </Link>
+          <Link
+            href="/support"
+            className="font-mono text-[11px] uppercase tracking-[0.06em] py-2 text-ink-muted hover:text-ink transition-colors"
+          >
+            Support
+          </Link>
         </div>
       </div>
     </div>

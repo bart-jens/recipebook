@@ -10,7 +10,8 @@
 -- ------------------------------------------
 -- 1. Drop recommendation infrastructure
 -- ------------------------------------------
--- View depends on table, drop view first
+-- Drop views that depend on recipe_shares before dropping the table
+DROP VIEW IF EXISTS public.activity_feed_view;
 DROP VIEW IF EXISTS public.recipe_share_cards;
 DROP TABLE IF EXISTS public.recipe_shares;
 
@@ -70,6 +71,7 @@ WHERE r.visibility = 'public';
 -- ------------------------------------------
 -- 3. Replace get_activity_feed RPC
 -- ------------------------------------------
+DROP FUNCTION IF EXISTS get_activity_feed(uuid, timestamptz, int);
 CREATE OR REPLACE FUNCTION get_activity_feed(
   p_user_id uuid,
   p_before timestamptz DEFAULT now(),

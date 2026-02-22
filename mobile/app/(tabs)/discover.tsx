@@ -73,6 +73,7 @@ export default function DiscoverScreen() {
   const [allTags, setAllTags] = useState<string[]>([]);
   const [pendingFollowId, setPendingFollowId] = useState<string | null>(null);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [savedRecipeIds, setSavedRecipeIds] = useState<Set<string>>(new Set());
 
   const formatTime = (minutes: number | null) => {
@@ -668,13 +669,12 @@ export default function DiscoverScreen() {
     );
   };
 
+  const hasActiveFilter = activeTab !== 'recipes' || sort !== 'newest' || selectedTag !== null;
+
   const renderHeader = () => (
     <View>
       {/* Header: overline + title */}
       <Animated.View entering={FadeInDown.duration(400)} style={styles.header}>
-        <Text style={styles.overline}>Explore</Text>
-        <Text style={styles.title}>Discover</Text>
-
         {/* Search bar — bottom-border style */}
         <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 2).duration(400)}>
           <View style={[styles.searchWrap, searchFocused && styles.searchWrapFocused]}>
@@ -689,15 +689,24 @@ export default function DiscoverScreen() {
               onBlur={() => setSearchFocused(false)}
               returnKeyType="search"
             />
+            <Pressable
+              onPress={() => setShowFilters((v) => !v)}
+              style={styles.filterButton}
+              hitSlop={8}
+            >
+              <FontAwesome name="sliders" size={12} color={showFilters ? colors.ink : colors.inkMuted} />
+              <Text style={[styles.filterButtonText, showFilters && styles.filterButtonTextActive]}>Filter</Text>
+              {hasActiveFilter && <View style={styles.filterDot} />}
+            </Pressable>
           </View>
         </Animated.View>
       </Animated.View>
 
       {/* Filter tabs */}
-      {renderFilterTabs()}
+      {showFilters && renderFilterTabs()}
 
       {/* Tag filter row */}
-      {renderTagRow()}
+      {showFilters && renderTagRow()}
     </View>
   );
 
@@ -794,6 +803,24 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.ink,
     paddingVertical: 0,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  filterButtonText: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+  },
+  filterButtonTextActive: {
+    color: colors.ink,
+  },
+  filterDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.accent,
   },
 
   // Filter tabs

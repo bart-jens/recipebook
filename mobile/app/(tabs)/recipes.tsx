@@ -84,6 +84,7 @@ export default function RecipesScreen() {
   const [activeFilter, setActiveFilter] = useState<FilterOption>('');
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [showImportMenu, setShowImportMenu] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [collections, setCollections] = useState<{ id: string; name: string; description: string | null; recipe_count: number; cover_url: string | null }[]>([]);
   const [collectionPlan, setCollectionPlan] = useState('free');
@@ -381,6 +382,18 @@ export default function RecipesScreen() {
               onBlur={() => setSearchFocused(false)}
               returnKeyType="search"
             />
+            <Pressable
+              style={styles.filterToggle}
+              onPress={() => setShowFilters((v) => !v)}
+            >
+              <FontAwesome name="sliders" size={12} color={showFilters ? colors.ink : colors.inkMuted} />
+              <Text style={[styles.filterToggleText, showFilters && styles.filterToggleTextActive]}>
+                Filter
+              </Text>
+              {(sort !== 'updated' || activeFilter !== '' || selectedCourse !== null) && (
+                <View style={styles.filterDot} />
+              )}
+            </Pressable>
           </View>
         </Animated.View>
       </Animated.View>
@@ -392,60 +405,64 @@ export default function RecipesScreen() {
         onRefresh={fetchCollections}
       />
 
-      {/* Sort tabs */}
-      <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterRow}
-        >
-          {SORT_OPTIONS.map((opt) => (
-            <Pressable
-              key={opt.value}
-              style={styles.filterTab}
-              onPress={() => setSort(opt.value)}
+      {showFilters && (
+        <>
+          {/* Sort tabs */}
+          <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(400)}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filterRow}
             >
-              <Text style={[styles.filterTabText, sort === opt.value && styles.filterTabTextActive]}>
-                {opt.label}
-              </Text>
-              {sort === opt.value && <View style={styles.filterTabLine} />}
-            </Pressable>
-          ))}
-        </ScrollView>
-      </Animated.View>
+              {SORT_OPTIONS.map((opt) => (
+                <Pressable
+                  key={opt.value}
+                  style={styles.filterTab}
+                  onPress={() => setSort(opt.value)}
+                >
+                  <Text style={[styles.filterTabText, sort === opt.value && styles.filterTabTextActive]}>
+                    {opt.label}
+                  </Text>
+                  {sort === opt.value && <View style={styles.filterTabLine} />}
+                </Pressable>
+              ))}
+            </ScrollView>
+          </Animated.View>
 
-      {/* Filter tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.secondaryFilterRow}
-      >
-        {FILTER_OPTIONS.map((opt) => (
-          <Pressable
-            key={`filter-${opt.value}`}
-            style={styles.secondaryTab}
-            onPress={() => setActiveFilter(opt.value)}
+          {/* Filter tabs */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.secondaryFilterRow}
           >
-            <Text style={[styles.secondaryTabText, activeFilter === opt.value && styles.secondaryTabTextActive]}>
-              {opt.label}
-            </Text>
-            {activeFilter === opt.value && <View style={styles.secondaryTabLine} />}
-          </Pressable>
-        ))}
-        <View style={styles.tabDivider} />
-        {COURSE_OPTIONS.map((opt) => (
-          <Pressable
-            key={`course-${opt.value}`}
-            style={styles.secondaryTab}
-            onPress={() => setSelectedCourse(opt.value || null)}
-          >
-            <Text style={[styles.secondaryTabText, (selectedCourse || '') === opt.value && (opt.value ? styles.courseTabTextActive : styles.secondaryTabTextActive)]}>
-              {opt.label}
-            </Text>
-            {(selectedCourse || '') === opt.value && <View style={opt.value ? styles.courseTabLine : styles.secondaryTabLine} />}
-          </Pressable>
-        ))}
-      </ScrollView>
+            {FILTER_OPTIONS.map((opt) => (
+              <Pressable
+                key={`filter-${opt.value}`}
+                style={styles.secondaryTab}
+                onPress={() => setActiveFilter(opt.value)}
+              >
+                <Text style={[styles.secondaryTabText, activeFilter === opt.value && styles.secondaryTabTextActive]}>
+                  {opt.label}
+                </Text>
+                {activeFilter === opt.value && <View style={styles.secondaryTabLine} />}
+              </Pressable>
+            ))}
+            <View style={styles.tabDivider} />
+            {COURSE_OPTIONS.map((opt) => (
+              <Pressable
+                key={`course-${opt.value}`}
+                style={styles.secondaryTab}
+                onPress={() => setSelectedCourse(opt.value || null)}
+              >
+                <Text style={[styles.secondaryTabText, (selectedCourse || '') === opt.value && (opt.value ? styles.courseTabTextActive : styles.secondaryTabTextActive)]}>
+                  {opt.label}
+                </Text>
+                {(selectedCourse || '') === opt.value && <View style={opt.value ? styles.courseTabLine : styles.secondaryTabLine} />}
+              </Pressable>
+            ))}
+          </ScrollView>
+        </>
+      )}
 
       {/* Result count */}
       {recipes.length > 0 && !loading && (
@@ -599,6 +616,26 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.ink,
     paddingVertical: 0,
+  },
+
+  // Filter toggle button
+  filterToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  filterToggleText: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+  },
+  filterToggleTextActive: {
+    color: colors.ink,
+  },
+  filterDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: colors.accent,
   },
 
   // Sort tabs

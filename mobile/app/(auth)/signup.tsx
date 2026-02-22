@@ -15,8 +15,6 @@ import { useAuth } from '@/contexts/auth';
 import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 import { Logo } from '@/components/ui/Logo';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
-
 export default function SignupScreen() {
   const { signUp } = useAuth();
   const [inviteCode, setInviteCode] = useState('');
@@ -90,14 +88,14 @@ export default function SignupScreen() {
             By signing up, you agree to our{' '}
             <Text
               style={styles.legalLink}
-              onPress={() => Linking.openURL(`${API_BASE}/terms`)}
+              onPress={() => Linking.openURL('https://eefeats.com/terms')}
             >
               Terms of Service
             </Text>{' '}
             and{' '}
             <Text
               style={styles.legalLink}
-              onPress={() => Linking.openURL(`${API_BASE}/privacy`)}
+              onPress={() => Linking.openURL('https://eefeats.com/privacy')}
             >
               Privacy Policy
             </Text>

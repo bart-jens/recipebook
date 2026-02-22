@@ -76,6 +76,13 @@ export default function NewFollowersScreen() {
             <Text style={styles.emptyDescription}>
               When someone new follows you, they will appear here.
             </Text>
+            <TouchableOpacity
+              style={styles.inviteButton}
+              activeOpacity={0.7}
+              onPress={() => router.push('/invites')}
+            >
+              <Text style={styles.inviteButtonText}>Invite Friends</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <FlatList
@@ -84,6 +91,15 @@ export default function NewFollowersScreen() {
             keyExtractor={(item) => item.follower_id}
             contentContainerStyle={styles.list}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ListFooterComponent={
+              <TouchableOpacity
+                style={styles.inviteButtonFooter}
+                activeOpacity={0.7}
+                onPress={() => router.push('/invites')}
+              >
+                <Text style={styles.inviteButtonText}>Invite Friends</Text>
+              </TouchableOpacity>
+            }
           />
         )}
       </View>
@@ -125,5 +141,27 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: colors.border,
+  },
+  inviteButton: {
+    marginTop: spacing.lg,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+  },
+  inviteButtonFooter: {
+    marginTop: spacing.xl,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    alignSelf: 'center',
+  },
+  inviteButtonText: {
+    ...typography.label,
+    color: colors.inkSecondary,
+    textAlign: 'center',
   },
 });

@@ -143,14 +143,6 @@ export default async function DiscoverPage({
 
   return (
     <div>
-      {/* Header */}
-      <div className="px-5 pt-4 animate-fade-in-up opacity-0 anim-delay-1">
-        <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-1">Explore</div>
-        <h1 className="text-[36px] font-light tracking-[-0.03em] mb-3.5">
-          Discover
-        </h1>
-      </div>
-
       {/* Controls: Search + Tabs */}
       <div className="animate-fade-in-up opacity-0 anim-delay-2">
         <DiscoverControls />

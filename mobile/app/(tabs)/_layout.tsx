@@ -177,7 +177,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="recipes"
         options={{
-          title: 'Recipes',
+          title: 'My Recipes',
           tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="book" color={color} focused={focused} />,
         }}
       />
@@ -185,6 +185,7 @@ export default function TabLayout() {
         name="shopping-list"
         options={{
           title: 'Groceries',
+          href: null,
           tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="shopping-cart" color={color} focused={focused} />,
         }}
       />

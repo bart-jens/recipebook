@@ -210,24 +210,28 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      <Pressable style={[styles.actionButton, { marginHorizontal: 20, marginTop: 16 }]} onPress={() => router.push('/invites')}>
+        <Text style={styles.actionButtonText}>Invite Friends</Text>
+      </Pressable>
+
       {/* Stats Bar */}
       <View style={styles.statsBar}>
-        <View style={styles.stat}>
+        <Pressable style={styles.stat} onPress={() => router.push('/(tabs)/recipes')}>
           <Text style={styles.statValue}>{stats.recipes}</Text>
           <Text style={styles.statLabel}>Recipes</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{stats.published}</Text>
-          <Text style={styles.statLabel}>Published</Text>
-        </View>
-        <View style={styles.stat}>
+        </Pressable>
+        <Pressable style={styles.stat} onPress={() => router.push('/(tabs)/discover')}>
+          <Text style={styles.statValue}>{stats.following}</Text>
+          <Text style={styles.statLabel}>Following</Text>
+        </Pressable>
+        <Pressable style={styles.stat} onPress={() => {}}>
           <Text style={styles.statValue}>{stats.cooked}</Text>
           <Text style={styles.statLabel}>Cooked</Text>
-        </View>
-        <View style={[styles.stat, styles.statLast]}>
+        </Pressable>
+        <Pressable style={[styles.stat, styles.statLast]} onPress={() => router.push('/profile/new-followers')}>
           <Text style={styles.statValue}>{stats.followers}</Text>
           <Text style={styles.statLabel}>Followers</Text>
-        </View>
+        </Pressable>
       </View>
 
       {/* Banners */}
@@ -342,22 +346,22 @@ export default function ProfileScreen() {
 
       {/* Actions */}
       <View style={styles.actions}>
+        <Pressable style={styles.actionButton} onPress={() => router.push('/(tabs)/shopping-list')}>
+          <Text style={styles.actionButtonText}>Grocery List</Text>
+        </Pressable>
         <Pressable style={styles.actionButton} onPress={() => router.push('/profile/edit')}>
           <Text style={styles.actionButtonText}>Edit Profile</Text>
-        </Pressable>
-        <Pressable style={styles.actionButton} onPress={() => router.push('/invites')}>
-          <Text style={styles.actionButtonText}>Invite Friends</Text>
         </Pressable>
         <Pressable style={styles.actionButton} onPress={() => setFeedbackVisible(true)}>
           <Text style={styles.actionButtonText}>Send Feedback</Text>
         </Pressable>
-        <Pressable style={styles.actionButtonGhost} onPress={() => WebBrowser.openBrowserAsync(`${API_BASE}/privacy`)}>
+        <Pressable style={styles.actionButtonGhost} onPress={() => WebBrowser.openBrowserAsync('https://eefeats.com/privacy')}>
           <Text style={styles.actionButtonGhostText}>Privacy Policy</Text>
         </Pressable>
-        <Pressable style={styles.actionButtonGhost} onPress={() => WebBrowser.openBrowserAsync(`${API_BASE}/terms`)}>
+        <Pressable style={styles.actionButtonGhost} onPress={() => WebBrowser.openBrowserAsync('https://eefeats.com/terms')}>
           <Text style={styles.actionButtonGhostText}>Terms of Service</Text>
         </Pressable>
-        <Pressable style={styles.actionButtonGhost} onPress={() => WebBrowser.openBrowserAsync(`${API_BASE}/support`)}>
+        <Pressable style={styles.actionButtonGhost} onPress={() => WebBrowser.openBrowserAsync('https://eefeats.com/support')}>
           <Text style={styles.actionButtonGhostText}>Support</Text>
         </Pressable>
         <Pressable style={styles.actionButtonGhost} onPress={signOut}>
