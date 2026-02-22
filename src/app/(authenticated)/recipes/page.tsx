@@ -268,7 +268,7 @@ export default async function RecipesPage({
         </div>
       ) : (
         <div className="px-5 pb-24">
-          {filtered.map((recipe, i) => {
+          {filtered.map((recipe) => {
             const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
             const timeStr = formatTime(totalTime);
             const tags: string[] = (recipe.recipe_tags || []).map((t) => t.tag);
