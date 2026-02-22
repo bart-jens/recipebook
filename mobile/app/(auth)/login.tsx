@@ -10,12 +10,13 @@ import {
   Platform,
 } from 'react-native';
 import { router } from 'expo-router';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 import { Logo } from '@/components/ui/Logo';
 
 export default function LoginScreen() {
-  const { signIn } = useAuth();
+  const { signIn, signInWithApple } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +27,16 @@ export default function LoginScreen() {
     setLoading(true);
     setError(null);
     const { error } = await signIn(email, password);
+    if (error) {
+      setError(error);
+      setLoading(false);
+    }
+  }
+
+  async function handleAppleSignIn() {
+    setLoading(true);
+    setError(null);
+    const { error } = await signInWithApple();
     if (error) {
       setError(error);
       setLoading(false);
@@ -77,7 +88,27 @@ export default function LoginScreen() {
               <Text style={styles.buttonText}>Sign in</Text>
             )}
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.forgotButton}
+            onPress={() => router.push('/(auth)/forgot-password')}
+          >
+            <Text style={styles.forgotText}>Forgot password?</Text>
+          </TouchableOpacity>
         </View>
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+          cornerRadius={0}
+          style={styles.appleButton}
+          onPress={handleAppleSignIn}
+        />
 
         <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
           <Text style={styles.linkText}>
@@ -150,5 +181,33 @@ const styles = StyleSheet.create({
   linkAccent: {
     color: colors.accent,
     fontFamily: fontFamily.sans,
+  },
+  forgotButton: {
+    alignSelf: 'flex-end',
+    marginTop: -spacing.md,
+  },
+  forgotText: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.xl,
+    gap: spacing.sm,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+  },
+  appleButton: {
+    width: '100%',
+    height: 44,
+    marginTop: spacing.md,
   },
 });
