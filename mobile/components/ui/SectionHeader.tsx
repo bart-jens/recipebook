@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   title: {
-    ...typography.sectionTitle,
+    ...typography.subheading,
     color: colors.ink,
   },
   count: {

@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionTitle: {
-    ...typography.sectionTitle,
+    ...typography.subheading,
     color: colors.textSecondary,
   },
   preparationHeader: {

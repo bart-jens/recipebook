@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   legalText: {
-    ...typography.caption,
+    ...typography.meta,
     color: colors.textSecondary,
     textAlign: 'center',
   },

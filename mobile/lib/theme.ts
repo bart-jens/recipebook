@@ -69,16 +69,6 @@ export const fontFamily = {
   sansLight: 'InterTight_300Light',
   logo: 'InterTight_400Regular',
   system: Platform.OS === 'ios' ? 'System' : 'Roboto',
-  // Backward compat aliases — all point to sans now
-  display: 'InterTight_400Regular',
-  displayItalic: 'InterTight_400Regular',
-  mono: 'InterTight_400Regular',
-  monoMedium: 'InterTight_400Regular',
-  sansMedium: 'InterTight_400Regular',
-  sansBold: 'InterTight_400Regular',
-  serif: 'InterTight_400Regular',
-  serifSemiBold: 'InterTight_400Regular',
-  serifBold: 'InterTight_400Regular',
 } as const;
 
 export const typography: Record<string, TextStyle> = {
@@ -90,18 +80,6 @@ export const typography: Record<string, TextStyle> = {
   label: { fontSize: 14, fontFamily: fontFamily.sans, lineHeight: 20 },
   meta: { fontSize: 12, fontFamily: fontFamily.sans, lineHeight: 16, letterSpacing: 0.02 * 12 },
   metaSmall: { fontSize: 11, fontFamily: fontFamily.sans, lineHeight: 15, letterSpacing: 0.02 * 11 },
-  // Backward compat aliases — map old names to new tokens
-  display: { fontSize: 36, fontFamily: fontFamily.sansLight, lineHeight: 40, letterSpacing: -0.03 * 36 },
-  displaySmall: { fontSize: 26, fontFamily: fontFamily.sans, lineHeight: 31, letterSpacing: -0.01 * 26 },
-  sectionTitle: { fontSize: 20, fontFamily: fontFamily.sans, lineHeight: 26 },
-  h1: { fontSize: 36, fontFamily: fontFamily.sansLight, lineHeight: 40, letterSpacing: -0.03 * 36 },
-  h2: { fontSize: 26, fontFamily: fontFamily.sans, lineHeight: 31, letterSpacing: -0.01 * 26 },
-  h3: { fontSize: 20, fontFamily: fontFamily.sans, lineHeight: 26 },
-  bodyLight: { fontSize: 13, fontFamily: fontFamily.sansLight, lineHeight: 19 },
-  caption: { fontSize: 12, fontFamily: fontFamily.sans, lineHeight: 16, letterSpacing: 0.02 * 12 },
-  monoLabel: { fontSize: 11, fontFamily: fontFamily.sans, lineHeight: 15, letterSpacing: 0.02 * 11 },
-  monoMeta: { fontSize: 12, fontFamily: fontFamily.sans, lineHeight: 16, letterSpacing: 0.02 * 12 },
-  headingSmall: { fontSize: 20, fontFamily: fontFamily.sans, lineHeight: 26 },
 } as const;
 
 export const radii = {

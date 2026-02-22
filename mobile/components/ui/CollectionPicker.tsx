@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    ...typography.h3,
+    ...typography.subheading,
     color: colors.text,
     marginBottom: spacing.lg,
   },

@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   subtitle: {
-    ...typography.bodyLight,
+    ...typography.bodySmall,
     color: colors.inkSecondary,
     textAlign: 'center',
     maxWidth: 260,
