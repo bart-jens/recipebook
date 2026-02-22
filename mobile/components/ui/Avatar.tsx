@@ -1,5 +1,5 @@
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { colors, fontFamily } from '@/lib/theme';
+import { colors, fontFamily, typography } from '@/lib/theme';
 
 type Size = 'sm' | 'md' | 'lg';
 
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    fontFamily: fontFamily.display,
+    fontFamily: fontFamily.sans,
     color: colors.bg,
   },
 });

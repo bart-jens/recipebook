@@ -15,7 +15,7 @@ import { Stack, router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, fontFamily } from '@/lib/theme';
+import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
@@ -206,7 +206,7 @@ export default function OnboardingScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <Text style={styles.title}>Welcome to EefEats</Text>
-          <Text style={styles.subtitle}>SET UP YOUR PROFILE TO GET STARTED</Text>
+          <Text style={styles.subtitle}>Set up your profile to get started</Text>
 
           {/* Avatar */}
           <TouchableOpacity
@@ -223,13 +223,13 @@ export default function OnboardingScreen() {
             )}
             <View style={styles.avatarOverlay}>
               <Text style={styles.avatarOverlayText}>
-                {uploading ? 'UPLOADING...' : 'UPLOAD'}
+                {uploading ? 'Uploading...' : 'Upload'}
               </Text>
             </View>
           </TouchableOpacity>
 
           {/* Display Name */}
-          <Text style={styles.label}>DISPLAY NAME</Text>
+          <Text style={styles.label}>Display name</Text>
           <TextInput
             style={styles.input}
             value={displayName}
@@ -240,7 +240,7 @@ export default function OnboardingScreen() {
           />
 
           {/* Username */}
-          <Text style={styles.label}>USERNAME</Text>
+          <Text style={styles.label}>Username</Text>
           <View style={styles.usernameRow}>
             <Text style={styles.atSymbol}>@</Text>
             <TextInput
@@ -255,10 +255,10 @@ export default function OnboardingScreen() {
           </View>
           <View style={styles.statusRow}>
             {usernameStatus === 'checking' && (
-              <Text style={styles.statusChecking}>CHECKING...</Text>
+              <Text style={styles.statusChecking}>Checking...</Text>
             )}
             {usernameStatus === 'available' && (
-              <Text style={styles.statusAvailable}>AVAILABLE</Text>
+              <Text style={styles.statusAvailable}>Available</Text>
             )}
             {usernameStatus === 'taken' && (
               <Text style={styles.statusError}>Already taken</Text>
@@ -291,17 +291,17 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg },
   scroll: { flexGrow: 1, justifyContent: 'center', padding: spacing.pagePadding, paddingBottom: 40 },
-  title: { fontFamily: fontFamily.display, fontSize: 32, lineHeight: 34, textAlign: 'center', color: colors.ink },
-  subtitle: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, textAlign: 'center', color: colors.inkMuted, marginTop: spacing.sm, marginBottom: spacing.xxl },
+  title: { ...typography.title, fontSize: 32, lineHeight: 34, textAlign: 'center', color: colors.ink },
+  subtitle: { ...typography.meta, textAlign: 'center', color: colors.inkMuted, marginTop: spacing.sm, marginBottom: spacing.xxl },
 
   avatarContainer: { alignSelf: 'center', marginBottom: spacing.xxl, position: 'relative' },
   avatar: { width: 96, height: 96, borderRadius: 48 },
   avatarPlaceholder: { width: 96, height: 96, borderRadius: 48, backgroundColor: colors.surfaceAlt, justifyContent: 'center', alignItems: 'center' },
-  avatarInitial: { fontSize: 32, fontFamily: fontFamily.display, color: colors.inkSecondary },
+  avatarInitial: { fontSize: 32, fontFamily: fontFamily.sans, color: colors.inkSecondary },
   avatarOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 32, borderBottomLeftRadius: 48, borderBottomRightRadius: 48, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
-  avatarOverlayText: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.white },
+  avatarOverlayText: { ...typography.meta, fontSize: 10, color: colors.white },
 
-  label: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.inkSecondary, marginBottom: spacing.xs, marginTop: spacing.lg },
+  label: { ...typography.meta, color: colors.inkSecondary, marginBottom: spacing.xs, marginTop: spacing.lg },
   input: { borderBottomWidth: 2, borderBottomColor: colors.ink, paddingVertical: 12, fontSize: 16, fontFamily: fontFamily.sans, color: colors.ink },
 
   usernameRow: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: colors.ink },
@@ -309,8 +309,8 @@ const styles = StyleSheet.create({
   usernameInput: { flex: 1, paddingVertical: 12, fontSize: 16, fontFamily: fontFamily.sans, color: colors.ink },
 
   statusRow: { minHeight: 20, marginTop: spacing.xs },
-  statusChecking: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.inkMuted },
-  statusAvailable: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.olive },
+  statusChecking: { ...typography.meta, color: colors.inkMuted },
+  statusAvailable: { ...typography.meta, color: colors.olive },
   statusError: { fontFamily: fontFamily.sans, fontSize: 12, color: colors.danger },
 
   error: { fontFamily: fontFamily.sans, fontSize: 13, color: colors.danger, marginTop: spacing.md, textAlign: 'center' },

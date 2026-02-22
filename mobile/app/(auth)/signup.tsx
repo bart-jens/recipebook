@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, fontFamily } from '@/lib/theme';
+import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 import { Logo } from '@/components/ui/Logo';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
@@ -47,11 +47,11 @@ export default function SignupScreen() {
     >
       <View style={styles.inner}>
         <Logo height={40} />
-        <Text style={styles.subtitle}>CREATE YOUR ACCOUNT</Text>
+        <Text style={styles.subtitle}>Create your account</Text>
 
         <View style={styles.form}>
           <View style={styles.field}>
-            <Text style={styles.label}>INVITE CODE (OPTIONAL)</Text>
+            <Text style={styles.label}>Invite code (optional)</Text>
             <TextInput
               style={[styles.input, styles.codeInput]}
               placeholder="ABCD1234"
@@ -63,7 +63,7 @@ export default function SignupScreen() {
             />
           </View>
           <View style={styles.field}>
-            <Text style={styles.label}>EMAIL</Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
               style={styles.input}
               placeholder="your@email.com"
@@ -76,7 +76,7 @@ export default function SignupScreen() {
             />
           </View>
           <View style={styles.field}>
-            <Text style={styles.label}>PASSWORD</Text>
+            <Text style={styles.label}>Password</Text>
             <TextInput
               style={styles.input}
               placeholderTextColor={colors.inkMuted}
@@ -111,7 +111,7 @@ export default function SignupScreen() {
             {loading ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.buttonText}>SIGN UP</Text>
+              <Text style={styles.buttonText}>Sign up</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -139,9 +139,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     marginTop: spacing.md,
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    ...typography.meta,
     color: colors.inkMuted,
   },
   form: {
@@ -153,9 +151,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   label: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    ...typography.meta,
     color: colors.inkSecondary,
   },
   input: {
@@ -167,13 +163,12 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   codeInput: {
-    fontFamily: fontFamily.mono,
+    fontFamily: fontFamily.sans,
     letterSpacing: 2,
     textAlign: 'center',
   },
   error: {
-    fontFamily: fontFamily.sans,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.danger,
   },
   button: {
@@ -186,10 +181,8 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
+    ...typography.metaSmall,
     color: colors.white,
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
-    letterSpacing: 1.4,
   },
   legalText: {
     ...typography.caption,
@@ -201,12 +194,11 @@ const styles = StyleSheet.create({
   },
   linkText: {
     marginTop: spacing.xxl,
-    fontFamily: fontFamily.sans,
-    fontSize: 13,
+    ...typography.bodySmall,
     color: colors.inkSecondary,
   },
   linkAccent: {
     color: colors.accent,
-    fontFamily: fontFamily.sansMedium,
+    fontFamily: fontFamily.sans,
   },
 });

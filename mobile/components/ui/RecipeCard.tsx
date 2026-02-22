@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   creatorName: {
-    ...typography.monoMeta,
+    ...typography.meta,
     color: colors.inkSecondary,
     marginBottom: spacing.xs,
   },
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   metaText: {
-    ...typography.monoMeta,
+    ...typography.meta,
     color: colors.inkMuted,
   },
 });

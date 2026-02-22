@@ -80,8 +80,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.pagePadding,
   },
   title: {
-    fontFamily: fontFamily.sansMedium,
-    ...typography.sectionTitle,
+    ...typography.subheading,
     color: colors.text,
   },
   seeAll: {

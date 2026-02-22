@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { colors, spacing, fontFamily } from '@/lib/theme';
+import { colors, spacing, typography } from '@/lib/theme';
 
 type Variant = 'success' | 'premium' | 'default';
 
@@ -23,10 +23,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs / 2,
   },
   text: {
-    fontFamily: fontFamily.mono,
+    ...typography.metaSmall,
     fontSize: 9,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
   },
 });
 

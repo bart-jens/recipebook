@@ -13,7 +13,7 @@ import { Stack, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import RecipeForm, { RecipeFormData } from '@/components/RecipeForm';
-import { colors, spacing, fontFamily } from '@/lib/theme';
+import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
 
@@ -205,7 +205,7 @@ export default function ImportUrlScreen() {
           Paste a link to any recipe website or Instagram post. We'll extract the recipe details automatically.
         </Text>
 
-        <Text style={styles.label}>RECIPE URL</Text>
+        <Text style={styles.label}>Recipe URL</Text>
         <TextInput
           style={styles.input}
           value={url}
@@ -226,15 +226,15 @@ export default function ImportUrlScreen() {
           {extracting ? (
             <View style={styles.loadingRow}>
               <ActivityIndicator size="small" color={colors.white} />
-              <Text style={styles.buttonText}>EXTRACTING...</Text>
+              <Text style={styles.buttonText}>Extracting...</Text>
             </View>
           ) : (
-            <Text style={styles.buttonText}>EXTRACT RECIPE</Text>
+            <Text style={styles.buttonText}>Extract recipe</Text>
           )}
         </TouchableOpacity>
 
         <View style={styles.tips}>
-          <Text style={styles.tipsTitle}>WORKS WITH</Text>
+          <Text style={styles.tipsTitle}>Works with</Text>
           <Text style={styles.tipText}>Recipe websites (AllRecipes, BBC Good Food, etc.)</Text>
           <Text style={styles.tipText}>Instagram posts with recipes in the caption</Text>
           <Text style={styles.tipText}>Any page with structured recipe data</Text>
@@ -247,9 +247,9 @@ export default function ImportUrlScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.xl },
-  heading: { fontFamily: fontFamily.display, fontSize: 28, lineHeight: 30, color: colors.ink, marginBottom: spacing.sm },
+  heading: { ...typography.heading, fontSize: 28, lineHeight: 30, color: colors.ink, marginBottom: spacing.sm },
   subtitle: { fontFamily: fontFamily.sans, fontSize: 14, lineHeight: 21, color: colors.inkSecondary, marginBottom: spacing.xxl },
-  label: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.inkSecondary, marginBottom: spacing.xs },
+  label: { ...typography.meta, color: colors.inkSecondary, marginBottom: spacing.xs },
   input: {
     borderBottomWidth: 2,
     borderBottomColor: colors.ink,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: colors.white, fontFamily: fontFamily.mono, fontSize: 11, letterSpacing: 1.4 },
+  buttonText: { ...typography.metaSmall, color: colors.white },
   loadingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   tips: {
     marginTop: spacing.xxxl,
@@ -273,6 +273,6 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     paddingTop: spacing.lg,
   },
-  tipsTitle: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.inkSecondary, marginBottom: spacing.sm },
+  tipsTitle: { ...typography.meta, color: colors.inkSecondary, marginBottom: spacing.sm },
   tipText: { fontFamily: fontFamily.sans, fontSize: 13, color: colors.inkSecondary, marginBottom: spacing.xs },
 });

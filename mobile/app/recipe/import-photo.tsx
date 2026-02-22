@@ -15,7 +15,7 @@ import { Stack, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import RecipeForm, { RecipeFormData } from '@/components/RecipeForm';
-import { colors, spacing, fontFamily } from '@/lib/theme';
+import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
@@ -242,7 +242,7 @@ export default function ImportPhotoScreen() {
           headerContent={
             !sourceSkipped ? (
               <View style={styles.sourceCard}>
-                <Text style={styles.sourceCardTitle}>WHERE IS THIS RECIPE FROM?</Text>
+                <Text style={styles.sourceCardTitle}>Where is this recipe from?</Text>
 
                 <TouchableOpacity
                   style={[styles.scanCoverButton, scanningCover && { opacity: 0.5 }]}
@@ -303,7 +303,7 @@ export default function ImportPhotoScreen() {
               onPress={() => setImageUri(null)}
               activeOpacity={0.7}
             >
-              <Text style={styles.changeButtonText}>CHOOSE DIFFERENT IMAGE</Text>
+              <Text style={styles.changeButtonText}>Choose different image</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -329,16 +329,16 @@ export default function ImportPhotoScreen() {
             {extracting ? (
               <View style={styles.loadingRow}>
                 <ActivityIndicator size="small" color={colors.white} />
-                <Text style={styles.extractButtonText}>EXTRACTING...</Text>
+                <Text style={styles.extractButtonText}>Extracting...</Text>
               </View>
             ) : (
-              <Text style={styles.extractButtonText}>EXTRACT RECIPE</Text>
+              <Text style={styles.extractButtonText}>Extract recipe</Text>
             )}
           </TouchableOpacity>
         )}
 
         <View style={styles.tips}>
-          <Text style={styles.tipsTitle}>TIPS</Text>
+          <Text style={styles.tipsTitle}>Tips</Text>
           <Text style={styles.tipText}>Works best with clear, well-lit photos of printed or handwritten recipes.</Text>
           <Text style={styles.tipText}>Screenshots of recipe websites or apps work great too.</Text>
           <Text style={styles.tipText}>After extraction, you can review and edit all fields before saving.</Text>
@@ -351,7 +351,7 @@ export default function ImportPhotoScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.xl },
-  heading: { fontFamily: fontFamily.display, fontSize: 28, lineHeight: 30, color: colors.ink, marginBottom: spacing.sm },
+  heading: { ...typography.heading, fontSize: 28, lineHeight: 30, color: colors.ink, marginBottom: spacing.sm },
   subtitle: { fontFamily: fontFamily.sans, fontSize: 14, lineHeight: 21, color: colors.inkSecondary, marginBottom: spacing.xxl },
 
   pickContainer: {
@@ -389,9 +389,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   changeButtonText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    ...typography.meta,
     color: colors.accent,
   },
 
@@ -401,7 +399,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   extractButtonDisabled: { opacity: 0.5 },
-  extractButtonText: { color: colors.white, fontFamily: fontFamily.mono, fontSize: 11, letterSpacing: 1.4 },
+  extractButtonText: { ...typography.metaSmall, color: colors.white },
   loadingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
 
   tips: {
@@ -410,7 +408,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     paddingTop: spacing.lg,
   },
-  tipsTitle: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.inkSecondary, marginBottom: spacing.sm },
+  tipsTitle: { ...typography.meta, color: colors.inkSecondary, marginBottom: spacing.sm },
   tipText: { fontFamily: fontFamily.sans, fontSize: 13, color: colors.inkSecondary, marginBottom: spacing.xs },
 
   // Source attribution card
@@ -423,9 +421,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   sourceCardTitle: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    ...typography.meta,
     color: colors.inkSecondary,
   },
   scanCoverButton: {

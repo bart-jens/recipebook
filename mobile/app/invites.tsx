@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Stack, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import { colors, spacing, fontFamily } from '@/lib/theme';
+import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
@@ -147,7 +147,7 @@ export default function InvitesScreen() {
               activeOpacity={0.7}
               style={styles.shareButton}
             >
-              <Text style={styles.shareButtonText}>SHARE</Text>
+              <Text style={styles.shareButtonText}>Share</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -161,7 +161,7 @@ export default function InvitesScreen() {
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             ListHeaderComponent={
-              <Text style={styles.sectionTitle}>YOUR INVITES</Text>
+              <Text style={styles.sectionTitle}>Your invites</Text>
             }
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -177,7 +177,7 @@ export default function InvitesScreen() {
                   styles.statusText,
                   item.used_at ? styles.statusTextJoined : styles.statusTextPending,
                 ]}>
-                  {item.used_at ? 'JOINED' : 'PENDING'}
+                  {item.used_at ? 'Joined' : 'Pending'}
                 </Text>
               </TouchableOpacity>
             )}
@@ -223,8 +223,7 @@ const styles = StyleSheet.create({
   },
   successText: { fontFamily: fontFamily.sans, fontSize: 13, color: colors.olive },
   codeText: {
-    fontSize: 20,
-    fontFamily: fontFamily.mono,
+    ...typography.subheading,
     color: colors.olive,
     letterSpacing: 2,
     marginTop: spacing.sm,
@@ -235,15 +234,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm,
   },
-  shareButtonText: { color: colors.white, fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4 },
+  shareButtonText: { ...typography.metaSmall, color: colors.white },
 
   loader: { marginTop: spacing.xxl },
   listContent: { paddingHorizontal: spacing.xl },
   separator: { height: spacing.sm },
   sectionTitle: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    ...typography.meta,
     color: colors.inkSecondary,
     marginBottom: spacing.md,
     borderBottomWidth: 1,
@@ -261,12 +258,10 @@ const styles = StyleSheet.create({
   },
   inviteInfo: { flex: 1 },
   inviteEmail: { fontFamily: fontFamily.sans, fontSize: 14, fontWeight: '500', color: colors.ink },
-  inviteCode: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4, color: colors.inkMuted, marginTop: 2 },
+  inviteCode: { ...typography.meta, color: colors.inkMuted, marginTop: 2 },
 
   statusText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    ...typography.meta,
   },
   statusTextJoined: {
     color: colors.olive,

@@ -29,8 +29,7 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   count: {
-    fontFamily: fontFamily.mono,
-    fontSize: 11,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
 });
