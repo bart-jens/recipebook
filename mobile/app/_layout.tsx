@@ -4,16 +4,51 @@ import {
   InterTight_300Light,
   InterTight_400Regular,
 } from '@expo-google-fonts/inter-tight';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { Linking } from 'react-native';
 
-import { AuthProvider } from '@/contexts/auth';
+import { AuthProvider, useAuth } from '@/contexts/auth';
+import { supabase } from '@/lib/supabase';
 import { colors, fontFamily } from '@/lib/theme';
 
 export { ErrorBoundary } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
+
+function DeepLinkHandler() {
+  const { isPasswordReset, clearPasswordReset } = useAuth();
+
+  useEffect(() => {
+    function handleUrl(url: string) {
+      if (!url.includes('reset-password')) return;
+      const fragment = url.split('#')[1];
+      if (!fragment) return;
+      const params = new URLSearchParams(fragment);
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      if (accessToken && refreshToken) {
+        supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+      }
+    }
+
+    Linking.getInitialURL().then((url) => {
+      if (url) handleUrl(url);
+    });
+
+    const sub = Linking.addEventListener('url', (event) => handleUrl(event.url));
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
+    if (isPasswordReset) {
+      router.push('/(auth)/reset-password');
+    }
+  }, [isPasswordReset]);
+
+  return null;
+}
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -48,6 +83,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
+      <DeepLinkHandler />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />
