@@ -15,7 +15,7 @@ import { Stack, router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, fontFamily } from '@/lib/theme';
+import { colors, spacing, typography } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 
 interface ProfileData {
@@ -186,11 +186,11 @@ export default function EditProfileScreen() {
               )}
             </View>
           </TouchableOpacity>
-          <Text style={styles.avatarHint}>TAP TO CHANGE PHOTO</Text>
+          <Text style={styles.avatarHint}>Tap to change photo</Text>
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>DISPLAY NAME</Text>
+          <Text style={styles.label}>Display name</Text>
           <TextInput
             style={styles.input}
             value={displayName}
@@ -202,7 +202,7 @@ export default function EditProfileScreen() {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>BIO</Text>
+          <Text style={styles.label}>Bio</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
             value={bio}
@@ -266,8 +266,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarInitial: {
-    fontSize: 36,
-    fontFamily: fontFamily.display,
+    ...typography.title,
     color: colors.inkSecondary,
   },
   avatarOverlay: {
@@ -278,27 +277,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarHint: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    ...typography.metaSmall,
     color: colors.inkMuted,
     marginTop: spacing.sm,
   },
 
   field: { marginBottom: spacing.xl },
   label: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    ...typography.metaSmall,
     color: colors.inkSecondary,
     marginBottom: spacing.sm,
   },
   input: {
+    ...typography.body,
     borderBottomWidth: 2,
     borderBottomColor: colors.ink,
     paddingVertical: 10,
-    fontSize: 15,
-    fontFamily: fontFamily.sans,
     color: colors.ink,
   },
   textArea: {
@@ -307,9 +301,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   charCount: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    ...typography.metaSmall,
     color: colors.inkMuted,
     textAlign: 'right',
     marginTop: spacing.xs,
@@ -329,20 +321,16 @@ const styles = StyleSheet.create({
   },
   privacyText: { flex: 1, marginRight: spacing.md },
   privacyTitle: {
-    fontFamily: fontFamily.sans,
-    fontSize: 14,
-    fontWeight: '500',
+    ...typography.label,
     color: colors.ink,
   },
   privacyDescription: {
-    fontFamily: fontFamily.sans,
-    fontSize: 12,
+    ...typography.meta,
     color: colors.inkSecondary,
     marginTop: 2,
   },
   privacyWarning: {
-    fontFamily: fontFamily.sans,
-    fontSize: 12,
+    ...typography.meta,
     color: colors.accent,
     marginTop: spacing.sm,
   },
