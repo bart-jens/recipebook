@@ -4,7 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { colors } from '@/lib/theme';
 
 export default function AuthLayout() {
-  const { session, loading } = useAuth();
+  const { session, loading, isPasswordReset } = useAuth();
 
   if (loading) {
     return (
@@ -14,7 +14,7 @@ export default function AuthLayout() {
     );
   }
 
-  if (session) {
+  if (session && !isPasswordReset) {
     return <Redirect href="/(tabs)" />;
   }
 
