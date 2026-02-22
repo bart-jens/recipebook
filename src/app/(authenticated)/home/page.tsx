@@ -35,14 +35,6 @@ function formatTime(minutes: number | null): string | null {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-function formatDate(): string {
-  return new Date().toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 export default async function HomePage() {
   const supabase = createClient();
   const {
@@ -119,42 +111,22 @@ export default async function HomePage() {
 
   const totalRecipeCount = allRecipes.length;
 
-  const greeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
-  };
-
   return (
     <div>
-      {/* 1. Compact Masthead */}
-      <div className="flex items-baseline justify-between px-5 py-2.5 border-b border-border animate-fade-in opacity-0 anim-delay-1">
-        <span className="font-display italic text-[15px] text-ink-secondary">
-          {greeting()}, {displayName}
-        </span>
-        <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-muted">
-          {formatDate()}
-        </span>
-      </div>
-
-      {/* 2. Double Rule */}
-      <div className="mx-5 border-t-[3px] border-t-ink border-b border-b-ink pt-[3px] animate-fade-in opacity-0 anim-delay-2" />
-
-      {/* 3. Featured Recipe */}
+      {/* 1. Featured Recipe */}
       {featured && (
         <div className="px-5 pt-3.5 pb-5 animate-fade-in-up opacity-0 anim-delay-3">
-          <div className="mono-label mb-2.5">Featured</div>
+          <div className="text-[11px] font-normal tracking-[0.02em] mb-2.5">Featured</div>
           <div className="grid grid-cols-[1fr_130px] gap-4">
             <div>
               {featured.recipe_tags?.[0] && (
-                <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-accent font-medium mb-1">
+                <div className="text-[11px] font-normal tracking-[0.02em] text-accent mb-1">
                   {featured.recipe_tags[0].tag}
                 </div>
               )}
               <Link
                 href={`/recipes/${featured.id}`}
-                className="block font-display text-[28px] leading-[1.05] tracking-[-0.03em] text-ink hover:text-accent transition-colors mb-2"
+                className="block text-[26px] font-normal tracking-[-0.01em] leading-[1.2] text-ink hover:text-accent transition-colors mb-2"
               >
                 {featured.title}
               </Link>
@@ -163,7 +135,7 @@ export default async function HomePage() {
                   {featured.description}
                 </p>
               )}
-              <div className="font-mono text-[11px] text-ink-muted flex items-center gap-2.5">
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted flex items-center gap-2.5">
                 <span>By {displayName}</span>
                 {formatTime(featured.cook_time_minutes) && (
                   <>
@@ -191,10 +163,10 @@ export default async function HomePage() {
       {indexRecipes.length > 0 && (
         <div className="px-5 animate-fade-in-up opacity-0 anim-delay-5">
           <div className="flex items-baseline justify-between py-3">
-            <h2 className="font-display text-[18px] tracking-[-0.02em]">
+            <h2 className="text-[20px] font-normal">
               Your Recipes
             </h2>
-            <span className="font-mono text-[11px] text-ink-muted">
+            <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
               {totalRecipeCount} total
             </span>
           </div>
@@ -204,19 +176,19 @@ export default async function HomePage() {
               href={`/recipes/${recipe.id}`}
               className="group flex gap-3 py-3 border-t border-border cursor-pointer transition-all duration-200 hover:bg-accent-light hover:-mx-2.5 hover:px-2.5"
             >
-              <div className="font-display text-[32px] leading-none text-border min-w-[28px] pt-0.5 transition-colors group-hover:text-accent">
+              <div className="text-[36px] font-light tracking-[-0.03em] leading-none text-border min-w-[28px] pt-0.5 transition-colors group-hover:text-accent">
                 {i + 1}
               </div>
               <div className="flex-1 min-w-0">
                 {recipe.recipe_tags?.[0] && (
-                  <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-accent font-medium mb-px">
+                  <div className="text-[11px] font-normal tracking-[0.02em] text-accent mb-px">
                     {recipe.recipe_tags[0].tag}
                   </div>
                 )}
-                <div className="font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink mb-[3px] transition-colors group-hover:text-accent">
+                <div className="text-[20px] font-normal leading-[1.15] text-ink mb-[3px] transition-colors group-hover:text-accent">
                   {recipe.title}
                 </div>
-                <div className="font-mono text-[11px] text-ink-muted flex gap-2.5">
+                <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted flex gap-2.5">
                   {formatTime(recipe.cook_time_minutes) && (
                     <span>{formatTime(recipe.cook_time_minutes)}</span>
                   )}
@@ -240,7 +212,7 @@ export default async function HomePage() {
       {/* 7. Activity Ticker */}
       <div className="px-5 pb-24 animate-fade-in-up opacity-0 anim-delay-7">
         <div className="py-3">
-          <h2 className="font-display text-[18px] tracking-[-0.02em]">
+          <h2 className="text-[20px] font-normal">
             Activity
           </h2>
         </div>
@@ -251,7 +223,7 @@ export default async function HomePage() {
             </p>
             <Link
               href="/discover?tab=chefs"
-              className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent hover:text-ink transition-colors"
+              className="text-[11px] font-normal tracking-[0.02em] text-accent hover:text-ink transition-colors"
             >
               Discover Chefs
             </Link>
@@ -263,7 +235,7 @@ export default async function HomePage() {
             </p>
             <Link
               href="/recipes"
-              className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent hover:text-ink transition-colors"
+              className="text-[11px] font-normal tracking-[0.02em] text-accent hover:text-ink transition-colors"
             >
               Why not cook something yourself?
             </Link>
