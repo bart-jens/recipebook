@@ -8,6 +8,8 @@ node_modules
 
 # testing
 /coverage
+e2e/.env
+e2e/.auth/
 
 # next.js
 .next/
