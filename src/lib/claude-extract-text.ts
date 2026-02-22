@@ -1,5 +1,46 @@
 import type { ExtractedRecipe } from "./claude-extract";
 
+const CLEANUP_PROMPT = `You are given raw text from a recipe page's JSON-LD data. It contains the actual recipe steps mixed with blog filler (intros, life stories, background info, SEO text, related recipe links, etc.).
+
+Extract ONLY the actual cooking/preparation steps. Return them as clean, numbered steps in the recipe's original language. Do NOT translate. Do NOT add steps that aren't in the original. Do NOT include intro text, background info, tips sections, or "see also" links.
+
+Return ONLY the cleaned instructions text, nothing else. No JSON, no markdown fences, no explanations.
+
+Raw text:
+`;
+
+/**
+ * Clean up messy recipe instructions using Gemini.
+ * Only call this when instructions look like they contain non-recipe content
+ * (blog intros, SEO filler, related links, etc.).
+ */
+export async function cleanupRecipeInstructions(
+  rawInstructions: string
+): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return rawInstructions; // graceful fallback
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: CLEANUP_PROMPT + rawInstructions }] }],
+      }),
+    });
+
+    if (!res.ok) return rawInstructions; // fallback on error
+
+    const data = await res.json();
+    const cleaned = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    return cleaned || rawInstructions;
+  } catch {
+    return rawInstructions; // never fail the import over cleanup
+  }
+}
+
 const TEXT_PROMPT = `Extract the recipe from the following text. The text may be from an Instagram post caption or similar social media post. Ignore any non-recipe content (hashtags, personal stories, engagement prompts, emojis used as decoration, "link in bio" text, follower calls-to-action).
 
 Return ONLY valid JSON with this exact structure (no markdown, no code fences, no explanation):
