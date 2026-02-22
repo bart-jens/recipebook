@@ -48,10 +48,16 @@ export default async function ProfilePage() {
   const { data: newFollowerCount } = await supabase
     .rpc("get_new_follower_count", { p_user_id: user.id });
 
-  const publicCount = (recipes || []).filter((r) => r.visibility === "public").length;
   const totalRecipes = (recipes || []).length;
   const timesCooked = (ratings || []).length;
   const followerCount = (followers || []).length;
+
+  // Following count
+  const { data: followingData } = await supabase
+    .from("user_follows")
+    .select("id")
+    .eq("follower_id", user.id);
+  const followingCount = (followingData || []).length;
 
   return (
     <div>
@@ -73,14 +79,9 @@ export default async function ProfilePage() {
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-2">
-            <h1 className="text-[36px] font-light leading-none tracking-[-0.03em] text-ink">
-              {profile?.display_name || "Anonymous"}
-            </h1>
-            <span className="text-[11px] font-normal tracking-[0.02em] px-1 py-0.5 border border-border text-ink-muted">
-              {profile?.plan === "premium" ? "Premium" : "Free"}
-            </span>
-          </div>
+          <h1 className="text-[36px] font-light leading-none tracking-[-0.03em] text-ink">
+            {profile?.display_name || "Anonymous"}
+          </h1>
           {profile?.bio && (
             <p className="mt-1 text-[13px] font-light text-ink-secondary leading-[1.45]">
               {profile.bio}
@@ -92,6 +93,22 @@ export default async function ProfilePage() {
             </p>
           )}
         </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="px-5 mt-4 flex gap-2">
+        <Link
+          href="/invites"
+          className="flex-1 text-center text-[11px] font-normal tracking-[0.02em] py-2.5 border border-ink text-ink hover:bg-ink hover:text-bg transition-colors"
+        >
+          Invite Friends
+        </Link>
+        <Link
+          href="/shopping-list"
+          className="flex-1 text-center text-[11px] font-normal tracking-[0.02em] py-2.5 border border-ink text-ink hover:bg-ink hover:text-bg transition-colors"
+        >
+          Grocery List
+        </Link>
       </div>
 
       {/* Follow requests banner */}
@@ -130,15 +147,15 @@ export default async function ProfilePage() {
           <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{totalRecipes}</div>
           <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Recipes</div>
         </Link>
-        <Link href="/recipes?filter=published" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{publicCount}</div>
-          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Published</div>
-        </Link>
-        <Link href="/recipes?filter=cooked" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+        <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
           <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{timesCooked}</div>
           <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cooked</div>
         </Link>
-        <Link href="/profile/followers" className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
+        <Link href="/discover" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{followingCount}</div>
+          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Following</div>
+        </Link>
+        <Link href="/profile/new-followers" className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
           <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{followerCount}</div>
           <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Followers</div>
         </Link>
@@ -205,22 +222,10 @@ export default async function ProfilePage() {
         <hr className="rule-thin border-0 mb-2" />
         <div className="flex flex-wrap gap-2">
           <Link
-            href="/shopping-list"
-            className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-ink text-ink hover:bg-ink hover:text-bg transition-colors"
-          >
-            Grocery List
-          </Link>
-          <Link
             href="/profile/edit"
             className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-ink text-ink hover:bg-ink hover:text-bg transition-colors"
           >
             Edit Profile
-          </Link>
-          <Link
-            href="/invites"
-            className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
-          >
-            Invite Friends
           </Link>
           <FeedbackButton sourceScreen="profile" />
           <SignOutButton />

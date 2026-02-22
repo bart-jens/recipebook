@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -77,7 +77,7 @@ function formatTime(minutes: number | null): string | null {
 
 export default function RecipesScreen() {
   const { user } = useAuth();
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('updated');
@@ -250,24 +250,32 @@ export default function RecipesScreen() {
       };
     });
 
-    // Filter by course
+    setAllRecipes(enriched);
+    setLoading(false);
+  }, [user, search]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchRecipes();
+      fetchCollections();
+    }, [fetchRecipes, fetchCollections])
+  );
+
+  const recipes = useMemo(() => {
+    let filtered = [...allRecipes];
     if (selectedCourse) {
-      enriched = enriched.filter((r) =>
+      filtered = filtered.filter((r) =>
         r.tags.some((t) => t.toLowerCase() === selectedCourse)
       );
     }
-
-    // Apply interaction filter
     if (activeFilter === 'favorited') {
-      enriched = enriched.filter((r) => r.isFavorited);
+      filtered = filtered.filter((r) => r.isFavorited);
     } else if (activeFilter === 'saved') {
-      enriched = enriched.filter((r) => r.isSaved);
+      filtered = filtered.filter((r) => r.isSaved);
     } else if (activeFilter === 'published') {
-      enriched = enriched.filter((r) => r.visibility === 'public' && !r.isSaved);
+      filtered = filtered.filter((r) => r.visibility === 'public' && !r.isSaved);
     }
-
-    // Sort favorites first, then by chosen sort
-    enriched.sort((a, b) => {
+    filtered.sort((a, b) => {
       if (a.isFavorited !== b.isFavorited) return a.isFavorited ? -1 : 1;
       if (sort === 'rating') return (b.avgRating || 0) - (a.avgRating || 0);
       if (sort === 'alpha') return a.title.localeCompare(b.title);
@@ -276,20 +284,10 @@ export default function RecipesScreen() {
         const bTotal = (b.prep_time_minutes || 0) + (b.cook_time_minutes || 0) || 999;
         return aTotal - bTotal;
       }
-      // Default: updated
       return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     });
-
-    setRecipes(enriched);
-    setLoading(false);
-  }, [user, search, sort, activeFilter, selectedCourse]);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchRecipes();
-      fetchCollections();
-    }, [fetchRecipes, fetchCollections])
-  );
+    return filtered;
+  }, [allRecipes, sort, activeFilter, selectedCourse]);
 
   const renderRecipeItem = ({ item, index }: { item: Recipe; index: number }) => {
     const totalTime = (item.prep_time_minutes || 0) + (item.cook_time_minutes || 0);

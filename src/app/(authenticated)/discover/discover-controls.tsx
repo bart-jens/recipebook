@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
+import { useRef, useTransition } from "react";
 
 const TABS = [
   { value: "recipes", label: "Recipes" },
@@ -15,8 +15,6 @@ export function DiscoverControls() {
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
-
-  const [showFilters, setShowFilters] = useState(false);
 
   const tab = searchParams.get("tab") || "recipes";
   const q = searchParams.get("q") || "";
@@ -46,8 +44,6 @@ export function DiscoverControls() {
 
   // Determine active tab value — combine tab and sort into unified tabs
   const activeTab = tab === "chefs" ? "chefs" : sort === "rating" ? "rating" : sort === "newest" || sort === "" ? (tab === "recipes" || tab === "" ? "recipes" : tab) : "recipes";
-
-  const hasActiveFilter = !!tag;
 
   function handleTabClick(value: string) {
     if (value === "chefs") {
@@ -89,30 +85,6 @@ export function DiscoverControls() {
           {isPending && (
             <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-accent" />
           )}
-          <button
-            onClick={() => setShowFilters((v) => !v)}
-            className={`shrink-0 flex items-center gap-1 text-[11px] font-normal tracking-[0.02em] transition-colors ${
-              showFilters ? "text-ink" : "text-ink-muted hover:text-ink"
-            }`}
-          >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="shrink-0"
-            >
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <line x1="7" y1="12" x2="17" y2="12" />
-              <line x1="10" y1="18" x2="14" y2="18" />
-            </svg>
-            Filter
-            {hasActiveFilter && (
-              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-            )}
-          </button>
         </div>
 
         {/* Active tag filter */}

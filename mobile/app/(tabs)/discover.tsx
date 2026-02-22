@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -61,7 +61,7 @@ export default function DiscoverScreen() {
   const { user } = useAuth();
   const params = useLocalSearchParams<{ tab?: string }>();
   const [activeTab, setActiveTab] = useState<Tab>((params.tab as Tab) || 'recipes');
-  const [recipes, setRecipes] = useState<DiscoverRecipe[]>([]);
+  const [allRecipes, setAllRecipes] = useState<DiscoverRecipe[]>([]);
   const [chefs, setChefs] = useState<Chef[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -93,21 +93,14 @@ export default function DiscoverScreen() {
     }
     setAllTags(Array.from(tagSet).sort());
 
-    let filtered = recipeData;
-    if (selectedTag) {
-      filtered = recipeData.filter((r) =>
-        ((r as any).recipe_tags || []).some((t: { tag: string }) => t.tag === selectedTag)
-      );
-    }
-
-    const creatorIds = Array.from(new Set(filtered.map((r) => r.created_by)));
+    const creatorIds = Array.from(new Set(recipeData.map((r) => r.created_by)));
     const { data: profiles } = await supabase
       .from('user_profiles')
       .select('id, display_name')
       .in('id', creatorIds);
     const profileMap = new Map((profiles || []).map((p) => [p.id, p.display_name]));
 
-    const recipeIds = filtered.map((r) => r.id);
+    const recipeIds = recipeData.map((r) => r.id);
     const { data: ratings } = await supabase
       .from('recipe_ratings')
       .select('recipe_id, rating')
@@ -121,7 +114,7 @@ export default function DiscoverScreen() {
       ratingMap.set(r.recipe_id, existing);
     }
 
-    const enriched: DiscoverRecipe[] = filtered.map((r) => {
+    return recipeData.map((r) => {
       const ratingInfo = ratingMap.get(r.id);
       return {
         id: r.id,
@@ -137,14 +130,6 @@ export default function DiscoverScreen() {
         tags: ((r as any).recipe_tags || []).map((t: { tag: string }) => t.tag),
       };
     });
-
-    if (sort === 'rating') {
-      enriched.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0));
-    } else if (sort === 'popular') {
-      enriched.sort((a, b) => b.ratingCount - a.ratingCount);
-    }
-
-    return enriched;
   };
 
   const fetchRecipes = useCallback(async (isRefresh = false) => {
@@ -185,7 +170,7 @@ export default function DiscoverScreen() {
     }
 
     if (allRecipeData.length === 0) {
-      setRecipes([]);
+      setAllRecipes([]);
       setAllTags([]);
       setHasMore(false);
       setLoading(false);
@@ -194,7 +179,7 @@ export default function DiscoverScreen() {
     }
 
     const enriched = await enrichRecipes(allRecipeData);
-    setRecipes(enriched);
+    setAllRecipes(enriched);
     setHasMore((recipeData || []).length >= PAGE_SIZE);
 
     // Load saved recipe IDs for current user
@@ -208,7 +193,7 @@ export default function DiscoverScreen() {
 
     setLoading(false);
     setRefreshing(false);
-  }, [search, sort, selectedTag, user]);
+  }, [search, user]);
 
   const fetchChefs = useCallback(async (isRefresh = false) => {
     if (!user) return;
@@ -292,7 +277,7 @@ export default function DiscoverScreen() {
       .select('id, title, description, image_url, prep_time_minutes, cook_time_minutes, created_by, recipe_tags(tag)')
       .eq('visibility', 'public')
       .order('published_at', { ascending: false })
-      .range(recipes.length, recipes.length + PAGE_SIZE - 1);
+      .range(allRecipes.length, allRecipes.length + PAGE_SIZE - 1);
 
     if (search) {
       query = query.ilike('title', `%${search}%`);
@@ -302,7 +287,7 @@ export default function DiscoverScreen() {
     let allRecipeData = recipeData || [];
 
     if (search) {
-      const allLoadedIds = new Set([...recipes.map((r) => r.id), ...allRecipeData.map((r: any) => r.id)]);
+      const allLoadedIds = new Set([...allRecipes.map((r) => r.id), ...allRecipeData.map((r: any) => r.id)]);
       const [{ data: ingMatches }, { data: tagMatches }] = await Promise.all([
         supabase.from('recipe_ingredients').select('recipe_id').ilike('ingredient_name', `%${search}%`),
         supabase.from('recipe_tags').select('recipe_id').ilike('tag', `%${search}%`),
@@ -328,10 +313,10 @@ export default function DiscoverScreen() {
     }
 
     const enriched = await enrichRecipes(allRecipeData);
-    setRecipes((prev) => [...prev, ...enriched]);
+    setAllRecipes((prev) => [...prev, ...enriched]);
     setHasMore((recipeData || []).length >= PAGE_SIZE);
     setLoadingMore(false);
-  }, [recipes.length, search, sort, selectedTag, loadingMore, hasMore]);
+  }, [allRecipes.length, search, loadingMore, hasMore]);
 
   const handleFollowPress = useCallback(async (chefId: string) => {
     if (!user) return;
@@ -388,6 +373,19 @@ export default function DiscoverScreen() {
       }
     }, [activeTab, fetchRecipes, fetchChefs])
   );
+
+  const recipes = useMemo(() => {
+    let filtered = [...allRecipes];
+    if (selectedTag) {
+      filtered = filtered.filter((r) => r.tags.some((t) => t === selectedTag));
+    }
+    if (sort === 'rating') {
+      filtered.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0));
+    } else if (sort === 'popular') {
+      filtered.sort((a, b) => b.ratingCount - a.ratingCount);
+    }
+    return filtered;
+  }, [allRecipes, sort, selectedTag]);
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
