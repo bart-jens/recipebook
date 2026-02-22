@@ -23,7 +23,7 @@ import Animated, {
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, fontFamily, typography, animation } from '@/lib/theme';
+import { colors, spacing, typography, animation } from '@/lib/theme';
 
 interface ShoppingItem {
   id: string;
@@ -399,10 +399,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   pageTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 40,
-    lineHeight: 40,
-    letterSpacing: -1.6,
+    ...typography.title,
     color: colors.ink,
   },
   headerRight: {
@@ -411,14 +408,11 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   itemCount: {
-    ...typography.monoLabel,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   clearAllText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    ...typography.metaSmall,
     color: colors.danger,
   },
 
@@ -429,27 +423,24 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   input: {
+    ...typography.label,
     borderBottomWidth: 2,
     borderBottomColor: colors.border,
     paddingVertical: spacing.sm + 2,
-    fontSize: 14,
-    fontFamily: fontFamily.sans,
     color: colors.ink,
   },
 
   // Empty state
   emptyTitle: {
-    fontFamily: fontFamily.displayItalic,
-    fontSize: 18,
+    ...typography.subheading,
     color: colors.inkMuted,
   },
   emptyText: {
-    fontFamily: fontFamily.sansMedium,
-    fontSize: 16,
+    ...typography.body,
     color: colors.inkSecondary,
   },
   emptySubtext: {
-    ...typography.monoLabel,
+    ...typography.metaSmall,
     color: colors.inkMuted,
     marginTop: spacing.sm,
     textAlign: 'center',
@@ -461,13 +452,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   groupTitle: {
-    fontFamily: fontFamily.display,
-    fontSize: 18,
+    ...typography.subheading,
     color: colors.ink,
     marginBottom: 4,
   },
   groupLabelMono: {
-    ...typography.monoLabel,
+    ...typography.metaSmall,
     color: colors.inkMuted,
     marginBottom: 4,
   },
@@ -501,14 +491,12 @@ const styles = StyleSheet.create({
 
   // Item text
   itemName: {
+    ...typography.label,
     flex: 1,
-    fontFamily: fontFamily.sans,
-    fontSize: 14,
     color: colors.ink,
   },
   itemAmount: {
-    fontFamily: fontFamily.mono,
-    fontSize: 12,
+    ...typography.meta,
     color: colors.inkSecondary,
   },
 
@@ -523,8 +511,7 @@ const styles = StyleSheet.create({
   // All done
   allDone: { paddingVertical: spacing.xxl, alignItems: 'center' },
   allDoneText: {
-    fontFamily: fontFamily.displayItalic,
-    fontSize: 18,
+    ...typography.subheading,
     color: colors.inkMuted,
   },
 
@@ -542,23 +529,21 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   checkedHeaderText: {
-    ...typography.monoLabel,
+    ...typography.metaSmall,
     color: colors.inkMuted,
   },
   checkedContent: {
     paddingBottom: spacing.sm,
   },
   checkedItemName: {
+    ...typography.label,
     flex: 1,
-    fontFamily: fontFamily.sans,
-    fontSize: 14,
     color: colors.inkMuted,
     textDecorationLine: 'line-through',
     textDecorationColor: colors.accent,
   },
   checkedItemAmount: {
-    fontFamily: fontFamily.mono,
-    fontSize: 12,
+    ...typography.meta,
     color: colors.inkSecondary,
     opacity: 0.4,
   },
@@ -567,10 +552,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   clearCheckedText: {
-    fontFamily: fontFamily.mono,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    ...typography.metaSmall,
     color: colors.danger,
   },
 });
