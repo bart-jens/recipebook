@@ -7,7 +7,7 @@ import {
 import { Stack, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 
 import { AuthProvider, useAuth } from '@/contexts/auth';
 import { supabase } from '@/lib/supabase';
@@ -18,7 +18,7 @@ export { ErrorBoundary } from 'expo-router';
 SplashScreen.preventAutoHideAsync();
 
 function DeepLinkHandler() {
-  const { isPasswordReset, clearPasswordReset, loading } = useAuth();
+  const { isPasswordReset, loading } = useAuth();
 
   useEffect(() => {
     async function handleUrl(url: string) {
@@ -30,7 +30,14 @@ function DeepLinkHandler() {
       const refreshToken = params.get('refresh_token');
       if (accessToken && refreshToken) {
         const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-        if (error) console.warn('[DeepLink] setSession failed:', error.message);
+        if (error) {
+          console.warn('[DeepLink] setSession failed:', error.message);
+          Alert.alert(
+            'Link expired',
+            'This password reset link has expired. Please request a new one.',
+            [{ text: 'OK', onPress: () => router.push('/(auth)/forgot-password') }]
+          );
+        }
       }
     }
 
@@ -44,7 +51,6 @@ function DeepLinkHandler() {
 
   useEffect(() => {
     if (!loading && isPasswordReset) {
-      clearPasswordReset();
       router.push('/(auth)/reset-password');
     }
   }, [isPasswordReset, loading]);
