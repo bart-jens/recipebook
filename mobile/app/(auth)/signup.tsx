@@ -8,11 +8,14 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, fontFamily } from '@/lib/theme';
 import { Logo } from '@/components/ui/Logo';
+
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
 
 export default function SignupScreen() {
   const { signUp } = useAuth();
@@ -23,14 +26,14 @@ export default function SignupScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleSignup() {
-    if (!inviteCode || !email || !password) return;
+    if (!email || !password) return;
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
       return;
     }
     setLoading(true);
     setError(null);
-    const { error } = await signUp(email, password, inviteCode);
+    const { error } = await signUp(email, password, inviteCode || undefined);
     if (error) {
       setError(error);
       setLoading(false);
@@ -44,11 +47,11 @@ export default function SignupScreen() {
     >
       <View style={styles.inner}>
         <Logo height={40} />
-        <Text style={styles.subtitle}>JOIN WITH AN INVITE CODE</Text>
+        <Text style={styles.subtitle}>CREATE YOUR ACCOUNT</Text>
 
         <View style={styles.form}>
           <View style={styles.field}>
-            <Text style={styles.label}>INVITE CODE</Text>
+            <Text style={styles.label}>INVITE CODE (OPTIONAL)</Text>
             <TextInput
               style={[styles.input, styles.codeInput]}
               placeholder="ABCD1234"
@@ -83,6 +86,23 @@ export default function SignupScreen() {
             />
           </View>
           {error && <Text style={styles.error}>{error}</Text>}
+          <Text style={styles.legalText}>
+            By signing up, you agree to our{' '}
+            <Text
+              style={styles.legalLink}
+              onPress={() => Linking.openURL(`${API_BASE}/terms`)}
+            >
+              Terms of Service
+            </Text>{' '}
+            and{' '}
+            <Text
+              style={styles.legalLink}
+              onPress={() => Linking.openURL(`${API_BASE}/privacy`)}
+            >
+              Privacy Policy
+            </Text>
+            .
+          </Text>
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleSignup}
@@ -170,6 +190,14 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.mono,
     fontSize: 11,
     letterSpacing: 1.4,
+  },
+  legalText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  legalLink: {
+    color: colors.primary,
   },
   linkText: {
     marginTop: spacing.xxl,

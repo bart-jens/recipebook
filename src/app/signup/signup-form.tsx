@@ -27,13 +27,12 @@ export function SignupForm() {
       <form action={handleSubmit} className="space-y-5">
         <div className="animate-fade-in-up [animation-delay:200ms] [animation-fill-mode:backwards]">
           <label htmlFor="code" className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
-            Invite code
+            Invite code (optional)
           </label>
           <input
             id="code"
             name="code"
             type="text"
-            required
             defaultValue={defaultCode}
             placeholder="ABCD1234"
             className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 font-mono text-base uppercase tracking-wider text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
@@ -65,6 +64,17 @@ export function SignupForm() {
           />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
+        <p className="animate-fade-in-up text-center font-body text-xs text-ink-muted [animation-delay:450ms] [animation-fill-mode:backwards]">
+          By signing up, you agree to our{" "}
+          <Link href="/terms" className="text-accent hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="text-accent hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
         <div className="animate-fade-in-up pt-2 [animation-delay:500ms] [animation-fill-mode:backwards]">
           <button
             type="submit"

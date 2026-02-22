@@ -11,7 +11,7 @@ export default function SignupPage() {
             <Logo height={40} />
           </div>
           <p className="mt-3 animate-fade-in-up font-mono text-[10px] uppercase tracking-widest text-ink-muted [animation-delay:100ms] [animation-fill-mode:backwards]">
-            Join with an invite code
+            Create your account
           </p>
         </div>
         <Suspense>
