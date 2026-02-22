@@ -8,11 +8,14 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, fontFamily } from '@/lib/theme';
 import { Logo } from '@/components/ui/Logo';
+
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
 
 export default function SignupScreen() {
   const { signUp } = useAuth();
@@ -83,6 +86,23 @@ export default function SignupScreen() {
             />
           </View>
           {error && <Text style={styles.error}>{error}</Text>}
+          <Text style={styles.legalText}>
+            By signing up, you agree to our{' '}
+            <Text
+              style={styles.legalLink}
+              onPress={() => Linking.openURL(`${API_BASE}/terms`)}
+            >
+              Terms of Service
+            </Text>{' '}
+            and{' '}
+            <Text
+              style={styles.legalLink}
+              onPress={() => Linking.openURL(`${API_BASE}/privacy`)}
+            >
+              Privacy Policy
+            </Text>
+            .
+          </Text>
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleSignup}
@@ -170,6 +190,14 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.mono,
     fontSize: 11,
     letterSpacing: 1.4,
+  },
+  legalText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  legalLink: {
+    color: colors.primary,
   },
   linkText: {
     marginTop: spacing.xxl,

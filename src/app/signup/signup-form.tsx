@@ -64,6 +64,17 @@ export function SignupForm() {
           />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
+        <p className="animate-fade-in-up text-center font-body text-xs text-ink-muted [animation-delay:450ms] [animation-fill-mode:backwards]">
+          By signing up, you agree to our{" "}
+          <Link href="/terms" className="text-accent hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="text-accent hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
         <div className="animate-fade-in-up pt-2 [animation-delay:500ms] [animation-fill-mode:backwards]">
           <button
             type="submit"

@@ -357,6 +357,9 @@ export default function ProfileScreen() {
         <Pressable style={styles.actionButtonGhost} onPress={() => WebBrowser.openBrowserAsync(`${API_BASE}/terms`)}>
           <Text style={styles.actionButtonGhostText}>Terms of Service</Text>
         </Pressable>
+        <Pressable style={styles.actionButtonGhost} onPress={() => WebBrowser.openBrowserAsync(`${API_BASE}/support`)}>
+          <Text style={styles.actionButtonGhostText}>Support</Text>
+        </Pressable>
         <Pressable style={styles.actionButtonGhost} onPress={signOut}>
           <Text style={styles.actionButtonGhostText}>Sign out</Text>
         </Pressable>

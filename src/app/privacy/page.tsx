@@ -67,6 +67,37 @@ export default function PrivacyPolicyPage() {
                 follow you.
               </li>
             </ul>
+            <p className="mt-2">
+              We do not collect analytics, advertising identifiers, or any data
+              beyond what is listed above.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Legal basis for processing (GDPR)
+            </h2>
+            <p className="mt-2">
+              If you are located in the European Economic Area (EEA), we process
+              your personal data under the following legal bases:
+            </p>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>
+                <strong>Contract performance:</strong> processing your account
+                information and recipe data is necessary to provide the EefEats
+                service you signed up for.
+              </li>
+              <li>
+                <strong>Legitimate interest:</strong> we process data related to
+                social features (follows, activity feeds) to operate the
+                platform as described.
+              </li>
+              <li>
+                <strong>Consent:</strong> where required, such as for optional
+                features or communications, we obtain your consent before
+                processing.
+              </li>
+            </ul>
           </section>
 
           <section>
@@ -94,11 +125,14 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-lg font-semibold text-gray-900">
               Third-party services
             </h2>
-            <p className="mt-2">EefEats relies on the following services:</p>
+            <p className="mt-2">
+              EefEats relies on the following services to operate. These are data
+              processors acting on our behalf:
+            </p>
             <ul className="mt-2 list-disc space-y-1 pl-5">
               <li>
                 <strong>Supabase</strong> — database and authentication, hosted
-                on AWS.
+                on Amazon Web Services (AWS).
               </li>
               <li>
                 <strong>Vercel</strong> — web application hosting.
@@ -109,7 +143,22 @@ export default function PrivacyPolicyPage() {
             </ul>
             <p className="mt-2">
               These services have their own privacy policies. We encourage you to
-              review them.
+              review them. We do not share your data with any other third
+              parties.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-gray-900">
+              International data transfers
+            </h2>
+            <p className="mt-2">
+              Your data is stored on servers managed by Supabase, hosted on
+              Amazon Web Services. These servers may be located in the United
+              States or other regions. If you are located in the EEA, your data
+              may be transferred to and processed in countries outside the EEA.
+              We rely on our service providers&apos; compliance with applicable
+              data transfer mechanisms to ensure your data is protected.
             </p>
           </section>
 
@@ -118,10 +167,19 @@ export default function PrivacyPolicyPage() {
               Data storage and security
             </h2>
             <p className="mt-2">
-              Your data is stored on servers managed by Supabase, hosted on
-              Amazon Web Services (AWS). Data is encrypted at rest. We take
-              reasonable measures to protect your information, but no method of
-              electronic transmission or storage is completely secure.
+              Data is encrypted at rest and in transit. We take reasonable
+              measures to protect your information, but no method of electronic
+              transmission or storage is completely secure.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-gray-900">Cookies</h2>
+            <p className="mt-2">
+              EefEats uses essential cookies to keep you signed in and maintain
+              your session. These are strictly necessary for the service to
+              function and cannot be disabled. We do not use analytics,
+              advertising, or tracking cookies.
             </p>
           </section>
 
@@ -140,7 +198,10 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-lg font-semibold text-gray-900">
               Your rights
             </h2>
-            <p className="mt-2">You have the right to:</p>
+            <p className="mt-2">
+              Depending on your location, you may have the following rights
+              under applicable privacy laws (including GDPR and CCPA):
+            </p>
             <ul className="mt-2 list-disc space-y-1 pl-5">
               <li>
                 <strong>Access your data</strong> — you can view your recipes,
@@ -155,10 +216,39 @@ export default function PrivacyPolicyPage() {
                 your account and all associated data using the Delete Account
                 feature in the app.
               </li>
+              <li>
+                <strong>Data portability</strong> — you have the right to
+                receive a copy of your data in a portable format. Data export is
+                not yet available as a self-service feature. Contact us and we
+                will provide your data within 30 days.
+              </li>
+              <li>
+                <strong>Object to processing</strong> — you can object to
+                processing based on legitimate interest by contacting us.
+              </li>
+              <li>
+                <strong>Lodge a complaint</strong> — if you are in the EEA, you
+                have the right to lodge a complaint with your local data
+                protection supervisory authority.
+              </li>
             </ul>
             <p className="mt-2">
-              Data export is not currently supported. If you need a copy of your
-              data, please contact us.
+              We do not sell your personal information. We do not share your
+              data for cross-context behavioral advertising. California
+              residents: under the CCPA, you have the right to know what data we
+              collect (listed above), request deletion, and opt out of the sale
+              of personal information. Since we do not sell personal
+              information, no opt-out is necessary.
+            </p>
+            <p className="mt-2">
+              To exercise any of these rights, contact us at{" "}
+              <a
+                href="mailto:privacy@eefeats.com"
+                className="text-accent hover:underline"
+              >
+                privacy@eefeats.com
+              </a>
+              .
             </p>
           </section>
 
@@ -186,8 +276,11 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">Contact</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Data controller
+            </h2>
             <p className="mt-2">
+              EefEats is the data controller responsible for your personal data.
               If you have questions about this Privacy Policy or how we handle
               your data, contact us at{" "}
               <a
@@ -201,9 +294,12 @@ export default function PrivacyPolicyPage() {
           </section>
         </div>
 
-        <footer className="mt-12 border-t border-warm-border pt-6 text-sm text-warm-gray">
+        <footer className="mt-12 flex gap-4 border-t border-warm-border pt-6 text-sm text-warm-gray">
           <Link href="/terms" className="text-accent hover:underline">
             Terms of Service
+          </Link>
+          <Link href="/support" className="text-accent hover:underline">
+            Support
           </Link>
         </footer>
       </main>

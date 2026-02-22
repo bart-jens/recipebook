@@ -180,9 +180,11 @@ export default function TermsOfServicePage() {
             </h2>
             <p className="mt-2">
               These terms are governed by and construed in accordance with the
-              laws of the Netherlands. Any disputes arising from these terms or
-              your use of EefEats shall be subject to the exclusive jurisdiction
-              of the courts in the Netherlands.
+              laws of the State of California, United States, without regard to
+              conflict of law principles. Any disputes arising from these terms
+              or your use of EefEats shall be subject to the exclusive
+              jurisdiction of the state and federal courts located in
+              California.
             </p>
           </section>
 
@@ -201,9 +203,12 @@ export default function TermsOfServicePage() {
           </section>
         </div>
 
-        <footer className="mt-12 border-t border-warm-border pt-6 text-sm text-warm-gray">
+        <footer className="mt-12 flex gap-4 border-t border-warm-border pt-6 text-sm text-warm-gray">
           <Link href="/privacy" className="text-accent hover:underline">
             Privacy Policy
+          </Link>
+          <Link href="/support" className="text-accent hover:underline">
+            Support
           </Link>
         </footer>
       </main>
