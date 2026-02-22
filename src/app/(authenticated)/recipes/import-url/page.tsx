@@ -110,7 +110,7 @@ export default function ImportUrlPage() {
         <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
           &larr; Back to recipes
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold">Import from Link</h1>
+        <h1 className="mt-2 text-2xl font-normal">Import from Link</h1>
         <p className="mt-1 text-sm text-warm-gray">
           Paste a link from any recipe website or Instagram post.
         </p>
@@ -119,7 +119,7 @@ export default function ImportUrlPage() {
       {!importedData ? (
         <form onSubmit={handleFetch} className="max-w-2xl space-y-4">
           <div>
-            <label htmlFor="url" className="block text-sm font-medium text-warm-gray">
+            <label htmlFor="url" className="block text-sm font-normal text-warm-gray">
               Recipe link
             </label>
             <input
@@ -139,7 +139,7 @@ export default function ImportUrlPage() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
+            className="bg-cta px-4 py-3 text-base font-normal text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
           >
             {loading ? "Extracting recipe..." : "Extract Recipe"}
           </button>

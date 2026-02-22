@@ -57,7 +57,7 @@ export default async function CollectionDetailPage({
         <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
           &larr; Back to recipes
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold">{collection.name}</h1>
+        <h1 className="mt-2 text-2xl font-normal">{collection.name}</h1>
         {collection.description && (
           <p className="mt-1 text-sm text-warm-gray">{collection.description}</p>
         )}

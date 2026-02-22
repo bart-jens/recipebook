@@ -41,7 +41,7 @@ export default async function AuthenticatedLayout({
       <main className="max-w-[480px] mx-auto">{children}</main>
       <footer className="max-w-[480px] mx-auto px-5 py-8">
         <hr className="rule-thin border-0 mb-4" />
-        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-muted">
+        <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
           EefEats
         </p>
       </footer>

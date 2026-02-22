@@ -28,12 +28,12 @@ export function InviteForm() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="friend@email.com"
           required
-          className="flex-1 border-b-2 border-ink bg-transparent px-0 py-2 font-body text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
+          className="flex-1 border-b-2 border-ink bg-transparent px-0 py-2 text-[15px] font-light text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="border border-ink bg-ink px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
+          className="border border-ink bg-ink px-4 py-2 text-[11px] font-normal tracking-[0.02em] text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
         >
           {isPending ? "Creating..." : "Create invite"}
         </button>
@@ -41,9 +41,9 @@ export function InviteForm() {
 
       {result?.code && (
         <div className="mt-3 border border-olive/20 bg-olive-light p-3">
-          <p className="font-body text-sm text-olive">
+          <p className="text-[15px] font-light text-olive">
             Invite created and emailed! Code:{" "}
-            <span className="font-mono font-semibold">{result.code}</span>
+            <span className="font-normal">{result.code}</span>
           </p>
         </div>
       )}

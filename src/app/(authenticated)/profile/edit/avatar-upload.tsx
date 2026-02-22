@@ -102,12 +102,12 @@ export function AvatarUpload({
             className="h-20 w-20 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-warm-tag text-3xl font-semibold text-warm-gray">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-warm-tag text-3xl font-normal text-warm-gray">
             {displayName[0]?.toUpperCase() || "?"}
           </div>
         )}
         <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-          <span className="text-xs font-medium text-white">
+          <span className="text-xs font-normal text-white">
             {uploading ? "..." : "Change"}
           </span>
         </div>

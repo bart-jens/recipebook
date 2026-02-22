@@ -45,7 +45,7 @@ export function FeedbackList({ items: initial }: { items: FeedbackItem[] }) {
 
   if (items.length === 0) {
     return (
-      <p className="py-8 text-center font-body text-sm text-ink-muted">
+      <p className="py-8 text-center text-[13px] font-light text-ink-muted">
         No feedback yet.
       </p>
     );
@@ -63,24 +63,24 @@ export function FeedbackList({ items: initial }: { items: FeedbackItem[] }) {
             className="flex w-full items-center gap-3 px-4 py-3 text-left"
           >
             <StatusBadge status={item.status} />
-            <span className="min-w-0 flex-1 truncate font-body text-sm text-ink">
+            <span className="min-w-0 flex-1 truncate text-[15px] font-light text-ink">
               {item.message}
             </span>
             <PlatformBadge platform={item.platform} />
-            <span className="shrink-0 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+            <span className="shrink-0 text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
               {item.userName}
             </span>
-            <span className="shrink-0 font-mono text-[10px] text-ink-muted">
+            <span className="shrink-0 text-[11px] font-normal tracking-[0.02em] text-ink-muted">
               {formatDate(item.createdAt)}
             </span>
           </button>
 
           {expandedId === item.id && (
             <div className="border-t border-border px-4 py-4">
-              <p className="mb-4 whitespace-pre-wrap font-body text-sm leading-relaxed text-ink">
+              <p className="mb-4 whitespace-pre-wrap text-[15px] font-light leading-relaxed text-ink">
                 {item.message}
               </p>
-              <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+              <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
                 <span>From: {item.userName}</span>
                 <span>Platform: {item.platform}</span>
                 {item.sourceScreen && (
@@ -93,7 +93,7 @@ export function FeedbackList({ items: initial }: { items: FeedbackItem[] }) {
               {item.status !== "resolved" && (
                 <button
                   onClick={() => updateStatus(item.id, "resolved")}
-                  className="bg-olive-light px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-olive hover:bg-olive/10"
+                  className="bg-olive-light px-3 py-1 text-[11px] font-normal tracking-[0.02em] text-olive hover:bg-olive/10"
                 >
                   Mark resolved
                 </button>
@@ -114,7 +114,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   return (
     <span
-      className={`shrink-0 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${styles[status] || styles.read}`}
+      className={`shrink-0 px-2 py-0.5 text-[11px] font-normal tracking-[0.02em] ${styles[status] || styles.read}`}
     >
       {status}
     </span>
@@ -123,7 +123,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function PlatformBadge({ platform }: { platform: string }) {
   return (
-    <span className="shrink-0 bg-surface-alt px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-ink-muted">
+    <span className="shrink-0 bg-surface-alt px-1.5 py-0.5 text-[11px] font-normal tracking-[0.02em] text-ink-muted">
       {platform}
     </span>
   );

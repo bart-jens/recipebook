@@ -140,11 +140,11 @@ export function OnboardingForm({
               className="h-full w-full object-cover"
             />
           ) : (
-            <span className="font-display text-2xl text-ink-secondary">
+            <span className="text-[20px] font-normal text-ink-secondary">
               {initial}
             </span>
           )}
-          <span className="absolute inset-0 flex items-center justify-center bg-black/40 font-mono text-[10px] uppercase tracking-widest text-white opacity-0 transition-opacity group-hover:opacity-100">
+          <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-[11px] font-normal tracking-[0.02em] text-white opacity-0 transition-opacity group-hover:opacity-100">
             {uploading ? "Uploading..." : "Upload"}
           </span>
         </button>
@@ -161,7 +161,7 @@ export function OnboardingForm({
       <div>
         <label
           htmlFor="displayName"
-          className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary"
+          className="mb-2 block text-[11px] font-normal tracking-[0.02em] text-ink-secondary"
         >
           Display name
         </label>
@@ -171,7 +171,7 @@ export function OnboardingForm({
           value={displayName}
           onChange={(e) => handleDisplayNameChange(e.target.value)}
           required
-          className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 font-body text-base text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
+          className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 text-[15px] font-light text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
         />
       </div>
 
@@ -179,7 +179,7 @@ export function OnboardingForm({
       <div>
         <label
           htmlFor="username"
-          className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary"
+          className="mb-2 block text-[11px] font-normal tracking-[0.02em] text-ink-secondary"
         >
           Username
         </label>
@@ -193,15 +193,15 @@ export function OnboardingForm({
             value={username}
             onChange={(e) => handleUsernameChange(e.target.value)}
             required
-            className="block w-full border-b-2 border-ink bg-transparent py-3 pl-5 pr-0 font-body text-base text-ink focus:border-accent focus:outline-none"
+            className="block w-full border-b-2 border-ink bg-transparent py-3 pl-5 pr-0 text-[15px] font-light text-ink focus:border-accent focus:outline-none"
           />
         </div>
         <div className="mt-1 h-5">
           {usernameStatus === "checking" && (
-            <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted">Checking...</p>
+            <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Checking...</p>
           )}
           {usernameStatus === "available" && (
-            <p className="font-mono text-[10px] uppercase tracking-widest text-olive">Available</p>
+            <p className="text-[11px] font-normal tracking-[0.02em] text-olive">Available</p>
           )}
           {usernameStatus === "taken" && (
             <p className="text-xs text-red-600">Already taken</p>
@@ -221,7 +221,7 @@ export function OnboardingForm({
       <button
         type="submit"
         disabled={!canSubmit}
-        className="w-full bg-ink px-4 py-3 font-mono text-xs uppercase tracking-widest text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
+        className="w-full bg-ink px-4 py-3 text-[14px] font-normal text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
       >
         {isPending ? "Setting up..." : "Get started"}
       </button>

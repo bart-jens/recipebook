@@ -16,7 +16,7 @@ function NavLink({
   return (
     <Link
       href={href}
-      className={`font-mono text-[11px] uppercase tracking-[0.08em] relative ${
+      className={`text-[11px] font-normal tracking-[0.02em] relative ${
         active ? "text-ink" : "text-ink-muted hover:text-ink"
       } transition-colors`}
     >
@@ -68,10 +68,10 @@ export function AuthNav({
           </NavLink>
         )}
         <Link href="/profile">
-          <div className="relative w-7 h-7 rounded-full bg-ink text-bg text-[11px] font-bold flex items-center justify-center transition-transform duration-[250ms] [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.12]">
+          <div className="relative w-7 h-7 rounded-full bg-ink text-bg text-[11px] font-normal flex items-center justify-center transition-transform duration-[250ms] [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.12]">
             {initial}
             {followerBadge && (
-              <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold leading-none text-white">
+              <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-normal leading-none text-white">
                 {followerBadge}
               </span>
             )}

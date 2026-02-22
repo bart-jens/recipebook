@@ -23,14 +23,14 @@ export default function SupportPage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-10">
-        <h1 className="text-2xl font-bold text-gray-900">Support</h1>
+        <h1 className="text-2xl font-normal text-gray-900">Support</h1>
         <p className="mt-2 text-sm text-warm-gray">
           We&apos;re here to help.
         </p>
 
         <div className="mt-8 space-y-8 text-base leading-relaxed text-gray-800">
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Contact us
             </h2>
             <p className="mt-2">
@@ -47,12 +47,12 @@ export default function SupportPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Common questions
             </h2>
             <div className="mt-4 space-y-4">
               <div>
-                <h3 className="font-medium text-gray-900">
+                <h3 className="font-normal text-gray-900">
                   How do I delete my account?
                 </h3>
                 <p className="mt-1">
@@ -62,7 +62,7 @@ export default function SupportPage() {
                 </p>
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">
+                <h3 className="font-normal text-gray-900">
                   How do I import a recipe?
                 </h3>
                 <p className="mt-1">
@@ -72,7 +72,7 @@ export default function SupportPage() {
                 </p>
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">
+                <h3 className="font-normal text-gray-900">
                   Can I make my profile private?
                 </h3>
                 <p className="mt-1">
@@ -82,7 +82,7 @@ export default function SupportPage() {
                 </p>
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">
+                <h3 className="font-normal text-gray-900">
                   How do I request a copy of my data?
                 </h3>
                 <p className="mt-1">
@@ -100,7 +100,7 @@ export default function SupportPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Report an issue
             </h2>
             <p className="mt-2">

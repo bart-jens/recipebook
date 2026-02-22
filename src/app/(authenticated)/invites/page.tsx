@@ -17,8 +17,8 @@ export default async function InvitesPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-2 font-display text-3xl text-ink">Invite Friends</h1>
-      <p className="mb-6 font-body text-sm text-ink-secondary">
+      <h1 className="mb-2 text-[26px] font-normal tracking-[-0.01em] text-ink">Invite Friends</h1>
+      <p className="mb-6 text-[15px] font-light text-ink-secondary">
         EefEats is invite-only. Share codes with friends to let them join.
       </p>
 
@@ -29,7 +29,7 @@ export default async function InvitesPage() {
       {(invites || []).length > 0 && (
         <div>
           <div className="mb-4 border-b border-border pb-2">
-            <h2 className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+            <h2 className="text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
               Your Invites
             </h2>
           </div>
@@ -40,11 +40,11 @@ export default async function InvitesPage() {
                 className="flex items-center justify-between border border-border bg-surface px-4 py-3"
               >
                 <div>
-                  <p className="font-body text-sm font-medium text-ink">{invite.email}</p>
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted">{invite.code}</p>
+                  <p className="text-[15px] font-light text-ink">{invite.email}</p>
+                  <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">{invite.code}</p>
                 </div>
                 <span
-                  className={`font-mono text-[10px] uppercase tracking-widest ${
+                  className={`text-[11px] font-normal tracking-[0.02em] ${
                     invite.used_at
                       ? "text-olive"
                       : "text-ink-muted"

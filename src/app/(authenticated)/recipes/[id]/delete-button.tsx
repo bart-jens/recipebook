@@ -19,7 +19,7 @@ export function DeleteButton({ recipeId }: { recipeId: string }) {
     <div>
       <button
         onClick={handleDelete}
-        className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-red-500 flex items-center gap-1 transition-all active:scale-[0.94]"
+        className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-red-500 flex items-center gap-1 transition-all active:scale-[0.94]"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <polyline points="3 6 5 6 21 6"/>

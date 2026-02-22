@@ -23,14 +23,14 @@ export default function TermsOfServicePage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-10">
-        <h1 className="text-2xl font-bold text-gray-900">Terms of Service</h1>
+        <h1 className="text-2xl font-normal text-gray-900">Terms of Service</h1>
         <p className="mt-2 text-sm text-warm-gray">
           Effective date: February 2026
         </p>
 
         <div className="mt-8 space-y-8 text-base leading-relaxed text-gray-800">
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Acceptance of terms
             </h2>
             <p className="mt-2">
@@ -41,7 +41,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Account responsibilities
             </h2>
             <p className="mt-2">
@@ -53,7 +53,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               User-generated content
             </h2>
             <p className="mt-2">
@@ -70,7 +70,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Imported recipes
             </h2>
             <p className="mt-2">
@@ -82,7 +82,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Acceptable use
             </h2>
             <p className="mt-2">You agree not to use EefEats to:</p>
@@ -99,7 +99,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Content moderation
             </h2>
             <p className="mt-2">
@@ -110,7 +110,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Account termination
             </h2>
             <p className="mt-2">
@@ -122,7 +122,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Intellectual property
             </h2>
             <p className="mt-2">
@@ -137,7 +137,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Limitation of liability
             </h2>
             <p className="mt-2">
@@ -152,7 +152,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Indemnification
             </h2>
             <p className="mt-2">
@@ -163,7 +163,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Changes to these terms
             </h2>
             <p className="mt-2">
@@ -175,7 +175,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Governing law
             </h2>
             <p className="mt-2">
@@ -189,7 +189,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">Contact</h2>
+            <h2 className="text-lg font-normal text-gray-900">Contact</h2>
             <p className="mt-2">
               If you have questions about these Terms of Service, contact us at{" "}
               <a

@@ -52,7 +52,7 @@ export default async function AdminUsersPage({
 
   return (
     <div>
-      <h2 className="mb-4 font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+      <h2 className="mb-4 text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
         Users ({filtered.length})
       </h2>
       <UserList users={filtered} query={q || ""} />

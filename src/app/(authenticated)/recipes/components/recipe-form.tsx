@@ -133,7 +133,7 @@ export function RecipeForm({ initialData, action, submitLabel, sourceName, onSou
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
       {showImageUpload && (
         <div>
-          <label className="block text-sm font-medium text-warm-gray mb-2">
+          <label className="block text-sm font-normal text-warm-gray mb-2">
             Photo
           </label>
           {imagePreview ? (
@@ -175,7 +175,7 @@ export function RecipeForm({ initialData, action, submitLabel, sourceName, onSou
       )}
 
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-warm-gray">
+        <label htmlFor="title" className="block text-sm font-normal text-warm-gray">
           Title *
         </label>
         <input
@@ -189,7 +189,7 @@ export function RecipeForm({ initialData, action, submitLabel, sourceName, onSou
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-warm-gray">
+        <label htmlFor="description" className="block text-sm font-normal text-warm-gray">
           Description
         </label>
         <textarea
@@ -203,7 +203,7 @@ export function RecipeForm({ initialData, action, submitLabel, sourceName, onSou
 
       {onSourceNameChange !== undefined && (
         <div>
-          <label htmlFor="source_name" className="block text-sm font-medium text-warm-gray">
+          <label htmlFor="source_name" className="block text-sm font-normal text-warm-gray">
             Source
           </label>
           <input
@@ -218,7 +218,7 @@ export function RecipeForm({ initialData, action, submitLabel, sourceName, onSou
       )}
 
       <div>
-        <label htmlFor="instructions" className="block text-sm font-medium text-warm-gray">
+        <label htmlFor="instructions" className="block text-sm font-normal text-warm-gray">
           Instructions
         </label>
         <textarea
@@ -232,7 +232,7 @@ export function RecipeForm({ initialData, action, submitLabel, sourceName, onSou
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div>
-          <label htmlFor="prep_time" className="block text-sm font-medium text-warm-gray">
+          <label htmlFor="prep_time" className="block text-sm font-normal text-warm-gray">
             Prep time (min)
           </label>
           <input
@@ -245,7 +245,7 @@ export function RecipeForm({ initialData, action, submitLabel, sourceName, onSou
           />
         </div>
         <div>
-          <label htmlFor="cook_time" className="block text-sm font-medium text-warm-gray">
+          <label htmlFor="cook_time" className="block text-sm font-normal text-warm-gray">
             Cook time (min)
           </label>
           <input
@@ -258,7 +258,7 @@ export function RecipeForm({ initialData, action, submitLabel, sourceName, onSou
           />
         </div>
         <div>
-          <label htmlFor="servings" className="block text-sm font-medium text-warm-gray">
+          <label htmlFor="servings" className="block text-sm font-normal text-warm-gray">
             Servings
           </label>
           <input
@@ -281,7 +281,7 @@ export function RecipeForm({ initialData, action, submitLabel, sourceName, onSou
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-cta px-4 py-3 text-base font-medium text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50 md:w-auto"
+        className="w-full bg-cta px-4 py-3 text-base font-normal text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50 md:w-auto"
       >
         {loading ? "Saving..." : submitLabel}
       </button>

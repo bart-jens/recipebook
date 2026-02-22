@@ -36,7 +36,7 @@ export function ProfileForm({
       )}
 
       <div>
-        <label htmlFor="display_name" className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+        <label htmlFor="display_name" className="mb-2 block text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
           Display name
         </label>
         <input
@@ -45,12 +45,12 @@ export function ProfileForm({
           type="text"
           defaultValue={profile.display_name}
           required
-          className="w-full border-b-2 border-ink bg-transparent px-0 py-2 font-body text-sm text-ink focus:border-accent focus:outline-none"
+          className="w-full border-b-2 border-ink bg-transparent px-0 py-2 text-[15px] font-light text-ink focus:border-accent focus:outline-none"
         />
       </div>
 
       <div>
-        <label htmlFor="bio" className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-ink-secondary">
+        <label htmlFor="bio" className="mb-2 block text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
           Bio
         </label>
         <textarea
@@ -60,15 +60,15 @@ export function ProfileForm({
           maxLength={300}
           defaultValue={profile.bio}
           placeholder="Tell people a bit about yourself..."
-          className="w-full border-b-2 border-ink bg-transparent px-0 py-2 font-body text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
+          className="w-full border-b-2 border-ink bg-transparent px-0 py-2 text-[15px] font-light text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
         />
-        <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-ink-muted">Max 300 characters</p>
+        <p className="mt-1 text-[11px] font-normal tracking-[0.02em] text-ink-muted">Max 300 characters</p>
       </div>
 
       <div className="border border-border bg-surface-alt p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-body text-sm font-medium text-ink">Private account</p>
+            <p className="text-[15px] font-normal text-ink">Private account</p>
             <p className="font-body text-xs text-ink-secondary">
               {isPrivate
                 ? "Only approved followers can see your recipes and activity"
@@ -102,14 +102,14 @@ export function ProfileForm({
         <button
           type="submit"
           disabled={isPending}
-          className="bg-ink px-5 py-2 font-mono text-[10px] uppercase tracking-widest text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
+          className="bg-ink px-5 py-2 text-[14px] font-normal text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
         >
           {isPending ? "Saving..." : "Save"}
         </button>
         <button
           type="button"
           onClick={() => router.push("/profile")}
-          className="border border-border px-5 py-2 font-mono text-[10px] uppercase tracking-widest text-ink-secondary transition-colors hover:border-ink hover:text-ink"
+          className="border border-border px-5 py-2 text-[14px] font-normal text-ink-secondary transition-colors hover:border-ink hover:text-ink"
         >
           Cancel
         </button>

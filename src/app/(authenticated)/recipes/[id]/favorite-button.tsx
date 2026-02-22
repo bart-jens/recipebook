@@ -28,7 +28,7 @@ export function FavoriteButton({
     <button
       onClick={handleClick}
       disabled={isPending}
-      className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink flex items-center gap-1 transition-all active:scale-[0.94] disabled:opacity-40"
+      className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink flex items-center gap-1 transition-all active:scale-[0.94] disabled:opacity-40"
       title={optimistic ? "Remove from favorites" : "Add to favorites"}
     >
       <svg

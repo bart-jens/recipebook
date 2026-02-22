@@ -32,7 +32,7 @@ export function UnitToggle({
   onChange: (s: UnitSystem) => void;
 }) {
   return (
-    <div className="inline-flex font-mono text-[9px] uppercase tracking-[0.06em]">
+    <div className="inline-flex text-[11px] font-normal tracking-[0.02em]">
       <button
         onClick={() => onChange("metric")}
         className={`px-2 py-0.5 transition-colors ${

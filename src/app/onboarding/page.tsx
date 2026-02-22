@@ -22,8 +22,8 @@ export default async function OnboardingPage() {
     <div className="flex min-h-screen items-center justify-center bg-bg p-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
-          <h1 className="font-display text-3xl text-ink">Welcome to EefEats</h1>
-          <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-ink-muted">
+          <h1 className="text-[26px] font-normal tracking-[-0.01em] text-ink">Welcome to EefEats</h1>
+          <p className="mt-2 text-[13px] font-light text-ink-muted">
             Set up your profile to get started
           </p>
         </div>

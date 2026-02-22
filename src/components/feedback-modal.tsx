@@ -58,7 +58,7 @@ export default function FeedbackButton({ sourceScreen }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="border border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-ink-secondary transition-colors hover:border-ink hover:text-ink"
+        className="border border-border px-3 py-1.5 text-[11px] font-normal tracking-[0.02em] text-ink-secondary transition-colors hover:border-ink hover:text-ink"
       >
         Send Feedback
       </button>
@@ -70,17 +70,17 @@ export default function FeedbackButton({ sourceScreen }: Props) {
       >
         <div className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-xl text-ink">Send Feedback</h2>
+            <h2 className="text-[20px] font-normal text-ink">Send Feedback</h2>
             <button
               onClick={handleClose}
-              className="font-mono text-[10px] uppercase tracking-widest text-ink-secondary hover:text-ink"
+              className="text-[11px] font-normal tracking-[0.02em] text-ink-secondary hover:text-ink"
             >
               Close
             </button>
           </div>
 
           {sent ? (
-            <p className="py-8 text-center font-body text-sm font-medium text-olive">
+            <p className="py-8 text-center text-[15px] font-normal text-olive">
               Thanks for your feedback!
             </p>
           ) : (
@@ -91,12 +91,12 @@ export default function FeedbackButton({ sourceScreen }: Props) {
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Found a bug, have an idea, or just want to say hi? We read every message."
                 rows={5}
-                className="mb-4 w-full resize-none border-b-2 border-ink bg-transparent px-0 py-2 font-body text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
+                className="mb-4 w-full resize-none border-b-2 border-ink bg-transparent px-0 py-2 text-[15px] font-light text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
               />
               <button
                 type="submit"
                 disabled={!message.trim() || loading}
-                className="w-full bg-accent px-4 py-2.5 font-mono text-[10px] uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="w-full bg-accent px-4 py-2.5 text-[14px] font-normal text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {loading ? "Sending..." : "Send"}
               </button>

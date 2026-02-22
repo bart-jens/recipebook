@@ -7,7 +7,7 @@ export default function ImportPage() {
         <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
           &larr; Back to recipes
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold">Import Recipe</h1>
+        <h1 className="mt-2 text-2xl font-normal">Import Recipe</h1>
         <p className="mt-1 text-sm text-warm-gray">
           Choose how you want to import your recipe.
         </p>
@@ -25,7 +25,7 @@ export default function ImportPage() {
               </svg>
             </div>
             <div>
-              <h2 className="text-base font-medium group-hover:text-accent">From Link</h2>
+              <h2 className="text-base font-normal group-hover:text-accent">From Link</h2>
               <p className="mt-0.5 text-sm text-warm-gray">
                 Paste a URL from any recipe website or Instagram post
               </p>
@@ -45,7 +45,7 @@ export default function ImportPage() {
               </svg>
             </div>
             <div>
-              <h2 className="text-base font-medium group-hover:text-accent">From Photo</h2>
+              <h2 className="text-base font-normal group-hover:text-accent">From Photo</h2>
               <p className="mt-0.5 text-sm text-warm-gray">
                 Upload a photo of a recipe from a cookbook or printout
               </p>

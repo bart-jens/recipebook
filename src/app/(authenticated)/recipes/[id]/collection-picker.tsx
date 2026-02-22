@@ -73,7 +73,7 @@ export function CollectionPicker({ recipeId }: { recipeId: string }) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink transition-colors"
+        className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink transition-colors"
       >
         Add to Collection
       </button>
@@ -83,10 +83,10 @@ export function CollectionPicker({ recipeId }: { recipeId: string }) {
   return (
     <div className="border border-border p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted">Collections</h3>
+        <h3 className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Collections</h3>
         <button
           onClick={() => setOpen(false)}
-          className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted hover:text-ink"
+          className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink"
         >
           Done
         </button>
@@ -99,7 +99,7 @@ export function CollectionPicker({ recipeId }: { recipeId: string }) {
           <p className="text-[13px] font-light text-ink-muted mb-2">No collections yet</p>
           <button
             onClick={() => setShowCreate(true)}
-            className="font-mono text-[10px] uppercase tracking-[0.06em] text-accent hover:underline"
+            className="text-[11px] font-normal tracking-[0.02em] text-accent hover:underline"
           >
             Create one
           </button>
@@ -145,7 +145,7 @@ export function CollectionPicker({ recipeId }: { recipeId: string }) {
           <button
             type="submit"
             disabled={isPending || !newName.trim()}
-            className="font-mono text-[10px] uppercase tracking-[0.06em] bg-ink text-bg px-3 py-1 hover:bg-ink/80 disabled:opacity-50"
+            className="text-[11px] font-normal tracking-[0.02em] bg-ink text-bg px-3 py-1 hover:bg-ink/80 disabled:opacity-50"
           >
             Add
           </button>
@@ -153,7 +153,7 @@ export function CollectionPicker({ recipeId }: { recipeId: string }) {
       ) : (
         <button
           onClick={() => setShowCreate(true)}
-          className="mt-3 font-mono text-[10px] uppercase tracking-[0.06em] text-accent hover:underline"
+          className="mt-3 text-[11px] font-normal tracking-[0.02em] text-accent hover:underline"
         >
           New Collection
         </button>

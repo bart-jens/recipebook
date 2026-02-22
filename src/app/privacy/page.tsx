@@ -23,14 +23,14 @@ export default function PrivacyPolicyPage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-10">
-        <h1 className="text-2xl font-bold text-gray-900">Privacy Policy</h1>
+        <h1 className="text-2xl font-normal text-gray-900">Privacy Policy</h1>
         <p className="mt-2 text-sm text-warm-gray">
           Effective date: February 2026
         </p>
 
         <div className="mt-8 space-y-8 text-base leading-relaxed text-gray-800">
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Introduction
             </h2>
             <p className="mt-2">
@@ -42,7 +42,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               What data we collect
             </h2>
             <p className="mt-2">
@@ -74,7 +74,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Legal basis for processing (GDPR)
             </h2>
             <p className="mt-2">
@@ -101,7 +101,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               How we use your data
             </h2>
             <p className="mt-2">We use your data to:</p>
@@ -122,7 +122,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Third-party services
             </h2>
             <p className="mt-2">
@@ -149,7 +149,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               International data transfers
             </h2>
             <p className="mt-2">
@@ -163,7 +163,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Data storage and security
             </h2>
             <p className="mt-2">
@@ -174,7 +174,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">Cookies</h2>
+            <h2 className="text-lg font-normal text-gray-900">Cookies</h2>
             <p className="mt-2">
               EefEats uses essential cookies to keep you signed in and maintain
               your session. These are strictly necessary for the service to
@@ -184,7 +184,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Data retention
             </h2>
             <p className="mt-2">
@@ -195,7 +195,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Your rights
             </h2>
             <p className="mt-2">
@@ -253,7 +253,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Children&apos;s privacy
             </h2>
             <p className="mt-2">
@@ -265,7 +265,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Changes to this policy
             </h2>
             <p className="mt-2">
@@ -276,7 +276,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-normal text-gray-900">
               Data controller
             </h2>
             <p className="mt-2">
