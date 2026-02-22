@@ -67,7 +67,7 @@ export function ProfileTabs({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`font-mono text-[11px] uppercase tracking-[0.06em] py-2.5 pr-3.5 bg-transparent border-none cursor-pointer relative transition-colors ${
+            className={`text-[11px] font-normal tracking-[0.02em] py-2.5 pr-3.5 bg-transparent border-none cursor-pointer relative transition-colors ${
               activeTab === tab.id
                 ? "text-ink"
                 : "text-ink-muted hover:text-ink"
@@ -108,7 +108,7 @@ export function ProfileTabs({
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="font-display text-[17px] leading-[1.2] tracking-[-0.01em] text-ink">
+                      <div className="text-[20px] font-normal leading-[1.2] text-ink">
                         {recipe.title}
                       </div>
                       {recipe.description && (
@@ -116,8 +116,8 @@ export function ProfileTabs({
                           {recipe.description}
                         </p>
                       )}
-                      <div className="font-mono text-[11px] text-ink-muted flex gap-2 mt-0.5">
-                        <span className="font-mono text-[9px] uppercase tracking-[0.06em] px-1 py-0.5 border border-olive text-olive">
+                      <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted flex gap-2 mt-0.5">
+                        <span className="text-[11px] font-normal tracking-[0.02em] px-1 py-0.5 border border-olive text-olive">
                           Published
                         </span>
                       </div>
@@ -155,7 +155,7 @@ export function ProfileTabs({
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-light text-ink leading-[1.35]">
-                        Cooked <span className="font-display italic text-accent">{item.recipe_title}</span>
+                        Cooked <span className="font-normal text-accent">{item.recipe_title}</span>
                       </p>
                       {item.notes && (
                         <p className="text-[12px] font-light text-ink-muted italic mt-0.5 line-clamp-1">
@@ -163,7 +163,7 @@ export function ProfileTabs({
                         </p>
                       )}
                     </div>
-                    <span className="font-mono text-[10px] text-ink-muted shrink-0">
+                    <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted shrink-0">
                       {formatDate(item.cooked_at)}
                     </span>
                   </Link>
@@ -198,10 +198,10 @@ export function ProfileTabs({
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="font-display text-[17px] leading-[1.2] tracking-[-0.01em] text-ink">
+                      <div className="text-[15px] font-light text-ink">
                         {item.recipe_title}
                       </div>
-                      <div className="font-mono text-[11px] text-ink-muted mt-0.5">
+                      <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mt-0.5">
                         Saved {formatDate(item.favorited_at)}
                       </div>
                     </div>

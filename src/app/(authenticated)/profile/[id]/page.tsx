@@ -106,7 +106,7 @@ export default async function PublicProfilePage({
           />
         ) : (
           <div
-            className="w-16 h-16 rounded-full bg-ink text-bg font-display text-[24px] flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-[1.08]"
+            className="w-16 h-16 rounded-full bg-ink text-bg font-normal text-[26px] tracking-[-0.01em] flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-[1.08]"
             style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
           >
             {profile.display_name[0].toUpperCase()}
@@ -115,11 +115,11 @@ export default async function PublicProfilePage({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h1 className="font-display text-[28px] leading-none tracking-[-0.03em] text-ink">
+              <h1 className="text-[36px] font-light leading-none tracking-[-0.03em] text-ink">
                 {profile.display_name}
               </h1>
               {profile.is_private && (
-                <p className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">
+                <p className="mt-0.5 text-[11px] font-normal tracking-[0.02em] text-ink-muted">
                   Private account
                 </p>
               )}
@@ -145,29 +145,29 @@ export default async function PublicProfilePage({
         {canView && (
           <>
             <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-              <div className="font-display text-[22px] text-ink">{stats.recipe_count}</div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Recipes</div>
+              <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{stats.recipe_count}</div>
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Recipes</div>
             </div>
             <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-              <div className="font-display text-[22px] text-ink">{stats.cook_count}</div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Cooked</div>
+              <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{stats.cook_count}</div>
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cooked</div>
             </div>
           </>
         )}
         <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light last:border-r-0">
-          <div className="font-display text-[22px] text-ink">{stats.follower_count}</div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Followers</div>
+          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{stats.follower_count}</div>
+          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Followers</div>
         </div>
         <div className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
-          <div className="font-display text-[22px] text-ink">{stats.following_count}</div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-muted">Following</div>
+          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{stats.following_count}</div>
+          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Following</div>
         </div>
       </div>
 
       {!canView ? (
         <div className="mx-5 mt-6 border-t border-border py-10 text-center animate-fade-in-up opacity-0 anim-delay-3">
           <ForkDot size={24} color="rgba(139,69,19,0.2)" />
-          <p className="mt-3 font-display text-[18px] tracking-[-0.02em] text-ink">
+          <p className="mt-3 text-[20px] font-normal text-ink">
             This account is private
           </p>
           <p className="mt-1 text-[13px] font-light text-ink-secondary">
