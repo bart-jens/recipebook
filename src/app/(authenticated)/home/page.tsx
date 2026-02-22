@@ -44,7 +44,7 @@ export default async function HomePage() {
   if (!user) return null;
 
   const [
-    { data: profile },
+    ,
     { data: followingData },
     { data: favorites },
     { data: recentRecipes },
@@ -75,7 +75,6 @@ export default async function HomePage() {
       .limit(8),
   ]);
 
-  const displayName = profile?.display_name || "Chef";
   const followingCount = (followingData || []).length;
 
   // Activity feed via RPC
