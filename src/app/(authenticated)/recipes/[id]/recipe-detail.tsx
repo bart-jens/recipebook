@@ -14,6 +14,7 @@ import { ShareLinkButton } from "./share-link-button";
 import { SaveButton } from "./save-button";
 import { PhotoCarousel } from "./photo-carousel";
 import { CollectionPicker } from "./collection-picker";
+import { PublishBanner } from "./publish-banner";
 import { addRecipeToDefaultShoppingList, addIngredientToDefaultShoppingList } from "@/app/(authenticated)/shopping-list/actions";
 
 
@@ -164,7 +165,7 @@ export function RecipeDetail({
           {isOwner ? (
             <>
               <FavoriteButton recipeId={recipe.id} isFavorited={isFavorited} />
-              {recipe.source_type === "manual" && !recipe.forked_from_id && (
+              {(recipe.source_type === "manual" || recipe.source_type === "fork") && (
                 <VisibilityToggle recipeId={recipe.id} isPublic={recipe.visibility === "public"} />
               )}
               {recipe.visibility === "public" && (
@@ -322,6 +323,15 @@ export function RecipeDetail({
             </div>
           )}
         </div>
+      )}
+
+      {/* Publish / Private banner — owner only */}
+      {isOwner && (
+        <PublishBanner
+          recipeId={recipe.id}
+          initialVisibility={recipe.visibility}
+          sourceType={recipe.source_type}
+        />
       )}
 
       {/* Tags + Controls Row */}
