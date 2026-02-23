@@ -106,7 +106,7 @@ export default function RecipeCardScreen() {
   return (
     <>
       <Stack.Screen options={{ headerTitle: card.title, headerLeft: () => backButton }} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <View style={styles.container}>
         {card.image_url ? (
           <Image
             source={{ uri: card.image_url }}
@@ -127,6 +127,7 @@ export default function RecipeCardScreen() {
           </View>
         )}
 
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <View style={styles.body}>
           <Text style={styles.title}>{card.title}</Text>
 
@@ -178,25 +179,13 @@ export default function RecipeCardScreen() {
             </View>
           )}
 
-          {/* Tags */}
-          {card.tags && card.tags.length > 0 && (
-            <View style={styles.tagsRow}>
-              {card.tags.map((tag) => (
-                <View key={tag} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-
           {/* Note */}
-          <View style={styles.noteSection}>
-            <Text style={styles.noteText}>
-              In {card.creator_display_name ? `${card.creator_display_name}'s` : "someone's"} private collection.
-            </Text>
-          </View>
+          <Text style={styles.noteText}>
+            In {card.creator_display_name ? `${card.creator_display_name}'s` : "someone's"} private collection.
+          </Text>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </>
   );
 }
@@ -205,6 +194,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
+  },
+  scroll: {
+    flex: 1,
   },
   content: {
     paddingBottom: 100,
@@ -302,31 +294,11 @@ const styles = StyleSheet.create({
     color: colors.ink,
     marginTop: 2,
   },
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginTop: spacing.lg,
-  },
-  tag: {
-    backgroundColor: colors.surfaceAlt,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  tagText: {
-    ...typography.metaSmall,
-    color: colors.inkSecondary,
-  },
-  noteSection: {
-    marginTop: spacing.xxxl,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: spacing.lg,
-  },
   noteText: {
     fontFamily: fontFamily.sans,
-    fontSize: 12,
-    color: colors.inkMuted,
+    fontSize: 11,
+    color: colors.border,
+    marginTop: spacing.xxl,
   },
   backButton: {
     paddingLeft: 4,
