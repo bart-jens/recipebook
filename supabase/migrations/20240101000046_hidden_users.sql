@@ -13,7 +13,10 @@ CREATE POLICY "Anyone can view non-hidden user profiles"
   USING (is_hidden = false OR id = auth.uid());
 
 -- Recreate get_activity_feed excluding hidden users
-CREATE OR REPLACE FUNCTION get_activity_feed(
+-- Must DROP first because return type differs from CREATE OR REPLACE
+DROP FUNCTION IF EXISTS get_activity_feed(uuid, timestamptz, int);
+
+CREATE FUNCTION get_activity_feed(
   p_user_id uuid,
   p_before timestamptz DEFAULT now(),
   p_limit int DEFAULT 20
@@ -30,7 +33,9 @@ RETURNS TABLE (
   recipe_image_url text,
   source_url text,
   source_name text,
-  rating integer
+  rating integer,
+  recipe_visibility text,
+  recipe_source_type text
 )
 LANGUAGE sql
 STABLE
@@ -48,7 +53,9 @@ AS $$
     r.image_url AS recipe_image_url,
     r.source_url,
     r.source_name,
-    af.rating
+    af.rating,
+    r.visibility AS recipe_visibility,
+    r.source_type AS recipe_source_type
   FROM activity_feed_view af
   JOIN user_follows uf ON uf.following_id = af.user_id AND uf.follower_id = p_user_id
   JOIN user_profiles up ON up.id = af.user_id
