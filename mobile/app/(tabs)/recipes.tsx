@@ -59,7 +59,7 @@ interface Recipe {
   cook_time_minutes: number | null;
   updated_at: string;
   visibility: string;
-  source_type: string;
+  source_type: 'manual' | 'url' | 'photo' | 'telegram' | 'instagram' | 'fork';
   avgRating: number | null;
   ratingCount: number;
   tags: string[];
@@ -272,7 +272,9 @@ export default function RecipesScreen() {
       );
     }
     if (activeFilter === 'imported') {
-      filtered = filtered.filter((r) => !['manual', 'fork'].includes(r.source_type));
+      filtered = filtered.filter((r) =>
+        ['url', 'photo', 'telegram', 'instagram'].includes(r.source_type)
+      );
     } else if (activeFilter === 'published') {
       filtered = filtered.filter((r) => r.visibility === 'public' && !r.isSaved);
     } else if (activeFilter === 'saved') {
