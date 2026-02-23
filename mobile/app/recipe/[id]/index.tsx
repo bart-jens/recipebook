@@ -244,7 +244,9 @@ export default function RecipeDetailScreen() {
 
     if (!recipeData) {
       // Fetch non-copyrightable metadata card (SECURITY DEFINER, bypasses RLS)
-      const { data: card } = await supabase.rpc('get_recipe_card', { p_recipe_id: id });
+      // get_recipe_card uses RETURNS TABLE so the client returns an array
+      const { data: cardData } = await supabase.rpc('get_recipe_card', { p_recipe_id: id });
+      const card = Array.isArray(cardData) ? cardData[0] ?? null : cardData ?? null;
       if (card && card.visibility === 'private') {
         setRecipeCard(card);
         setIsPrivate(true);
@@ -748,6 +750,17 @@ export default function RecipeDetailScreen() {
                     style={styles.privateCardViewLink}
                   >
                     <Text style={styles.privateCardViewLinkText}>View original recipe</Text>
+                  </TouchableOpacity>
+                ) : null}
+
+                {/* Save to my recipes */}
+                {recipeCard.source_url ? (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => router.push({ pathname: '/recipe/import-url', params: { url: recipeCard.source_url! } })}
+                    style={styles.privateCardSaveButton}
+                  >
+                    <Text style={styles.privateCardSaveText}>Save to my recipes</Text>
                   </TouchableOpacity>
                 ) : null}
 
@@ -2103,6 +2116,16 @@ const styles = StyleSheet.create({
     ...typography.metaSmall,
     color: colors.accent,
     textDecorationLine: 'underline',
+  },
+  privateCardSaveButton: {
+    backgroundColor: colors.ink,
+    paddingVertical: spacing.md,
+    alignItems: 'center' as const,
+    marginBottom: spacing.lg,
+  },
+  privateCardSaveText: {
+    ...typography.metaSmall,
+    color: colors.white,
   },
   privateCardBack: {
     paddingTop: spacing.xs,

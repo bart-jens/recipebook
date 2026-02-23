@@ -79,20 +79,28 @@ export default async function RecipeDetailPage({
           )}
 
           <div className="border-t border-border pt-5">
-            <p className="text-[13px] font-light text-ink-secondary mb-1">
+            <p className="text-[13px] font-light text-ink-secondary mb-4">
               This recipe is in{" "}
               {card.creator_display_name ? `${card.creator_display_name}'s` : "someone's"} private
               collection.
             </p>
             {card.source_url && (
-              <a
-                href={card.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[11px] font-normal tracking-[0.02em] text-accent hover:underline"
-              >
-                View original recipe &rarr;
-              </a>
+              <>
+                <a
+                  href={card.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-[11px] font-normal tracking-[0.02em] text-accent hover:underline mb-3"
+                >
+                  View original recipe &rarr;
+                </a>
+                <Link
+                  href={`/recipes/import-url?url=${encodeURIComponent(card.source_url)}`}
+                  className="block text-center text-[11px] font-normal tracking-[0.02em] bg-ink text-white px-4 py-2.5 hover:bg-ink/90 transition-colors"
+                >
+                  Save to my recipes
+                </Link>
+              </>
             )}
           </div>
 

@@ -9,7 +9,7 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import RecipeForm, { RecipeFormData } from '@/components/RecipeForm';
@@ -23,7 +23,8 @@ function isInstagramUrl(url: string): boolean {
 
 export default function ImportUrlScreen() {
   const { user } = useAuth();
-  const [url, setUrl] = useState('');
+  const { url: prefillUrl } = useLocalSearchParams<{ url?: string }>();
+  const [url, setUrl] = useState(prefillUrl || '');
   const [extracting, setExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<RecipeFormData | null>(null);
   const [extractedImageUrl, setExtractedImageUrl] = useState<string | null>(null);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { RecipeForm, type RecipeFormData } from "../components/recipe-form";
 import { createRecipe } from "../actions";
@@ -12,7 +13,8 @@ function isInstagramUrl(url: string): boolean {
 }
 
 export default function ImportUrlPage() {
-  const [url, setUrl] = useState("");
+  const searchParams = useSearchParams();
+  const [url, setUrl] = useState(searchParams.get("url") || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sourceType, setSourceType] = useState<"url" | "instagram">("url");
