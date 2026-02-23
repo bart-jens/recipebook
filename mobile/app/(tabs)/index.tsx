@@ -74,7 +74,6 @@ export default function HomeScreen() {
     const [
       { data: profile },
       { data: following },
-      { data: favorites },
       { data: cooks },
     ] = await Promise.all([
       supabase
@@ -87,11 +86,6 @@ export default function HomeScreen() {
         .select('following_id')
         .eq('follower_id', user.id),
       supabase
-        .from('recipe_favorites')
-        .select(`recipe_id, recipes(${recipeSelectFields})`)
-        .eq('user_id', user.id)
-        .limit(10),
-      supabase
         .from('cook_log')
         .select('id, cooked_at, recipes(id, title)')
         .eq('user_id', user.id)
@@ -102,22 +96,14 @@ export default function HomeScreen() {
     setDisplayName(profile?.display_name || '');
     setRecentCooks((cooks || []) as unknown as RecentCook[]);
 
-    // Suggestions: favorites first, fall back to recent recipes
-    const favRecipes = (favorites || [])
-      .map((f: any) => f.recipes)
-      .filter(Boolean) as SuggestionRecipe[];
-
-    if (favRecipes.length > 0) {
-      setSuggestions(favRecipes);
-    } else {
-      const { data: recent } = await supabase
-        .from('recipes')
-        .select(recipeSelectFields)
-        .eq('created_by', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(10);
-      setSuggestions((recent || []) as SuggestionRecipe[]);
-    }
+    // Always show user's own recent recipes
+    const { data: recent } = await supabase
+      .from('recipes')
+      .select(recipeSelectFields)
+      .eq('created_by', user.id)
+      .order('updated_at', { ascending: false })
+      .limit(10);
+    setSuggestions((recent || []) as SuggestionRecipe[]);
 
     const followedIds = (following || []).map((f) => f.following_id);
     setFollowingCount(followedIds.length);
