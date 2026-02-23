@@ -197,7 +197,8 @@ export default function ImportPhotoScreen() {
         source_type: sourceChoice === 'own' ? 'manual' : 'photo',
         source_name: sourceChoice === 'external' ? (sourceName.trim() || null) : null,
         language: extractedLanguage,
-        visibility: 'private',
+        visibility: sourceChoice === 'own' ? 'public' : 'private',
+        published_at: sourceChoice === 'own' ? new Date().toISOString() : undefined,
         created_by: user.id,
       })
       .select('id')
@@ -259,11 +260,14 @@ export default function ImportPhotoScreen() {
                   onPress={() => { setSourceChoice('own'); setSourceName(''); }}
                   activeOpacity={0.7}
                 >
-                  <FontAwesome name="pencil" size={16} color={sourceChoice === 'own' ? colors.accent : colors.inkSecondary} />
-                  <Text style={[
-                    styles.sourceChoiceText,
-                    sourceChoice === 'own' && styles.sourceChoiceTextActive,
-                  ]}>Personal recipe — family, friend, or my own creation</Text>
+                  <FontAwesome name="pencil" size={16} color={sourceChoice === 'own' ? colors.accent : colors.inkSecondary} style={{ marginTop: 2 }} />
+                  <View style={styles.sourceChoiceTextBlock}>
+                    <Text style={[
+                      styles.sourceChoiceText,
+                      sourceChoice === 'own' && styles.sourceChoiceTextActive,
+                    ]}>Personal recipe — family, friend, or my own creation</Text>
+                    <Text style={styles.sourceChoiceSubLabel}>Will be published to your profile</Text>
+                  </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -274,19 +278,16 @@ export default function ImportPhotoScreen() {
                   onPress={() => setSourceChoice('external')}
                   activeOpacity={0.7}
                 >
-                  <FontAwesome name="book" size={16} color={sourceChoice === 'external' ? colors.accent : colors.inkSecondary} />
-                  <Text style={[
-                    styles.sourceChoiceText,
-                    sourceChoice === 'external' && styles.sourceChoiceTextActive,
-                  ]}>From a cookbook, magazine, or website</Text>
+                  <FontAwesome name="book" size={16} color={sourceChoice === 'external' ? colors.accent : colors.inkSecondary} style={{ marginTop: 2 }} />
+                  <View style={styles.sourceChoiceTextBlock}>
+                    <Text style={[
+                      styles.sourceChoiceText,
+                      sourceChoice === 'external' && styles.sourceChoiceTextActive,
+                    ]}>From a cookbook, magazine, or website</Text>
+                    <Text style={styles.sourceChoiceSubLabel}>Stays in your personal cookbook — only you can see the full recipe</Text>
+                  </View>
                 </TouchableOpacity>
               </View>
-
-              {sourceChoice === 'external' && (
-                <Text style={styles.externalSourceNote}>
-                  The full recipe stays in your personal cookbook. Your cooking activity will still appear in your feed.
-                </Text>
-              )}
               {sourceChoice === 'external' && (
                 <View style={styles.sourceExternalFields}>
                   <TouchableOpacity
@@ -503,23 +504,26 @@ const styles = StyleSheet.create({
     borderColor: colors.accent,
     backgroundColor: colors.accentLight,
   },
+  sourceChoiceTextBlock: {
+    flex: 1,
+  },
   sourceChoiceText: {
     fontFamily: fontFamily.sans,
     fontSize: 14,
     color: colors.inkSecondary,
-    flex: 1,
   },
   sourceChoiceTextActive: {
     color: colors.ink,
     fontWeight: '500',
   },
-  sourceExternalFields: {
-    marginTop: spacing.md,
-    gap: spacing.md,
-  },
-  externalSourceNote: {
+  sourceChoiceSubLabel: {
+    fontFamily: fontFamily.sans,
     fontSize: 11,
     color: colors.inkMuted,
     marginTop: 2,
+  },
+  sourceExternalFields: {
+    marginTop: spacing.md,
+    gap: spacing.md,
   },
 });

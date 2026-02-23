@@ -22,6 +22,7 @@ export async function createRecipe(formData: FormData) {
   const sourceName = (formData.get("source_name") as string) || null;
   const language = (formData.get("language") as string) || null;
   const sourceType = (formData.get("source_type") as string) || "manual";
+  const publishedAt = (formData.get("published_at") as string) || null;
 
   const { data: recipe, error } = await supabase
     .from("recipes")
@@ -39,6 +40,7 @@ export async function createRecipe(formData: FormData) {
       image_url: externalImageUrl,
       created_by: user.id,
       visibility: (formData.get("visibility") as string) || (sourceType === "manual" ? "public" : "private"),
+      published_at: publishedAt,
     })
     .select("id")
     .single();
