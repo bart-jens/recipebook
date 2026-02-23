@@ -72,10 +72,8 @@ function resolveActivityLink(item: { recipe_id: string; recipe_visibility: strin
   if (item.source_url) {
     return { kind: 'external', url: item.source_url };
   }
-  if (item.source_type === 'manual' || item.source_type === 'fork') {
-    return { kind: 'internal', path: `/recipe/${item.recipe_id}` };
-  }
-  return { kind: 'none' };
+  // Fall back to recipe page — private recipe pages show a metadata card gracefully
+  return { kind: 'internal', path: `/recipe/${item.recipe_id}` };
 }
 
 export default function PublicProfileScreen() {

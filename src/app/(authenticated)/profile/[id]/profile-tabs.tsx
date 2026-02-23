@@ -69,10 +69,8 @@ function resolveActivityLink(item: ActivityItem): ActivityLinkTarget {
   if (item.source_url) {
     return { kind: 'external', href: item.source_url };
   }
-  if (item.source_type === 'manual' || item.source_type === 'fork') {
-    return { kind: 'internal', href: `/recipes/${item.recipe_id}` };
-  }
-  return { kind: 'none' };
+  // Fall back to recipe page — private recipe pages show a metadata card gracefully
+  return { kind: 'internal', href: `/recipes/${item.recipe_id}` };
 }
 
 export function ProfileTabs({

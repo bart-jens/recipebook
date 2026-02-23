@@ -68,10 +68,8 @@ function resolveLink(item: FeedItem): FeedLinkTarget {
   if (item.source_url) {
     return { kind: 'external', url: item.source_url };
   }
-  if (item.recipe_source_type === 'manual' || item.recipe_source_type === 'fork') {
-    return { kind: 'internal', path: `/recipe/${item.recipe_id}` };
-  }
-  return { kind: 'none' };
+  // Fall back to recipe page — private recipe pages show a metadata card gracefully
+  return { kind: 'internal', path: `/recipe/${item.recipe_id}` };
 }
 
 export default function HomeScreen() {

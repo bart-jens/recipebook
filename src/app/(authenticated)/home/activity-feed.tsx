@@ -57,10 +57,8 @@ function resolveLink(item: FeedItem): LinkTarget {
   if (item.source_url) {
     return { kind: 'external', href: item.source_url };
   }
-  if (item.recipe_source_type === 'manual' || item.recipe_source_type === 'fork') {
-    return { kind: 'internal', href: `/recipes/${item.recipe_id}` };
-  }
-  return { kind: 'none' };
+  // Fall back to recipe page — private recipe pages show a metadata card gracefully
+  return { kind: 'internal', href: `/recipes/${item.recipe_id}` };
 }
 
 function StarRating({ rating }: { rating: number }) {
