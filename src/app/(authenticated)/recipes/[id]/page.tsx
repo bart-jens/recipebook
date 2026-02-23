@@ -26,48 +26,111 @@ export default async function RecipeDetailPage({
     const card = cardRows?.[0] ?? null;
 
     if (card && card.visibility === "private") {
+      const formatTime = (min: number) =>
+        min < 60 ? `${min}m` : `${Math.floor(min / 60)}h${min % 60 > 0 ? ` ${min % 60}m` : ""}`;
+
       return (
-        <div className="px-5 pt-8 pb-24 max-w-xl">
+        <div className="-mx-5">
+          {/* Nav */}
+          <nav className="sticky top-0 z-50 flex items-center px-5 py-3 backdrop-blur-[20px] bg-[rgba(246,244,239,0.92)]">
+            <Link
+              href="/recipes"
+              className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink flex items-center gap-1.5 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              Back
+            </Link>
+          </nav>
+
+          {/* Hero image */}
           {card.image_url && (
-            <img
-              src={card.image_url}
-              alt={card.title}
-              className="w-full aspect-[4/3] object-cover mb-6"
-            />
-          )}
-
-          <h1 className="text-[26px] font-normal tracking-[-0.01em] text-ink mb-1">{card.title}</h1>
-
-          {card.source_name && (
-            <p className="text-[13px] font-light text-ink-secondary mb-4">
-              From{" "}
-              {card.source_url ? (
-                <a
-                  href={card.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-accent hover:underline"
-                >
-                  {card.source_name}
-                </a>
-              ) : (
-                <span>{card.source_name}</span>
-              )}
-            </p>
-          )}
-
-          {(card.prep_time_minutes || card.cook_time_minutes || card.servings) && (
-            <div className="flex gap-4 text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-4">
-              {(card.prep_time_minutes || card.cook_time_minutes) && (
-                <span>{(card.prep_time_minutes || 0) + (card.cook_time_minutes || 0)} min</span>
-              )}
-              {card.servings && <span>{card.servings} servings</span>}
+            <div className="overflow-hidden h-[220px]">
+              <img
+                src={card.image_url}
+                alt={card.title}
+                className="w-full h-full object-cover"
+              />
             </div>
           )}
 
-          {card.tags && card.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-6">
-              {card.tags.map((tag: string) => (
+          {/* Header */}
+          <div className={`px-5 ${card.image_url ? "-mt-4" : "pt-4"}`}>
+            {card.tags && card.tags.length > 0 && (
+              <div className="text-[11px] font-normal tracking-[0.02em] text-accent mb-1.5">
+                {card.tags[0]}
+              </div>
+            )}
+            <h1 className="text-[36px] font-light tracking-[-0.03em] leading-[1.1] text-ink mb-2.5">
+              {card.title}
+            </h1>
+
+            {card.source_name && (
+              <div className="text-[12px] text-ink-muted mb-3">
+                {card.source_url ? (
+                  <a
+                    href={card.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent hover:underline"
+                  >
+                    from {card.source_name}
+                  </a>
+                ) : (
+                  <span>from {card.source_name}</span>
+                )}
+              </div>
+            )}
+
+            {(card.creator_display_name || card.creator_avatar_url) && (
+              <div className="flex items-center gap-2 mb-4">
+                {card.creator_avatar_url ? (
+                  <img
+                    src={card.creator_avatar_url}
+                    alt={card.creator_display_name ?? ""}
+                    className="w-7 h-7 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-surface flex items-center justify-center text-[11px] font-normal text-ink-muted">
+                    {card.creator_display_name?.[0]?.toUpperCase()}
+                  </div>
+                )}
+                <span className="text-[13px] font-light text-ink-secondary">
+                  {card.creator_display_name}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Stats bar */}
+          {(card.prep_time_minutes || card.cook_time_minutes || card.servings) && (
+            <div className="mx-5 border-t-[3px] border-t-ink border-b border-b-ink flex mb-4">
+              {card.prep_time_minutes && (
+                <div className="flex-1 py-2.5 px-3 text-center border-r border-border">
+                  <div className="text-[20px] font-normal text-ink">{formatTime(card.prep_time_minutes)}</div>
+                  <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Prep</div>
+                </div>
+              )}
+              {card.cook_time_minutes && (
+                <div className="flex-1 py-2.5 px-3 text-center border-r border-border">
+                  <div className="text-[20px] font-normal text-ink">{formatTime(card.cook_time_minutes)}</div>
+                  <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cook</div>
+                </div>
+              )}
+              {card.servings && (
+                <div className="flex-1 py-2.5 px-3 text-center">
+                  <div className="text-[20px] font-normal text-ink">{card.servings}</div>
+                  <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Serves</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tags */}
+          {card.tags && card.tags.length > 1 && (
+            <div className="px-5 flex flex-wrap gap-1.5 mb-6">
+              {card.tags.slice(1).map((tag: string) => (
                 <span
                   key={tag}
                   className="text-[11px] font-normal tracking-[0.02em] px-2 py-0.5 border border-border text-ink-muted"
@@ -78,11 +141,10 @@ export default async function RecipeDetailPage({
             </div>
           )}
 
-          <div className="border-t border-border pt-5">
+          {/* Private notice + actions */}
+          <div className="px-5 border-t border-border pt-5 pb-24">
             <p className="text-[13px] font-light text-ink-secondary mb-4">
-              This recipe is in{" "}
-              {card.creator_display_name ? `${card.creator_display_name}'s` : "someone's"} private
-              collection.
+              In {card.creator_display_name ? `${card.creator_display_name}'s` : "someone's"} private collection.
             </p>
             {card.source_url && (
               <>
@@ -90,7 +152,7 @@ export default async function RecipeDetailPage({
                   href={card.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-[11px] font-normal tracking-[0.02em] text-accent hover:underline mb-3"
+                  className="block text-[11px] font-normal tracking-[0.02em] text-accent hover:underline mb-4"
                 >
                   View original recipe &rarr;
                 </a>
@@ -103,13 +165,6 @@ export default async function RecipeDetailPage({
               </>
             )}
           </div>
-
-          <Link
-            href="/recipes"
-            className="mt-8 inline-block text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink transition-colors"
-          >
-            &larr; Back to recipes
-          </Link>
         </div>
       );
     }
