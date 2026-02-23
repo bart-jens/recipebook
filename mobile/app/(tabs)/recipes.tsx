@@ -272,6 +272,7 @@ export default function RecipesScreen() {
       );
     }
     if (activeFilter === 'imported') {
+      // 'manual' and 'fork' are user-created, not imports
       filtered = filtered.filter((r) =>
         ['url', 'photo', 'telegram', 'instagram'].includes(r.source_type)
       );

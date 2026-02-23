@@ -161,6 +161,7 @@ export default async function RecipesPage({
   // Apply interaction filters
   let filtered = enriched;
   if (filter === "imported") {
+    // 'manual' and 'fork' are user-created, not imports
     filtered = filtered.filter((r) =>
       ["url", "photo", "telegram", "instagram"].includes(r.source_type)
     );
