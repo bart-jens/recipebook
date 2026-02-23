@@ -223,8 +223,11 @@ export default function ProfileScreen() {
       {/* Stats Bar */}
       <View style={styles.statsBar}>
         <Pressable style={styles.stat} onPress={() => router.push('/(tabs)/recipes')}>
-          <Text style={styles.statValue}>{stats.recipes}</Text>
-          <Text style={styles.statLabel}>Recipes</Text>
+          <Text style={styles.statValue}>{stats.published}</Text>
+          <Text style={styles.statLabel}>Published</Text>
+          {stats.recipes > stats.published && (
+            <Text style={styles.statSubLabel}>{stats.recipes} total</Text>
+          )}
         </Pressable>
         <Pressable style={styles.stat} onPress={() => router.push('/(tabs)/recipes')}>
           <Text style={styles.statValue}>{stats.cooked}</Text>
@@ -451,6 +454,12 @@ const styles = StyleSheet.create({
     ...typography.metaSmall,
     color: colors.inkMuted,
     marginTop: 1,
+  },
+  statSubLabel: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+    opacity: 0.6,
+    fontSize: 10,
   },
 
   // Banners
