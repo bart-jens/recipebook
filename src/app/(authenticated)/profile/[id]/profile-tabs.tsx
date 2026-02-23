@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ForkDot } from "@/components/logo";
+import { RecipePlaceholder } from "@/lib/recipe-placeholder";
 
 interface ActivityItem {
   recipe_id: string;
@@ -103,9 +104,7 @@ export function ProfileTabs({
                         style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
                       />
                     ) : (
-                      <div className="w-12 h-12 shrink-0 bg-surface-alt flex items-center justify-center">
-                        <ForkDot size={16} color="rgba(139,69,19,0.15)" />
-                      </div>
+                      <RecipePlaceholder id={recipe.id} size={48} className="shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="text-[20px] font-normal leading-[1.2] text-ink">
@@ -149,9 +148,7 @@ export function ProfileTabs({
                         style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
                       />
                     ) : (
-                      <div className="w-9 h-9 shrink-0 bg-surface-alt flex items-center justify-center">
-                        <ForkDot size={12} color="rgba(139,69,19,0.15)" />
-                      </div>
+                      <RecipePlaceholder id={item.recipe_id} size={36} className="shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-light text-ink leading-[1.35]">
@@ -193,9 +190,7 @@ export function ProfileTabs({
                         style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
                       />
                     ) : (
-                      <div className="w-12 h-12 shrink-0 bg-surface-alt flex items-center justify-center">
-                        <ForkDot size={16} color="rgba(139,69,19,0.15)" />
-                      </div>
+                      <RecipePlaceholder id={item.recipe_id} size={48} className="shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="text-[15px] font-light text-ink">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ActivityFeed } from "./activity-feed";
+import { RecipePlaceholder } from "@/lib/recipe-placeholder";
 
 interface FeedItem {
   event_type: string;
@@ -114,11 +115,7 @@ export default async function HomePage() {
                     className="w-[140px] h-[140px] object-cover transition-transform duration-300 group-hover:scale-[1.04]"
                   />
                 ) : (
-                  <div className="w-[140px] h-[140px] bg-surface-alt flex items-center justify-center px-3">
-                    <span className="text-[12px] font-normal leading-[1.3] text-ink-muted text-center line-clamp-4">
-                      {recipe.title}
-                    </span>
-                  </div>
+                  <RecipePlaceholder id={recipe.id} size={140} />
                 )}
                 <div className="pt-2">
                   {recipe.recipe_tags?.[0] && (

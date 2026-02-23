@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ForkDot } from "@/components/logo";
+import { RecipePlaceholder } from "@/lib/recipe-placeholder";
 import { DiscoverControls } from "./discover-controls";
 import { LoadMoreButton } from "./load-more";
 import { ChefsTab } from "./chefs-tab";
@@ -217,12 +218,14 @@ export default async function DiscoverPage({
                         )}
                       </div>
                     </div>
-                    {recipe.image_url && (
+                    {recipe.image_url ? (
                       <img
                         src={recipe.image_url}
                         alt={recipe.title}
                         className="w-[56px] h-[56px] object-cover shrink-0 self-center transition-transform duration-300 group-hover:scale-[1.08]"
                       />
+                    ) : (
+                      <RecipePlaceholder id={recipe.id} size={56} className="shrink-0 self-center" />
                     )}
                   </Link>
                 );

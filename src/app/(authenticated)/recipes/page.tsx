@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/server";
 import { ForkDot } from "@/components/logo";
+import { RecipePlaceholder } from "@/lib/recipe-placeholder";
 import { RecipeListControls } from "./recipe-list-controls";
 import { CollectionsSection } from "./collections-section";
 import { getCollections, getUserPlan } from "./collections/actions";
@@ -293,9 +294,7 @@ export default async function RecipesPage({
                     style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
                   />
                 ) : (
-                  <div className="w-12 h-12 shrink-0 self-center bg-surface-alt flex items-center justify-center">
-                    <ForkDot size={14} color="rgba(139,69,19,0.15)" />
-                  </div>
+                  <RecipePlaceholder id={recipe.id} size={48} className="shrink-0 self-center" />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
