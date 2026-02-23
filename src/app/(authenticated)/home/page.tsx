@@ -48,8 +48,8 @@ export default async function HomePage() {
   const [
     ,
     { data: followingData },
-    { data: favorites },
     { data: recentRecipes },
+    { count: totalRecipes },
   ] = await Promise.all([
     supabase
       .from("user_profiles")
@@ -61,13 +61,6 @@ export default async function HomePage() {
       .select("following_id")
       .eq("follower_id", user.id),
     supabase
-      .from("recipe_favorites")
-      .select(
-        "recipe_id, recipes(id, title, description, image_url, prep_time_minutes, cook_time_minutes, recipe_tags(tag))"
-      )
-      .eq("user_id", user.id)
-      .limit(8),
-    supabase
       .from("recipes")
       .select(
         "id, title, description, image_url, prep_time_minutes, cook_time_minutes, recipe_tags(tag)"
@@ -75,6 +68,10 @@ export default async function HomePage() {
       .eq("created_by", user.id)
       .order("updated_at", { ascending: false })
       .limit(8),
+    supabase
+      .from("recipes")
+      .select("id", { count: "exact", head: true })
+      .eq("created_by", user.id),
   ]);
 
   const followingCount = (followingData || []).length;
@@ -89,23 +86,8 @@ export default async function HomePage() {
     feedItems = (data || []) as FeedItem[];
   }
 
-  // Build recipe list: favorites first, fall back to recent recipes
-  const favoriteRecipes: HomeRecipe[] = (favorites || [])
-    .map(
-      (f: { recipes: HomeRecipe | HomeRecipe[] | null }) => {
-        const r = f.recipes;
-        if (Array.isArray(r)) return r[0] ?? null;
-        return r;
-      }
-    )
-    .filter(Boolean) as HomeRecipe[];
-
-  const allRecipes: HomeRecipe[] =
-    favoriteRecipes.length > 0
-      ? favoriteRecipes
-      : ((recentRecipes || []) as HomeRecipe[]);
-
-  const totalRecipeCount = allRecipes.length;
+  const allRecipes: HomeRecipe[] = (recentRecipes || []) as HomeRecipe[];
+  const totalRecipeCount = totalRecipes ?? allRecipes.length;
 
   return (
     <div>
@@ -132,7 +114,11 @@ export default async function HomePage() {
                     className="w-[140px] h-[140px] object-cover transition-transform duration-300 group-hover:scale-[1.04]"
                   />
                 ) : (
-                  <div className="w-[140px] h-[140px] bg-surface-alt" />
+                  <div className="w-[140px] h-[140px] bg-surface-alt flex items-center justify-center px-3">
+                    <span className="text-[12px] font-normal leading-[1.3] text-ink-muted text-center line-clamp-4">
+                      {recipe.title}
+                    </span>
+                  </div>
                 )}
                 <div className="pt-2">
                   {recipe.recipe_tags?.[0] && (
