@@ -22,7 +22,7 @@ import CollectionsSection from '@/components/ui/CollectionsSection';
 import { ForkDot } from '@/components/ui/Logo';
 
 type SortOption = 'updated' | 'alpha' | 'rating' | 'quickest';
-type FilterOption = '' | 'favorited' | 'saved' | 'published';
+type FilterOption = '' | 'imported' | 'published' | 'saved' | 'favorited';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'updated', label: 'Recent' },
@@ -33,9 +33,10 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
   { value: '', label: 'All' },
-  { value: 'favorited', label: 'Favorited' },
-  { value: 'saved', label: 'Saved' },
+  { value: 'imported', label: 'Imported' },
   { value: 'published', label: 'Published' },
+  { value: 'saved', label: 'Saved' },
+  { value: 'favorited', label: 'Favorited' },
 ];
 
 const COURSE_OPTIONS = [
@@ -58,6 +59,7 @@ interface Recipe {
   cook_time_minutes: number | null;
   updated_at: string;
   visibility: string;
+  source_type: string;
   avgRating: number | null;
   ratingCount: number;
   tags: string[];
@@ -149,7 +151,7 @@ export default function RecipesScreen() {
     if (!user) return;
     if (!hasLoadedOnce.current) setLoading(true);
 
-    const selectFields = 'id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, visibility, recipe_tags(tag)';
+    const selectFields = 'id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, visibility, source_type, recipe_tags(tag)';
 
     let ownedQuery = supabase
       .from('recipes')
@@ -269,12 +271,14 @@ export default function RecipesScreen() {
         r.tags.some((t) => t.toLowerCase() === selectedCourse)
       );
     }
-    if (activeFilter === 'favorited') {
-      filtered = filtered.filter((r) => r.isFavorited);
-    } else if (activeFilter === 'saved') {
-      filtered = filtered.filter((r) => r.isSaved);
+    if (activeFilter === 'imported') {
+      filtered = filtered.filter((r) => !['manual', 'fork'].includes(r.source_type));
     } else if (activeFilter === 'published') {
       filtered = filtered.filter((r) => r.visibility === 'public' && !r.isSaved);
+    } else if (activeFilter === 'saved') {
+      filtered = filtered.filter((r) => r.isSaved);
+    } else if (activeFilter === 'favorited') {
+      filtered = filtered.filter((r) => r.isFavorited);
     }
     filtered.sort((a, b) => {
       if (a.isFavorited !== b.isFavorited) return a.isFavorited ? -1 : 1;
