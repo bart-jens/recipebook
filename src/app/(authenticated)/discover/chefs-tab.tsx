@@ -43,6 +43,7 @@ export function ChefsTab() {
       .from("user_profiles")
       .select("id, display_name, avatar_url")
       .neq("id", user.id)
+      .eq("is_hidden", false)
       .order("display_name");
 
     if (!profiles || profiles.length === 0) {
