@@ -188,6 +188,13 @@ export default function ImportUrlScreen() {
           onSubmit={handleSave}
           submitLabel="Save Recipe"
           loading={saving}
+          headerContent={
+            <View style={styles.privateNotice}>
+              <Text style={styles.privateNoticeText}>
+                This will be saved to your private collection. Only you can see it.
+              </Text>
+            </View>
+          }
         />
       </>
     );
@@ -276,4 +283,20 @@ const styles = StyleSheet.create({
   },
   tipsTitle: { ...typography.meta, color: colors.inkSecondary, marginBottom: spacing.sm },
   tipText: { fontFamily: fontFamily.sans, fontSize: 13, color: colors.inkSecondary, marginBottom: spacing.xs },
+  privateNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  privateNoticeText: {
+    ...typography.bodySmall,
+    color: colors.inkSecondary,
+    flex: 1,
+  },
 });
