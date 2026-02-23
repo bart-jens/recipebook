@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { RecipeDetail } from "./recipe-detail";
 
 export default async function RecipeDetailPage({
@@ -21,29 +20,86 @@ export default async function RecipeDetailPage({
     .single();
 
   if (!recipe) {
-    // Check if recipe exists but is private (RLS blocked it)
-    const admin = createAdminClient();
-    const { data: exists } = await admin
-      .from("recipes")
-      .select("id")
-      .eq("id", params.id)
-      .single();
+    const { data: card } = await supabase.rpc("get_recipe_card", {
+      p_recipe_id: params.id,
+    });
 
-    if (exists) {
+    if (card && card.visibility === "private") {
       return (
-        <div className="flex flex-col items-center justify-center py-20 text-center px-5">
-          <p className="text-[26px] font-normal tracking-[-0.01em] text-ink mb-2">This recipe is private</p>
-          <p className="text-[13px] font-light text-ink-secondary">
-            The owner hasn&apos;t made this recipe public yet.
-          </p>
+        <div className="px-5 pt-8 pb-24 max-w-xl">
+          {card.image_url && (
+            <img
+              src={card.image_url}
+              alt={card.title}
+              className="w-full aspect-[4/3] object-cover mb-6"
+            />
+          )}
+
+          <h1 className="text-[26px] font-normal tracking-[-0.01em] text-ink mb-1">{card.title}</h1>
+
+          {card.source_name && (
+            <p className="text-[13px] font-light text-ink-secondary mb-4">
+              From{" "}
+              {card.source_url ? (
+                <a
+                  href={card.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:underline"
+                >
+                  {card.source_name}
+                </a>
+              ) : (
+                <span>{card.source_name}</span>
+              )}
+            </p>
+          )}
+
+          {(card.prep_time_minutes || card.cook_time_minutes || card.servings) && (
+            <div className="flex gap-4 text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-4">
+              {(card.prep_time_minutes || card.cook_time_minutes) && (
+                <span>{(card.prep_time_minutes || 0) + (card.cook_time_minutes || 0)} min</span>
+              )}
+              {card.servings && <span>{card.servings} servings</span>}
+            </div>
+          )}
+
+          {card.tags && card.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-6">
+              {card.tags.map((tag: string) => (
+                <span
+                  key={tag}
+                  className="text-[11px] font-normal tracking-[0.02em] px-2 py-0.5 border border-border text-ink-muted"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="border-t border-border pt-5">
+            <p className="text-[13px] font-light text-ink-secondary mb-1">
+              This recipe is in{" "}
+              {card.creator_display_name ? `${card.creator_display_name}'s` : "someone's"} private
+              collection.
+            </p>
+            {card.source_url && (
+              <a
+                href={card.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-normal tracking-[0.02em] text-accent hover:underline"
+              >
+                View original recipe &rarr;
+              </a>
+            )}
+          </div>
+
           <Link
             href="/recipes"
-            className="mt-6 text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink flex items-center gap-1.5 transition-colors"
+            className="mt-8 inline-block text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink transition-colors"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-            Back to recipes
+            &larr; Back to recipes
           </Link>
         </div>
       );
