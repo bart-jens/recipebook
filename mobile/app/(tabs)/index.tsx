@@ -214,17 +214,7 @@ export default function HomeScreen() {
   };
 
   const handleFeedItemPress = (item: FeedItem) => {
-    if (item.recipe_visibility === 'public') {
-      router.push(`/recipe/${item.recipe_id}`);
-    } else if (item.recipe_source_type === 'url' || item.recipe_source_type === 'instagram') {
-      if (item.source_url) {
-        Linking.openURL(item.source_url);
-      } else {
-        router.push(`/recipe/${item.recipe_id}/card`);
-      }
-    } else {
-      router.push(`/recipe/${item.recipe_id}/card`);
-    }
+    router.push(`/recipe/${item.recipe_id}`);
   };
 
   const renderStars = (rating: number) => {

@@ -47,11 +47,7 @@ function actionVerb(type: string): string {
 
 function recipeLink(item: FeedItem): string {
   if (item.recipe_visibility === "public") return `/recipes/${item.recipe_id}`;
-  if (item.recipe_source_type === "url" || item.recipe_source_type === "instagram") {
-    return item.source_url || `/recipes/${item.recipe_id}/card`;
-  }
-  if (item.recipe_source_type === "photo") return `/recipes/${item.recipe_id}/card`;
-  return `/recipes/${item.recipe_id}/card`;
+  return `/recipes/${item.recipe_id}`;
 }
 
 function StarRating({ rating }: { rating: number }) {
