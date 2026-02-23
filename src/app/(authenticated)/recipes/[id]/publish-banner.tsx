@@ -7,10 +7,14 @@ export function PublishBanner({
   recipeId,
   initialVisibility,
   sourceType,
+  sourceUrl,
+  sourceName,
 }: {
   recipeId: string;
   initialVisibility: string;
   sourceType: string;
+  sourceUrl?: string | null;
+  sourceName?: string | null;
 }) {
   const [loading, setLoading] = useState(false);
   const [justPublished, setJustPublished] = useState(false);
@@ -76,15 +80,27 @@ export function PublishBanner({
     );
   }
 
-  // Imported recipe — informational only
+  // Imported recipe — explain personal cookbook concept
+  const sourceLabel = sourceName || (sourceUrl ? (() => { try { return new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch { return null; } })() : null);
+
   return (
-    <div className="mx-5 mt-4 px-4 py-3 bg-surface border border-border flex items-center gap-2">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-muted shrink-0" aria-hidden="true">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
-      <p className="text-[12px] font-light text-ink-secondary">
-        Saved to your private collection. Only you can see this.
+    <div className="mx-5 mt-4 px-4 py-3 bg-surface border border-border">
+      <p className="text-[12px] font-light text-ink-secondary leading-snug">
+        From your personal cookbook.{' '}
+        {sourceLabel && sourceUrl ? (
+          <>
+            Saved from{' '}
+            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+              {sourceLabel}
+            </a>
+            .{' '}
+          </>
+        ) : sourceLabel ? (
+          <>Saved from {sourceLabel}. </>
+        ) : (
+          <>Saved from a cookbook. </>
+        )}
+        Your followers will see when you cook it.
       </p>
     </div>
   );

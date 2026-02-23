@@ -331,6 +331,8 @@ export function RecipeDetail({
           recipeId={recipe.id}
           initialVisibility={recipe.visibility}
           sourceType={recipe.source_type}
+          sourceUrl={recipe.source_url}
+          sourceName={recipe.source_name}
         />
       )}
 
