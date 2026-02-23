@@ -11,6 +11,10 @@ interface ActivityItem {
   recipe_image_url?: string | null;
   cooked_at: string;
   notes: string | null;
+  source_url?: string | null;
+  source_name?: string | null;
+  source_type?: string | null;
+  recipe_visibility?: string | null;
 }
 
 interface FavoriteItem {
@@ -51,6 +55,24 @@ function formatDate(timestamp: string): string {
   if (days === 1) return "Yesterday";
   if (days < 7) return `${days}d ago`;
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+type ActivityLinkTarget =
+  | { kind: 'internal'; href: string }
+  | { kind: 'external'; href: string }
+  | { kind: 'none' };
+
+function resolveActivityLink(item: ActivityItem): ActivityLinkTarget {
+  if (item.recipe_visibility === 'public' || !item.recipe_visibility) {
+    return { kind: 'internal', href: `/recipes/${item.recipe_id}` };
+  }
+  if (item.source_url) {
+    return { kind: 'external', href: item.source_url };
+  }
+  if (item.source_type === 'manual' || item.source_type === 'fork') {
+    return { kind: 'internal', href: `/recipes/${item.recipe_id}` };
+  }
+  return { kind: 'none' };
 }
 
 export function ProfileTabs({
@@ -134,37 +156,61 @@ export function ProfileTabs({
               <EmptyTab message="No cooking activity yet" />
             ) : (
               <div>
-                {activity.map((item, i) => (
-                  <Link
-                    key={`${item.recipe_id}-${item.cooked_at}-${i}`}
-                    href={`/recipes/${item.recipe_id}`}
-                    className="group flex gap-2.5 py-2.5 border-b border-border items-center cursor-pointer transition-all duration-150 hover:bg-accent-light hover:-mx-1.5 hover:px-1.5"
-                  >
-                    {item.recipe_image_url ? (
-                      <img
-                        src={item.recipe_image_url}
-                        alt={item.recipe_title}
-                        className="w-9 h-9 object-cover shrink-0 transition-transform duration-300 group-hover:scale-[1.1]"
-                        style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
-                      />
-                    ) : (
-                      <RecipePlaceholder id={item.recipe_id} size={36} className="shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-light text-ink leading-[1.35]">
-                        Cooked <span className="font-normal text-accent">{item.recipe_title}</span>
-                      </p>
-                      {item.notes && (
-                        <p className="text-[12px] font-light text-ink-muted italic mt-0.5 line-clamp-1">
-                          &ldquo;{item.notes}&rdquo;
-                        </p>
+                {activity.map((item, i) => {
+                  const link = resolveActivityLink(item);
+                  const sourceLabel = item.source_name
+                    || (item.source_url ? (() => { try { return new URL(item.source_url!).hostname.replace(/^www\./, ''); } catch { return null; } })() : null)
+                    || (item.recipe_visibility === 'private' && item.source_type !== 'manual' && item.source_type !== 'fork' ? 'a cookbook' : null);
+
+                  const className = "group flex gap-2.5 py-2.5 border-b border-border items-center transition-all duration-150 hover:bg-accent-light hover:-mx-1.5 hover:px-1.5";
+
+                  const inner = (
+                    <>
+                      {item.recipe_image_url ? (
+                        <img
+                          src={item.recipe_image_url}
+                          alt={item.recipe_title}
+                          className="w-9 h-9 object-cover shrink-0 transition-transform duration-300 group-hover:scale-[1.1]"
+                          style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+                        />
+                      ) : (
+                        <RecipePlaceholder id={item.recipe_id} size={36} className="shrink-0" />
                       )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-light text-ink leading-[1.35]">
+                          Cooked <span className="font-normal text-accent">{item.recipe_title}</span>
+                        </p>
+                        {sourceLabel && (
+                          <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
+                            {item.source_url && link.kind === 'external' ? `via ${sourceLabel}` : `from ${sourceLabel}`}
+                          </p>
+                        )}
+                        {item.notes && (
+                          <p className="text-[12px] font-light text-ink-muted italic mt-0.5 line-clamp-1">
+                            &ldquo;{item.notes}&rdquo;
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted shrink-0">
+                        {formatDate(item.cooked_at)}
+                      </span>
+                    </>
+                  );
+
+                  return link.kind === 'internal' ? (
+                    <Link key={`${item.recipe_id}-${item.cooked_at}-${i}`} href={link.href} className={className}>
+                      {inner}
+                    </Link>
+                  ) : link.kind === 'external' ? (
+                    <a key={`${item.recipe_id}-${item.cooked_at}-${i}`} href={link.href} target="_blank" rel="noopener noreferrer" className={className}>
+                      {inner}
+                    </a>
+                  ) : (
+                    <div key={`${item.recipe_id}-${item.cooked_at}-${i}`} className={className}>
+                      {inner}
                     </div>
-                    <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted shrink-0">
-                      {formatDate(item.cooked_at)}
-                    </span>
-                  </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

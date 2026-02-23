@@ -27,6 +27,10 @@ interface ChefProfileData {
     recipe_image_url: string | null;
     cooked_at: string;
     notes: string | null;
+    source_url: string | null;
+    source_name: string | null;
+    source_type: string | null;
+    recipe_visibility: string | null;
   }>;
   favorites: Array<{
     recipe_id: string;
