@@ -39,12 +39,15 @@ export function ChefsTab() {
     const followingIds = new Set((following || []).map((f) => f.following_id));
 
     // Get all profiles except self (includes last_cooked_at — accurate across all recipes)
-    const { data: profiles } = await supabase
+    // Cast needed until migration 20240101000047 is applied and types regenerated
+    type ProfileRow = { id: string; display_name: string; avatar_url: string | null; last_cooked_at: string | null };
+    const { data: profilesRaw } = await supabase
       .from("user_profiles")
       .select("id, display_name, avatar_url, last_cooked_at")
       .neq("id", user.id)
       .eq("is_hidden", false)
       .order("display_name");
+    const profiles = profilesRaw as unknown as ProfileRow[] | null;
 
     if (!profiles || profiles.length === 0) {
       setChefs([]);
@@ -70,7 +73,7 @@ export function ChefsTab() {
       display_name: p.display_name,
       avatar_url: p.avatar_url,
       recipe_count: recipeCountMap.get(p.id) || 0,
-      last_cooked: (p as any).last_cooked_at || null,
+      last_cooked: p.last_cooked_at || null,
       follow_state: followingIds.has(p.id) ? "following" : "not_following",
     }));
 
