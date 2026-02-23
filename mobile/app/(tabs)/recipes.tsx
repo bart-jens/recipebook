@@ -19,7 +19,7 @@ import { colors, spacing, typography } from '@/lib/theme';
 import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 import CollectionsSection from '@/components/ui/CollectionsSection';
-import { ForkDot } from '@/components/ui/Logo';
+import { RecipePlaceholder } from '@/lib/recipe-placeholder';
 
 type SortOption = 'updated' | 'alpha' | 'rating' | 'quickest';
 type FilterOption = '' | 'imported' | 'published' | 'saved' | 'favorited';
@@ -331,9 +331,7 @@ export default function RecipesScreen() {
               transition={200}
             />
           ) : (
-            <View style={[styles.resultThumb, styles.thumbPlaceholder]}>
-              <ForkDot size={14} color="rgba(139,69,19,0.15)" />
-            </View>
+            <RecipePlaceholder id={item.id} size={48} />
           )}
           <View style={styles.resultContent}>
             <View style={styles.titleRow}>
@@ -781,11 +779,6 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 0,
     alignSelf: 'center',
-  },
-  thumbPlaceholder: {
-    backgroundColor: colors.surfaceAlt,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   resultContent: {
     flex: 1,
