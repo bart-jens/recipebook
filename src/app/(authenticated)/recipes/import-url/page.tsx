@@ -112,7 +112,7 @@ function ImportUrlContent() {
         <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
           &larr; Back to recipes
         </Link>
-        <h1 className="mt-2 text-2xl font-normal">Import from Link</h1>
+        <h1 className="mt-2 text-[28px] font-light tracking-[-0.02em] text-ink">Import from Link</h1>
         <p className="mt-1 text-sm text-warm-gray">
           Paste a link from any recipe website or Instagram post.
         </p>
