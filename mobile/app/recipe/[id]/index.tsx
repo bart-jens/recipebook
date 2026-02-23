@@ -177,6 +177,8 @@ export default function RecipeDetailScreen() {
   const [addedIngredients, setAddedIngredients] = useState<Set<string>>(new Set());
   const [addingIngredientId, setAddingIngredientId] = useState<string | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
+  const [bannerPublished, setBannerPublished] = useState(false);
+  const [bannerLoading, setBannerLoading] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem('unit_system').then((stored) => {
@@ -612,6 +614,21 @@ export default function RecipeDetailScreen() {
     }
   };
 
+  const handlePublish = async () => {
+    if (!recipe || !user) return;
+    setBannerLoading(true);
+    const { error } = await supabase
+      .from('recipes')
+      .update({ visibility: 'public', published_at: new Date().toISOString() })
+      .eq('id', recipe.id)
+      .eq('created_by', user.id);
+    setBannerLoading(false);
+    if (!error) {
+      setBannerPublished(true);
+      setRecipe((prev: Recipe | null) => prev ? { ...prev, visibility: 'public' } : prev);
+    }
+  };
+
   // Parallax animated styles
   const heroAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -943,6 +960,42 @@ export default function RecipeDetailScreen() {
             </Animated.View>
           )}
 
+          {/* Publish banner */}
+          {isOwner && recipe.visibility === 'private' && !bannerPublished && (() => {
+            const canPublish = recipe.source_type === 'manual' || recipe.source_type === 'fork';
+            return (
+              <View style={styles.publishBanner}>
+                {canPublish ? (
+                  <>
+                    <Text style={styles.publishBannerText}>
+                      Your followers can't see when you cook this. Publish it to share with them.
+                    </Text>
+                    <Pressable
+                      style={[styles.publishButton, bannerLoading && styles.publishButtonDisabled]}
+                      onPress={handlePublish}
+                      disabled={bannerLoading}
+                    >
+                      <Text style={styles.publishButtonText}>
+                        {bannerLoading ? 'Publishing...' : 'Publish'}
+                      </Text>
+                    </Pressable>
+                  </>
+                ) : (
+                  <Text style={styles.publishBannerText}>
+                    Saved to your private collection. Only you can see this.
+                  </Text>
+                )}
+              </View>
+            );
+          })()}
+          {isOwner && bannerPublished && (
+            <View style={[styles.publishBanner, styles.publishBannerSuccess]}>
+              <Text style={styles.publishBannerSuccessText}>
+                Published — your followers can now see this recipe in their feed.
+              </Text>
+            </View>
+          )}
+
           {/* Body content */}
           <View style={styles.body}>
             {/* Owner actions */}
@@ -954,7 +1007,7 @@ export default function RecipeDetailScreen() {
                   size="sm"
                   onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
                 />
-                {recipe.source_type === 'manual' && !recipe.forked_from_id && (
+                {(recipe.source_type === 'manual' || recipe.source_type === 'fork') && (
                   <TouchableOpacity
                     style={[
                       styles.actionButton,
@@ -2050,6 +2103,42 @@ const styles = StyleSheet.create({
   },
   addToListTextDone: {
     color: colors.success,
+  },
+
+  // Publish banner
+  publishBanner: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  publishBannerText: {
+    ...typography.bodySmall,
+    color: colors.inkSecondary,
+    marginBottom: spacing.sm,
+  },
+  publishButton: {
+    backgroundColor: colors.ink,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignSelf: 'flex-start' as const,
+  },
+  publishButtonDisabled: {
+    opacity: 0.5,
+  },
+  publishButtonText: {
+    ...typography.metaSmall,
+    color: colors.bg,
+  },
+  publishBannerSuccess: {
+    borderColor: colors.olive,
+    backgroundColor: colors.oliveLight,
+  },
+  publishBannerSuccessText: {
+    ...typography.bodySmall,
+    color: colors.olive,
   },
 
   // Private recipe card
