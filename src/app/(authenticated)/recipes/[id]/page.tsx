@@ -144,7 +144,7 @@ export default async function RecipeDetailPage({
           {/* Private notice + actions */}
           <div className="px-5 border-t border-border pt-5 pb-24">
             <p className="text-[13px] font-light text-ink-secondary mb-1">
-              In {card.creator_display_name ? `${card.creator_display_name}&apos;s` : "someone&apos;s"} personal cookbook.
+              In {card.creator_display_name ? `${card.creator_display_name}'s` : "someone's"} personal cookbook.
             </p>
             <p className="text-[12px] font-light text-ink-muted mb-4">
               {card.source_url
