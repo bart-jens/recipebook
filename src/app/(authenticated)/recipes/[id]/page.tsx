@@ -143,8 +143,13 @@ export default async function RecipeDetailPage({
 
           {/* Private notice + actions */}
           <div className="px-5 border-t border-border pt-5 pb-24">
-            <p className="text-[13px] font-light text-ink-secondary mb-4">
-              In {card.creator_display_name ? `${card.creator_display_name}'s` : "someone's"} private collection.
+            <p className="text-[13px] font-light text-ink-secondary mb-1">
+              In {card.creator_display_name ? `${card.creator_display_name}&apos;s` : "someone&apos;s"} personal cookbook.
+            </p>
+            <p className="text-[12px] font-light text-ink-muted mb-4">
+              {card.source_url
+                ? "The full recipe is saved privately. You can view the original or save it to your own cookbook."
+                : "The full recipe is saved privately."}
             </p>
             {card.source_url && (
               <>
@@ -160,7 +165,7 @@ export default async function RecipeDetailPage({
                   href={`/recipes/import-url?url=${encodeURIComponent(card.source_url)}`}
                   className="block text-center text-[11px] font-normal tracking-[0.02em] bg-ink text-white px-4 py-2.5 hover:bg-ink/90 transition-colors"
                 >
-                  Save to my recipes
+                  Save to my cookbook
                 </Link>
               </>
             )}

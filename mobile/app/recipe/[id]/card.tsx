@@ -181,7 +181,7 @@ export default function RecipeCardScreen() {
 
           {/* Note */}
           <Text style={styles.noteText}>
-            In {card.creator_display_name ? `${card.creator_display_name}'s` : "someone's"} private collection.
+            In {card.creator_display_name ? `${card.creator_display_name}'s` : "someone's"} personal cookbook. The full recipe is saved privately.
           </Text>
         </View>
         </ScrollView>
