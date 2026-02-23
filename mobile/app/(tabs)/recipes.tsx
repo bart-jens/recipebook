@@ -90,6 +90,8 @@ export default function RecipesScreen() {
   const [collections, setCollections] = useState<{ id: string; name: string; description: string | null; recipe_count: number; cover_url: string | null }[]>([]);
   const [collectionPlan, setCollectionPlan] = useState('free');
   const hasLoadedOnce = useRef(false);
+  const [publishedIds, setPublishedIds] = useState<Set<string>>(new Set());
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   const fetchCollections = useCallback(async () => {
     if (!user) return;
@@ -146,6 +148,19 @@ export default function RecipesScreen() {
       cover_url: c.cover_image_url || coverMap.get(c.id) || null,
     })));
   }, [user]);
+
+  const handlePublishRecipe = async (recipeId: string) => {
+    setPublishingId(recipeId);
+    const { error } = await supabase
+      .from('recipes')
+      .update({ visibility: 'public', published_at: new Date().toISOString() })
+      .eq('id', recipeId)
+      .eq('created_by', user!.id);
+    setPublishingId(null);
+    if (!error) {
+      setPublishedIds((prev) => new Set(prev).add(recipeId));
+    }
+  };
 
   const fetchRecipes = useCallback(async () => {
     if (!user) return;
@@ -342,6 +357,33 @@ export default function RecipesScreen() {
                 <Text style={styles.resultFooterText} numberOfLines={1}>{item.tags.slice(1).join(', ')}</Text>
               )}
             </View>
+            {item.visibility === 'private' && !item.isSaved && (
+              <View style={styles.privateRow}>
+                {publishedIds.has(item.id) ? (
+                  <Text style={styles.publishedLabel}>Published</Text>
+                ) : (
+                  <>
+                    <Text style={styles.privateLabel}>Private</Text>
+                    {(item.source_type === 'manual' || item.source_type === 'fork') && (
+                      <>
+                        <Text style={styles.privateDot}> · </Text>
+                        <Pressable
+                          onPress={(e) => {
+                            e.stopPropagation?.();
+                            handlePublishRecipe(item.id);
+                          }}
+                          disabled={publishingId === item.id}
+                        >
+                          <Text style={[styles.publishLink, publishingId === item.id && styles.publishLinkDisabled]}>
+                            {publishingId === item.id ? '...' : 'Publish'}
+                          </Text>
+                        </Pressable>
+                      </>
+                    )}
+                  </>
+                )}
+              </View>
+            )}
           </View>
         </Pressable>
     );
@@ -780,6 +822,34 @@ const styles = StyleSheet.create({
   resultFooterText: {
     ...typography.metaSmall,
     color: colors.inkMuted,
+  },
+
+  // Private row
+  privateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  privateLabel: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+    opacity: 0.6,
+  },
+  privateDot: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+    opacity: 0.4,
+  },
+  publishLink: {
+    ...typography.metaSmall,
+    color: colors.accent,
+  },
+  publishLinkDisabled: {
+    opacity: 0.5,
+  },
+  publishedLabel: {
+    ...typography.metaSmall,
+    color: colors.olive,
   },
 
   // Import modal
