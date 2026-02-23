@@ -167,8 +167,18 @@ export default async function RecipeCardPage({
 
         <div className="mt-8 border-t border-warm-border pt-4">
           <p className="text-xs text-ink-muted">
-            This is a private recipe. Only the title, source, and basic details are shown.
+            In {creator?.display_name ? `${creator.display_name}'s` : "someone's"} private collection.
           </p>
+          {recipe.source_url && (
+            <a
+              href={recipe.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-block text-xs text-accent hover:underline"
+            >
+              View original recipe &rarr;
+            </a>
+          )}
         </div>
       </div>
     </div>

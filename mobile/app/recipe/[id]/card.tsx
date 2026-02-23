@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
 import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 
@@ -63,10 +64,16 @@ export default function RecipeCardScreen() {
     return m > 0 ? `${h}h ${m}m` : `${h}h`;
   };
 
+  const backButton = (
+    <Pressable onPress={() => router.back()} style={styles.backButton} hitSlop={8}>
+      <FontAwesome name="chevron-left" size={18} color={colors.accent} />
+    </Pressable>
+  );
+
   if (loading) {
     return (
       <>
-        <Stack.Screen options={{ headerTitle: '' }} />
+        <Stack.Screen options={{ headerTitle: '', headerLeft: () => backButton }} />
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
@@ -77,7 +84,7 @@ export default function RecipeCardScreen() {
   if (!card) {
     return (
       <>
-        <Stack.Screen options={{ headerTitle: '' }} />
+        <Stack.Screen options={{ headerTitle: '', headerLeft: () => backButton }} />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyTitle}>Recipe not found</Text>
           <Pressable onPress={() => router.back()}>
@@ -97,7 +104,7 @@ export default function RecipeCardScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ headerTitle: card.title }} />
+      <Stack.Screen options={{ headerTitle: card.title, headerLeft: () => backButton }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         {card.image_url ? (
           <Image
@@ -183,7 +190,7 @@ export default function RecipeCardScreen() {
           {/* Note */}
           <View style={styles.noteSection}>
             <Text style={styles.noteText}>
-              This is a private recipe. Only the title, source, and basic details are shown.
+              In {card.creator_display_name ? `${card.creator_display_name}'s` : "someone's"} private collection.
             </Text>
           </View>
         </View>
@@ -318,6 +325,9 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.sans,
     fontSize: 12,
     color: colors.inkMuted,
+  },
+  backButton: {
+    paddingLeft: 4,
   },
   loadingContainer: {
     flex: 1,
