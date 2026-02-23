@@ -246,3 +246,22 @@ export async function deleteRating(ratingId: string) {
     revalidatePath("/recipes");
   }
 }
+
+export async function publishRecipe(recipeId: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase
+    .from("recipes")
+    .update({ visibility: "public", published_at: new Date().toISOString() })
+    .eq("id", recipeId)
+    .eq("created_by", user.id);
+
+  if (error) return { error: error.message };
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/recipes");
+  revalidatePath("/profile");
+  revalidatePath("/discover");
+  return { success: true };
+}
