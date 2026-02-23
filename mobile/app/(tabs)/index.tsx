@@ -9,6 +9,8 @@ import {
   RefreshControl,
   ActivityIndicator,
   Linking,
+  Modal,
+  TouchableOpacity,
 } from 'react-native';
 import { Image } from 'expo-image';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -56,6 +58,7 @@ interface RecentCook {
 export default function HomeScreen() {
   const { user } = useAuth();
   const [displayName, setDisplayName] = useState('');
+  const [showImportMenu, setShowImportMenu] = useState(false);
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [suggestions, setSuggestions] = useState<SuggestionRecipe[]>([]);
   const [recentCooks, setRecentCooks] = useState<RecentCook[]>([]);
@@ -220,6 +223,16 @@ export default function HomeScreen() {
   // Sections rendered as header (carousel) and footer (activity)
   const renderHeader = () => (
     <View>
+      {/* Quick actions */}
+      <View style={styles.quickActions}>
+        <Pressable style={styles.actionButton} onPress={() => setShowImportMenu(true)}>
+          <Text style={styles.actionButtonText}>Import</Text>
+        </Pressable>
+        <Pressable style={styles.actionButtonPrimary} onPress={() => router.push('/recipe/new')}>
+          <Text style={styles.actionButtonPrimaryText}>Create</Text>
+        </Pressable>
+      </View>
+
       {/* Recipe Carousel */}
       {suggestions.length > 0 && (
         <View>
@@ -302,6 +315,42 @@ export default function HomeScreen() {
           </View>
         </View>
       ) : null}
+
+      {/* Import modal */}
+      <Modal
+        visible={showImportMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowImportMenu(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowImportMenu(false)}>
+          <View style={styles.importMenu}>
+            <Text style={styles.importMenuTitle}>Import Recipe</Text>
+            <TouchableOpacity
+              style={styles.importOption}
+              activeOpacity={0.7}
+              onPress={() => { setShowImportMenu(false); router.push('/recipe/import-url'); }}
+            >
+              <FontAwesome name="link" size={18} color={colors.accent} />
+              <View style={styles.importOptionText}>
+                <Text style={styles.importOptionTitle}>From Link</Text>
+                <Text style={styles.importOptionDesc}>Paste a link from any recipe site or Instagram</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.importOption}
+              activeOpacity={0.7}
+              onPress={() => { setShowImportMenu(false); router.push('/recipe/import-photo'); }}
+            >
+              <FontAwesome name="camera" size={18} color={colors.accent} />
+              <View style={styles.importOptionText}>
+                <Text style={styles.importOptionTitle}>From Photo</Text>
+                <Text style={styles.importOptionDesc}>Scan a photo of a recipe with AI</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 
@@ -380,6 +429,76 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
+  },
+
+  // Quick actions
+  quickActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 4,
+  },
+  actionButton: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  actionButtonText: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+  },
+  actionButtonPrimary: {
+    borderWidth: 1,
+    borderColor: colors.ink,
+    backgroundColor: colors.ink,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  actionButtonPrimaryText: {
+    ...typography.metaSmall,
+    color: colors.bg,
+  },
+
+  // Import modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  importMenu: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: spacing.xl,
+    paddingBottom: spacing.xxxl,
+  },
+  importMenuTitle: {
+    ...typography.subheading,
+    color: colors.ink,
+    marginBottom: spacing.lg,
+  },
+  importOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.sm,
+    gap: spacing.lg,
+  },
+  importOptionText: { flex: 1 },
+  importOptionTitle: {
+    ...typography.label,
+    color: colors.ink,
+  },
+  importOptionDesc: {
+    ...typography.bodySmall,
+    color: colors.inkSecondary,
+    marginTop: 2,
   },
 
   // Recipe Carousel
