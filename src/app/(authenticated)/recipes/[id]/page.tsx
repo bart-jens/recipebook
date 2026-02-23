@@ -20,9 +20,10 @@ export default async function RecipeDetailPage({
     .single();
 
   if (!recipe) {
-    const { data: card } = await supabase.rpc("get_recipe_card", {
+    const { data: cardRows } = await supabase.rpc("get_recipe_card", {
       p_recipe_id: params.id,
     });
+    const card = cardRows?.[0] ?? null;
 
     if (card && card.visibility === "private") {
       return (

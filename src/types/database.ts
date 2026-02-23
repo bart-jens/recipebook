@@ -812,6 +812,24 @@ export type Database = {
         }[]
       }
       mark_followers_seen: { Args: never; Returns: undefined }
+      get_recipe_card: {
+        Args: { p_recipe_id: string }
+        Returns: {
+          id: string
+          title: string
+          image_url: string | null
+          source_name: string | null
+          source_url: string | null
+          source_type: string
+          visibility: string
+          prep_time_minutes: number | null
+          cook_time_minutes: number | null
+          servings: number | null
+          tags: string[]
+          creator_display_name: string
+          creator_avatar_url: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
