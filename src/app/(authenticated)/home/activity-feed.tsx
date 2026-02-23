@@ -45,9 +45,22 @@ function actionVerb(type: string): string {
   }
 }
 
-function recipeLink(item: FeedItem): string {
-  if (item.recipe_visibility === "public") return `/recipes/${item.recipe_id}`;
-  return `/recipes/${item.recipe_id}`;
+type LinkTarget =
+  | { kind: 'internal'; href: string }
+  | { kind: 'external'; href: string }
+  | { kind: 'none' };
+
+function resolveLink(item: FeedItem): LinkTarget {
+  if (item.recipe_visibility === 'public') {
+    return { kind: 'internal', href: `/recipes/${item.recipe_id}` };
+  }
+  if (item.source_url) {
+    return { kind: 'external', href: item.source_url };
+  }
+  if (item.recipe_source_type === 'manual' || item.recipe_source_type === 'fork') {
+    return { kind: 'internal', href: `/recipes/${item.recipe_id}` };
+  }
+  return { kind: 'none' };
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -100,9 +113,10 @@ export function ActivityFeed({
   return (
     <div>
       {items.map((item, i) => {
-        const href = recipeLink(item);
-        const isExternal = href.startsWith("http");
-        const sourceDisplay = item.source_name || (item.source_url ? (() => { try { return new URL(item.source_url).hostname.replace(/^www\./, ""); } catch { return item.source_url; } })() : null);
+        const link = resolveLink(item);
+        const sourceDisplay = item.source_name
+          || (item.source_url ? (() => { try { return new URL(item.source_url!).hostname.replace(/^www\./, ''); } catch { return item.source_url; } })() : null)
+          || (item.recipe_visibility === 'private' && item.recipe_source_type !== 'manual' && item.recipe_source_type !== 'fork' ? 'a cookbook' : null);
 
         return (
           <div
@@ -133,14 +147,16 @@ export function ActivityFeed({
                   {item.display_name}
                 </Link>
                 <span>{actionVerb(item.event_type)}</span>
-                {!isExternal ? (
-                  <Link href={href} className="font-normal text-accent hover:underline">
+                {link.kind === 'internal' ? (
+                  <Link href={link.href} className="font-normal text-accent hover:underline">
                     {item.recipe_title}
                   </Link>
-                ) : (
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="font-normal text-accent hover:underline">
+                ) : link.kind === 'external' ? (
+                  <a href={link.href} target="_blank" rel="noopener noreferrer" className="font-normal text-accent hover:underline">
                     {item.recipe_title}
                   </a>
+                ) : (
+                  <span className="font-normal text-accent">{item.recipe_title}</span>
                 )}
               </p>
               {item.event_type === "cooked" && item.rating != null && (
@@ -148,7 +164,9 @@ export function ActivityFeed({
               )}
               {sourceDisplay && (
                 <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
-                  via {sourceDisplay}
+                  {item.source_url && link.kind === 'external'
+                    ? `via ${sourceDisplay}`
+                    : `from ${sourceDisplay}`}
                 </span>
               )}
             </div>
