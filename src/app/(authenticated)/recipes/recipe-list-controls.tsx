@@ -34,14 +34,13 @@ export function RecipeListControls() {
   const [isPending, startTransition] = useTransition();
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const [showFilters, setShowFilters] = useState(false);
-
   const q = searchParams.get("q") || "";
   const sort = searchParams.get("sort") || "updated";
   const course = searchParams.get("course") || "";
   const filter = searchParams.get("filter") || "";
 
   const hasActiveFilter = sort !== "updated" || !!course;
+  const [showFilters, setShowFilters] = useState(hasActiveFilter);
 
   function updateParams(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
