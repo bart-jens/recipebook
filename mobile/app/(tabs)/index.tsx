@@ -33,6 +33,7 @@ interface FeedItem {
   source_name: string | null;
   rating: number | null;
   recipe_visibility: string | null;
+  recipe_source_type: string | null;
 }
 
 interface SuggestionRecipe {
@@ -215,11 +216,14 @@ export default function HomeScreen() {
   const handleFeedItemPress = (item: FeedItem) => {
     if (item.recipe_visibility === 'public') {
       router.push(`/recipe/${item.recipe_id}`);
-    } else if (item.source_url) {
-      Linking.openURL(item.source_url);
+    } else if (item.recipe_source_type === 'url' || item.recipe_source_type === 'instagram') {
+      if (item.source_url) {
+        Linking.openURL(item.source_url);
+      } else {
+        router.push(`/recipe/${item.recipe_id}/card`);
+      }
     } else {
-      // Best effort: navigate to recipe (may show private/error)
-      router.push(`/recipe/${item.recipe_id}`);
+      router.push(`/recipe/${item.recipe_id}/card`);
     }
   };
 

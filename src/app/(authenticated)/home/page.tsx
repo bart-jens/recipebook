@@ -16,6 +16,7 @@ interface FeedItem {
   source_name: string | null;
   rating: number | null;
   recipe_visibility: string | null;
+  recipe_source_type: string | null;
 }
 
 interface HomeRecipe {

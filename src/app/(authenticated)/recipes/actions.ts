@@ -38,7 +38,7 @@ export async function createRecipe(formData: FormData) {
       language,
       image_url: externalImageUrl,
       created_by: user.id,
-      visibility: sourceType === "manual" ? "public" : "private",
+      visibility: (formData.get("visibility") as string) || (sourceType === "manual" ? "public" : "private"),
     })
     .select("id")
     .single();

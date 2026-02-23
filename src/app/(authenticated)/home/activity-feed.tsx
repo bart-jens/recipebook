@@ -18,6 +18,7 @@ interface FeedItem {
   source_name: string | null;
   rating: number | null;
   recipe_visibility: string | null;
+  recipe_source_type: string | null;
 }
 
 function formatTimeAgo(timestamp: string): string {
@@ -46,8 +47,11 @@ function actionVerb(type: string): string {
 
 function recipeLink(item: FeedItem): string {
   if (item.recipe_visibility === "public") return `/recipes/${item.recipe_id}`;
-  if (item.source_url) return item.source_url;
-  return `/recipes/${item.recipe_id}`;
+  if (item.recipe_source_type === "url" || item.recipe_source_type === "instagram") {
+    return item.source_url || `/recipes/${item.recipe_id}/card`;
+  }
+  if (item.recipe_source_type === "photo") return `/recipes/${item.recipe_id}/card`;
+  return `/recipes/${item.recipe_id}/card`;
 }
 
 function StarRating({ rating }: { rating: number }) {

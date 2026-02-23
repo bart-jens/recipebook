@@ -48,7 +48,7 @@ export default function ImportPhotoPage() {
   const [error, setError] = useState<string | null>(null);
   const [importedData, setImportedData] = useState<(RecipeFormData & { tags?: string[]; language?: string | null }) | null>(null);
   const [sourceName, setSourceName] = useState("");
-  const [sourceSkipped, setSourceSkipped] = useState(false);
+  const [sourceChoice, setSourceChoice] = useState<"own" | "external" | null>(null);
   const [scanningCover, setScanningCover] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -71,7 +71,6 @@ export default function ImportPhotoPage() {
       const data = await res.json();
       if (res.ok && data.title) {
         setSourceName(data.title);
-        setSourceSkipped(false);
       } else {
         setScanError(data.error || "Could not read the book cover. Try a clearer photo.");
       }
@@ -135,8 +134,11 @@ export default function ImportPhotoPage() {
   }
 
   async function handleSave(formData: FormData) {
-    formData.set("source_type", "photo");
-    if (sourceName.trim()) {
+    if (!sourceChoice) return { error: "Please select where this recipe is from." };
+    if (sourceChoice === "external" && !sourceName.trim()) return { error: "Please enter the cookbook or source name." };
+    formData.set("source_type", sourceChoice === "own" ? "manual" : "photo");
+    formData.set("visibility", "private");
+    if (sourceChoice === "external" && sourceName.trim()) {
       formData.set("source_name", sourceName.trim());
     }
     if (importedData?.tags && importedData.tags.length > 0) {
@@ -158,29 +160,53 @@ export default function ImportPhotoPage() {
           <h1 className="mt-2 text-2xl font-normal">Review Imported Recipe</h1>
           <p className="mt-1 text-sm text-warm-gray">Extracted from photo. Review and edit before saving.</p>
         </div>
-        {!sourceSkipped && (
-          <div className="mb-6 max-w-2xl border border-warm-border bg-warm-tag p-5">
-            <p className="text-sm font-normal text-warm-gray">Where is this recipe from?</p>
+        <div className="mb-6 max-w-2xl border border-warm-border bg-warm-tag p-5">
+          <p className="text-sm font-normal text-warm-gray">Where is this recipe from?</p>
 
-            <label
-              className={`mt-3 flex min-h-[44px] cursor-pointer items-center justify-center gap-2 border border-warm-border bg-surface px-4 py-3.5 text-sm font-normal text-warm-gray transition-colors hover:border-accent hover:text-accent ${scanningCover ? "opacity-50 pointer-events-none" : ""}`}
+          <div className="mt-3 space-y-2">
+            <button
+              type="button"
+              onClick={() => { setSourceChoice("own"); setSourceName(""); }}
+              className={`flex w-full min-h-[44px] items-center gap-3 border px-4 py-3.5 text-sm transition-colors ${sourceChoice === "own" ? "border-accent bg-accent/5 text-ink font-medium" : "border-warm-border bg-surface text-warm-gray hover:border-accent hover:text-accent"}`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0011.586 3H8.414a1 1 0 00-.707.293L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
               </svg>
-              {scanningCover ? "Scanning..." : "Scan book cover"}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                capture="environment"
-                className="hidden"
-                onChange={handleScanBookCover}
-              />
-            </label>
+              I made this myself
+            </button>
 
-            {scanError && <p className="mt-2 text-xs text-red-600">{scanError}</p>}
+            <button
+              type="button"
+              onClick={() => setSourceChoice("external")}
+              className={`flex w-full min-h-[44px] items-center gap-3 border px-4 py-3.5 text-sm transition-colors ${sourceChoice === "external" ? "border-accent bg-accent/5 text-ink font-medium" : "border-warm-border bg-surface text-warm-gray hover:border-accent hover:text-accent"}`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+              </svg>
+              From a cookbook or other source
+            </button>
+          </div>
 
-            <div className="mt-3">
+          {sourceChoice === "external" && (
+            <div className="mt-3 space-y-3">
+              <label
+                className={`flex min-h-[44px] cursor-pointer items-center justify-center gap-2 border border-warm-border bg-surface px-4 py-3.5 text-sm font-normal text-warm-gray transition-colors hover:border-accent hover:text-accent ${scanningCover ? "opacity-50 pointer-events-none" : ""}`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0011.586 3H8.414a1 1 0 00-.707.293L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                </svg>
+                {scanningCover ? "Scanning..." : "Scan book cover"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleScanBookCover}
+                />
+              </label>
+
+              {scanError && <p className="mt-2 text-xs text-red-600">{scanError}</p>}
+
               <input
                 id="source_name"
                 type="text"
@@ -190,16 +216,8 @@ export default function ImportPhotoPage() {
                 className="block w-full bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
-
-            <button
-              type="button"
-              onClick={() => { setSourceSkipped(true); setSourceName(""); }}
-              className="mt-3 text-xs text-warm-gray/60 underline hover:text-warm-gray"
-            >
-              Skip for now
-            </button>
-          </div>
-        )}
+          )}
+        </div>
         <RecipeForm
           initialData={importedData}
           action={handleSave}

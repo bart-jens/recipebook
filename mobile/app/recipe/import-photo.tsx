@@ -47,7 +47,7 @@ export default function ImportPhotoScreen() {
   const [extractedTags, setExtractedTags] = useState<string[]>([]);
   const [extractedLanguage, setExtractedLanguage] = useState<string | null>(null);
   const [sourceName, setSourceName] = useState('');
-  const [sourceSkipped, setSourceSkipped] = useState(false);
+  const [sourceChoice, setSourceChoice] = useState<'own' | 'external' | null>(null);
   const [scanningCover, setScanningCover] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -108,7 +108,6 @@ export default function ImportPhotoScreen() {
       const data = await response.json();
       if (response.ok && data.title) {
         setSourceName(data.title);
-        setSourceSkipped(false);
       } else {
         Alert.alert('Could not read cover', data.error || 'Try taking a clearer photo of the book title.');
       }
@@ -176,6 +175,14 @@ export default function ImportPhotoScreen() {
 
   const handleSave = async (data: RecipeFormData) => {
     if (!user) return;
+    if (!sourceChoice) {
+      Alert.alert('Source required', 'Please select where this recipe is from.');
+      return;
+    }
+    if (sourceChoice === 'external' && !sourceName.trim()) {
+      Alert.alert('Source name required', 'Please enter the cookbook or source name.');
+      return;
+    }
     setSaving(true);
 
     const { data: recipe, error } = await supabase
@@ -187,8 +194,8 @@ export default function ImportPhotoScreen() {
         prep_time_minutes: data.prep_time_minutes ? parseInt(data.prep_time_minutes) : null,
         cook_time_minutes: data.cook_time_minutes ? parseInt(data.cook_time_minutes) : null,
         servings: data.servings ? parseInt(data.servings) : null,
-        source_type: 'photo',
-        source_name: sourceName.trim() || null,
+        source_type: sourceChoice === 'own' ? 'manual' : 'photo',
+        source_name: sourceChoice === 'external' ? (sourceName.trim() || null) : null,
         language: extractedLanguage,
         visibility: 'private',
         created_by: user.id,
@@ -240,43 +247,69 @@ export default function ImportPhotoScreen() {
           submitLabel="Save Recipe"
           loading={saving}
           headerContent={
-            !sourceSkipped ? (
-              <View style={styles.sourceCard}>
-                <Text style={styles.sourceCardTitle}>Where is this recipe from?</Text>
+            <View style={styles.sourceCard}>
+              <Text style={styles.sourceCardTitle}>Where is this recipe from?</Text>
 
+              <View style={styles.sourceChoices}>
                 <TouchableOpacity
-                  style={[styles.scanCoverButton, scanningCover && { opacity: 0.5 }]}
-                  onPress={scanBookCover}
-                  disabled={scanningCover}
+                  style={[
+                    styles.sourceChoiceButton,
+                    sourceChoice === 'own' && styles.sourceChoiceActive,
+                  ]}
+                  onPress={() => { setSourceChoice('own'); setSourceName(''); }}
                   activeOpacity={0.7}
                 >
-                  {scanningCover ? (
-                    <ActivityIndicator size="small" color={colors.accent} />
-                  ) : (
-                    <FontAwesome name="camera" size={16} color={colors.accent} />
-                  )}
-                  <Text style={styles.scanCoverText}>
-                    {scanningCover ? 'Scanning...' : 'Scan book cover'}
-                  </Text>
+                  <FontAwesome name="pencil" size={16} color={sourceChoice === 'own' ? colors.accent : colors.inkSecondary} />
+                  <Text style={[
+                    styles.sourceChoiceText,
+                    sourceChoice === 'own' && styles.sourceChoiceTextActive,
+                  ]}>I made this myself</Text>
                 </TouchableOpacity>
 
-                <TextInput
-                  style={styles.sourceInput}
-                  value={sourceName}
-                  onChangeText={setSourceName}
-                  placeholder="e.g. The Food Lab, Ottolenghi Simple"
-                  placeholderTextColor={colors.inkMuted}
-                />
-
                 <TouchableOpacity
-                  style={styles.skipButton}
-                  onPress={() => { setSourceSkipped(true); setSourceName(''); }}
+                  style={[
+                    styles.sourceChoiceButton,
+                    sourceChoice === 'external' && styles.sourceChoiceActive,
+                  ]}
+                  onPress={() => setSourceChoice('external')}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.skipText}>Skip for now</Text>
+                  <FontAwesome name="book" size={16} color={sourceChoice === 'external' ? colors.accent : colors.inkSecondary} />
+                  <Text style={[
+                    styles.sourceChoiceText,
+                    sourceChoice === 'external' && styles.sourceChoiceTextActive,
+                  ]}>From a cookbook or other source</Text>
                 </TouchableOpacity>
               </View>
-            ) : undefined
+
+              {sourceChoice === 'external' && (
+                <View style={styles.sourceExternalFields}>
+                  <TouchableOpacity
+                    style={[styles.scanCoverButton, scanningCover && { opacity: 0.5 }]}
+                    onPress={scanBookCover}
+                    disabled={scanningCover}
+                    activeOpacity={0.7}
+                  >
+                    {scanningCover ? (
+                      <ActivityIndicator size="small" color={colors.accent} />
+                    ) : (
+                      <FontAwesome name="camera" size={16} color={colors.accent} />
+                    )}
+                    <Text style={styles.scanCoverText}>
+                      {scanningCover ? 'Scanning...' : 'Scan book cover'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TextInput
+                    style={styles.sourceInput}
+                    value={sourceName}
+                    onChangeText={setSourceName}
+                    placeholder="e.g. The Food Lab, Ottolenghi Simple"
+                    placeholderTextColor={colors.inkMuted}
+                  />
+                </View>
+              )}
+            </View>
           }
         />
       </>
@@ -448,13 +481,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.ink,
   },
-  skipButton: {
-    paddingVertical: spacing.md,
+  sourceChoices: {
+    gap: spacing.sm,
   },
-  skipText: {
+  sourceChoiceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bg,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+  },
+  sourceChoiceActive: {
+    borderColor: colors.accent,
+    backgroundColor: colors.accentLight,
+  },
+  sourceChoiceText: {
     fontFamily: fontFamily.sans,
-    fontSize: 12,
-    color: colors.inkMuted,
-    textDecorationLine: 'underline' as const,
+    fontSize: 14,
+    color: colors.inkSecondary,
+    flex: 1,
+  },
+  sourceChoiceTextActive: {
+    color: colors.ink,
+    fontWeight: '500',
+  },
+  sourceExternalFields: {
+    marginTop: spacing.md,
+    gap: spacing.md,
   },
 });
