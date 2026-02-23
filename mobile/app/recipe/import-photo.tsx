@@ -263,7 +263,7 @@ export default function ImportPhotoScreen() {
                   <Text style={[
                     styles.sourceChoiceText,
                     sourceChoice === 'own' && styles.sourceChoiceTextActive,
-                  ]}>I made this myself</Text>
+                  ]}>Personal recipe — family, friend, or my own creation</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -278,10 +278,15 @@ export default function ImportPhotoScreen() {
                   <Text style={[
                     styles.sourceChoiceText,
                     sourceChoice === 'external' && styles.sourceChoiceTextActive,
-                  ]}>From a cookbook or other source</Text>
+                  ]}>From a cookbook, magazine, or website</Text>
                 </TouchableOpacity>
               </View>
 
+              {sourceChoice === 'external' && (
+                <Text style={styles.externalSourceNote}>
+                  The full recipe stays in your personal cookbook. Your cooking activity will still appear in your feed.
+                </Text>
+              )}
               {sourceChoice === 'external' && (
                 <View style={styles.sourceExternalFields}>
                   <TouchableOpacity
@@ -511,5 +516,10 @@ const styles = StyleSheet.create({
   sourceExternalFields: {
     marginTop: spacing.md,
     gap: spacing.md,
+  },
+  externalSourceNote: {
+    fontSize: 11,
+    color: colors.inkMuted,
+    marginTop: 2,
   },
 });

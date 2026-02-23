@@ -985,9 +985,16 @@ export default function RecipeDetailScreen() {
                     </Pressable>
                   </>
                 ) : (
-                  <Text style={styles.publishBannerText}>
-                    Saved to your private collection. Only you can see this.
-                  </Text>
+                  <>
+                    <Text style={styles.publishBannerText}>
+                      From your personal cookbook.{recipe.source_name ? ` Saved from ${recipe.source_name}.` : recipe.source_url ? ' Saved from the web.' : ' Saved from a cookbook.'} Your followers will see when you cook it.
+                    </Text>
+                    {recipe.source_url && (
+                      <Pressable onPress={() => Linking.openURL(recipe.source_url!)}>
+                        <Text style={styles.publishBannerLink}>View original recipe</Text>
+                      </Pressable>
+                    )}
+                  </>
                 )}
               </View>
             );
@@ -2161,6 +2168,11 @@ const styles = StyleSheet.create({
     ...typography.bodySmall,
     color: colors.inkSecondary,
     marginBottom: spacing.sm,
+  },
+  publishBannerLink: {
+    fontSize: 11,
+    color: colors.accent,
+    marginTop: 4,
   },
   publishButton: {
     backgroundColor: colors.ink,

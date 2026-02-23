@@ -191,7 +191,7 @@ export default function ImportUrlScreen() {
           headerContent={
             <View style={styles.privateNotice}>
               <Text style={styles.privateNoticeText}>
-                This will be saved to your private collection. Only you can see it.
+                Saved to your personal cookbook — only you can see the full recipe. Your cooking activity will still appear in your feed.
               </Text>
             </View>
           }
