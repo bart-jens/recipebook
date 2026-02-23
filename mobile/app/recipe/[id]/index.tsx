@@ -138,6 +138,21 @@ export default function RecipeDetailScreen() {
   const [creatorName, setCreatorName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [recipeCard, setRecipeCard] = useState<{
+    id: string;
+    title: string;
+    image_url: string | null;
+    source_name: string | null;
+    source_url: string | null;
+    source_type: string;
+    visibility: string;
+    prep_time_minutes: number | null;
+    cook_time_minutes: number | null;
+    servings: number | null;
+    tags: string[];
+    creator_display_name: string | null;
+    creator_avatar_url: string | null;
+  } | null>(null);
 
   const [cookEntries, setCookEntries] = useState<{ id: string; cooked_at: string; notes: string | null }[]>([]);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -228,9 +243,12 @@ export default function RecipeDetailScreen() {
       ]);
 
     if (!recipeData) {
-      // Check if recipe exists but is private (RLS blocked it)
-      const { data: exists } = await supabase.rpc('recipe_exists', { p_recipe_id: id });
-      setIsPrivate(!!exists);
+      // Fetch non-copyrightable metadata card (SECURITY DEFINER, bypasses RLS)
+      const { data: card } = await supabase.rpc('get_recipe_card', { p_recipe_id: id });
+      if (card && card.visibility === 'private') {
+        setRecipeCard(card);
+        setIsPrivate(true);
+      }
       setLoading(false);
       return;
     }
@@ -642,18 +660,117 @@ export default function RecipeDetailScreen() {
   }
 
   if (!recipe) {
+    if (isPrivate && recipeCard) {
+      const totalTime = (recipeCard.prep_time_minutes || 0) + (recipeCard.cook_time_minutes || 0);
+      const metaParts: string[] = [];
+      if (totalTime > 0) metaParts.push(`${totalTime} min`);
+      if (recipeCard.servings) metaParts.push(`${recipeCard.servings} servings`);
+
+      return (
+        <>
+          <Stack.Screen options={{ headerShown: false }} />
+          <View style={styles.container}>
+            {/* Custom header */}
+            <View style={[styles.header, { paddingTop: insets.top }]}>
+              <View style={styles.backButton}>
+                <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
+                  <FontAwesome name="chevron-left" size={18} color={colors.accent} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.headerSpacer} />
+            </View>
+
+            <ScrollView
+              style={styles.container}
+              contentContainerStyle={[styles.privateCardContent, { paddingTop: insets.top + HEADER_HEIGHT }]}
+            >
+              {/* Hero image */}
+              {recipeCard.image_url ? (
+                <Image
+                  source={{ uri: recipeCard.image_url }}
+                  style={styles.privateCardImage}
+                  contentFit="cover"
+                />
+              ) : null}
+
+              <View style={styles.privateCardBody}>
+                {/* Title */}
+                <Text style={styles.privateCardTitle}>{recipeCard.title}</Text>
+
+                {/* Source line */}
+                {recipeCard.source_name ? (
+                  recipeCard.source_url ? (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => Linking.openURL(recipeCard.source_url!)}
+                    >
+                      <Text style={styles.privateCardSource}>
+                        {'From '}
+                        <Text style={styles.privateCardSourceLink}>{recipeCard.source_name}</Text>
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <Text style={styles.privateCardSource}>From {recipeCard.source_name}</Text>
+                  )
+                ) : null}
+
+                {/* Meta row */}
+                {metaParts.length > 0 ? (
+                  <Text style={styles.privateCardMeta}>{metaParts.join(' · ')}</Text>
+                ) : null}
+
+                {/* Tags */}
+                {recipeCard.tags && recipeCard.tags.length > 0 ? (
+                  <View style={styles.privateCardTags}>
+                    {recipeCard.tags.map((tag) => (
+                      <View key={tag} style={styles.privateCardTag}>
+                        <Text style={styles.privateCardTagText}>{tag}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+
+                {/* Divider */}
+                <View style={styles.privateCardDivider} />
+
+                {/* Private notice */}
+                <Text style={styles.privateCardNotice}>
+                  {recipeCard.creator_display_name
+                    ? `This recipe is in ${recipeCard.creator_display_name}'s private collection.`
+                    : 'This recipe is in a private collection.'}
+                </Text>
+
+                {/* View original recipe link */}
+                {recipeCard.source_url ? (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => Linking.openURL(recipeCard.source_url!)}
+                    style={styles.privateCardViewLink}
+                  >
+                    <Text style={styles.privateCardViewLinkText}>View original recipe</Text>
+                  </TouchableOpacity>
+                ) : null}
+
+                {/* Back button */}
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => router.back()}
+                  style={styles.privateCardBack}
+                >
+                  <Text style={styles.privateCardBackText}>Go back</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </>
+      );
+    }
+
     return (
       <>
         <Stack.Screen options={{ headerShown: true, headerTitle: 'Recipe' }} />
         <View style={[styles.container, styles.centered]}>
-          {isPrivate ? (
-            <>
-              <Text style={styles.emptyText}>This recipe is private</Text>
-              <Text style={styles.emptySubtext}>The owner hasn't made this recipe public yet.</Text>
-            </>
-          ) : (
-            <Text style={styles.emptyText}>Recipe not found</Text>
-          )}
+          <Text style={styles.emptyText}>Recipe not found</Text>
           <TouchableOpacity onPress={() => router.back()} style={styles.backLink}>
             <Text style={styles.backLinkText}>Go back</Text>
           </TouchableOpacity>
@@ -1920,5 +2037,78 @@ const styles = StyleSheet.create({
   },
   addToListTextDone: {
     color: colors.success,
+  },
+
+  // Private recipe card
+  privateCardContent: {
+    paddingBottom: spacing.xxxl,
+  },
+  privateCardImage: {
+    width: '100%',
+    aspectRatio: 4 / 3,
+  },
+  privateCardBody: {
+    paddingHorizontal: spacing.pagePadding,
+    paddingTop: spacing.xl,
+  },
+  privateCardTitle: {
+    ...typography.heading,
+    color: colors.ink,
+    marginBottom: spacing.sm,
+  },
+  privateCardSource: {
+    ...typography.bodySmall,
+    color: colors.inkSecondary,
+    marginBottom: spacing.sm,
+  },
+  privateCardSourceLink: {
+    textDecorationLine: 'underline',
+  },
+  privateCardMeta: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+    marginBottom: spacing.md,
+  },
+  privateCardTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  privateCardTag: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.full,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  privateCardTagText: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+  },
+  privateCardDivider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginBottom: spacing.lg,
+  },
+  privateCardNotice: {
+    ...typography.bodySmall,
+    color: colors.inkSecondary,
+    marginBottom: spacing.lg,
+  },
+  privateCardViewLink: {
+    marginBottom: spacing.md,
+  },
+  privateCardViewLinkText: {
+    ...typography.metaSmall,
+    color: colors.accent,
+    textDecorationLine: 'underline',
+  },
+  privateCardBack: {
+    paddingTop: spacing.xs,
+  },
+  privateCardBackText: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
   },
 });
