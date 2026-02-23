@@ -150,12 +150,13 @@ export default function RecipesScreen() {
   }, [user]);
 
   const handlePublishRecipe = async (recipeId: string) => {
+    if (!user) return;
     setPublishingId(recipeId);
     const { error } = await supabase
       .from('recipes')
       .update({ visibility: 'public', published_at: new Date().toISOString() })
       .eq('id', recipeId)
-      .eq('created_by', user!.id);
+      .eq('created_by', user.id);
     setPublishingId(null);
     if (!error) {
       setPublishedIds((prev) => new Set(prev).add(recipeId));
@@ -368,10 +369,7 @@ export default function RecipesScreen() {
                       <>
                         <Text style={styles.privateDot}> · </Text>
                         <Pressable
-                          onPress={(e) => {
-                            e.stopPropagation?.();
-                            handlePublishRecipe(item.id);
-                          }}
+                          onPress={() => handlePublishRecipe(item.id)}
                           disabled={publishingId === item.id}
                         >
                           <Text style={[styles.publishLink, publishingId === item.id && styles.publishLinkDisabled]}>
