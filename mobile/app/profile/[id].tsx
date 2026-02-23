@@ -207,16 +207,19 @@ export default function PublicProfileScreen() {
         {/* Stats Bar */}
         <View style={styles.statsBar}>
           {canView && (
-            <>
-              <View style={styles.stat}>
-                <Text style={styles.statValue}>{stats.recipe_count}</Text>
-                <Text style={styles.statLabel}>Recipes</Text>
+            <View style={[styles.stat, styles.statWide]}>
+              <Text style={styles.statSectionLabel}>Recipes</Text>
+              <View style={styles.statSubRow}>
+                <View style={styles.statSub}>
+                  <Text style={styles.statValue}>{stats.recipe_count}</Text>
+                  <Text style={styles.statLabel}>Published</Text>
+                </View>
+                <View style={styles.statSub}>
+                  <Text style={styles.statValue}>{stats.cook_count}</Text>
+                  <Text style={styles.statLabel}>Cooked</Text>
+                </View>
               </View>
-              <View style={styles.stat}>
-                <Text style={styles.statValue}>{stats.cook_count}</Text>
-                <Text style={styles.statLabel}>Cooked</Text>
-              </View>
-            </>
+            </View>
           )}
           <View style={styles.stat}>
             <Text style={styles.statValue}>{followerCount}</Text>
@@ -456,6 +459,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRightWidth: 1,
     borderRightColor: colors.border,
+  },
+  statWide: {
+    flex: 2,
+    alignItems: 'flex-start',
+    paddingHorizontal: 10,
+  },
+  statSectionLabel: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+    marginBottom: 4,
+  },
+  statSubRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  statSub: {
+    alignItems: 'center',
   },
   statLast: {
     borderRightWidth: 0,

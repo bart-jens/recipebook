@@ -143,18 +143,21 @@ export default async function PublicProfilePage({
       {/* Stats Bar */}
       <div className="mx-5 mt-5 flex border-t-[3px] border-t-ink border-b border-b-ink animate-fade-in-up opacity-0 anim-delay-2">
         {canView && (
-          <>
-            <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-              <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{stats.recipe_count}</div>
-              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Recipes</div>
+          <div className="flex-[2] py-2.5 px-3 border-r border-border">
+            <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-1.5">Recipes</div>
+            <div className="flex gap-5">
+              <div className="text-center">
+                <div className="text-[20px] font-normal tracking-[-0.01em] text-ink">{stats.recipe_count}</div>
+                <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Published</div>
+              </div>
+              <div className="text-center">
+                <div className="text-[20px] font-normal tracking-[-0.01em] text-ink">{stats.cook_count}</div>
+                <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cooked</div>
+              </div>
             </div>
-            <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-              <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{stats.cook_count}</div>
-              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cooked</div>
-            </div>
-          </>
+          </div>
         )}
-        <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light last:border-r-0">
+        <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
           <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{stats.follower_count}</div>
           <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Followers</div>
         </div>
