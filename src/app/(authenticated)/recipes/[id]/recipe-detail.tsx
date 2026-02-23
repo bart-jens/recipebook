@@ -526,7 +526,12 @@ export function RecipeDetail({
 
         {/* Cooking Log + Ratings */}
         <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: "500ms" }}>
-          <CookingLog recipeId={recipe.id} cookEntries={cookEntries} ratings={ratings} />
+          <CookingLog
+            recipeId={recipe.id}
+            cookEntries={cookEntries}
+            ratings={ratings}
+            isPrivateManual={isOwner && recipe.visibility === "private" && (recipe.source_type === "manual" || recipe.source_type === "fork")}
+          />
         </div>
       </div>
     </div>

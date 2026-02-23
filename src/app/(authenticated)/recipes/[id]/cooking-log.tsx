@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { StarRating } from "./star-rating";
 import { addRating, deleteRating, logCook, deleteCookEntry } from "./actions";
+import { publishRecipe } from "./actions";
 
 interface CookEntry {
   id: string;
@@ -22,10 +23,12 @@ export function CookingLog({
   recipeId,
   cookEntries,
   ratings,
+  isPrivateManual = false,
 }: {
   recipeId: string;
   cookEntries: CookEntry[];
   ratings: RatingEntry[];
+  isPrivateManual?: boolean;
 }) {
   const hasCooked = cookEntries.length > 0;
   const [showCookForm, setShowCookForm] = useState(false);
@@ -37,6 +40,9 @@ export function CookingLog({
   const [ratingNotes, setRatingNotes] = useState("");
 
   const [isPending, startTransition] = useTransition();
+  const [showPublishNudge, setShowPublishNudge] = useState(false);
+  const [nudgePublished, setNudgePublished] = useState(false);
+  const [nudgeLoading, setNudgeLoading] = useState(false);
 
   const avgRating =
     ratings.length > 0
@@ -50,6 +56,7 @@ export function CookingLog({
       setShowCookForm(false);
       setCookNotes("");
       setCookDate(new Date().toISOString().split("T")[0]);
+      if (isPrivateManual) setShowPublishNudge(true);
     });
   }
 
@@ -177,6 +184,41 @@ export function CookingLog({
         >
           Cooked It
         </button>
+      )}
+
+      {showPublishNudge && !nudgePublished && (
+        <div className="mb-6 px-3 py-3 bg-surface border border-border">
+          <p className="text-[12px] font-light text-ink-secondary mb-2">
+            Logged — but this recipe is private. Publish it so your followers can see your cooking activity.
+          </p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={async () => {
+                setNudgeLoading(true);
+                const result = await publishRecipe(recipeId);
+                if (!result?.error) setNudgePublished(true);
+                setNudgeLoading(false);
+              }}
+              disabled={nudgeLoading}
+              className="text-[11px] font-normal tracking-[0.02em] bg-ink text-bg px-3 py-1.5 hover:bg-ink/80 transition-colors disabled:opacity-50"
+            >
+              {nudgeLoading ? "Publishing..." : "Publish recipe"}
+            </button>
+            <button
+              onClick={() => setShowPublishNudge(false)}
+              className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink transition-colors"
+            >
+              Not now
+            </button>
+          </div>
+        </div>
+      )}
+      {showPublishNudge && nudgePublished && (
+        <div className="mb-6 px-3 py-2.5 bg-olive/10 border border-olive/30">
+          <p className="text-[12px] font-normal text-olive">
+            Published — followers can now see your cooking activity.
+          </p>
+        </div>
       )}
 
       <div className="border-t border-border pt-4">
