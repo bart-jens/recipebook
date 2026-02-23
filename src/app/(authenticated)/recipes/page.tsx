@@ -23,6 +23,7 @@ interface RecipeRow {
   cook_time_minutes: number | null;
   updated_at: string;
   visibility: string;
+  source_type: 'manual' | 'url' | 'photo' | 'telegram' | 'instagram' | 'fork';
   recipe_tags: RecipeTag[];
   recipe_ratings: RecipeRating[];
 }
@@ -57,7 +58,7 @@ export default async function RecipesPage({
   const course = searchParams.course || "";
   const filter = searchParams.filter || "";
 
-  const selectFields = "id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, visibility, recipe_tags(tag), recipe_ratings(rating)";
+  const selectFields = "id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, visibility, source_type, recipe_tags(tag), recipe_ratings(rating)";
 
   // Fetch owned recipes, saved recipe IDs, favorites, and cook log in parallel
   let ownedQuery = supabase
@@ -159,12 +160,16 @@ export default async function RecipesPage({
 
   // Apply interaction filters
   let filtered = enriched;
-  if (filter === "favorited") {
-    filtered = filtered.filter((r) => r.isFavorited);
-  } else if (filter === "saved") {
-    filtered = filtered.filter((r) => r.isSaved);
+  if (filter === "imported") {
+    filtered = filtered.filter((r) =>
+      ["url", "photo", "telegram", "instagram"].includes(r.source_type)
+    );
   } else if (filter === "published") {
     filtered = filtered.filter((r) => r.visibility === "public" && !r.isSaved);
+  } else if (filter === "saved") {
+    filtered = filtered.filter((r) => r.isSaved);
+  } else if (filter === "favorited") {
+    filtered = filtered.filter((r) => r.isFavorited);
   }
 
   // Sort: favorites first, then by chosen sort

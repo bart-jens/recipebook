@@ -12,9 +12,10 @@ const SORT_OPTIONS = [
 
 const FILTER_OPTIONS = [
   { value: "", label: "All" },
-  { value: "favorited", label: "Favorited" },
-  { value: "saved", label: "Saved" },
+  { value: "imported", label: "Imported" },
   { value: "published", label: "Published" },
+  { value: "saved", label: "Saved" },
+  { value: "favorited", label: "Favorited" },
 ];
 
 const COURSE_OPTIONS = [
