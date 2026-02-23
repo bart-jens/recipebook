@@ -152,7 +152,7 @@ function ImportUrlContent() {
             Imported from: {importedData.source_url}
           </p>
           <p className="mb-4 text-[11px] font-normal tracking-[0.02em] text-ink-muted">
-            This will be saved to your private collection. Only you can see it.
+            Saved to your personal cookbook — only you can see the full recipe. Your cooking activity will still appear in your feed.
           </p>
           <RecipeForm
             initialData={importedData}

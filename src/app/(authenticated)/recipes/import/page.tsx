@@ -7,9 +7,9 @@ export default function ImportPage() {
         <Link href="/recipes" className="text-sm text-warm-gray hover:text-accent">
           &larr; Back to recipes
         </Link>
-        <h1 className="mt-2 text-2xl font-normal">Import Recipe</h1>
-        <p className="mt-1 text-sm text-warm-gray">
-          Choose how you want to import your recipe.
+        <h1 className="mt-2 text-[28px] font-light tracking-[-0.02em] text-ink">Import Recipe</h1>
+        <p className="mt-1 text-[13px] font-light text-ink-secondary leading-[1.45]">
+          Recipes you import are saved to your personal cookbook — only you can see them. Your cooking activity still appears in your feed.
         </p>
       </div>
 

@@ -172,7 +172,7 @@ export default function ImportPhotoPage() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
               </svg>
-              I made this myself
+              Personal recipe — family, friend, or my own creation
             </button>
 
             <button
@@ -183,8 +183,11 @@ export default function ImportPhotoPage() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
               </svg>
-              From a cookbook or other source
+              From a cookbook, magazine, or website
             </button>
+            <p className="text-[11px] font-light text-ink-muted mt-1 leading-snug">
+              The full recipe stays in your personal cookbook. Your cooking activity will still appear in your feed.
+            </p>
           </div>
 
           {sourceChoice === "external" && (
