@@ -634,10 +634,9 @@ export default function RecipeDetailScreen() {
     }
   };
 
-  // Parallax animated styles
+  // Hero animated styles
   const heroAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateY: interpolate(scrollY.value, [0, HERO_HEIGHT], [0, HERO_HEIGHT * 0.5], Extrapolation.CLAMP) },
       { scale: heroScale.value },
     ],
   }));
@@ -1142,7 +1141,7 @@ export default function RecipeDetailScreen() {
                   onPress={() => setShowCollectionPicker(true)}
                   activeOpacity={0.7}
                 >
-                  <FontAwesome name="folder-o" size={14} color={colors.inkSecondary} />
+                  <FontAwesome name="folder-o" size={12} color={colors.inkMuted} />
                   <Text style={styles.collectionButtonText}>Add to Collection</Text>
                 </TouchableOpacity>
               </Animated.View>
@@ -1880,16 +1879,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
+    paddingVertical: spacing.xs,
     alignSelf: 'flex-start',
     marginBottom: spacing.md,
   },
   collectionButtonText: {
-    ...typography.label,
-    color: colors.inkSecondary,
+    ...typography.metaSmall,
+    color: colors.inkMuted,
   },
   addTagButton: {
     backgroundColor: colors.surface,
@@ -2271,44 +2267,42 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
   },
   publishNudge: {
-    marginBottom: spacing.lg,
-    padding: spacing.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+    marginTop: 2,
+    marginBottom: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   publishNudgeText: {
-    ...typography.bodySmall,
-    color: colors.inkSecondary,
-    marginBottom: spacing.sm,
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+    marginBottom: spacing.xs,
   },
   publishNudgeButtons: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    gap: spacing.lg,
+    gap: spacing.md,
   },
   publishNudgeButton: {
-    backgroundColor: colors.ink,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    // text link - no background
   },
   publishNudgeButtonDisabled: {
     opacity: 0.5,
   },
   publishNudgeButtonText: {
     ...typography.metaSmall,
-    color: colors.bg,
+    color: colors.accent,
   },
   publishNudgeDismissText: {
     ...typography.metaSmall,
     color: colors.inkMuted,
+    opacity: 0.6,
   },
   publishNudgeSuccess: {
-    borderColor: colors.olive,
-    backgroundColor: colors.oliveLight,
+    borderTopColor: colors.olive,
   },
   publishNudgeSuccessText: {
-    ...typography.bodySmall,
+    ...typography.metaSmall,
     color: colors.olive,
   },
 });
