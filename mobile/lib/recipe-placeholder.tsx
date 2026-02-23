@@ -1,16 +1,16 @@
-import Svg, { Rect, Polygon, Line } from 'react-native-svg';
+import Svg, { Defs, RadialGradient, Stop, Rect, Ellipse } from 'react-native-svg';
 import { View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 const PALETTES: [string, string, string][] = [
   ["#EDE5D8", "#C17B50", "#8B4513"],  // terracotta
-  ["#E6E2D4", "#7A8C6E", "#3D5A2A"],  // olive
-  ["#EDE0D4", "#C4957A", "#8B3A20"],  // dusty rose
-  ["#EBE5CC", "#C4A050", "#8B6914"],  // ochre
-  ["#E4DEDA", "#8B6B5A", "#4A2C1A"],  // walnut
-  ["#E2E6DC", "#7A9670", "#3D5A3D"],  // sage
-  ["#EBE2E2", "#B07070", "#6B2020"],  // blush burgundy
-  ["#E8E4DC", "#9C8C70", "#5A4830"],  // warm stone
+  ["#E6E2D4", "#8B8B5A", "#5A6B3A"],  // olive
+  ["#EDE0D4", "#C4957A", "#A06040"],  // dusty rose
+  ["#EBE5CC", "#C4A050", "#A08030"],  // ochre
+  ["#E4DEDA", "#8B6B5A", "#6B4A3A"],  // walnut
+  ["#E2E6DC", "#7A8C6E", "#5A7050"],  // sage
+  ["#EBE2E2", "#B07070", "#8B5252"],  // blush burgundy
+  ["#E8E4DC", "#A09070", "#7A6850"],  // warm stone
 ];
 
 function hashUUID(id: string): number {
@@ -32,10 +32,18 @@ export function RecipePlaceholder({
   style?: StyleProp<ViewStyle>;
 }) {
   const h = hashUUID(id);
-  const [bg, mid, bold] = PALETTES[h % 8];
-  const tlbr = ((h >> 4) & 1) === 0;
+  const [bg, c1, c2] = PALETTES[h % 8];
+  const uid = id.replace(/[^a-z0-9]/gi, '').slice(0, 8);
   const S = size ?? 200;
-  const sw = S * 0.018;
+
+  const x1 = S * (0.10 + 0.25 * ((h) % 100) / 100);
+  const y1 = S * (0.00 + 0.40 * ((h >> 4) % 100) / 100);
+  const x2 = S * (0.45 + 0.45 * ((h >> 8) % 100) / 100);
+  const y2 = S * (0.30 + 0.55 * ((h >> 12) % 100) / 100);
+  const r1 = S * (0.55 + 0.35 * ((h >> 16) % 100) / 100);
+  const r2 = S * (0.50 + 0.35 * ((h >> 20) % 100) / 100);
+  const ry1 = r1 * (0.80 + 0.20 * ((h >> 2) % 100) / 100);
+  const ry2 = r2 * (0.80 + 0.20 * ((h >> 6) % 100) / 100);
 
   const containerStyle: StyleProp<ViewStyle> = size
     ? [{ width: size, height: size }, style]
@@ -49,18 +57,19 @@ export function RecipePlaceholder({
         viewBox={`0 0 ${S} ${S}`}
         preserveAspectRatio="xMidYMid slice"
       >
+        <Defs>
+          <RadialGradient id={`rg1-${uid}`} cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5">
+            <Stop offset="0%" stopColor={c1} stopOpacity={0.72} />
+            <Stop offset="100%" stopColor={c1} stopOpacity={0} />
+          </RadialGradient>
+          <RadialGradient id={`rg2-${uid}`} cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5">
+            <Stop offset="0%" stopColor={c2} stopOpacity={0.55} />
+            <Stop offset="100%" stopColor={c2} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
         <Rect width={S} height={S} fill={bg} />
-        {tlbr ? (
-          <>
-            <Polygon points={`0,0 ${S},0 0,${S}`} fill={mid} />
-            <Line x1={0} y1={S} x2={S} y2={0} stroke={bold} strokeWidth={sw} />
-          </>
-        ) : (
-          <>
-            <Polygon points={`${S},0 ${S},${S} 0,${S}`} fill={mid} />
-            <Line x1={0} y1={0} x2={S} y2={S} stroke={bold} strokeWidth={sw} />
-          </>
-        )}
+        <Ellipse cx={x1} cy={y1} rx={r1} ry={ry1} fill={`url(#rg1-${uid})`} />
+        <Ellipse cx={x2} cy={y2} rx={r2} ry={ry2} fill={`url(#rg2-${uid})`} />
       </Svg>
     </View>
   );

@@ -1,12 +1,12 @@
 const PALETTES: [string, string, string][] = [
   ["#EDE5D8", "#C17B50", "#8B4513"],  // terracotta
-  ["#E6E2D4", "#7A8C6E", "#3D5A2A"],  // olive
-  ["#EDE0D4", "#C4957A", "#8B3A20"],  // dusty rose
-  ["#EBE5CC", "#C4A050", "#8B6914"],  // ochre
-  ["#E4DEDA", "#8B6B5A", "#4A2C1A"],  // walnut
-  ["#E2E6DC", "#7A9670", "#3D5A3D"],  // sage
-  ["#EBE2E2", "#B07070", "#6B2020"],  // blush burgundy
-  ["#E8E4DC", "#9C8C70", "#5A4830"],  // warm stone
+  ["#E6E2D4", "#8B8B5A", "#5A6B3A"],  // olive
+  ["#EDE0D4", "#C4957A", "#A06040"],  // dusty rose
+  ["#EBE5CC", "#C4A050", "#A08030"],  // ochre
+  ["#E4DEDA", "#8B6B5A", "#6B4A3A"],  // walnut
+  ["#E2E6DC", "#7A8C6E", "#5A7050"],  // sage
+  ["#EBE2E2", "#B07070", "#8B5252"],  // blush burgundy
+  ["#E8E4DC", "#A09070", "#7A6850"],  // warm stone
 ];
 
 function hashUUID(id: string): number {
@@ -28,9 +28,19 @@ export function RecipePlaceholder({
   className?: string;
 }) {
   const h = hashUUID(id);
-  const [bg, mid, bold] = PALETTES[h % 8];
-  const tlbr = ((h >> 4) & 1) === 0;
-  const sw = (size * 0.018).toFixed(2);
+  const [bg, c1, c2] = PALETTES[h % 8];
+  const uid = id.replace(/[^a-z0-9]/gi, "").slice(0, 8);
+
+  const x1 = (size * (0.10 + 0.25 * ((h) % 100) / 100)).toFixed(1);
+  const y1 = (size * (0.00 + 0.40 * ((h >> 4) % 100) / 100)).toFixed(1);
+  const x2 = (size * (0.45 + 0.45 * ((h >> 8) % 100) / 100)).toFixed(1);
+  const y2 = (size * (0.30 + 0.55 * ((h >> 12) % 100) / 100)).toFixed(1);
+  const r1f = size * (0.55 + 0.35 * ((h >> 16) % 100) / 100);
+  const r2f = size * (0.50 + 0.35 * ((h >> 20) % 100) / 100);
+  const r1 = r1f.toFixed(1);
+  const r2 = r2f.toFixed(1);
+  const ry1 = (r1f * (0.80 + 0.20 * ((h >> 2) % 100) / 100)).toFixed(1);
+  const ry2 = (r2f * (0.80 + 0.20 * ((h >> 6) % 100) / 100)).toFixed(1);
 
   return (
     <svg
@@ -41,18 +51,19 @@ export function RecipePlaceholder({
       style={{ display: "block", flexShrink: 0 }}
       className={className}
     >
+      <defs>
+        <radialGradient id={`rg1-${uid}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={c1} stopOpacity={0.72} />
+          <stop offset="100%" stopColor={c1} stopOpacity={0} />
+        </radialGradient>
+        <radialGradient id={`rg2-${uid}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={c2} stopOpacity={0.55} />
+          <stop offset="100%" stopColor={c2} stopOpacity={0} />
+        </radialGradient>
+      </defs>
       <rect width={size} height={size} fill={bg} />
-      {tlbr ? (
-        <>
-          <polygon points={`0,0 ${size},0 0,${size}`} fill={mid} />
-          <line x1="0" y1={size} x2={size} y2="0" stroke={bold} strokeWidth={sw} />
-        </>
-      ) : (
-        <>
-          <polygon points={`${size},0 ${size},${size} 0,${size}`} fill={mid} />
-          <line x1="0" y1="0" x2={size} y2={size} stroke={bold} strokeWidth={sw} />
-        </>
-      )}
+      <ellipse cx={x1} cy={y1} rx={r1} ry={ry1} fill={`url(#rg1-${uid})`} />
+      <ellipse cx={x2} cy={y2} rx={r2} ry={ry2} fill={`url(#rg2-${uid})`} />
     </svg>
   );
 }
