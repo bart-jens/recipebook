@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function RecipeCardPage({
   params,
@@ -10,8 +11,10 @@ export default async function RecipeCardPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  // Query recipe directly (non-copyrightable fields only — no description, instructions, ingredients)
-  const { data: recipe } = await supabase
+  // Use admin client to bypass RLS — this page intentionally shows
+  // non-copyrightable fields for private recipes
+  const admin = createAdminClient();
+  const { data: recipe } = await admin
     .from("recipes")
     .select("id, title, image_url, source_name, source_url, source_type, visibility, prep_time_minutes, cook_time_minutes, servings, created_by, recipe_tags(tag)")
     .eq("id", params.id)
@@ -28,8 +31,7 @@ export default async function RecipeCardPage({
     );
   }
 
-  // Fetch creator profile
-  const { data: creator } = await supabase
+  const { data: creator } = await admin
     .from("user_profiles")
     .select("display_name, avatar_url")
     .eq("id", recipe.created_by)
@@ -49,6 +51,7 @@ export default async function RecipeCardPage({
       : null);
 
   const tags = (recipe.recipe_tags || []).map((t: { tag: string }) => t.tag);
+  const firstTag = tags[0] || null;
 
   return (
     <div className="px-5 py-4 pb-24">
@@ -59,12 +62,28 @@ export default async function RecipeCardPage({
       </div>
 
       <div className="max-w-2xl">
-        {recipe.image_url && (
+        {recipe.image_url ? (
           <img
             src={recipe.image_url}
             alt={recipe.title}
             className="mb-6 w-full max-h-[400px] object-cover"
           />
+        ) : (
+          <div className="mb-6 flex h-[200px] flex-col items-center justify-center bg-surface-alt">
+            {firstTag && (
+              <span className="text-[11px] font-normal tracking-[0.04em] uppercase text-accent mb-2">
+                {firstTag}
+              </span>
+            )}
+            <h2 className="text-[20px] font-normal text-ink text-center px-6 leading-tight">
+              {recipe.title}
+            </h2>
+            {sourceDisplay && (
+              <span className="mt-2 text-[11px] font-normal tracking-[0.02em] text-ink-muted">
+                {sourceDisplay}
+              </span>
+            )}
+          </div>
         )}
 
         <h1 className="text-[26px] font-normal leading-tight text-ink">
@@ -89,7 +108,6 @@ export default async function RecipeCardPage({
           </p>
         )}
 
-        {/* Creator */}
         {creator && (
           <div className="mt-4 flex items-center gap-2">
             {creator.avatar_url ? (
@@ -111,7 +129,6 @@ export default async function RecipeCardPage({
           </div>
         )}
 
-        {/* Meta row */}
         {(recipe.prep_time_minutes || recipe.cook_time_minutes || recipe.servings) && (
           <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 border-t border-warm-border pt-4">
             {recipe.prep_time_minutes && (
@@ -135,7 +152,6 @@ export default async function RecipeCardPage({
           </div>
         )}
 
-        {/* Tags */}
         {tags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {tags.map((tag: string) => (
@@ -149,7 +165,6 @@ export default async function RecipeCardPage({
           </div>
         )}
 
-        {/* Note about private recipe */}
         <div className="mt-8 border-t border-warm-border pt-4">
           <p className="text-xs text-ink-muted">
             This is a private recipe. Only the title, source, and basic details are shown.

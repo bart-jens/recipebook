@@ -28,38 +28,28 @@ export default function RecipeCardScreen() {
 
   useEffect(() => {
     async function load() {
-      const { data: recipe } = await supabase
-        .from('recipes')
-        .select('id, title, image_url, source_name, source_url, source_type, visibility, prep_time_minutes, cook_time_minutes, servings, created_by, recipe_tags(tag)')
-        .eq('id', id)
-        .single();
-
-      if (!recipe) {
-        setLoading(false);
-        return;
-      }
-
-      const { data: creator } = await supabase
-        .from('user_profiles')
-        .select('display_name, avatar_url')
-        .eq('id', recipe.created_by)
-        .single();
-
-      setCard({
-        id: recipe.id,
-        title: recipe.title,
-        image_url: recipe.image_url,
-        source_name: recipe.source_name,
-        source_url: recipe.source_url,
-        source_type: recipe.source_type || '',
-        visibility: recipe.visibility || '',
-        prep_time_minutes: recipe.prep_time_minutes,
-        cook_time_minutes: recipe.cook_time_minutes,
-        servings: recipe.servings,
-        tags: (recipe.recipe_tags || []).map((t: { tag: string }) => t.tag),
-        creator_display_name: creator?.display_name || '',
-        creator_avatar_url: creator?.avatar_url || null,
+      // Use SECURITY DEFINER RPC to bypass RLS for private recipes
+      const { data } = await (supabase.rpc as any)('get_recipe_card', {
+        p_recipe_id: id,
       });
+      const row = Array.isArray(data) ? data[0] : data;
+      if (row) {
+        setCard({
+          id: row.id,
+          title: row.title,
+          image_url: row.image_url,
+          source_name: row.source_name,
+          source_url: row.source_url,
+          source_type: row.source_type || '',
+          visibility: row.visibility || '',
+          prep_time_minutes: row.prep_time_minutes,
+          cook_time_minutes: row.cook_time_minutes,
+          servings: row.servings,
+          tags: row.tags || [],
+          creator_display_name: row.creator_display_name || '',
+          creator_avatar_url: row.creator_avatar_url || null,
+        });
+      }
       setLoading(false);
     }
     load();
@@ -103,17 +93,29 @@ export default function RecipeCardScreen() {
       ? (() => { try { return new URL(card.source_url).hostname.replace(/^www\./, ''); } catch { return card.source_url; } })()
       : null);
 
+  const firstTag = card.tags?.[0] || null;
+
   return (
     <>
       <Stack.Screen options={{ headerTitle: card.title }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        {card.image_url && (
+        {card.image_url ? (
           <Image
             source={{ uri: card.image_url }}
             style={styles.image}
             contentFit="cover"
             transition={200}
           />
+        ) : (
+          <View style={styles.noImageHeader}>
+            {firstTag && (
+              <Text style={styles.noImageTag}>{firstTag}</Text>
+            )}
+            <Text style={styles.noImageTitle} numberOfLines={3}>{card.title}</Text>
+            {sourceDisplay && (
+              <Text style={styles.noImageSource}>{sourceDisplay}</Text>
+            )}
+          </View>
         )}
 
         <View style={styles.body}>
@@ -201,6 +203,32 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: 300,
+  },
+  noImageHeader: {
+    height: 200,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xxl,
+  },
+  noImageTag: {
+    ...typography.metaSmall,
+    color: colors.accent,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.sm,
+  },
+  noImageTitle: {
+    ...typography.heading,
+    fontSize: 20,
+    lineHeight: 26,
+    color: colors.ink,
+    textAlign: 'center',
+  },
+  noImageSource: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+    marginTop: spacing.sm,
   },
   body: {
     padding: spacing.xl,
