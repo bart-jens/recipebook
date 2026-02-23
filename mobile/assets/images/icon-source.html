@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1024px;
+    height: 1024px;
+    background: #F6F4EF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+</head>
+<body>
+  <svg width="620" height="620" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <mask id="fork-mask">
+        <rect width="24" height="24" fill="white" />
+        <line x1="8.5"  y1="5" x2="8.5"  y2="10.5" stroke="black" stroke-width="1.5" stroke-linecap="round" />
+        <line x1="10.8" y1="5" x2="10.8" y2="10.5" stroke="black" stroke-width="1.5" stroke-linecap="round" />
+        <line x1="13.2" y1="5" x2="13.2" y2="10.5" stroke="black" stroke-width="1.5" stroke-linecap="round" />
+        <line x1="15.5" y1="5" x2="15.5" y2="10.5" stroke="black" stroke-width="1.5" stroke-linecap="round" />
+        <path d="M8.5 10.5 Q8.5 13 12 13 Q15.5 13 15.5 10.5" stroke="black" stroke-width="1.5" fill="none" stroke-linecap="round" />
+        <line x1="12" y1="13" x2="12" y2="19.5" stroke="black" stroke-width="1.8" stroke-linecap="round" />
+      </mask>
+    </defs>
+    <circle cx="12" cy="12" r="11" fill="#141210" mask="url(#fork-mask)" />
+  </svg>
+</body>
+</html>
