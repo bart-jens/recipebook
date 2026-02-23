@@ -55,6 +55,25 @@ interface RecentCook {
   recipes: { id: string; title: string } | null;
 }
 
+
+type FeedLinkTarget =
+  | { kind: 'internal'; path: string }
+  | { kind: 'external'; url: string }
+  | { kind: 'none' };
+
+function resolveLink(item: FeedItem): FeedLinkTarget {
+  if (item.recipe_visibility === 'public') {
+    return { kind: 'internal', path: `/recipe/${item.recipe_id}` };
+  }
+  if (item.source_url) {
+    return { kind: 'external', url: item.source_url };
+  }
+  if (item.recipe_source_type === 'manual' || item.recipe_source_type === 'fork') {
+    return { kind: 'internal', path: `/recipe/${item.recipe_id}` };
+  }
+  return { kind: 'none' };
+}
+
 export default function HomeScreen() {
   const { user } = useAuth();
   const [displayName, setDisplayName] = useState('');
@@ -378,16 +397,31 @@ export default function HomeScreen() {
               {item.display_name}
             </Text>
             {actionVerb(item.event_type)}
-            <Text style={styles.tickerRecipe} onPress={() => router.push(`/recipe/${item.recipe_id}`)}>
-              {item.recipe_title}
-            </Text>
+            {(() => {
+              const link = resolveLink(item);
+              const onPressRecipe = link.kind === 'internal'
+                ? () => router.push(link.path as any)
+                : link.kind === 'external'
+                ? () => Linking.openURL(link.url)
+                : undefined;
+              return (
+                <Text style={styles.tickerRecipe} onPress={onPressRecipe}>
+                  {item.recipe_title}
+                </Text>
+              );
+            })()}
           </Text>
           {item.event_type === 'cooked' && item.rating != null && renderStars(item.rating)}
-          {(item.source_name || item.source_url) && (
-            <Text style={styles.tickerSource}>
-              via {item.source_name || (() => { try { return new URL(item.source_url!).hostname.replace(/^www\./, ''); } catch { return item.source_url; } })()}
-            </Text>
-          )}
+          {(() => {
+            const link = resolveLink(item);
+            const sourceLabel = item.source_name
+              || (item.source_url ? (() => { try { return new URL(item.source_url!).hostname.replace(/^www\./, ''); } catch { return null; } })() : null)
+              || (item.recipe_visibility === 'private' && item.recipe_source_type !== 'manual' && item.recipe_source_type !== 'fork' ? 'a cookbook' : null);
+
+            if (!sourceLabel) return null;
+            const prefix = item.source_url && link.kind === 'external' ? 'via' : 'from';
+            return <Text style={styles.tickerSource}>{prefix} {sourceLabel}</Text>;
+          })()}
         </View>
         <Text style={styles.tickerTime}>{formatTimeAgo(item.event_at)}</Text>
       </View>
