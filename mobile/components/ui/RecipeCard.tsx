@@ -4,8 +4,8 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { Image } from 'expo-image';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import StarRating from './StarRating';
-import { ForkDot } from './Logo';
 import { colors, spacing, typography, animation } from '@/lib/theme';
+import { RecipePlaceholder } from '@/lib/recipe-placeholder';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -68,9 +68,7 @@ export default function RecipeCard({ recipe, onPress, onLongPress, variant = 'de
             transition={200}
           />
         ) : (
-          <View style={styles.placeholder}>
-            <ForkDot size={28} color={colors.accentWashIcon} />
-          </View>
+          <RecipePlaceholder id={recipe.id} style={StyleSheet.absoluteFillObject} />
         )}
       </View>
 
@@ -120,16 +118,6 @@ const styles = StyleSheet.create({
   },
   image: {
     ...StyleSheet.absoluteFillObject,
-  },
-  placeholder: {
-    flex: 1,
-    backgroundColor: colors.accentWash,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderLetter: {
-    ...typography.title,
-    color: colors.accentWashIcon,
   },
   content: {
     padding: spacing.lg,

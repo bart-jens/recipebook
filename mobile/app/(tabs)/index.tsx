@@ -18,6 +18,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
+import { RecipePlaceholder } from '@/lib/recipe-placeholder';
 
 interface FeedItem {
   event_type: string;
@@ -262,7 +263,7 @@ export default function HomeScreen() {
                     transition={200}
                   />
                 ) : (
-                  <View style={[styles.carouselImage, { backgroundColor: colors.surfaceAlt }]} />
+                  <RecipePlaceholder id={recipe.id} size={140} />
                 )}
                 <View style={styles.carouselCardBody}>
                   {getTag(recipe) && (

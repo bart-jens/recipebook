@@ -5,6 +5,7 @@ import { Stack, useLocalSearchParams, router } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { supabase } from '@/lib/supabase';
 import { colors, spacing, fontFamily, typography } from '@/lib/theme';
+import { RecipePlaceholder } from '@/lib/recipe-placeholder';
 
 interface RecipeCard {
   id: string;
@@ -115,6 +116,7 @@ export default function RecipeCardScreen() {
           />
         ) : (
           <View style={styles.noImageHeader}>
+            <RecipePlaceholder id={card.id} style={StyleSheet.absoluteFillObject} />
             {firstTag && (
               <Text style={styles.noImageTag}>{firstTag}</Text>
             )}
