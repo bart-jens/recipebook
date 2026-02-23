@@ -29,6 +29,11 @@ export default async function ProfilePage() {
     .select("recipe_id")
     .eq("user_id", user.id);
 
+  const { data: savedEntries } = await supabase
+    .from("saved_recipes")
+    .select("recipe_id")
+    .eq("user_id", user.id);
+
   const { data: followers } = await supabase
     .from("user_follows")
     .select("id")
@@ -51,6 +56,7 @@ export default async function ProfilePage() {
   const totalRecipes = (recipes || []).length;
   const publishedRecipes = (recipes || []).filter((r) => r.visibility === "public").length;
   const timesCooked = new Set((cookLog || []).map((c) => c.recipe_id)).size;
+  const savedCount = (savedEntries || []).length;
   const followerCount = (followers || []).length;
 
   // Following count
@@ -144,17 +150,25 @@ export default async function ProfilePage() {
 
       {/* Stats Bar */}
       <div className="mx-5 mt-5 flex border-t-[3px] border-t-ink border-b border-b-ink">
-        <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{publishedRecipes}</div>
-          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Published</div>
-          {totalRecipes > publishedRecipes && (
-            <div className="text-[10px] text-ink-muted/60">{totalRecipes} total</div>
-          )}
-        </Link>
-        <Link href="/recipes?filter=cooked" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{timesCooked}</div>
-          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cooked</div>
-        </Link>
+        {/* Recipes group */}
+        <div className="flex-[2] py-2.5 px-3 border-r border-border">
+          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-1.5">Recipes</div>
+          <div className="flex gap-5">
+            <Link href="/recipes?filter=published" className="text-center hover:text-accent transition-colors">
+              <div className="text-[20px] font-normal tracking-[-0.01em] text-ink">{publishedRecipes}</div>
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Published</div>
+            </Link>
+            <Link href="/recipes?filter=cooked" className="text-center hover:text-accent transition-colors">
+              <div className="text-[20px] font-normal tracking-[-0.01em] text-ink">{timesCooked}</div>
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cooked</div>
+            </Link>
+            <Link href="/recipes?filter=saved" className="text-center hover:text-accent transition-colors">
+              <div className="text-[20px] font-normal tracking-[-0.01em] text-ink">{savedCount}</div>
+              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Saved</div>
+            </Link>
+          </div>
+        </div>
+        {/* Social stats */}
         <Link href="/discover" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
           <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{followingCount}</div>
           <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Following</div>

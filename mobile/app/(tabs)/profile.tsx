@@ -46,7 +46,7 @@ const TABS: { id: TabId; label: string }[] = [
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [stats, setStats] = useState({ recipes: 0, published: 0, cooked: 0, followers: 0, following: 0 });
+  const [stats, setStats] = useState({ recipes: 0, published: 0, cooked: 0, saved: 0, followers: 0, following: 0 });
   const [recentRecipes, setRecentRecipes] = useState<RecentRecipe[]>([]);
   const [pendingRequests, setPendingRequests] = useState(0);
   const [newFollowerCount, setNewFollowerCount] = useState(0);
@@ -112,6 +112,7 @@ export default function ProfileScreen() {
           { data: profileData },
           { data: recipes },
           { data: cookLog },
+          { data: savedEntries },
           { data: followers },
           { data: following },
         ] = await Promise.all([
@@ -130,6 +131,10 @@ export default function ProfileScreen() {
             .select('recipe_id')
             .eq('user_id', user!.id),
           supabase
+            .from('saved_recipes')
+            .select('recipe_id')
+            .eq('user_id', user!.id),
+          supabase
             .from('user_follows')
             .select('id')
             .eq('following_id', user!.id),
@@ -145,6 +150,7 @@ export default function ProfileScreen() {
           recipes: (recipes || []).length,
           published: (recipes || []).filter((r) => r.visibility === 'public').length,
           cooked: new Set((cookLog || []).map((c) => c.recipe_id)).size,
+          saved: (savedEntries || []).length,
           followers: (followers || []).length,
           following: (following || []).length,
         });
@@ -222,17 +228,25 @@ export default function ProfileScreen() {
 
       {/* Stats Bar */}
       <View style={styles.statsBar}>
-        <Pressable style={styles.stat} onPress={() => router.push('/(tabs)/recipes')}>
-          <Text style={styles.statValue}>{stats.published}</Text>
-          <Text style={styles.statLabel}>Published</Text>
-          {stats.recipes > stats.published && (
-            <Text style={styles.statSubLabel}>{stats.recipes} total</Text>
-          )}
-        </Pressable>
-        <Pressable style={styles.stat} onPress={() => router.push({ pathname: '/(tabs)/recipes', params: { filter: 'cooked' } })}>
-          <Text style={styles.statValue}>{stats.cooked}</Text>
-          <Text style={styles.statLabel}>Cooked</Text>
-        </Pressable>
+        {/* Recipes group */}
+        <View style={[styles.stat, styles.statWide]}>
+          <Text style={styles.statSectionLabel}>Recipes</Text>
+          <View style={styles.statSubRow}>
+            <Pressable style={styles.statSub} onPress={() => router.push({ pathname: '/(tabs)/recipes', params: { filter: 'published' } })}>
+              <Text style={styles.statValue}>{stats.published}</Text>
+              <Text style={styles.statLabel}>Published</Text>
+            </Pressable>
+            <Pressable style={styles.statSub} onPress={() => router.push({ pathname: '/(tabs)/recipes', params: { filter: 'cooked' } })}>
+              <Text style={styles.statValue}>{stats.cooked}</Text>
+              <Text style={styles.statLabel}>Cooked</Text>
+            </Pressable>
+            <Pressable style={styles.statSub} onPress={() => router.push({ pathname: '/(tabs)/recipes', params: { filter: 'saved' } })}>
+              <Text style={styles.statValue}>{stats.saved}</Text>
+              <Text style={styles.statLabel}>Saved</Text>
+            </Pressable>
+          </View>
+        </View>
+        {/* Social stats */}
         <Pressable style={styles.stat} onPress={() => router.push({ pathname: '/(tabs)/discover', params: { tab: 'chefs' } })}>
           <Text style={styles.statValue}>{stats.following}</Text>
           <Text style={styles.statLabel}>Following</Text>
@@ -443,6 +457,23 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: colors.border,
   },
+  statWide: {
+    flex: 2,
+    alignItems: 'flex-start',
+    paddingHorizontal: 10,
+  },
+  statSectionLabel: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+    marginBottom: 4,
+  },
+  statSubRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  statSub: {
+    alignItems: 'center',
+  },
   statLast: {
     borderRightWidth: 0,
   },
@@ -454,12 +485,6 @@ const styles = StyleSheet.create({
     ...typography.metaSmall,
     color: colors.inkMuted,
     marginTop: 1,
-  },
-  statSubLabel: {
-    ...typography.metaSmall,
-    color: colors.inkMuted,
-    opacity: 0.6,
-    fontSize: 10,
   },
 
   // Banners
