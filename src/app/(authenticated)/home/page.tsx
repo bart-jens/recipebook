@@ -92,6 +92,22 @@ export default async function HomePage() {
 
   return (
     <div>
+      {/* Quick actions */}
+      <div className="flex justify-end gap-2 px-5 pt-3.5 pb-1 animate-fade-in opacity-0 anim-delay-1">
+        <Link
+          href="/recipes/import"
+          className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-border text-ink-muted hover:border-ink hover:text-ink transition-colors"
+        >
+          Import
+        </Link>
+        <Link
+          href="/recipes/new"
+          className="text-[11px] font-normal tracking-[0.02em] px-3 py-2 border border-ink bg-ink text-bg hover:bg-accent hover:border-accent transition-colors"
+        >
+          Create
+        </Link>
+      </div>
+
       {/* Recipe Carousel */}
       {allRecipes.length > 0 && (
         <div className="animate-fade-in-up opacity-0 anim-delay-3">

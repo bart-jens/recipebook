@@ -16,6 +16,7 @@ const FILTER_OPTIONS = [
   { value: "published", label: "Published" },
   { value: "saved", label: "Saved" },
   { value: "favorited", label: "Favorites" },
+  { value: "cooked", label: "Cooked" },
 ];
 
 const COURSE_OPTIONS = [

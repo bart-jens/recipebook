@@ -61,9 +61,17 @@ export default async function CollectionDetailPage({
         {collection.description && (
           <p className="mt-1 text-sm text-warm-gray">{collection.description}</p>
         )}
-        <p className="mt-1 text-xs text-warm-gray">
-          {recipes.length} recipe{recipes.length !== 1 ? "s" : ""}
-        </p>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
+            {recipes.length} recipe{recipes.length !== 1 ? "s" : ""}
+          </p>
+          <Link
+            href="/recipes"
+            className="text-[11px] font-normal tracking-[0.02em] text-accent hover:text-ink transition-colors"
+          >
+            Add from recipes
+          </Link>
+        </div>
       </div>
 
       <CollectionRecipeList

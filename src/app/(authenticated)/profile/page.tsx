@@ -24,9 +24,9 @@ export default async function ProfilePage() {
     .eq("created_by", user.id)
     .order("updated_at", { ascending: false });
 
-  const { data: ratings } = await supabase
-    .from("recipe_ratings")
-    .select("id")
+  const { data: cookLog } = await supabase
+    .from("cook_log")
+    .select("recipe_id")
     .eq("user_id", user.id);
 
   const { data: followers } = await supabase
@@ -50,7 +50,7 @@ export default async function ProfilePage() {
 
   const totalRecipes = (recipes || []).length;
   const publishedRecipes = (recipes || []).filter((r) => r.visibility === "public").length;
-  const timesCooked = (ratings || []).length;
+  const timesCooked = new Set((cookLog || []).map((c) => c.recipe_id)).size;
   const followerCount = (followers || []).length;
 
   // Following count
@@ -151,7 +151,7 @@ export default async function ProfilePage() {
             <div className="text-[10px] text-ink-muted/60">{totalRecipes} total</div>
           )}
         </Link>
-        <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
+        <Link href="/recipes?filter=cooked" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
           <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{timesCooked}</div>
           <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cooked</div>
         </Link>

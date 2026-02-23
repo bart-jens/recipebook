@@ -173,6 +173,8 @@ export default async function RecipesPage({
     filtered = filtered.filter((r) => r.isSaved);
   } else if (filter === "favorited") {
     filtered = filtered.filter((r) => r.isFavorited);
+  } else if (filter === "cooked") {
+    filtered = filtered.filter((r) => r.hasCooked);
   }
 
   // Sort: favorites first, then by chosen sort
