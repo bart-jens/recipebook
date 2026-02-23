@@ -41,7 +41,7 @@ export function RecipeListControls() {
   const course = searchParams.get("course") || "";
   const filter = searchParams.get("filter") || "";
 
-  const hasActiveFilter = sort !== "updated";
+  const hasActiveFilter = sort !== "updated" || !!course;
 
   function updateParams(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -116,7 +116,7 @@ export function RecipeListControls() {
         </button>
       </div>
 
-      {/* Filter tabs + Course — always visible */}
+      {/* Filter tabs — always visible */}
       <div className="flex items-center border-b border-border">
         {FILTER_OPTIONS.map((opt) => (
           <button
@@ -134,43 +134,43 @@ export function RecipeListControls() {
             )}
           </button>
         ))}
-        <div className="ml-auto relative flex items-center">
-          <select
-            value={course}
-            onChange={(e) => updateParams({ course: e.target.value })}
-            className={`text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer outline-none py-1.5 pr-4 appearance-none ${
-              course ? "text-accent" : "text-ink-muted"
-            }`}
-          >
-            <option value="">Course</option>
-            {COURSE_OPTIONS.filter((o) => o.value).map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <svg className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-ink-muted" width="8" height="8" viewBox="0 0 8 8" fill="none">
-            <path d="M1 2.5L4 5.5L7 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
       </div>
 
       {showFilters && (
-        <div className="flex gap-0 border-b border-border mt-0">
-          {SORT_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => updateParams({ sort: opt.value })}
-              className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
-                sort === opt.value
-                  ? "text-ink"
-                  : "text-ink-muted hover:text-ink"
-              }`}
-            >
-              {opt.label}
-              {sort === opt.value && (
-                <span className="absolute bottom-[-1px] left-0 right-[14px] h-0.5 bg-ink" />
-              )}
-            </button>
-          ))}
+        <div className="border-b border-border">
+          <div className="flex gap-0 mt-0">
+            {SORT_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => updateParams({ sort: opt.value })}
+                className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-2 transition-colors ${
+                  sort === opt.value
+                    ? "text-ink"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                {opt.label}
+                {sort === opt.value && (
+                  <span className="absolute bottom-[-1px] left-0 right-[14px] h-0.5 bg-ink" />
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-0 pb-2">
+            {COURSE_OPTIONS.map((opt) => (
+              <button
+                key={`course-${opt.value}`}
+                onClick={() => updateParams({ course: opt.value })}
+                className={`relative text-[11px] font-normal tracking-[0.02em] bg-transparent border-none cursor-pointer px-0 pr-3.5 py-1 transition-colors ${
+                  course === opt.value
+                    ? "text-ink"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
