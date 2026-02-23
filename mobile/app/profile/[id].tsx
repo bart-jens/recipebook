@@ -204,30 +204,27 @@ export default function PublicProfileScreen() {
           </View>
         </View>
 
-        {/* Stats Bar */}
-        <View style={styles.statsBar}>
+        {/* Stats */}
+        <View style={styles.statsContainer}>
+          {/* Recipe stats: two equal columns, only when visible */}
           {canView && (
-            <View style={[styles.stat, styles.statWide]}>
-              <Text style={styles.statSectionLabel}>Recipes</Text>
-              <View style={styles.statSubRow}>
-                <View style={styles.statSub}>
-                  <Text style={styles.statValue}>{stats.recipe_count}</Text>
-                  <Text style={styles.statLabel}>Published</Text>
-                </View>
-                <View style={styles.statSub}>
-                  <Text style={styles.statValue}>{stats.cook_count}</Text>
-                  <Text style={styles.statLabel}>Cooked</Text>
-                </View>
+            <View style={styles.recipeStatsRow}>
+              <View style={styles.recipeStat}>
+                <Text style={styles.recipeStatValue}>{stats.recipe_count}</Text>
+                <Text style={styles.recipeStatLabel}>Published</Text>
+              </View>
+              <View style={styles.statDividerV} />
+              <View style={styles.recipeStat}>
+                <Text style={styles.recipeStatValue}>{stats.cook_count}</Text>
+                <Text style={styles.recipeStatLabel}>Cooked</Text>
               </View>
             </View>
           )}
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>{followerCount}</Text>
-            <Text style={styles.statLabel}>Followers</Text>
-          </View>
-          <View style={[styles.stat, styles.statLast]}>
-            <Text style={styles.statValue}>{stats.following_count}</Text>
-            <Text style={styles.statLabel}>Following</Text>
+          {/* Social stats: inline, subordinate */}
+          <View style={styles.socialStatsRow}>
+            <Text style={styles.socialStatText}><Text style={styles.socialStatValue}>{followerCount}</Text> Followers</Text>
+            <Text style={styles.socialStatDot}>·</Text>
+            <Text style={styles.socialStatText}><Text style={styles.socialStatValue}>{stats.following_count}</Text> Following</Text>
           </View>
         </View>
 
@@ -443,51 +440,58 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  // Stats Bar
-  statsBar: {
+  // Stats
+  statsContainer: {
     marginHorizontal: 20,
     marginTop: 20,
     borderTopWidth: 3,
     borderTopColor: colors.ink,
+  },
+  recipeStatsRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  recipeStat: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  statDividerV: {
+    width: 1,
+    backgroundColor: colors.border,
+  },
+  recipeStatValue: {
+    fontSize: 22,
+    fontFamily: fontFamily.sans,
+    color: colors.ink,
+    letterSpacing: -0.4,
+  },
+  recipeStatLabel: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+    marginTop: 2,
+  },
+  socialStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: colors.ink,
-    flexDirection: 'row',
-  },
-  stat: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
-  },
-  statWide: {
-    flex: 2,
-    alignItems: 'flex-start',
-    paddingHorizontal: 10,
-  },
-  statSectionLabel: {
-    ...typography.metaSmall,
-    color: colors.inkMuted,
-    marginBottom: 4,
-  },
-  statSubRow: {
-    flexDirection: 'row',
     gap: 16,
   },
-  statSub: {
-    alignItems: 'center',
-  },
-  statLast: {
-    borderRightWidth: 0,
-  },
-  statValue: {
-    ...typography.subheading,
-    color: colors.ink,
-  },
-  statLabel: {
+  socialStatText: {
     ...typography.metaSmall,
     color: colors.inkMuted,
-    marginTop: 1,
+  },
+  socialStatValue: {
+    ...typography.metaSmall,
+    color: colors.ink,
+  },
+  socialStatDot: {
+    ...typography.metaSmall,
+    color: colors.border,
   },
 
   // Follow Button

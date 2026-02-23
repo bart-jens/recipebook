@@ -140,30 +140,30 @@ export default async function PublicProfilePage({
         </div>
       </div>
 
-      {/* Stats Bar */}
-      <div className="mx-5 mt-5 flex border-t-[3px] border-t-ink border-b border-b-ink animate-fade-in-up opacity-0 anim-delay-2">
+      {/* Stats */}
+      <div className="mx-5 mt-5 border-t-[3px] border-t-ink animate-fade-in-up opacity-0 anim-delay-2">
+        {/* Recipe stats: two equal columns, only when visible */}
         {canView && (
-          <div className="flex-[2] py-2.5 px-3 border-r border-border">
-            <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-1.5">Recipes</div>
-            <div className="flex gap-5">
-              <div className="text-center">
-                <div className="text-[20px] font-normal tracking-[-0.01em] text-ink">{stats.recipe_count}</div>
-                <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Published</div>
-              </div>
-              <div className="text-center">
-                <div className="text-[20px] font-normal tracking-[-0.01em] text-ink">{stats.cook_count}</div>
-                <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cooked</div>
-              </div>
+          <div className="flex border-b border-border">
+            <div className="flex-1 py-3.5 text-center border-r border-border">
+              <div className="text-[22px] font-normal tracking-[-0.02em] text-ink">{stats.recipe_count}</div>
+              <div className="text-[10px] font-normal tracking-[0.04em] text-ink-muted mt-0.5">Published</div>
+            </div>
+            <div className="flex-1 py-3.5 text-center">
+              <div className="text-[22px] font-normal tracking-[-0.02em] text-ink">{stats.cook_count}</div>
+              <div className="text-[10px] font-normal tracking-[0.04em] text-ink-muted mt-0.5">Cooked</div>
             </div>
           </div>
         )}
-        <div className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{stats.follower_count}</div>
-          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Followers</div>
-        </div>
-        <div className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
-          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{stats.following_count}</div>
-          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Following</div>
+        {/* Social stats: inline, subordinate */}
+        <div className="flex items-center justify-center gap-5 py-2 border-b border-ink">
+          <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
+            <span className="text-ink">{stats.follower_count}</span> Followers
+          </span>
+          <span className="text-border">·</span>
+          <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
+            <span className="text-ink">{stats.following_count}</span> Following
+          </span>
         </div>
       </div>
 

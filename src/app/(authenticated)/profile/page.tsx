@@ -148,35 +148,33 @@ export default async function ProfilePage() {
         </Link>
       )}
 
-      {/* Stats Bar */}
-      <div className="mx-5 mt-5 flex border-t-[3px] border-t-ink border-b border-b-ink">
-        {/* Recipes group */}
-        <div className="flex-[2] py-2.5 px-3 border-r border-border">
-          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-1.5">Recipes</div>
-          <div className="flex gap-5">
-            <Link href="/recipes?filter=published" className="text-center hover:text-accent transition-colors">
-              <div className="text-[20px] font-normal tracking-[-0.01em] text-ink">{publishedRecipes}</div>
-              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Published</div>
-            </Link>
-            <Link href="/recipes?filter=cooked" className="text-center hover:text-accent transition-colors">
-              <div className="text-[20px] font-normal tracking-[-0.01em] text-ink">{timesCooked}</div>
-              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Cooked</div>
-            </Link>
-            <Link href="/recipes?filter=saved" className="text-center hover:text-accent transition-colors">
-              <div className="text-[20px] font-normal tracking-[-0.01em] text-ink">{savedCount}</div>
-              <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Saved</div>
-            </Link>
-          </div>
+      {/* Stats */}
+      <div className="mx-5 mt-5 border-t-[3px] border-t-ink">
+        {/* Recipe stats: three equal columns */}
+        <div className="flex border-b border-border">
+          <Link href="/recipes?filter=published" className="flex-1 py-3.5 text-center border-r border-border hover:bg-accent-light transition-colors group">
+            <div className="text-[22px] font-normal tracking-[-0.02em] text-ink group-hover:text-accent transition-colors">{publishedRecipes}</div>
+            <div className="text-[10px] font-normal tracking-[0.04em] text-ink-muted mt-0.5">Published</div>
+          </Link>
+          <Link href="/recipes?filter=cooked" className="flex-1 py-3.5 text-center border-r border-border hover:bg-accent-light transition-colors group">
+            <div className="text-[22px] font-normal tracking-[-0.02em] text-ink group-hover:text-accent transition-colors">{timesCooked}</div>
+            <div className="text-[10px] font-normal tracking-[0.04em] text-ink-muted mt-0.5">Cooked</div>
+          </Link>
+          <Link href="/recipes?filter=saved" className="flex-1 py-3.5 text-center hover:bg-accent-light transition-colors group">
+            <div className="text-[22px] font-normal tracking-[-0.02em] text-ink group-hover:text-accent transition-colors">{savedCount}</div>
+            <div className="text-[10px] font-normal tracking-[0.04em] text-ink-muted mt-0.5">Saved</div>
+          </Link>
         </div>
-        {/* Social stats */}
-        <Link href="/discover" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{followingCount}</div>
-          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Following</div>
-        </Link>
-        <Link href="/profile/followers" className="flex-1 py-2.5 text-center transition-colors hover:bg-accent-light">
-          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{followerCount}</div>
-          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Followers</div>
-        </Link>
+        {/* Social stats: inline, subordinate */}
+        <div className="flex items-center justify-center gap-5 py-2 border-b border-ink">
+          <Link href="/discover" className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink transition-colors">
+            <span className="text-ink">{followingCount}</span> Following
+          </Link>
+          <span className="text-border">·</span>
+          <Link href="/profile/followers" className="text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-ink transition-colors">
+            <span className="text-ink">{followerCount}</span> Followers
+          </Link>
+        </div>
       </div>
 
       {/* Recipe List */}

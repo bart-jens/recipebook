@@ -226,35 +226,35 @@ export default function ProfileScreen() {
         </Pressable>
       </View>
 
-      {/* Stats Bar */}
-      <View style={styles.statsBar}>
-        {/* Recipes group */}
-        <View style={[styles.stat, styles.statWide]}>
-          <Text style={styles.statSectionLabel}>Recipes</Text>
-          <View style={styles.statSubRow}>
-            <Pressable style={styles.statSub} onPress={() => router.push({ pathname: '/(tabs)/recipes', params: { filter: 'published' } })}>
-              <Text style={styles.statValue}>{stats.published}</Text>
-              <Text style={styles.statLabel}>Published</Text>
-            </Pressable>
-            <Pressable style={styles.statSub} onPress={() => router.push({ pathname: '/(tabs)/recipes', params: { filter: 'cooked' } })}>
-              <Text style={styles.statValue}>{stats.cooked}</Text>
-              <Text style={styles.statLabel}>Cooked</Text>
-            </Pressable>
-            <Pressable style={styles.statSub} onPress={() => router.push({ pathname: '/(tabs)/recipes', params: { filter: 'saved' } })}>
-              <Text style={styles.statValue}>{stats.saved}</Text>
-              <Text style={styles.statLabel}>Saved</Text>
-            </Pressable>
-          </View>
+      {/* Stats */}
+      <View style={styles.statsContainer}>
+        {/* Recipe stats: three equal columns */}
+        <View style={styles.recipeStatsRow}>
+          <Pressable style={styles.recipeStat} onPress={() => router.push({ pathname: '/(tabs)/recipes', params: { filter: 'published' } })}>
+            <Text style={styles.recipeStatValue}>{stats.published}</Text>
+            <Text style={styles.recipeStatLabel}>Published</Text>
+          </Pressable>
+          <View style={styles.statDividerV} />
+          <Pressable style={styles.recipeStat} onPress={() => router.push({ pathname: '/(tabs)/recipes', params: { filter: 'cooked' } })}>
+            <Text style={styles.recipeStatValue}>{stats.cooked}</Text>
+            <Text style={styles.recipeStatLabel}>Cooked</Text>
+          </Pressable>
+          <View style={styles.statDividerV} />
+          <Pressable style={styles.recipeStat} onPress={() => router.push({ pathname: '/(tabs)/recipes', params: { filter: 'saved' } })}>
+            <Text style={styles.recipeStatValue}>{stats.saved}</Text>
+            <Text style={styles.recipeStatLabel}>Saved</Text>
+          </Pressable>
         </View>
-        {/* Social stats */}
-        <Pressable style={styles.stat} onPress={() => router.push({ pathname: '/(tabs)/discover', params: { tab: 'chefs' } })}>
-          <Text style={styles.statValue}>{stats.following}</Text>
-          <Text style={styles.statLabel}>Following</Text>
-        </Pressable>
-        <Pressable style={[styles.stat, styles.statLast]} onPress={() => router.push('/profile/followers')}>
-          <Text style={styles.statValue}>{stats.followers}</Text>
-          <Text style={styles.statLabel}>Followers</Text>
-        </Pressable>
+        {/* Social stats: inline, subordinate */}
+        <View style={styles.socialStatsRow}>
+          <Pressable onPress={() => router.push({ pathname: '/(tabs)/discover', params: { tab: 'chefs' } })}>
+            <Text style={styles.socialStatText}><Text style={styles.socialStatValue}>{stats.following}</Text> Following</Text>
+          </Pressable>
+          <Text style={styles.socialStatDot}>·</Text>
+          <Pressable onPress={() => router.push('/profile/followers')}>
+            <Text style={styles.socialStatText}><Text style={styles.socialStatValue}>{stats.followers}</Text> Followers</Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* Banners */}
@@ -440,51 +440,58 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  // Stats Bar
-  statsBar: {
+  // Stats
+  statsContainer: {
     marginHorizontal: 20,
     marginTop: 20,
     borderTopWidth: 3,
     borderTopColor: colors.ink,
+  },
+  recipeStatsRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  recipeStat: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  statDividerV: {
+    width: 1,
+    backgroundColor: colors.border,
+  },
+  recipeStatValue: {
+    fontSize: 22,
+    fontFamily: fontFamily.sans,
+    color: colors.ink,
+    letterSpacing: -0.4,
+  },
+  recipeStatLabel: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+    marginTop: 2,
+  },
+  socialStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: colors.ink,
-    flexDirection: 'row',
-  },
-  stat: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
-  },
-  statWide: {
-    flex: 2,
-    alignItems: 'flex-start',
-    paddingHorizontal: 10,
-  },
-  statSectionLabel: {
-    ...typography.metaSmall,
-    color: colors.inkMuted,
-    marginBottom: 4,
-  },
-  statSubRow: {
-    flexDirection: 'row',
     gap: 16,
   },
-  statSub: {
-    alignItems: 'center',
-  },
-  statLast: {
-    borderRightWidth: 0,
-  },
-  statValue: {
-    ...typography.subheading,
-    color: colors.ink,
-  },
-  statLabel: {
+  socialStatText: {
     ...typography.metaSmall,
     color: colors.inkMuted,
-    marginTop: 1,
+  },
+  socialStatValue: {
+    ...typography.metaSmall,
+    color: colors.ink,
+  },
+  socialStatDot: {
+    ...typography.metaSmall,
+    color: colors.border,
   },
 
   // Banners
