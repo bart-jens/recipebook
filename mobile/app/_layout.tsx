@@ -127,6 +127,26 @@ export default function RootLayout() {
           name="profile/[id]"
           options={{ headerShown: true, headerTitle: '', ...headerDefaults }}
         />
+        <Stack.Screen
+          name="profile/edit"
+          options={{ headerShown: true, headerTitle: 'Edit Profile', ...headerDefaults }}
+        />
+        <Stack.Screen
+          name="profile/followers"
+          options={{ headerShown: true, headerTitle: 'Followers', ...headerDefaults }}
+        />
+        <Stack.Screen
+          name="profile/new-followers"
+          options={{ headerShown: true, headerTitle: 'New Followers', ...headerDefaults }}
+        />
+        <Stack.Screen
+          name="profile/requests"
+          options={{ headerShown: true, headerTitle: 'Follow Requests', ...headerDefaults }}
+        />
+        <Stack.Screen
+          name="recipe/collection/[id]"
+          options={{ headerShown: true, ...headerDefaults }}
+        />
       </Stack>
     </AuthProvider>
   );

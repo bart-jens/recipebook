@@ -15,7 +15,7 @@ const FILTER_OPTIONS = [
   { value: "imported", label: "Imported" },
   { value: "published", label: "Published" },
   { value: "saved", label: "Saved" },
-  { value: "favorited", label: "Favorited" },
+  { value: "favorited", label: "Favorites" },
 ];
 
 const COURSE_OPTIONS = [

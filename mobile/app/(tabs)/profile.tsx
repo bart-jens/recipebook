@@ -111,7 +111,7 @@ export default function ProfileScreen() {
         const [
           { data: profileData },
           { data: recipes },
-          { data: ratings },
+          { data: cookLog },
           { data: followers },
           { data: following },
         ] = await Promise.all([
@@ -126,8 +126,8 @@ export default function ProfileScreen() {
             .eq('created_by', user!.id)
             .order('updated_at', { ascending: false }),
           supabase
-            .from('recipe_ratings')
-            .select('id')
+            .from('cook_log')
+            .select('recipe_id')
             .eq('user_id', user!.id),
           supabase
             .from('user_follows')
@@ -144,7 +144,7 @@ export default function ProfileScreen() {
         setStats({
           recipes: (recipes || []).length,
           published: (recipes || []).filter((r) => r.visibility === 'public').length,
-          cooked: (ratings || []).length,
+          cooked: new Set((cookLog || []).map((c) => c.recipe_id)).size,
           followers: (followers || []).length,
           following: (following || []).length,
         });
@@ -229,7 +229,7 @@ export default function ProfileScreen() {
             <Text style={styles.statSubLabel}>{stats.recipes} total</Text>
           )}
         </Pressable>
-        <Pressable style={styles.stat} onPress={() => router.push('/(tabs)/recipes')}>
+        <Pressable style={styles.stat} onPress={() => router.push({ pathname: '/(tabs)/recipes', params: { filter: 'cooked' } })}>
           <Text style={styles.statValue}>{stats.cooked}</Text>
           <Text style={styles.statLabel}>Cooked</Text>
         </Pressable>

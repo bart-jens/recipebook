@@ -212,7 +212,7 @@ export default function DiscoverScreen() {
 
     const { data: profiles } = await supabase
       .from('user_profiles')
-      .select('id, display_name, avatar_url')
+      .select('id, display_name, avatar_url, last_cooked_at')
       .neq('id', user.id)
       .eq('is_hidden', false)
       .order('display_name');
@@ -227,29 +227,15 @@ export default function DiscoverScreen() {
 
     const profileIds = profiles.map((p) => p.id);
 
-    const [{ data: recipeCounts }, { data: cookLogs }] = await Promise.all([
-      supabase
-        .from('recipes')
-        .select('created_by')
-        .eq('visibility', 'public')
-        .in('created_by', profileIds),
-      supabase
-        .from('cook_log')
-        .select('user_id, cooked_at')
-        .in('user_id', profileIds)
-        .order('cooked_at', { ascending: false }),
-    ]);
+    const { data: recipeCounts } = await supabase
+      .from('recipes')
+      .select('created_by')
+      .eq('visibility', 'public')
+      .in('created_by', profileIds);
 
     const recipeCountMap = new Map<string, number>();
     for (const r of recipeCounts || []) {
       recipeCountMap.set(r.created_by, (recipeCountMap.get(r.created_by) || 0) + 1);
-    }
-
-    const lastCookedMap = new Map<string, string>();
-    for (const c of cookLogs || []) {
-      if (!lastCookedMap.has(c.user_id)) {
-        lastCookedMap.set(c.user_id, c.cooked_at);
-      }
     }
 
     const enriched: Chef[] = profiles.map((p) => ({
@@ -257,7 +243,7 @@ export default function DiscoverScreen() {
       display_name: p.display_name,
       avatar_url: p.avatar_url,
       recipe_count: recipeCountMap.get(p.id) || 0,
-      last_cooked: lastCookedMap.get(p.id) || null,
+      last_cooked: (p as any).last_cooked_at || null,
       follow_state: followingIds.has(p.id) ? 'following' as const : 'not_following' as const,
     }));
 

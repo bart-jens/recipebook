@@ -200,9 +200,6 @@ export default function HomeScreen() {
     return null;
   };
 
-  const handleFeedItemPress = (item: FeedItem) => {
-    router.push(`/recipe/${item.recipe_id}`);
-  };
 
   const renderStars = (rating: number) => {
     const stars = [];
@@ -309,29 +306,32 @@ export default function HomeScreen() {
   );
 
   const renderTickerItem = ({ item, index }: { item: FeedItem; index: number }) => (
-      <Pressable
-        style={styles.tickerItem}
-        onPress={() => handleFeedItemPress(item)}
-      >
-        {item.avatar_url ? (
-          <Image
-            source={{ uri: item.avatar_url }}
-            style={styles.tickerAvatar}
-            contentFit="cover"
-            transition={200}
-          />
-        ) : (
-          <View style={styles.tickerAvatarFallback}>
-            <Text style={styles.tickerAvatarLetter}>
-              {item.display_name[0]?.toUpperCase()}
-            </Text>
-          </View>
-        )}
+      <View style={styles.tickerItem}>
+        <Pressable onPress={() => router.push(`/profile/${item.user_id}`)}>
+          {item.avatar_url ? (
+            <Image
+              source={{ uri: item.avatar_url }}
+              style={styles.tickerAvatar}
+              contentFit="cover"
+              transition={200}
+            />
+          ) : (
+            <View style={styles.tickerAvatarFallback}>
+              <Text style={styles.tickerAvatarLetter}>
+                {item.display_name[0]?.toUpperCase()}
+              </Text>
+            </View>
+          )}
+        </Pressable>
         <View style={styles.tickerBody}>
           <Text style={styles.tickerText} numberOfLines={2}>
-            <Text style={styles.tickerName}>{item.display_name}</Text>
+            <Text style={styles.tickerName} onPress={() => router.push(`/profile/${item.user_id}`)}>
+              {item.display_name}
+            </Text>
             {actionVerb(item.event_type)}
-            <Text style={styles.tickerRecipe}>{item.recipe_title}</Text>
+            <Text style={styles.tickerRecipe} onPress={() => router.push(`/recipe/${item.recipe_id}`)}>
+              {item.recipe_title}
+            </Text>
           </Text>
           {item.event_type === 'cooked' && item.rating != null && renderStars(item.rating)}
           {(item.source_name || item.source_url) && (
@@ -341,7 +341,7 @@ export default function HomeScreen() {
           )}
         </View>
         <Text style={styles.tickerTime}>{formatTimeAgo(item.event_at)}</Text>
-      </Pressable>
+      </View>
   );
 
   const renderFooter = () => (

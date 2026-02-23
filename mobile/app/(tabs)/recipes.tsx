@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useFocusEffect, router } from 'expo-router';
+import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -22,7 +22,7 @@ import CollectionsSection from '@/components/ui/CollectionsSection';
 import { RecipePlaceholder } from '@/lib/recipe-placeholder';
 
 type SortOption = 'updated' | 'alpha' | 'rating' | 'quickest';
-type FilterOption = '' | 'imported' | 'published' | 'saved' | 'favorited';
+type FilterOption = '' | 'imported' | 'published' | 'saved' | 'favorited' | 'cooked';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'updated', label: 'Recent' },
@@ -36,7 +36,8 @@ const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
   { value: 'imported', label: 'Imported' },
   { value: 'published', label: 'Published' },
   { value: 'saved', label: 'Saved' },
-  { value: 'favorited', label: 'Favorited' },
+  { value: 'favorited', label: 'Favorites' },
+  { value: 'cooked', label: 'Cooked' },
 ];
 
 const COURSE_OPTIONS = [
@@ -78,11 +79,18 @@ function formatTime(minutes: number | null): string | null {
 
 export default function RecipesScreen() {
   const { user } = useAuth();
+  const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('updated');
-  const [activeFilter, setActiveFilter] = useState<FilterOption>('');
+  const [activeFilter, setActiveFilter] = useState<FilterOption>(
+    (filterParam as FilterOption) || ''
+  );
+  useEffect(() => {
+    if (filterParam) setActiveFilter(filterParam as FilterOption);
+  }, [filterParam]);
+
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [showImportMenu, setShowImportMenu] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -298,6 +306,8 @@ export default function RecipesScreen() {
       filtered = filtered.filter((r) => r.isSaved);
     } else if (activeFilter === 'favorited') {
       filtered = filtered.filter((r) => r.isFavorited);
+    } else if (activeFilter === 'cooked') {
+      filtered = filtered.filter((r) => r.hasCooked);
     }
     filtered.sort((a, b) => {
       if (a.isFavorited !== b.isFavorited) return a.isFavorited ? -1 : 1;

@@ -139,9 +139,14 @@ export default function CollectionDetailScreen() {
         {collectionDesc && (
           <Text style={styles.description}>{collectionDesc}</Text>
         )}
-        <Text style={styles.count}>
-          {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
-        </Text>
+        <View style={styles.countRow}>
+          <Text style={styles.count}>
+            {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
+          </Text>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/recipes')}>
+            <Text style={styles.addLink}>Add from recipes</Text>
+          </TouchableOpacity>
+        </View>
         {recipes.length > 3 && (
           <TextInput
             style={styles.searchInput}
@@ -195,10 +200,19 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: spacing.sm,
   },
+  countRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
   count: {
     ...typography.label,
     color: colors.textSecondary,
-    marginBottom: spacing.sm,
+  },
+  addLink: {
+    ...typography.label,
+    color: colors.primary,
   },
   searchInput: {
     backgroundColor: colors.surface,

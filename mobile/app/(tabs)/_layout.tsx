@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Redirect, Tabs } from 'expo-router';
+import { Redirect, Tabs, router } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/lib/supabase';
-import { ActivityIndicator, View, Pressable } from 'react-native';
+import { ActivityIndicator, View, Pressable, TouchableOpacity } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -187,6 +187,11 @@ export default function TabLayout() {
           title: 'Groceries',
           href: null,
           tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="shopping-cart" color={color} focused={focused} />,
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} style={{ paddingLeft: 16 }}>
+              <FontAwesome name="chevron-left" size={16} color={colors.inkMuted} />
+            </TouchableOpacity>
+          ),
         }}
       />
       <Tabs.Screen
