@@ -49,6 +49,7 @@ export default async function ProfilePage() {
     .rpc("get_new_follower_count", { p_user_id: user.id });
 
   const totalRecipes = (recipes || []).length;
+  const publishedRecipes = (recipes || []).filter((r) => r.visibility === "public").length;
   const timesCooked = (ratings || []).length;
   const followerCount = (followers || []).length;
 
@@ -144,8 +145,11 @@ export default async function ProfilePage() {
       {/* Stats Bar */}
       <div className="mx-5 mt-5 flex border-t-[3px] border-t-ink border-b border-b-ink">
         <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
-          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{totalRecipes}</div>
-          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Recipes</div>
+          <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{publishedRecipes}</div>
+          <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Published</div>
+          {totalRecipes > publishedRecipes && (
+            <div className="text-[10px] text-ink-muted/60">{totalRecipes} total</div>
+          )}
         </Link>
         <Link href="/recipes" className="flex-1 py-2.5 text-center border-r border-border transition-colors hover:bg-accent-light">
           <div className="text-[26px] font-normal tracking-[-0.01em] text-ink">{timesCooked}</div>
