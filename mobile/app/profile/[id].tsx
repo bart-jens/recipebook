@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
+  Linking,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, Stack, useFocusEffect, router } from 'expo-router';
@@ -42,7 +43,7 @@ interface ChefProfile {
   is_following: boolean;
   is_owner: boolean;
   can_view: boolean;
-  activity: { recipe_id: string; recipe_title: string; cooked_at: string; notes: string | null }[];
+  activity: { recipe_id: string; recipe_title: string; cooked_at: string; notes: string | null; source_url: string | null; source_name: string | null; source_type: string | null; recipe_visibility: string | null }[];
   favorites: { recipe_id: string; recipe_title: string; recipe_image_url: string | null; favorited_at: string }[];
   published: { id: string; title: string; description: string | null; image_url: string | null; published_at: string }[];
 }
@@ -56,6 +57,25 @@ function formatDate(timestamp: string): string {
   if (days === 1) return 'Yesterday';
   if (days < 7) return `${days}d ago`;
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+
+type ActivityLinkTarget =
+  | { kind: 'internal'; path: string }
+  | { kind: 'external'; url: string }
+  | { kind: 'none' };
+
+function resolveActivityLink(item: { recipe_id: string; recipe_visibility: string | null; source_url: string | null; source_type: string | null }): ActivityLinkTarget {
+  if (item.recipe_visibility === 'public' || !item.recipe_visibility) {
+    return { kind: 'internal', path: `/recipe/${item.recipe_id}` };
+  }
+  if (item.source_url) {
+    return { kind: 'external', url: item.source_url };
+  }
+  if (item.source_type === 'manual' || item.source_type === 'fork') {
+    return { kind: 'internal', path: `/recipe/${item.recipe_id}` };
+  }
+  return { kind: 'none' };
 }
 
 export default function PublicProfileScreen() {
@@ -312,23 +332,40 @@ export default function PublicProfileScreen() {
                   <EmptyTab message="No cooking activity yet" />
                 ) : (
                   <View style={styles.activityList}>
-                    {chefData.activity.map((item, i) => (
-                      <Pressable
-                        key={`${item.recipe_id}-${item.cooked_at}-${i}`}
-                        style={styles.activityItem}
-                        onPress={() => router.push(`/recipe/${item.recipe_id}`)}
-                      >
-                        <View style={styles.activityRow}>
-                          <Text style={styles.activityTitle} numberOfLines={1}>{item.recipe_title}</Text>
-                          <Text style={styles.activityDate}>{formatDate(item.cooked_at)}</Text>
-                        </View>
-                        {item.notes && (
-                          <Text style={styles.activityNotes} numberOfLines={2}>
-                            {'\u201C'}{item.notes}{'\u201D'}
-                          </Text>
-                        )}
-                      </Pressable>
-                    ))}
+                    {chefData.activity.map((item, i) => {
+                      const link = resolveActivityLink(item);
+                      const handlePress = link.kind === 'internal'
+                        ? () => router.push(link.path as any)
+                        : link.kind === 'external'
+                        ? () => Linking.openURL(link.url)
+                        : undefined;
+                      return (
+                        <Pressable
+                          key={`${item.recipe_id}-${item.cooked_at}-${i}`}
+                          style={styles.activityItem}
+                          onPress={handlePress}
+                        >
+                          <View style={styles.activityRow}>
+                            <Text style={styles.activityTitle} numberOfLines={1}>{item.recipe_title}</Text>
+                            <Text style={styles.activityDate}>{formatDate(item.cooked_at)}</Text>
+                          </View>
+                          {(() => {
+                            const sourceLabel = item.source_name
+                              || (item.source_url ? (() => { try { return new URL(item.source_url!).hostname.replace(/^www\./, ''); } catch { return null; } })() : null)
+                              || (item.recipe_visibility === 'private' && item.source_type !== 'manual' && item.source_type !== 'fork' ? 'a cookbook' : null);
+                            if (!sourceLabel) return null;
+                            const aLink = resolveActivityLink(item);
+                            const prefix = item.source_url && aLink.kind === 'external' ? 'via' : 'from';
+                            return <Text style={styles.activitySource}>{prefix} {sourceLabel}</Text>;
+                          })()}
+                          {item.notes && (
+                            <Text style={styles.activityNotes} numberOfLines={2}>
+                              {'\u201C'}{item.notes}{'\u201D'}
+                            </Text>
+                          )}
+                        </Pressable>
+                      );
+                    })}
                   </View>
                 )}
               </View>
@@ -635,6 +672,11 @@ const styles = StyleSheet.create({
     color: colors.inkSecondary,
     fontStyle: 'italic',
     marginTop: 4,
+  },
+  activitySource: {
+    fontSize: 11,
+    color: colors.inkMuted,
+    marginTop: 1,
   },
 
   // Empty
