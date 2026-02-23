@@ -252,6 +252,15 @@ export async function publishRecipe(recipeId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
+  const { data: recipe } = await supabase
+    .from("recipes")
+    .select("visibility")
+    .eq("id", recipeId)
+    .eq("created_by", user.id)
+    .single();
+
+  if (!recipe) return { error: "Recipe not found" };
+
   const { error } = await supabase
     .from("recipes")
     .update({ visibility: "public", published_at: new Date().toISOString() })
