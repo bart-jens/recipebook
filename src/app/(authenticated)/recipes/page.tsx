@@ -6,6 +6,7 @@ import { RecipePlaceholder } from "@/lib/recipe-placeholder";
 import { RecipeListControls } from "./recipe-list-controls";
 import { CollectionsSection } from "./collections-section";
 import { getCollections, getUserPlan } from "./collections/actions";
+import { PublishInline } from "./publish-inline";
 
 interface RecipeTag {
   tag: string;
@@ -325,6 +326,9 @@ export default async function RecipesPage({
                       <span>{tags.slice(1).join(", ")}</span>
                     )}
                   </div>
+                  {recipe.visibility === "private" && !recipe.isSaved && (
+                    <PublishInline recipeId={recipe.id} sourceType={recipe.source_type} />
+                  )}
                 </div>
               </Link>
             );
