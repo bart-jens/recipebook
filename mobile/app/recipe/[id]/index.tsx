@@ -179,6 +179,9 @@ export default function RecipeDetailScreen() {
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [bannerPublished, setBannerPublished] = useState(false);
   const [bannerLoading, setBannerLoading] = useState(false);
+  const [showPublishNudge, setShowPublishNudge] = useState(false);
+  const [nudgePublished, setNudgePublished] = useState(false);
+  const [nudgeLoading, setNudgeLoading] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem('unit_system').then((stored) => {
@@ -412,6 +415,8 @@ export default function RecipeDetailScreen() {
       setCookEntries([data, ...cookEntries]);
       setCookNotes('');
       setShowCookForm(false);
+      const isPrivateManual = recipe.visibility === 'private' && (recipe.source_type === 'manual' || recipe.source_type === 'fork');
+      if (isPrivateManual) setShowPublishNudge(true);
     }
     setSubmitting(false);
   };
@@ -1385,6 +1390,48 @@ export default function RecipeDetailScreen() {
                 </View>
               )}
 
+              {showPublishNudge && !nudgePublished && (
+                <View style={styles.publishNudge}>
+                  <Text style={styles.publishNudgeText}>
+                    Logged — but this recipe is private. Publish it so your followers can see your cooking activity.
+                  </Text>
+                  <View style={styles.publishNudgeButtons}>
+                    <Pressable
+                      style={[styles.publishNudgeButton, nudgeLoading && styles.publishNudgeButtonDisabled]}
+                      onPress={async () => {
+                        setNudgeLoading(true);
+                        const { error } = await supabase
+                          .from('recipes')
+                          .update({ visibility: 'public', published_at: new Date().toISOString() })
+                          .eq('id', recipe!.id)
+                          .eq('created_by', user!.id);
+                        setNudgeLoading(false);
+                        if (!error) {
+                          setNudgePublished(true);
+                          setRecipe((prev) => prev ? { ...prev, visibility: 'public' } : prev);
+                          setBannerPublished(true);
+                        }
+                      }}
+                      disabled={nudgeLoading}
+                    >
+                      <Text style={styles.publishNudgeButtonText}>
+                        {nudgeLoading ? 'Publishing...' : 'Publish recipe'}
+                      </Text>
+                    </Pressable>
+                    <Pressable onPress={() => setShowPublishNudge(false)}>
+                      <Text style={styles.publishNudgeDismissText}>Not now</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              )}
+              {showPublishNudge && nudgePublished && (
+                <View style={[styles.publishNudge, styles.publishNudgeSuccess]}>
+                  <Text style={styles.publishNudgeSuccessText}>
+                    Published — followers can now see your cooking activity.
+                  </Text>
+                </View>
+              )}
+
               {/* Ratings -- gated by cooking */}
               <Text style={[styles.sectionLabel, { marginTop: spacing.xl }]}>Ratings</Text>
               {!hasCooked ? (
@@ -2222,5 +2269,46 @@ const styles = StyleSheet.create({
   privateCardBackText: {
     ...typography.metaSmall,
     color: colors.inkMuted,
+  },
+  publishNudge: {
+    marginBottom: spacing.lg,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  publishNudgeText: {
+    ...typography.bodySmall,
+    color: colors.inkSecondary,
+    marginBottom: spacing.sm,
+  },
+  publishNudgeButtons: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: spacing.lg,
+  },
+  publishNudgeButton: {
+    backgroundColor: colors.ink,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  publishNudgeButtonDisabled: {
+    opacity: 0.5,
+  },
+  publishNudgeButtonText: {
+    ...typography.metaSmall,
+    color: colors.bg,
+  },
+  publishNudgeDismissText: {
+    ...typography.metaSmall,
+    color: colors.inkMuted,
+  },
+  publishNudgeSuccess: {
+    borderColor: colors.olive,
+    backgroundColor: colors.oliveLight,
+  },
+  publishNudgeSuccessText: {
+    ...typography.bodySmall,
+    color: colors.olive,
   },
 });
