@@ -9,7 +9,7 @@ export default function ImportPage() {
         </Link>
         <h1 className="mt-2 text-[28px] font-light tracking-[-0.02em] text-ink">Import Recipe</h1>
         <p className="mt-1 text-[13px] font-light text-ink-secondary leading-[1.45]">
-          Recipes you import are saved to your personal cookbook — only you can see them. Your cooking activity still appears in your feed.
+          Recipes from cookbooks, magazines, and websites are saved privately to your personal cookbook, out of respect for their creators. Your cooking activity and the source still appear in your feed.
         </p>
       </div>
 

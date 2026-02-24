@@ -759,8 +759,8 @@ export default function RecipeDetailScreen() {
                 {/* Private notice */}
                 <Text style={styles.privateCardNotice}>
                   {recipeCard.creator_display_name
-                    ? `In ${recipeCard.creator_display_name}'s personal cookbook. The full recipe is saved privately.`
-                    : 'In someone\u2019s personal cookbook. The full recipe is saved privately.'}
+                    ? `Saved to ${recipeCard.creator_display_name}'s personal cookbook. The full recipe is kept private, out of respect for the original creator.`
+                    : 'Saved to someone\u2019s personal cookbook. The full recipe is kept private, out of respect for the original creator.'}
                 </Text>
 
                 {/* View original recipe link */}

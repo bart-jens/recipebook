@@ -284,7 +284,7 @@ export default function ImportPhotoScreen() {
                       styles.sourceChoiceText,
                       sourceChoice === 'external' && styles.sourceChoiceTextActive,
                     ]}>From a cookbook, magazine, or website</Text>
-                    <Text style={styles.sourceChoiceSubLabel}>Stays in your personal cookbook — only you can see the full recipe</Text>
+                    <Text style={styles.sourceChoiceSubLabel}>Saved privately to your cookbook, respecting the original creator</Text>
                   </View>
                 </TouchableOpacity>
               </View>

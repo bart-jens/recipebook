@@ -193,7 +193,7 @@ export default function ImportPhotoPage() {
               </svg>
               <div className="text-left">
                 <div>From a cookbook, magazine, or website</div>
-                <div className="text-[11px] font-light text-ink-muted mt-0.5">Stays in your personal cookbook — only you can see the full recipe</div>
+                <div className="text-[11px] font-light text-ink-muted mt-0.5">Saved privately to your cookbook, respecting the original creator</div>
               </div>
             </button>
           </div>
