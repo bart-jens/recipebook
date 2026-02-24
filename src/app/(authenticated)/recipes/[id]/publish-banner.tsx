@@ -84,13 +84,13 @@ export function PublishBanner({
   const sourceLabel = sourceName || (sourceUrl ? (() => { try { return new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch { return null; } })() : null);
 
   return (
-    <div className="mx-5 mt-4 px-4 py-3 bg-surface border border-border">
-      <p className="text-[12px] font-light text-ink-secondary leading-snug">
+    <div className="mx-5 mt-4 pl-3 border-l border-warm-border">
+      <p className="text-[11px] font-light text-ink-muted leading-snug">
         From your personal cookbook.{' '}
         {sourceLabel && sourceUrl ? (
           <>
             Saved from{' '}
-            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:text-ink-secondary transition-colors">
               {sourceLabel}
             </a>
             .{' '}
