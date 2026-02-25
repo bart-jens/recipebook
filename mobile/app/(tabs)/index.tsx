@@ -91,64 +91,68 @@ export default function HomeScreen() {
   const loadData = useCallback(async (isRefresh = false) => {
     if (!user) return;
 
-    const [
-      { data: profile },
-      { data: following },
-      { data: cooks },
-    ] = await Promise.all([
-      supabase
-        .from('user_profiles')
-        .select('display_name')
-        .eq('id', user.id)
-        .single(),
-      supabase
-        .from('user_follows')
-        .select('following_id')
-        .eq('follower_id', user.id),
-      supabase
-        .from('cook_log')
-        .select('id, cooked_at, recipes(id, title)')
-        .eq('user_id', user.id)
-        .order('cooked_at', { ascending: false })
-        .limit(3),
-    ]);
+    try {
+      const [
+        { data: profile },
+        { data: following },
+        { data: cooks },
+      ] = await Promise.all([
+        supabase
+          .from('user_profiles')
+          .select('display_name')
+          .eq('id', user.id)
+          .single(),
+        supabase
+          .from('user_follows')
+          .select('following_id')
+          .eq('follower_id', user.id),
+        supabase
+          .from('cook_log')
+          .select('id, cooked_at, recipes(id, title)')
+          .eq('user_id', user.id)
+          .order('cooked_at', { ascending: false })
+          .limit(3),
+      ]);
 
-    setDisplayName(profile?.display_name || '');
-    setRecentCooks((cooks || []) as unknown as RecentCook[]);
+      setDisplayName(profile?.display_name || '');
+      setRecentCooks((cooks || []) as unknown as RecentCook[]);
 
-    // Always show user's own recent recipes
-    const { data: recent } = await supabase
-      .from('recipes')
-      .select(recipeSelectFields)
-      .eq('created_by', user.id)
-      .order('updated_at', { ascending: false })
-      .limit(10);
-    setSuggestions((recent || []) as SuggestionRecipe[]);
+      // Always show user's own recent recipes
+      const { data: recent } = await supabase
+        .from('recipes')
+        .select(recipeSelectFields)
+        .eq('created_by', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(10);
+      setSuggestions((recent || []) as SuggestionRecipe[]);
 
-    const followedIds = (following || []).map((f) => f.following_id);
-    setFollowingCount(followedIds.length);
+      const followedIds = (following || []).map((f) => f.following_id);
+      setFollowingCount(followedIds.length);
 
-    // Activity feed via RPC
-    if (followedIds.length > 0) {
-      const { data: feed } = await supabase.rpc('get_activity_feed', {
-        p_user_id: user.id,
-        p_limit: 20,
-      });
-      const items = (feed || []) as FeedItem[];
-      setFeedItems(items);
-      setHasMoreFeed(items.length === 20);
+      // Activity feed via RPC
+      if (followedIds.length > 0) {
+        const { data: feed } = await supabase.rpc('get_activity_feed', {
+          p_user_id: user.id,
+          p_limit: 20,
+        });
+        const items = (feed || []) as FeedItem[];
+        setFeedItems(items);
+        setHasMoreFeed(items.length === 20);
 
-      // Haptic feedback on refresh if new items
-      if (isRefresh && items.length > previousFeedCount.current) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        // Haptic feedback on refresh if new items
+        if (isRefresh && items.length > previousFeedCount.current) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+        previousFeedCount.current = items.length;
+      } else {
+        setFeedItems([]);
+        setHasMoreFeed(false);
       }
-      previousFeedCount.current = items.length;
-    } else {
-      setFeedItems([]);
-      setHasMoreFeed(false);
+    } catch (e) {
+      console.error('loadData failed:', e);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }, [user]);
 
   useFocusEffect(
@@ -273,7 +277,8 @@ export default function HomeScreen() {
                     source={{ uri: recipe.image_url }}
                     style={styles.carouselImage}
                     contentFit="cover"
-                    transition={200}
+                    cachePolicy="memory-disk"
+                    recyclingKey={recipe.image_url}
                   />
                 ) : (
                   <RecipePlaceholder id={recipe.id} size={140} />
@@ -379,12 +384,13 @@ export default function HomeScreen() {
               source={{ uri: item.avatar_url }}
               style={styles.tickerAvatar}
               contentFit="cover"
-              transition={200}
+              cachePolicy="memory-disk"
+              recyclingKey={item.avatar_url}
             />
           ) : (
             <View style={styles.tickerAvatarFallback}>
               <Text style={styles.tickerAvatarLetter}>
-                {item.display_name[0]?.toUpperCase()}
+                {(item.display_name?.[0] ?? '?').toUpperCase()}
               </Text>
             </View>
           )}
