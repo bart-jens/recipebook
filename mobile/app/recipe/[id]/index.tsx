@@ -863,11 +863,88 @@ export default function RecipeDetailScreen() {
           style={styles.container}
           contentContainerStyle={[
             styles.scrollContent,
-            hasImage ? { paddingTop: HERO_HEIGHT } : { paddingTop: insets.top + HEADER_HEIGHT },
+            !hasImage && { paddingTop: insets.top + HEADER_HEIGHT },
           ]}
           onScroll={scrollHandler}
           scrollEventThrottle={16}
         >
+          {/* Hero image */}
+          {hasImage && (
+            <View style={styles.heroContainer}>
+              {photos.length > 1 ? (
+                <View style={styles.heroTouchable}>
+                  <ScrollView
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onMomentumScrollEnd={(e) => {
+                      const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+                      setActivePhotoIndex(index);
+                    }}
+                    style={StyleSheet.absoluteFill}
+                  >
+                    {photos.map((photo) => (
+                      <TouchableOpacity
+                        key={photo.id}
+                        activeOpacity={isOwner ? 0.8 : 1}
+                        onPress={isOwner ? pickAndUploadImage : undefined}
+                        disabled={!isOwner || uploading}
+                        style={{ width: SCREEN_WIDTH, height: HERO_HEIGHT }}
+                      >
+                        <Image
+                          source={{ uri: photo.url }}
+                          style={StyleSheet.absoluteFill}
+                          contentFit="cover"
+                          transition={200}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                  <LinearGradient
+                    colors={[colors.gradientOverlayStart, colors.gradientOverlayEnd]}
+                    style={styles.heroGradient}
+                    pointerEvents="none"
+                  />
+                  <View style={styles.pageIndicator}>
+                    <View style={styles.pageCounter}>
+                      <Text style={styles.pageCounterText}>
+                        {activePhotoIndex + 1} / {photos.length}
+                      </Text>
+                    </View>
+                  </View>
+                  {uploading && (
+                    <View style={styles.uploadOverlay}>
+                      <ActivityIndicator size="large" color={colors.white} />
+                    </View>
+                  )}
+                </View>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={isOwner ? 0.8 : 1}
+                  onPress={isOwner ? pickAndUploadImage : undefined}
+                  disabled={!isOwner || uploading}
+                  style={styles.heroTouchable}
+                >
+                  <Image
+                    source={{ uri: recipe.image_url! }}
+                    style={styles.heroImage}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                  <LinearGradient
+                    colors={[colors.gradientOverlayStart, colors.gradientOverlayEnd]}
+                    style={styles.heroGradient}
+                  />
+                  {uploading && (
+                    <View style={styles.uploadOverlay}>
+                      <ActivityIndicator size="large" color={colors.white} />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
           {/* Header section (below hero, overlapping gradient) */}
           <View style={[styles.detailHeader, !hasImage && { marginTop: 0 }]}>
             {/* Add photo button (no-image, owner only) */}
@@ -1517,83 +1594,6 @@ export default function RecipeDetailScreen() {
           </View>
         </Animated.ScrollView>
 
-        {/* Parallax hero image / photo carousel */}
-        {hasImage && (
-          <Animated.View style={[styles.heroContainer, heroAnimatedStyle]}>
-            {photos.length > 1 ? (
-              <View style={styles.heroTouchable}>
-                <ScrollView
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  onMomentumScrollEnd={(e) => {
-                    const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-                    setActivePhotoIndex(index);
-                  }}
-                  style={StyleSheet.absoluteFill}
-                >
-                  {photos.map((photo) => (
-                    <TouchableOpacity
-                      key={photo.id}
-                      activeOpacity={isOwner ? 0.8 : 1}
-                      onPress={isOwner ? pickAndUploadImage : undefined}
-                      disabled={!isOwner || uploading}
-                      style={{ width: SCREEN_WIDTH, height: HERO_HEIGHT }}
-                    >
-                      <Image
-                        source={{ uri: photo.url }}
-                        style={StyleSheet.absoluteFill}
-                        contentFit="cover"
-                        transition={200}
-                      />
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-                <LinearGradient
-                  colors={[colors.gradientOverlayStart, colors.gradientOverlayEnd]}
-                  style={styles.heroGradient}
-                  pointerEvents="none"
-                />
-                {/* Page indicator */}
-                <View style={styles.pageIndicator}>
-                  <View style={styles.pageCounter}>
-                    <Text style={styles.pageCounterText}>
-                      {activePhotoIndex + 1} / {photos.length}
-                    </Text>
-                  </View>
-                </View>
-                {uploading && (
-                  <View style={styles.uploadOverlay}>
-                    <ActivityIndicator size="large" color={colors.white} />
-                  </View>
-                )}
-              </View>
-            ) : (
-              <TouchableOpacity
-                activeOpacity={isOwner ? 0.8 : 1}
-                onPress={isOwner ? pickAndUploadImage : undefined}
-                disabled={!isOwner || uploading}
-                style={styles.heroTouchable}
-              >
-                <Image
-                  source={{ uri: recipe.image_url! }}
-                  style={styles.heroImage}
-                  contentFit="cover"
-                  transition={200}
-                />
-                <LinearGradient
-                  colors={[colors.gradientOverlayStart, colors.gradientOverlayEnd]}
-                  style={styles.heroGradient}
-                />
-                {uploading && (
-                  <View style={styles.uploadOverlay}>
-                    <ActivityIndicator size="large" color={colors.white} />
-                  </View>
-                )}
-              </TouchableOpacity>
-            )}
-          </Animated.View>
-        )}
 
         {/* Celebration overlay */}
         <CelebrationOverlay
@@ -1644,13 +1644,8 @@ const styles = StyleSheet.create({
 
   // Parallax hero
   heroContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
     height: HERO_HEIGHT,
     overflow: 'hidden',
-    zIndex: 0,
   },
   heroTouchable: {
     flex: 1,
