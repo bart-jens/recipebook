@@ -3,16 +3,35 @@ default_platform(:ios)
 platform :ios do
   desc "Build and upload to TestFlight"
   lane :beta do
+    cert(development: false)
+    sigh(app_identifier: "com.eefeats.app")
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      team_id: "UF25XUG77C",
+      code_sign_identity: "iPhone Distribution",
+      profile_name: ENV["SIGH_NAME"],
+      path: "ios/EefEats.xcodeproj",
+      targets: ["EefEats"]
+    )
+
     build_app(
       workspace: "ios/EefEats.xcworkspace",
       scheme: "EefEats",
+      configuration: "Release",
       export_method: "app-store",
-      xcargs: "-allowProvisioningUpdates",
-      clean: true
+      clean: true,
+      export_options: {
+        provisioningProfiles: {
+          "com.eefeats.app" => ENV["SIGH_NAME"]
+        }
+      }
     )
 
     upload_to_testflight(
-      skip_waiting_for_build_processing: true
+      skip_waiting_for_build_processing: true,
+      apple_id: "6759528017",
+      itc_provider: "UF25XUG77C"
     )
   end
 end
