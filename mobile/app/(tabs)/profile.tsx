@@ -11,7 +11,7 @@ import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography } from '@/lib/theme';
+import { colors, spacing, typography, fontFamily } from '@/lib/theme';
 import { ForkDot } from '@/components/ui/Logo';
 import FeedbackModal from '@/components/FeedbackModal';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
@@ -108,71 +108,75 @@ export default function ProfileScreen() {
       if (!user) return;
 
       async function load() {
-        const [
-          { data: profileData },
-          { data: recipes },
-          { data: cookLog },
-          { data: savedEntries },
-          { data: followers },
-          { data: following },
-        ] = await Promise.all([
-          supabase
-            .from('user_profiles')
-            .select('display_name, bio, role, plan, is_private, avatar_url')
-            .eq('id', user!.id)
-            .single(),
-          supabase
-            .from('recipes')
-            .select('id, title, visibility, image_url')
-            .eq('created_by', user!.id)
-            .order('updated_at', { ascending: false }),
-          supabase
-            .from('cook_log')
-            .select('recipe_id')
-            .eq('user_id', user!.id),
-          supabase
-            .from('saved_recipes')
-            .select('recipe_id')
-            .eq('user_id', user!.id),
-          supabase
-            .from('user_follows')
-            .select('id')
-            .eq('following_id', user!.id),
-          supabase
-            .from('user_follows')
-            .select('id')
-            .eq('follower_id', user!.id),
-        ]);
+        try {
+          const [
+            { data: profileData },
+            { data: recipes },
+            { data: cookLog },
+            { data: savedEntries },
+            { data: followers },
+            { data: following },
+          ] = await Promise.all([
+            supabase
+              .from('user_profiles')
+              .select('display_name, bio, role, plan, is_private, avatar_url')
+              .eq('id', user!.id)
+              .single(),
+            supabase
+              .from('recipes')
+              .select('id, title, visibility, image_url')
+              .eq('created_by', user!.id)
+              .order('updated_at', { ascending: false }),
+            supabase
+              .from('cook_log')
+              .select('recipe_id')
+              .eq('user_id', user!.id),
+            supabase
+              .from('saved_recipes')
+              .select('recipe_id')
+              .eq('user_id', user!.id),
+            supabase
+              .from('user_follows')
+              .select('id')
+              .eq('following_id', user!.id),
+            supabase
+              .from('user_follows')
+              .select('id')
+              .eq('follower_id', user!.id),
+          ]);
 
-        setProfile(profileData);
-        setRecentRecipes((recipes || []).slice(0, 8));
-        setStats({
-          recipes: (recipes || []).length,
-          published: (recipes || []).filter((r) => r.visibility === 'public').length,
-          cooked: new Set((cookLog || []).map((c) => c.recipe_id)).size,
-          saved: (savedEntries || []).length,
-          followers: (followers || []).length,
-          following: (following || []).length,
-        });
+          setProfile(profileData);
+          setRecentRecipes((recipes || []).slice(0, 8));
+          setStats({
+            recipes: (recipes || []).length,
+            published: (recipes || []).filter((r) => r.visibility === 'public').length,
+            cooked: new Set((cookLog || []).map((c) => c.recipe_id)).size,
+            saved: (savedEntries || []).length,
+            followers: (followers || []).length,
+            following: (following || []).length,
+          });
 
-        // Count pending follow requests for private users
-        if (profileData?.is_private) {
-          const { count } = await supabase
-            .from('follow_requests')
-            .select('id', { count: 'exact', head: true })
-            .eq('target_id', user!.id);
-          setPendingRequests(count || 0);
-        } else {
-          setPendingRequests(0);
+          // Count pending follow requests for private users
+          if (profileData?.is_private) {
+            const { count } = await supabase
+              .from('follow_requests')
+              .select('id', { count: 'exact', head: true })
+              .eq('target_id', user!.id);
+            setPendingRequests(count || 0);
+          } else {
+            setPendingRequests(0);
+          }
+
+          // Count new followers since last seen
+          const { data: followerCount } = await supabase.rpc('get_new_follower_count', {
+            p_user_id: user!.id,
+          });
+          setNewFollowerCount(followerCount ?? 0);
+        } catch (e) {
+          console.error('profile load failed:', e);
+        } finally {
+          setLoading(false);
         }
-
-        // Count new followers since last seen
-        const { data: followerCount } = await supabase.rpc('get_new_follower_count', {
-          p_user_id: user!.id,
-        });
-        setNewFollowerCount(followerCount ?? 0);
-
-        setLoading(false);
       }
 
       load();

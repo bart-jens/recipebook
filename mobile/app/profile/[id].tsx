@@ -11,7 +11,7 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, Stack, useFocusEffect, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, typography } from '@/lib/theme';
+import { colors, spacing, typography, fontFamily } from '@/lib/theme';
 import RecipeCard from '@/components/ui/RecipeCard';
 import { ForkDot } from '@/components/ui/Logo';
 import ProfileSkeleton from '@/components/skeletons/ProfileSkeleton';
@@ -92,32 +92,35 @@ export default function PublicProfileScreen() {
       if (!id) return;
 
       async function load() {
-        const { data } = await supabase.rpc('get_chef_profile', {
-          p_chef_id: id!,
-        });
+        try {
+          const { data } = await supabase.rpc('get_chef_profile', {
+            p_chef_id: id!,
+          });
 
-        if (!data) {
+          if (!data) {
+            return;
+          }
+
+          setChefData(data as ChefProfile);
+          setFollowerCount(data.stats?.follower_count ?? 0);
+
+          // Determine follow state
+          if (data.is_following) {
+            setFollowState('following');
+          } else if (user && user.id !== id) {
+            const { data: requestCheck } = await supabase
+              .from('follow_requests')
+              .select('id')
+              .eq('requester_id', user.id)
+              .eq('target_id', id!)
+              .single();
+            setFollowState(requestCheck ? 'requested' : 'not_following');
+          }
+        } catch (e) {
+          console.error('profile/[id] load failed:', e);
+        } finally {
           setLoading(false);
-          return;
         }
-
-        setChefData(data as ChefProfile);
-        setFollowerCount(data.stats.follower_count);
-
-        // Determine follow state
-        if (data.is_following) {
-          setFollowState('following');
-        } else if (user && user.id !== id) {
-          const { data: requestCheck } = await supabase
-            .from('follow_requests')
-            .select('id')
-            .eq('requester_id', user.id)
-            .eq('target_id', id!)
-            .single();
-          setFollowState(requestCheck ? 'requested' : 'not_following');
-        }
-
-        setLoading(false);
       }
 
       load();
@@ -225,7 +228,7 @@ export default function PublicProfileScreen() {
         {/* Stats */}
         <View style={styles.statsContainer}>
           {/* Recipe stats: two equal columns, only when visible */}
-          {canView && (
+          {canView && stats && (
             <View style={styles.recipeStatsRow}>
               <View style={styles.recipeStat}>
                 <Text style={styles.recipeStatValue}>{stats.recipe_count}</Text>
@@ -242,7 +245,7 @@ export default function PublicProfileScreen() {
           <View style={styles.socialStatsRow}>
             <Text style={styles.socialStatText}><Text style={styles.socialStatValue}>{followerCount}</Text> Followers</Text>
             <Text style={styles.socialStatDot}>·</Text>
-            <Text style={styles.socialStatText}><Text style={styles.socialStatValue}>{stats.following_count}</Text> Following</Text>
+            <Text style={styles.socialStatText}><Text style={styles.socialStatValue}>{stats?.following_count ?? 0}</Text> Following</Text>
           </View>
         </View>
 

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   FlatList,
   TextInput,
-  Modal,
   TouchableOpacity,
   Pressable,
   ScrollView,
@@ -104,57 +103,61 @@ export default function RecipesScreen() {
   const fetchCollections = useCallback(async () => {
     if (!user) return;
 
-    const [{ data: cols }, { data: profile }] = await Promise.all([
-      supabase
-        .from('collections')
-        .select('id, name, description, cover_image_url')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false }),
-      supabase.from('user_profiles').select('plan').eq('id', user.id).single(),
-    ]);
+    try {
+      const [{ data: cols }, { data: profile }] = await Promise.all([
+        supabase
+          .from('collections')
+          .select('id, name, description, cover_image_url')
+          .eq('user_id', user.id)
+          .order('updated_at', { ascending: false }),
+        supabase.from('user_profiles').select('plan').eq('id', user.id).single(),
+      ]);
 
-    setCollectionPlan(profile?.plan || 'free');
+      setCollectionPlan(profile?.plan || 'free');
 
-    if (!cols || cols.length === 0) {
-      setCollections([]);
-      return;
-    }
+      if (!cols || cols.length === 0) {
+        setCollections([]);
+        return;
+      }
 
-    // Get recipe counts
-    const { data: memberships } = await supabase
-      .from('collection_recipes')
-      .select('collection_id, recipe_id')
-      .in('collection_id', cols.map((c: { id: string }) => c.id));
-
-    const countMap = new Map<string, number>();
-    for (const m of memberships || []) {
-      countMap.set((m as { collection_id: string }).collection_id, (countMap.get((m as { collection_id: string }).collection_id) || 0) + 1);
-    }
-
-    // Get cover images
-    const needCover = cols.filter((c: { cover_image_url: string | null }) => !c.cover_image_url);
-    const coverMap = new Map<string, string>();
-    if (needCover.length > 0) {
-      const { data: coverData } = await supabase
+      // Get recipe counts
+      const { data: memberships } = await supabase
         .from('collection_recipes')
-        .select('collection_id, recipes(image_url)')
-        .in('collection_id', needCover.map((c: { id: string }) => c.id))
-        .order('added_at', { ascending: true });
+        .select('collection_id, recipe_id')
+        .in('collection_id', cols.map((c: { id: string }) => c.id));
 
-      for (const cr of (coverData || []) as unknown as { collection_id: string; recipes: { image_url: string | null } | null }[]) {
-        if (!coverMap.has(cr.collection_id) && cr.recipes?.image_url) {
-          coverMap.set(cr.collection_id, cr.recipes.image_url);
+      const countMap = new Map<string, number>();
+      for (const m of memberships || []) {
+        countMap.set((m as { collection_id: string }).collection_id, (countMap.get((m as { collection_id: string }).collection_id) || 0) + 1);
+      }
+
+      // Get cover images
+      const needCover = cols.filter((c: { cover_image_url: string | null }) => !c.cover_image_url);
+      const coverMap = new Map<string, string>();
+      if (needCover.length > 0) {
+        const { data: coverData } = await supabase
+          .from('collection_recipes')
+          .select('collection_id, recipes(image_url)')
+          .in('collection_id', needCover.map((c: { id: string }) => c.id))
+          .order('added_at', { ascending: true });
+
+        for (const cr of (coverData || []) as unknown as { collection_id: string; recipes: { image_url: string | null } | null }[]) {
+          if (!coverMap.has(cr.collection_id) && cr.recipes?.image_url) {
+            coverMap.set(cr.collection_id, cr.recipes.image_url);
+          }
         }
       }
-    }
 
-    setCollections(cols.map((c: { id: string; name: string; description: string | null; cover_image_url: string | null }) => ({
-      id: c.id,
-      name: c.name,
-      description: c.description,
-      recipe_count: countMap.get(c.id) || 0,
-      cover_url: c.cover_image_url || coverMap.get(c.id) || null,
-    })));
+      setCollections(cols.map((c: { id: string; name: string; description: string | null; cover_image_url: string | null }) => ({
+        id: c.id,
+        name: c.name,
+        description: c.description,
+        recipe_count: countMap.get(c.id) || 0,
+        cover_url: c.cover_image_url || coverMap.get(c.id) || null,
+      })));
+    } catch (e) {
+      console.error('fetchCollections failed:', e);
+    }
   }, [user]);
 
   const handlePublishRecipe = async (recipeId: string) => {
@@ -175,110 +178,115 @@ export default function RecipesScreen() {
     if (!user) return;
     if (!hasLoadedOnce.current) setLoading(true);
 
-    const selectFields = 'id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, visibility, source_type, recipe_tags(tag)';
+    try {
+      const selectFields = 'id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, visibility, source_type, recipe_tags(tag)';
 
-    let ownedQuery = supabase
-      .from('recipes')
-      .select(selectFields)
-      .eq('created_by', user.id);
-
-    if (search) {
-      ownedQuery = ownedQuery.ilike('title', `%${search}%`);
-    }
-
-    // Fetch owned recipes, saved IDs, favorites, and cook log in parallel
-    const [
-      { data: ownedData },
-      { data: savedEntries },
-      { data: favEntries },
-      { data: cookLogEntries },
-    ] = await Promise.all([
-      ownedQuery,
-      supabase.from('saved_recipes').select('recipe_id').eq('user_id', user.id),
-      supabase.from('recipe_favorites').select('recipe_id').eq('user_id', user.id),
-      supabase.from('cook_log').select('recipe_id').eq('user_id', user.id),
-    ]);
-
-    const savedRecipeIds = new Set((savedEntries || []).map((s) => s.recipe_id));
-    const favoritedIds = new Set((favEntries || []).map((f) => f.recipe_id));
-    const cookedIds = new Set((cookLogEntries || []).map((c) => c.recipe_id));
-
-    // Fetch saved recipe details if any
-    let savedRecipes: typeof ownedData = [];
-    if (savedRecipeIds.size > 0) {
-      let savedQuery = supabase
+      let ownedQuery = supabase
         .from('recipes')
         .select(selectFields)
-        .in('id', Array.from(savedRecipeIds));
+        .eq('created_by', user.id);
+
       if (search) {
-        savedQuery = savedQuery.ilike('title', `%${search}%`);
+        ownedQuery = ownedQuery.ilike('title', `%${search}%`);
       }
-      const { data } = await savedQuery;
-      savedRecipes = data;
-    }
 
-    const titleMatched = [...(ownedData || []), ...(savedRecipes || [])];
-    const titleMatchedIds = new Set(titleMatched.map((r) => r.id));
-
-    // When searching, also find recipes matching by ingredient or tag
-    let extraRecipes: typeof titleMatched = [];
-    if (search) {
-      const [{ data: ingMatches }, { data: tagMatches }, { data: allOwnedIdRows }] = await Promise.all([
-        supabase.from('recipe_ingredients').select('recipe_id').ilike('ingredient_name', `%${search}%`),
-        supabase.from('recipe_tags').select('recipe_id').ilike('tag', `%${search}%`),
-        supabase.from('recipes').select('id').eq('created_by', user.id),
+      // Fetch owned recipes, saved IDs, favorites, and cook log in parallel
+      const [
+        { data: ownedData },
+        { data: savedEntries },
+        { data: favEntries },
+        { data: cookLogEntries },
+      ] = await Promise.all([
+        ownedQuery,
+        supabase.from('saved_recipes').select('recipe_id').eq('user_id', user.id),
+        supabase.from('recipe_favorites').select('recipe_id').eq('user_id', user.id),
+        supabase.from('cook_log').select('recipe_id').eq('user_id', user.id),
       ]);
-      const allOwnedIds = new Set((allOwnedIdRows || []).map((r) => r.id));
-      const extraIds = new Set<string>();
-      for (const m of [...(ingMatches || []), ...(tagMatches || [])]) {
-        const id = m.recipe_id;
-        if (!titleMatchedIds.has(id) && (allOwnedIds.has(id) || savedRecipeIds.has(id))) {
-          extraIds.add(id);
-        }
-      }
-      if (extraIds.size > 0) {
-        const { data: extraData } = await supabase
+
+      const savedRecipeIds = new Set((savedEntries || []).map((s) => s.recipe_id));
+      const favoritedIds = new Set((favEntries || []).map((f) => f.recipe_id));
+      const cookedIds = new Set((cookLogEntries || []).map((c) => c.recipe_id));
+
+      // Fetch saved recipe details if any
+      let savedRecipes: typeof ownedData = [];
+      if (savedRecipeIds.size > 0) {
+        let savedQuery = supabase
           .from('recipes')
           .select(selectFields)
-          .in('id', Array.from(extraIds));
-        extraRecipes = extraData || [];
+          .in('id', Array.from(savedRecipeIds));
+        if (search) {
+          savedQuery = savedQuery.ilike('title', `%${search}%`);
+        }
+        const { data } = await savedQuery;
+        savedRecipes = data;
       }
-    }
 
-    const recipeList = [...titleMatched, ...extraRecipes];
+      const titleMatched = [...(ownedData || []), ...(savedRecipes || [])];
+      const titleMatchedIds = new Set(titleMatched.map((r) => r.id));
 
-    // Batch fetch ratings for all recipes
-    const ratingMap = new Map<string, { total: number; count: number }>();
-    if (recipeList.length > 0) {
-      const { data: ratings } = await supabase
-        .from('recipe_ratings')
-        .select('recipe_id, rating')
-        .in('recipe_id', recipeList.map((r) => r.id));
-
-      for (const r of ratings || []) {
-        const existing = ratingMap.get(r.recipe_id) || { total: 0, count: 0 };
-        existing.total += r.rating;
-        existing.count += 1;
-        ratingMap.set(r.recipe_id, existing);
+      // When searching, also find recipes matching by ingredient or tag
+      let extraRecipes: typeof titleMatched = [];
+      if (search) {
+        const [{ data: ingMatches }, { data: tagMatches }, { data: allOwnedIdRows }] = await Promise.all([
+          supabase.from('recipe_ingredients').select('recipe_id').ilike('ingredient_name', `%${search}%`),
+          supabase.from('recipe_tags').select('recipe_id').ilike('tag', `%${search}%`),
+          supabase.from('recipes').select('id').eq('created_by', user.id),
+        ]);
+        const allOwnedIds = new Set((allOwnedIdRows || []).map((r) => r.id));
+        const extraIds = new Set<string>();
+        for (const m of [...(ingMatches || []), ...(tagMatches || [])]) {
+          const id = m.recipe_id;
+          if (!titleMatchedIds.has(id) && (allOwnedIds.has(id) || savedRecipeIds.has(id))) {
+            extraIds.add(id);
+          }
+        }
+        if (extraIds.size > 0) {
+          const { data: extraData } = await supabase
+            .from('recipes')
+            .select(selectFields)
+            .in('id', Array.from(extraIds));
+          extraRecipes = extraData || [];
+        }
       }
+
+      const recipeList = [...titleMatched, ...extraRecipes];
+
+      // Batch fetch ratings for all recipes
+      const ratingMap = new Map<string, { total: number; count: number }>();
+      if (recipeList.length > 0) {
+        const { data: ratings } = await supabase
+          .from('recipe_ratings')
+          .select('recipe_id, rating')
+          .in('recipe_id', recipeList.map((r) => r.id));
+
+        for (const r of ratings || []) {
+          const existing = ratingMap.get(r.recipe_id) || { total: 0, count: 0 };
+          existing.total += r.rating;
+          existing.count += 1;
+          ratingMap.set(r.recipe_id, existing);
+        }
+      }
+
+      const enriched: Recipe[] = recipeList.map((r) => {
+        const ratingInfo = ratingMap.get(r.id);
+        return {
+          ...r,
+          avgRating: ratingInfo ? ratingInfo.total / ratingInfo.count : null,
+          ratingCount: ratingInfo?.count || 0,
+          tags: ((r as any).recipe_tags || []).map((t: { tag: string }) => t.tag),
+          isFavorited: favoritedIds.has(r.id),
+          hasCooked: cookedIds.has(r.id),
+          isSaved: savedRecipeIds.has(r.id),
+        };
+      });
+
+      setAllRecipes(enriched);
+      hasLoadedOnce.current = true;
+    } catch (e) {
+      console.error('fetchRecipes failed:', e);
+    } finally {
+      setLoading(false);
     }
-
-    let enriched: Recipe[] = recipeList.map((r) => {
-      const ratingInfo = ratingMap.get(r.id);
-      return {
-        ...r,
-        avgRating: ratingInfo ? ratingInfo.total / ratingInfo.count : null,
-        ratingCount: ratingInfo?.count || 0,
-        tags: ((r as any).recipe_tags || []).map((t: { tag: string }) => t.tag),
-        isFavorited: favoritedIds.has(r.id),
-        hasCooked: cookedIds.has(r.id),
-        isSaved: savedRecipeIds.has(r.id),
-      };
-    });
-
-    setAllRecipes(enriched);
-    hasLoadedOnce.current = true;
-    setLoading(false);
   }, [user, search]);
 
   useFocusEffect(
@@ -559,12 +567,7 @@ export default function RecipesScreen() {
         />
       )}
 
-      <Modal
-        visible={showImportMenu}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowImportMenu(false)}
-      >
+      {showImportMenu && (
         <Pressable style={styles.modalOverlay} onPress={() => setShowImportMenu(false)}>
           <View style={styles.importMenu}>
             <Text style={styles.importMenuTitle}>Import Recipe</Text>
@@ -592,7 +595,7 @@ export default function RecipesScreen() {
             </TouchableOpacity>
           </View>
         </Pressable>
-      </Modal>
+      )}
     </View>
   );
 }
@@ -855,7 +858,7 @@ const styles = StyleSheet.create({
 
   // Import modal
   modalOverlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
   },

@@ -226,85 +226,88 @@ export default function RecipeDetailScreen() {
   const fetchRecipe = useCallback(async () => {
     if (!id) return;
 
-    const [{ data: recipeData }, { data: ingredientData }, { data: tagData }, { data: ratingData }, { data: imageData }] =
-      await Promise.all([
-        supabase.from('recipes').select('*').eq('id', id).single(),
-        supabase
-          .from('recipe_ingredients')
-          .select('id, quantity, unit, ingredient_name, notes, order_index')
-          .eq('recipe_id', id)
-          .order('order_index'),
-        supabase.from('recipe_tags').select('id, tag').eq('recipe_id', id).order('tag'),
-        supabase
-          .from('recipe_ratings')
-          .select('id, rating, notes, cooked_date, created_at')
-          .eq('recipe_id', id)
-          .order('cooked_date', { ascending: false }),
-        supabase
-          .from('recipe_images')
-          .select('id, storage_path, image_type')
-          .eq('recipe_id', id)
-          .order('created_at'),
-      ]);
+    try {
+      const [{ data: recipeData }, { data: ingredientData }, { data: tagData }, { data: ratingData }, { data: imageData }] =
+        await Promise.all([
+          supabase.from('recipes').select('*').eq('id', id).single(),
+          supabase
+            .from('recipe_ingredients')
+            .select('id, quantity, unit, ingredient_name, notes, order_index')
+            .eq('recipe_id', id)
+            .order('order_index'),
+          supabase.from('recipe_tags').select('id, tag').eq('recipe_id', id).order('tag'),
+          supabase
+            .from('recipe_ratings')
+            .select('id, rating, notes, cooked_date, created_at')
+            .eq('recipe_id', id)
+            .order('cooked_date', { ascending: false }),
+          supabase
+            .from('recipe_images')
+            .select('id, storage_path, image_type')
+            .eq('recipe_id', id)
+            .order('created_at'),
+        ]);
 
-    if (!recipeData) {
-      // Fetch non-copyrightable metadata card (SECURITY DEFINER, bypasses RLS)
-      // get_recipe_card uses RETURNS TABLE so the client returns an array
-      const { data: cardData } = await supabase.rpc('get_recipe_card', { p_recipe_id: id });
-      const card = Array.isArray(cardData) ? cardData[0] ?? null : cardData ?? null;
-      if (card && card.visibility === 'private') {
-        setRecipeCard(card);
-        setIsPrivate(true);
+      if (!recipeData) {
+        // Fetch non-copyrightable metadata card (SECURITY DEFINER, bypasses RLS)
+        // get_recipe_card uses RETURNS TABLE so the client returns an array
+        const { data: cardData } = await supabase.rpc('get_recipe_card', { p_recipe_id: id });
+        const card = Array.isArray(cardData) ? cardData[0] ?? null : cardData ?? null;
+        if (card && card.visibility === 'private') {
+          setRecipeCard(card);
+          setIsPrivate(true);
+        }
+        return;
       }
+
+      setRecipe(recipeData);
+      setIngredients(ingredientData || []);
+      setTags(tagData || []);
+      setRatings(ratingData || []);
+
+      // Build photo list: user uploads first, then source images
+      const photoList = (imageData || [])
+        .sort((a, b) => {
+          if (a.image_type === 'user_upload' && b.image_type !== 'user_upload') return -1;
+          if (a.image_type !== 'user_upload' && b.image_type === 'user_upload') return 1;
+          return 0;
+        })
+        .map((img) => ({
+          id: img.id,
+          url: supabase.storage.from('recipe-images').getPublicUrl(img.storage_path).data.publicUrl,
+          imageType: img.image_type,
+        }));
+      setPhotos(photoList);
+
+      if (recipeData && recipeData.created_by !== user?.id) {
+        const { data: creator } = await supabase
+          .from('user_profiles')
+          .select('display_name')
+          .eq('id', recipeData.created_by)
+          .single();
+        setCreatorName(creator?.display_name || null);
+      }
+
+      // Fetch user interaction data
+      if (user) {
+        const [{ data: cookData }, { data: favData }, { data: savedData }] = await Promise.all([
+          supabase.from('cook_log').select('id, cooked_at, notes')
+            .eq('recipe_id', id).eq('user_id', user.id)
+            .order('cooked_at', { ascending: false }),
+          supabase.from('recipe_favorites').select('id')
+            .eq('recipe_id', id).eq('user_id', user.id).maybeSingle(),
+          supabase.from('saved_recipes').select('id')
+            .eq('recipe_id', id).eq('user_id', user.id).maybeSingle(),
+        ]);
+        setCookEntries(cookData || []);
+        setIsFavorited(!!favData);
+        setIsSaved(!!savedData);
+      }
+    } catch (e) {
+      console.error('fetchRecipe failed:', e);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setRecipe(recipeData);
-    setIngredients(ingredientData || []);
-    setTags(tagData || []);
-    setRatings(ratingData || []);
-
-    // Build photo list: user uploads first, then source images
-    const photoList = (imageData || [])
-      .sort((a, b) => {
-        if (a.image_type === 'user_upload' && b.image_type !== 'user_upload') return -1;
-        if (a.image_type !== 'user_upload' && b.image_type === 'user_upload') return 1;
-        return 0;
-      })
-      .map((img) => ({
-        id: img.id,
-        url: supabase.storage.from('recipe-images').getPublicUrl(img.storage_path).data.publicUrl,
-        imageType: img.image_type,
-      }));
-    setPhotos(photoList);
-
-    if (recipeData && recipeData.created_by !== user?.id) {
-      const { data: creator } = await supabase
-        .from('user_profiles')
-        .select('display_name')
-        .eq('id', recipeData.created_by)
-        .single();
-      setCreatorName(creator?.display_name || null);
-    }
-
-    // Fetch user interaction data
-    if (user) {
-      const [{ data: cookData }, { data: favData }, { data: savedData }] = await Promise.all([
-        supabase.from('cook_log').select('id, cooked_at, notes')
-          .eq('recipe_id', id).eq('user_id', user.id)
-          .order('cooked_at', { ascending: false }),
-        supabase.from('recipe_favorites').select('id')
-          .eq('recipe_id', id).eq('user_id', user.id).maybeSingle(),
-        supabase.from('saved_recipes').select('id')
-          .eq('recipe_id', id).eq('user_id', user.id).maybeSingle(),
-      ]);
-      setCookEntries(cookData || []);
-      setIsFavorited(!!favData);
-      setIsSaved(!!savedData);
-    }
-
-    setLoading(false);
   }, [id]);
 
   useFocusEffect(
@@ -1011,6 +1014,51 @@ export default function RecipeDetailScreen() {
             </Animated.Text>
           </View>
 
+          {/* Owner actions */}
+          {isOwner && (
+            <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3.5).duration(300)} style={[styles.ownerActions, { marginHorizontal: spacing.pagePadding, marginTop: spacing.lg }]}>
+              <Button
+                title="Edit"
+                variant="secondary"
+                size="sm"
+                onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
+              />
+              {(recipe.source_type === 'manual' || recipe.source_type === 'fork') && (
+                <TouchableOpacity
+                  style={[
+                    styles.actionButton,
+                    recipe.visibility === 'public' ? styles.publicButton : styles.privateButton,
+                  ]}
+                  onPress={toggleVisibility}
+                >
+                  {recipe.visibility !== 'public' && (
+                    <FontAwesome name="lock" size={12} color={colors.inkMuted} style={{ marginRight: spacing.xs }} />
+                  )}
+                  <Text style={[
+                    styles.actionButtonText,
+                    recipe.visibility === 'public' ? styles.publicButtonText : styles.privateButtonText,
+                  ]}>
+                    {recipe.visibility === 'public' ? 'Public' : 'Private'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {recipe.visibility === 'public' && (
+                <Button
+                  title="Copy link"
+                  variant="secondary"
+                  size="sm"
+                  onPress={shareLink}
+                />
+              )}
+              <Button
+                title="Delete"
+                variant="danger"
+                size="sm"
+                onPress={deleteRecipe}
+              />
+            </Animated.View>
+          )}
+
           {/* Stats bar */}
           {(recipe.prep_time_minutes || recipe.cook_time_minutes || recipe.servings || avgRating) && (
             <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3).duration(300)} style={styles.statsBar}>
@@ -1044,34 +1092,33 @@ export default function RecipeDetailScreen() {
           {/* Publish banner */}
           {isOwner && recipe.visibility === 'private' && !bannerPublished && (() => {
             const canPublish = recipe.source_type === 'manual' || recipe.source_type === 'fork';
+            if (canPublish) {
+              return (
+                <View style={styles.publishBanner}>
+                  <Text style={styles.publishBannerText}>
+                    Your followers can't see when you cook this. Publish it to share with them.
+                  </Text>
+                  <Pressable
+                    style={[styles.publishButton, bannerLoading && styles.publishButtonDisabled]}
+                    onPress={handlePublish}
+                    disabled={bannerLoading}
+                  >
+                    <Text style={styles.publishButtonText}>
+                      {bannerLoading ? 'Publishing...' : 'Publish'}
+                    </Text>
+                  </Pressable>
+                </View>
+              );
+            }
             return (
-              <View style={styles.publishBanner}>
-                {canPublish ? (
-                  <>
-                    <Text style={styles.publishBannerText}>
-                      Your followers can't see when you cook this. Publish it to share with them.
-                    </Text>
-                    <Pressable
-                      style={[styles.publishButton, bannerLoading && styles.publishButtonDisabled]}
-                      onPress={handlePublish}
-                      disabled={bannerLoading}
-                    >
-                      <Text style={styles.publishButtonText}>
-                        {bannerLoading ? 'Publishing...' : 'Publish'}
-                      </Text>
-                    </Pressable>
-                  </>
+              <View style={styles.importedNote}>
+                {recipe.source_url ? (
+                  <Pressable onPress={() => Linking.openURL(recipe.source_url!)} style={styles.importedNoteRow}>
+                    <Text style={styles.importedNoteText}>Personal cookbook · </Text>
+                    <Text style={styles.importedNoteLink}>View original</Text>
+                  </Pressable>
                 ) : (
-                  <>
-                    <Text style={styles.publishBannerText}>
-                      From your personal cookbook.{recipe.source_name ? ` Saved from ${recipe.source_name}.` : recipe.source_url ? ' Saved from the web.' : ' Saved from a cookbook.'} Your followers will see when you cook it.
-                    </Text>
-                    {recipe.source_url && (
-                      <Pressable onPress={() => Linking.openURL(recipe.source_url!)}>
-                        <Text style={styles.publishBannerLink}>View original recipe</Text>
-                      </Pressable>
-                    )}
-                  </>
+                  <Text style={styles.importedNoteText}>Personal cookbook</Text>
                 )}
               </View>
             );
@@ -1086,51 +1133,6 @@ export default function RecipeDetailScreen() {
 
           {/* Body content */}
           <View style={styles.body}>
-            {/* Owner actions */}
-            {isOwner && (
-              <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3.5).duration(300)} style={styles.ownerActions}>
-                <Button
-                  title="Edit"
-                  variant="secondary"
-                  size="sm"
-                  onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
-                />
-                {(recipe.source_type === 'manual' || recipe.source_type === 'fork') && (
-                  <TouchableOpacity
-                    style={[
-                      styles.actionButton,
-                      recipe.visibility === 'public' ? styles.publicButton : styles.privateButton,
-                    ]}
-                    onPress={toggleVisibility}
-                  >
-                    {recipe.visibility !== 'public' && (
-                      <FontAwesome name="lock" size={12} color={colors.inkMuted} style={{ marginRight: spacing.xs }} />
-                    )}
-                    <Text style={[
-                      styles.actionButtonText,
-                      recipe.visibility === 'public' ? styles.publicButtonText : styles.privateButtonText,
-                    ]}>
-                      {recipe.visibility === 'public' ? 'Public' : 'Private'}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-                {recipe.visibility === 'public' && (
-                  <Button
-                    title="Copy link"
-                    variant="secondary"
-                    size="sm"
-                    onPress={shareLink}
-                  />
-                )}
-                <Button
-                  title="Delete"
-                  variant="danger"
-                  size="sm"
-                  onPress={deleteRecipe}
-                />
-              </Animated.View>
-            )}
-
             {/* Non-owner: save + share link */}
             {!isOwner && recipe.visibility === 'public' && (
               <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 3.5).duration(300)} style={styles.ownerActions}>
@@ -1618,7 +1620,24 @@ export default function RecipeDetailScreen() {
           <Animated.Text style={[styles.headerTitle, headerTitleStyle]} numberOfLines={1}>
             {recipe.title}
           </Animated.Text>
-          <View style={styles.headerSpacer} />
+          {isOwner ? (
+            <TouchableOpacity
+              onPress={() => router.push(`/recipe/${recipe.id}/edit`)}
+              hitSlop={12}
+              style={styles.headerSpacer}
+            >
+              <View>
+                <Animated.View style={headerIconPrimaryStyle}>
+                  <FontAwesome name="pencil" size={15} color={colors.inkSecondary} />
+                </Animated.View>
+                <Animated.View style={[StyleSheet.absoluteFillObject, headerIconWhiteStyle]}>
+                  <FontAwesome name="pencil" size={15} color={colors.white} />
+                </Animated.View>
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.headerSpacer} />
+          )}
         </Animated.View>
       </View>
 
@@ -2189,6 +2208,25 @@ const styles = StyleSheet.create({
   publishBannerSuccessText: {
     ...typography.bodySmall,
     color: colors.olive,
+  },
+  importedNote: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    paddingLeft: spacing.sm,
+    borderLeftWidth: 2,
+    borderLeftColor: colors.border,
+  },
+  importedNoteRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+  },
+  importedNoteText: {
+    ...typography.meta,
+    color: colors.inkMuted,
+  },
+  importedNoteLink: {
+    ...typography.meta,
+    color: colors.accent,
   },
 
   // Private recipe card

@@ -9,7 +9,6 @@ import {
   RefreshControl,
   ActivityIndicator,
   Linking,
-  Modal,
   TouchableOpacity,
 } from 'react-native';
 import { Image } from 'expo-image';
@@ -338,41 +337,6 @@ export default function HomeScreen() {
         </View>
       ) : null}
 
-      {/* Import modal */}
-      <Modal
-        visible={showImportMenu}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowImportMenu(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowImportMenu(false)}>
-          <View style={styles.importMenu}>
-            <Text style={styles.importMenuTitle}>Import Recipe</Text>
-            <TouchableOpacity
-              style={styles.importOption}
-              activeOpacity={0.7}
-              onPress={() => { setShowImportMenu(false); router.push('/recipe/import-url'); }}
-            >
-              <FontAwesome name="link" size={18} color={colors.accent} />
-              <View style={styles.importOptionText}>
-                <Text style={styles.importOptionTitle}>From Link</Text>
-                <Text style={styles.importOptionDesc}>Paste a link from any recipe site or Instagram</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.importOption}
-              activeOpacity={0.7}
-              onPress={() => { setShowImportMenu(false); router.push('/recipe/import-photo'); }}
-            >
-              <FontAwesome name="camera" size={18} color={colors.accent} />
-              <View style={styles.importOptionText}>
-                <Text style={styles.importOptionTitle}>From Photo</Text>
-                <Text style={styles.importOptionDesc}>Scan a photo of a recipe with AI</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </Pressable>
-      </Modal>
     </View>
   );
 
@@ -443,23 +407,54 @@ export default function HomeScreen() {
   );
 
   return (
-    <FlatList
-      style={styles.container}
-      data={feedItems.length > 0 ? feedItems : []}
-      keyExtractor={(item, i) => `${item.event_type}-${item.recipe_id}-${item.event_at}-${i}`}
-      renderItem={renderTickerItem}
-      ListHeaderComponent={renderHeader}
-      ListFooterComponent={renderFooter}
-      onEndReached={loadMoreFeed}
-      onEndReachedThreshold={0.3}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={colors.inkMuted}
-        />
-      }
-    />
+    <View style={styles.container}>
+      <FlatList
+        style={{ flex: 1 }}
+        data={feedItems.length > 0 ? feedItems : []}
+        keyExtractor={(item, i) => `${item.event_type}-${item.recipe_id}-${item.event_at}-${i}`}
+        renderItem={renderTickerItem}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        onEndReached={loadMoreFeed}
+        onEndReachedThreshold={0.3}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.inkMuted}
+          />
+        }
+      />
+      {showImportMenu && (
+        <Pressable style={styles.modalOverlay} onPress={() => setShowImportMenu(false)}>
+          <View style={styles.importMenu}>
+            <Text style={styles.importMenuTitle}>Import Recipe</Text>
+            <TouchableOpacity
+              style={styles.importOption}
+              activeOpacity={0.7}
+              onPress={() => { setShowImportMenu(false); router.push('/recipe/import-url'); }}
+            >
+              <FontAwesome name="link" size={18} color={colors.accent} />
+              <View style={styles.importOptionText}>
+                <Text style={styles.importOptionTitle}>From Link</Text>
+                <Text style={styles.importOptionDesc}>Paste a link from any recipe site or Instagram</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.importOption}
+              activeOpacity={0.7}
+              onPress={() => { setShowImportMenu(false); router.push('/recipe/import-photo'); }}
+            >
+              <FontAwesome name="camera" size={18} color={colors.accent} />
+              <View style={styles.importOptionText}>
+                <Text style={styles.importOptionTitle}>From Photo</Text>
+                <Text style={styles.importOptionDesc}>Scan a photo of a recipe with AI</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      )}
+    </View>
   );
 }
 
@@ -502,7 +497,7 @@ const styles = StyleSheet.create({
 
   // Import modal
   modalOverlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
   },
