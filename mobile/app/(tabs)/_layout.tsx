@@ -10,7 +10,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { colors, fontFamily, typography, animation } from '@/lib/theme';
-import { Logo } from '@/components/ui/Logo';
+import { LogoMark } from '@/components/ui/Logo';
 
 function AnimatedTabBarIcon({
   name,
@@ -157,6 +157,7 @@ export default function TabLayout() {
         },
         headerTintColor: colors.ink,
         headerShadowVisible: false,
+        headerTitle: () => <LogoMark size={22} />,
       }}
     >
       <Tabs.Screen
@@ -164,7 +165,6 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="home" color={color} focused={focused} />,
-          headerTitle: () => <Logo height={22} />,
         }}
       />
       <Tabs.Screen
