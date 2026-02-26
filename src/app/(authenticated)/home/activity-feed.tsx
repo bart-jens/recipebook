@@ -131,7 +131,7 @@ export function ActivityFeed({
               ) : (
                 <div className="w-[36px] h-[36px] rounded-full bg-surface-alt shrink-0 flex items-center justify-center">
                   <span className="text-[14px] font-normal text-ink-muted">
-                    {item.display_name[0]?.toUpperCase()}
+                    {(item.display_name?.[0] ?? '?').toUpperCase()}
                   </span>
                 </div>
               )}
