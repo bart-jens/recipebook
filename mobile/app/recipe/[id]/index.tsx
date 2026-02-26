@@ -35,7 +35,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { uploadRecipeImage } from '@/lib/upload-image';
 import { convertIngredient, type UnitSystem } from '@/lib/unit-conversion';
-import { colors, spacing, typography, radii, fontFamily, animation } from '@/lib/theme';
+import { colors, spacing, typography, radii, fontFamily, animation, shadows } from '@/lib/theme';
 import Button from '@/components/ui/Button';
 import StarRating from '@/components/ui/StarRating';
 import Badge from '@/components/ui/Badge';
@@ -1288,6 +1288,7 @@ export default function RecipeDetailScreen() {
             {/* Ingredients */}
             {ingredients.length > 0 && (
               <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 5.5).duration(300)} style={styles.section}>
+                <View style={styles.sectionCard}>
                 <View style={styles.ingredientHeader}>
                   <Text style={styles.sectionLabel}>Ingredients</Text>
                   <View style={styles.unitToggle}>
@@ -1382,12 +1383,14 @@ export default function RecipeDetailScreen() {
                     </>
                   )}
                 </TouchableOpacity>
+                </View>
               </Animated.View>
             )}
 
             {/* Instructions / Method */}
             {instructions.length > 0 && (
               <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 6).duration(300)} style={styles.section}>
+                <View style={styles.sectionCard}>
                 <Text style={styles.sectionLabel}>Method</Text>
                 {instructions.length === 1 ? (
                   <Text style={styles.stepText}>{instructions[0]}</Text>
@@ -1401,6 +1404,7 @@ export default function RecipeDetailScreen() {
                     </View>
                   ))
                 )}
+                </View>
               </Animated.View>
             )}
 
@@ -1677,7 +1681,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: 80,
+    height: 120,
   },
   uploadOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -1979,6 +1983,14 @@ const styles = StyleSheet.create({
 
   // Sections
   section: { marginBottom: spacing.sectionGap },
+  sectionCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.md,
+    ...shadows.card,
+  },
 
   // Section label (mono uppercase with bottom border)
   sectionLabel: {
