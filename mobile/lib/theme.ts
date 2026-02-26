@@ -88,20 +88,41 @@ export const radii = {
   lg: 12,
   xl: 16,
   full: 999,
+  image: 8,
 } as const;
 
-export const shadows = Platform.select({
-  ios: {
-    shadowColor: 'transparent',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0,
-    shadowRadius: 0,
-  },
-  android: {
-    elevation: 0,
-  },
-  default: {},
-}) as Record<string, unknown>;
+export const shadows = {
+  card: Platform.select({
+    ios: {
+      shadowColor: '#141210',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.06,
+      shadowRadius: 4,
+    },
+    android: { elevation: 2 },
+    default: {},
+  }),
+  medium: Platform.select({
+    ios: {
+      shadowColor: '#141210',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.09,
+      shadowRadius: 8,
+    },
+    android: { elevation: 4 },
+    default: {},
+  }),
+  strong: Platform.select({
+    ios: {
+      shadowColor: '#141210',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.13,
+      shadowRadius: 16,
+    },
+    android: { elevation: 8 },
+    default: {},
+  }),
+} as const;
 
 export const animation = {
   springConfig: { damping: 15, stiffness: 150, mass: 0.8 },

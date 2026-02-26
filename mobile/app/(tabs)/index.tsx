@@ -17,7 +17,7 @@ import { router, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
-import { colors, spacing, fontFamily, typography } from '@/lib/theme';
+import { colors, spacing, fontFamily, typography, shadows, radii } from '@/lib/theme';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
 import { RecipePlaceholder } from '@/lib/recipe-placeholder';
 
@@ -280,7 +280,7 @@ export default function HomeScreen() {
                     recyclingKey={recipe.image_url}
                   />
                 ) : (
-                  <RecipePlaceholder id={recipe.id} size={140} />
+                  <RecipePlaceholder id={recipe.id} size={140} style={{ borderTopLeftRadius: radii.image, borderTopRightRadius: radii.image }} />
                 )}
                 <View style={styles.carouselCardBody}>
                   {getTag(recipe) && (
@@ -558,14 +558,20 @@ const styles = StyleSheet.create({
   },
   carouselCard: {
     width: 140,
+    backgroundColor: colors.surface,
+    borderRadius: radii.image,
+    ...shadows.card,
   },
   carouselImage: {
     width: 140,
     height: 140,
-    borderRadius: 0,
+    borderTopLeftRadius: radii.image,
+    borderTopRightRadius: radii.image,
   },
   carouselCardBody: {
     paddingTop: 8,
+    paddingHorizontal: 8,
+    paddingBottom: 8,
   },
   carouselTag: {
     ...typography.metaSmall,
@@ -603,10 +609,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    paddingHorizontal: 12,
+    marginHorizontal: spacing.pagePadding,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.surface,
+    borderRadius: radii.sm,
     alignItems: 'center',
+    ...shadows.card,
   },
   tickerAvatar: {
     width: 36,
