@@ -61,7 +61,7 @@ export function ChefCard({
           />
         ) : (
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-bg text-[20px] font-normal">
-            {displayName[0]?.toUpperCase()}
+            {(displayName?.[0] ?? '?').toUpperCase()}
           </div>
         )}
       </Link>
