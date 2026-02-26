@@ -1,0 +1,20 @@
+# Detect which paths changed vs remote main.
+# Falls back to HEAD^..HEAD if no upstream is set (e.g. first push of a branch).
+CHANGED=$(git diff --name-only origin/main...HEAD 2>/dev/null \
+  || git diff --name-only HEAD^ HEAD 2>/dev/null \
+  || echo "")
+
+FAILED=false
+
+if echo "$CHANGED" | grep -qE "^mobile/"; then
+  echo "→ Mobile changes detected, running mobile tests..."
+  (cd mobile && npm test -- --passWithNoTests) || FAILED=true
+fi
+
+if echo "$CHANGED" | grep -qE "^src/"; then
+  echo "→ Web changes detected, running web tests..."
+  npm test -- --passWithNoTests || FAILED=true
+fi
+
+[ "$FAILED" = true ] && { echo "Tests failed. Fix before pushing."; exit 1; }
+echo "All tests passed."
