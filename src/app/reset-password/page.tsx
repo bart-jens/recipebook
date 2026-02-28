@@ -1,18 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { login } from "./actions";
 import { Logo } from "@/components/logo";
+import { resetPassword } from "./actions";
 
-export default function LoginPage() {
-  const [error, setError] = useState<string | null>(null);
+export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
-    const result = await login(formData);
+    const result = await resetPassword(formData);
     if (result?.error) {
       setError(result.error);
       setLoading(false);
@@ -27,59 +26,36 @@ export default function LoginPage() {
             <Logo height={40} />
           </div>
           <p className="mt-3 animate-fade-in-up text-[13px] font-light text-ink-muted [animation-delay:100ms] [animation-fill-mode:backwards]">
-            Sign in to your recipe collection
+            Set a new password
           </p>
         </div>
 
         <form action={handleSubmit} className="space-y-5">
           <div className="animate-fade-in-up [animation-delay:200ms] [animation-fill-mode:backwards]">
-            <label htmlFor="email" className="mb-2 block text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 text-[15px] font-light text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
-            />
-          </div>
-          <div className="animate-fade-in-up [animation-delay:300ms] [animation-fill-mode:backwards]">
             <label htmlFor="password" className="mb-2 block text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
-              Password
+              New password
             </label>
             <input
               id="password"
               name="password"
               type="password"
               required
+              autoFocus
+              minLength={6}
               className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 text-[15px] font-light text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
             />
           </div>
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
-          <div className="animate-fade-in-up flex justify-end [animation-delay:350ms] [animation-fill-mode:backwards]">
-            <Link href="/forgot-password" className="text-[12px] font-light text-ink-muted hover:text-accent">
-              Forgot password?
-            </Link>
-          </div>
-          <div className="animate-fade-in-up pt-2 [animation-delay:400ms] [animation-fill-mode:backwards]">
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <div className="animate-fade-in-up pt-2 [animation-delay:300ms] [animation-fill-mode:backwards]">
             <button
               type="submit"
               disabled={loading}
               className="w-full bg-ink px-4 py-3 text-[14px] font-normal text-white transition-opacity hover:opacity-80 active:scale-[0.98] disabled:opacity-50"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Updating..." : "Update password"}
             </button>
           </div>
         </form>
-        <p className="animate-fade-in-up text-center text-[13px] font-light text-ink-secondary [animation-delay:500ms] [animation-fill-mode:backwards]">
-          Have an invite code?{" "}
-          <Link href="/signup" className="text-accent hover:underline">
-            Sign up
-          </Link>
-        </p>
       </div>
     </div>
   );
