@@ -11,17 +11,16 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      // Check if user has a profile (existing user)
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("id")
-          .eq("id", user.id)
-          .maybeSingle();
+        // Detect new OAuth users by checking if their identity was just created.
+        // The handle_new_user trigger creates a profile immediately, so !profile is
+        // always false — instead we check if this is a first-time sign-in.
+        const identity = user.identities?.[0];
+        const isNewUser = identity &&
+          new Date(identity.created_at).getTime() > Date.now() - 120_000;
 
-        if (!profile) {
-          // New user via OAuth — redirect to invite code verification
+        if (isNewUser) {
           return NextResponse.redirect(`${origin}/signup/verify-invite?provider=true`);
         }
       }
