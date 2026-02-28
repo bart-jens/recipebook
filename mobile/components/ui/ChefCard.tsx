@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import Avatar from './Avatar';
 import { colors, spacing, typography } from '@/lib/theme';
+import { formatTimeAgo } from '@/lib/format';
 
 interface Props {
   id: string;
@@ -15,18 +16,6 @@ interface Props {
   isPending?: boolean;
 }
 
-function formatTimeAgo(timestamp: string): string {
-  const diff = Date.now() - new Date(timestamp).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  const weeks = Math.floor(days / 7);
-  if (weeks < 4) return `${weeks}w ago`;
-  return `${Math.floor(days / 30)}mo ago`;
-}
 
 export default function ChefCard({
   id,

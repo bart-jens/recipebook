@@ -9,6 +9,7 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
+    "gen:types": "supabase gen types typescript --linked > src/types/supabase.ts",
     "prepare": "husky"
   },
   "dependencies": {

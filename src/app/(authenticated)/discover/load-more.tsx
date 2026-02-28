@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { formatTime } from "@/lib/format";
 
 interface LoadedRecipe {
   id: string;
@@ -15,13 +16,6 @@ interface LoadedRecipe {
   tags: string[];
 }
 
-function formatTime(minutes: number | null): string | null {
-  if (!minutes) return null;
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
 
 export function LoadMoreButton({
   searchQuery,
