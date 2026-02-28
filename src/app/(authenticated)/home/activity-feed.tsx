@@ -91,21 +91,29 @@ export function ActivityFeed({
   const [items, setItems] = useState<FeedItem[]>(initialItems);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialHasMore);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadMore = async () => {
     if (loading || !hasMore || items.length === 0) return;
     setLoading(true);
+    setLoadError(null);
     const lastItem = items[items.length - 1];
     const supabase = createClient();
-    const { data } = await supabase.rpc("get_activity_feed", {
-      p_user_id: userId,
-      p_before: lastItem.event_at,
-      p_limit: 20,
-    });
-    const newItems = (data || []) as FeedItem[];
-    setItems((prev) => [...prev, ...newItems]);
-    setHasMore(newItems.length === 20);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.rpc("get_activity_feed", {
+        p_user_id: userId,
+        p_before: lastItem.event_at,
+        p_limit: 20,
+      });
+      if (error) throw error;
+      const newItems = (data || []) as FeedItem[];
+      setItems((prev) => [...prev, ...newItems]);
+      setHasMore(newItems.length >= 20);
+    } catch {
+      setLoadError("Couldn't load more. Tap to retry.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -175,13 +183,18 @@ export function ActivityFeed({
         );
       })}
       {hasMore && (
-        <button
-          onClick={loadMore}
-          disabled={loading}
-          className="mt-3 w-full border-t border-border py-2.5 text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-accent transition-colors disabled:opacity-50"
-        >
-          {loading ? "Loading..." : "Load more"}
-        </button>
+        <div>
+          {loadError && (
+            <p className="text-[12px] font-light text-red-500 text-center pt-2">{loadError}</p>
+          )}
+          <button
+            onClick={loadMore}
+            disabled={loading}
+            className="mt-1 w-full border-t border-border py-2.5 text-[11px] font-normal tracking-[0.02em] text-ink-muted hover:text-accent transition-colors disabled:opacity-50"
+          >
+            {loading ? "Loading..." : "Load more"}
+          </button>
+        </div>
       )}
     </div>
   );
