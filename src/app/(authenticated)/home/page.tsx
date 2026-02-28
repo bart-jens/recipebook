@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ActivityFeed } from "./activity-feed";
 import { RecipeCard } from "./recipe-card";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface FeedItem {
   event_type: string;
@@ -129,29 +130,15 @@ export default async function HomePage() {
           </h2>
         </div>
         {followingCount === 0 ? (
-          <div className="border-t border-border py-6 text-center">
-            <p className="text-[13px] font-light text-ink-secondary mb-2">
-              Follow some chefs to see what they&apos;re cooking
-            </p>
-            <Link
-              href="/discover?tab=chefs"
-              className="text-[11px] font-normal tracking-[0.02em] text-accent hover:text-ink transition-colors"
-            >
-              Discover Chefs
-            </Link>
-          </div>
+          <EmptyState
+            title="Follow some chefs to see what they're cooking"
+            action={{ label: "Discover Chefs", href: "/discover?tab=chefs" }}
+          />
         ) : feedItems.length === 0 ? (
-          <div className="border-t border-border py-6 text-center">
-            <p className="text-[13px] font-light text-ink-secondary mb-2">
-              Your chefs haven&apos;t been cooking lately
-            </p>
-            <Link
-              href="/recipes"
-              className="text-[11px] font-normal tracking-[0.02em] text-accent hover:text-ink transition-colors"
-            >
-              Why not cook something yourself?
-            </Link>
-          </div>
+          <EmptyState
+            title="Your chefs haven't been cooking lately"
+            action={{ label: "Why not cook something yourself?", href: "/recipes" }}
+          />
         ) : (
           <ActivityFeed
             initialItems={feedItems}
