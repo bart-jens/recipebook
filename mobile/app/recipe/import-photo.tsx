@@ -409,10 +409,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   pickText: {
+    ...typography.bodySmall,
     fontFamily: fontFamily.sans,
-    fontSize: 13,
     color: colors.ink,
-    fontWeight: '500',
   },
 
   previewContainer: {
@@ -474,9 +473,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   scanCoverText: {
+    ...typography.bodySmall,
     fontFamily: fontFamily.sans,
-    fontSize: 13,
-    fontWeight: '500',
     color: colors.ink,
   },
   sourceInput: {
@@ -514,7 +512,6 @@ const styles = StyleSheet.create({
   },
   sourceChoiceTextActive: {
     color: colors.ink,
-    fontWeight: '500',
   },
   sourceChoiceSubLabel: {
     fontFamily: fontFamily.sans,
