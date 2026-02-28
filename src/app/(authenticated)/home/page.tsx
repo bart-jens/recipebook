@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ActivityFeed } from "./activity-feed";
-import { RecipePlaceholder } from "@/lib/recipe-placeholder";
-import { formatTime } from "@/lib/format";
+import { RecipeCard } from "./recipe-card";
 
 interface FeedItem {
   event_type: string;
@@ -113,36 +112,7 @@ export default async function HomePage() {
           </div>
           <div className="flex gap-3 overflow-x-auto px-5 pb-4 scrollbar-hide">
             {allRecipes.map((recipe) => (
-              <Link
-                key={recipe.id}
-                href={`/recipes/${recipe.id}`}
-                className="group shrink-0 w-[140px] cursor-pointer"
-              >
-                {recipe.image_url ? (
-                  <img
-                    src={recipe.image_url}
-                    alt={recipe.title}
-                    className="w-[140px] h-[140px] object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-                  />
-                ) : (
-                  <RecipePlaceholder id={recipe.id} size={140} />
-                )}
-                <div className="pt-2">
-                  {recipe.recipe_tags?.[0] && (
-                    <div className="text-[11px] font-normal tracking-[0.02em] text-accent mb-0.5">
-                      {recipe.recipe_tags[0].tag}
-                    </div>
-                  )}
-                  <div className="text-[14px] font-normal leading-[1.2] text-ink line-clamp-2 transition-colors group-hover:text-accent">
-                    {recipe.title}
-                  </div>
-                  {(recipe.cook_time_minutes || recipe.prep_time_minutes) && (
-                    <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mt-0.5">
-                      {formatTime(recipe.cook_time_minutes || recipe.prep_time_minutes)}
-                    </div>
-                  )}
-                </div>
-              </Link>
+              <RecipeCard key={recipe.id} recipe={recipe} />
             ))}
           </div>
         </div>

@@ -25,6 +25,16 @@
     @apply h-px bg-border;
   }
 
+  .img-reveal {
+    filter: blur(8px);
+    opacity: 0;
+    transition: filter 350ms ease, opacity 350ms ease;
+  }
+  .img-reveal.loaded {
+    filter: blur(0);
+    opacity: 1;
+  }
+
   .anim-delay-1 { animation-delay: 40ms; }
   .anim-delay-2 { animation-delay: 80ms; }
   .anim-delay-3 { animation-delay: 120ms; }
