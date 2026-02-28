@@ -1,3 +1,5 @@
+npm run gen:types
+
 # Detect which paths changed vs remote main.
 # Falls back to HEAD^..HEAD if no upstream is set (e.g. first push of a branch).
 CHANGED=$(git diff --name-only origin/main...HEAD 2>/dev/null \
