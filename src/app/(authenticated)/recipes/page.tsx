@@ -7,6 +7,7 @@ import { RecipeListControls } from "./recipe-list-controls";
 import { CollectionsSection } from "./collections-section";
 import { getCollections, getUserPlan } from "./collections/actions";
 import { PublishInline } from "./publish-inline";
+import { formatTime } from "@/lib/format";
 
 interface RecipeTag {
   tag: string;
@@ -38,13 +39,6 @@ interface EnrichedRecipe extends RecipeRow {
   isSaved: boolean;
 }
 
-function formatTime(minutes: number | null): string | null {
-  if (!minutes) return null;
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
 
 export default async function RecipesPage({
   searchParams,

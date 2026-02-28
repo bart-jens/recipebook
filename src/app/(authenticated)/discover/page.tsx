@@ -6,6 +6,7 @@ import { DiscoverControls } from "./discover-controls";
 import { LoadMoreButton } from "./load-more";
 import { ChefsTab } from "./chefs-tab";
 import { DiscoverSaveButton } from "./discover-save-button";
+import { formatTime } from "@/lib/format";
 
 interface RecipeTag {
   tag: string;
@@ -34,13 +35,6 @@ interface EnrichedRecipe extends PublicRecipe {
   creator_name: string;
 }
 
-function formatTime(minutes: number | null): string | null {
-  if (!minutes) return null;
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
 
 export default async function DiscoverPage({
   searchParams,
