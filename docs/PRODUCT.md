@@ -149,7 +149,7 @@ The Grocery tab is visible to every user on every session and is functionally in
 
 **Import Rate Limiting (Free Tier Gate)**
 Extract API routes have no rate limiting. Add `monthly_imports_used` counter to `user_profiles`, checked in each `/api/extract-*` route.
-- Free: 20 imports/month. Premium: unlimited.
+- Free: 10 imports/month. Premium: unlimited.
 - This is the clearest free→paid trigger — heavy importers are the most engaged users.
 
 **Deduplicate Unit Conversion**
@@ -339,7 +339,7 @@ You eat something amazing at a restaurant. You log it on EefEats — the dish, t
 | Feature | Free | Premium |
 |---------|------|---------|
 | Personal recipes | Unlimited | Unlimited |
-| Recipe imports | 20/month | Unlimited |
+| Recipe imports | 10/month | Unlimited |
 | Public recipe browsing | Yes | Yes |
 | Forking public recipes | Yes | Yes |
 | Publishing recipes | Unlimited (invite-only phase) | Unlimited |
