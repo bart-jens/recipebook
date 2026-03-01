@@ -1089,6 +1089,21 @@ export default function RecipeDetailScreen() {
             </Animated.View>
           )}
 
+          {/* Start Cooking button */}
+          {recipe.instructions ? (
+            <Animated.View entering={FadeInDown.delay(animation.staggerDelay * 4).duration(300)} style={styles.startCookingWrap}>
+              <Pressable
+                style={styles.startCookingButton}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  router.push(`/recipe/${id}/cooking`);
+                }}
+              >
+                <Text style={styles.startCookingText}>Start Cooking</Text>
+              </Pressable>
+            </Animated.View>
+          ) : null}
+
           {/* Publish banner */}
           {isOwner && recipe.visibility === 'private' && !bannerPublished && (() => {
             const canPublish = recipe.source_type === 'manual' || recipe.source_type === 'fork';
@@ -2179,6 +2194,23 @@ const styles = StyleSheet.create({
   },
   addToListTextDone: {
     color: colors.success,
+  },
+
+  // Start Cooking
+  startCookingWrap: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+  },
+  startCookingButton: {
+    height: 48,
+    backgroundColor: colors.accent,
+    borderRadius: radii.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  startCookingText: {
+    ...typography.label,
+    color: colors.white,
   },
 
   // Publish banner

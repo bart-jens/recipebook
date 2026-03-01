@@ -1,0 +1,125 @@
+import { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { useLocalSearchParams, router, Stack } from 'expo-router';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/auth';
+import { parseSteps } from '@/lib/parse-steps';
+import CookingMode from '@/components/ui/CookingMode';
+import { colors, spacing, typography } from '@/lib/theme';
+
+interface Recipe {
+  id: string;
+  title: string;
+  instructions: string | null;
+}
+
+interface Ingredient {
+  id: string;
+  quantity: number | null;
+  unit: string | null;
+  ingredient_name: string;
+  notes: string | null;
+  order_index: number;
+}
+
+export default function CookingScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
+
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    async function load() {
+      const [{ data: recipeData, error: recipeError }, { data: ingData }] = await Promise.all([
+        supabase.from('recipes').select('id, title, instructions').eq('id', id).single(),
+        supabase
+          .from('recipe_ingredients')
+          .select('id, quantity, unit, ingredient_name, notes, order_index')
+          .eq('recipe_id', id)
+          .order('order_index'),
+      ]);
+      if (recipeError || !recipeData) {
+        setError('Could not load recipe.');
+      } else {
+        setRecipe(recipeData);
+        setIngredients(ingData ?? []);
+      }
+      setLoading(false);
+    }
+    load();
+  }, [id]);
+
+  function dismiss() {
+    router.back();
+  }
+
+  async function handleRatingSubmit(rating: number, notes: string) {
+    if (!recipe || !user || rating === 0) return;
+    const { error } = await supabase.from('recipe_ratings').insert({
+      recipe_id: recipe.id,
+      user_id: user.id,
+      rating,
+      notes: notes || null,
+      cooked_date: new Date().toISOString().split('T')[0],
+    });
+    if (error) {
+      Alert.alert('Could not save rating', 'Your cook was logged but the rating could not be saved. Try adding it from the recipe detail.');
+    }
+  }
+
+  if (loading) {
+    return (
+      <>
+        <Stack.Screen options={{ presentation: 'fullScreenModal', headerShown: false }} />
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={colors.accent} />
+        </View>
+      </>
+    );
+  }
+
+  if (error || !recipe) {
+    return (
+      <>
+        <Stack.Screen options={{ presentation: 'fullScreenModal', headerShown: false }} />
+        <View style={styles.centered}>
+          <Text style={styles.errorText}>{error ?? 'Recipe not found.'}</Text>
+        </View>
+      </>
+    );
+  }
+
+  const steps = parseSteps(recipe.instructions ?? '');
+
+  return (
+    <>
+      <Stack.Screen options={{ presentation: 'fullScreenModal', headerShown: false }} />
+      <CookingMode
+        recipe={recipe}
+        ingredients={ingredients}
+        steps={steps}
+        onDismiss={dismiss}
+        onRatingSubmit={handleRatingSubmit}
+      />
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.bg,
+  },
+  errorText: {
+    ...typography.body,
+    color: colors.inkSecondary,
+    textAlign: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+});

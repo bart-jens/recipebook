@@ -16,6 +16,8 @@ import { PhotoCarousel } from "./photo-carousel";
 import { CollectionPicker } from "./collection-picker";
 import { PublishBanner } from "./publish-banner";
 import { addRecipeToDefaultShoppingList, addIngredientToDefaultShoppingList } from "@/app/(authenticated)/shopping-list/actions";
+import { CookingModeOverlay } from "@/components/ui/CookingModeOverlay";
+import { addRating } from "./actions";
 
 
 interface Ingredient {
@@ -118,6 +120,7 @@ export function RecipeDetail({
   const [addingIngredient, setAddingIngredient] = useState<string | null>(null);
   const [addedAll, setAddedAll] = useState(false);
   const [addingAll, setAddingAll] = useState(false);
+  const [showCookingMode, setShowCookingMode] = useState(false);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const scaleFactor = recipe.servings ? servings / recipe.servings : 1;
 
@@ -148,7 +151,20 @@ export function RecipeDetail({
     });
   }
 
+  async function handleCookingModeRating(rating: number, notes: string) {
+    await addRating(recipe.id, rating, notes || null, new Date().toISOString().split("T")[0]);
+  }
+
   return (
+    <>
+    {showCookingMode && (
+      <CookingModeOverlay
+        recipe={recipe}
+        ingredients={ingredients}
+        onDismiss={() => setShowCookingMode(false)}
+        onRatingSubmit={handleCookingModeRating}
+      />
+    )}
     <div className="-mx-5">
       {/* Detail Nav — sticky blurred */}
       <nav className="sticky top-0 z-50 flex items-center justify-between px-5 py-3 backdrop-blur-[20px] bg-[rgba(246,244,239,0.92)]">
@@ -322,6 +338,18 @@ export function RecipeDetail({
               <div className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">Total</div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Start Cooking button */}
+      {recipe.instructions && (
+        <div className="mx-5 mt-5 opacity-0 animate-fade-in-up" style={{ animationDelay: "320ms" }}>
+          <button
+            onClick={() => setShowCookingMode(true)}
+            className="w-full h-12 rounded-full bg-[#8B4513] text-[13px] font-normal text-white hover:bg-[#6D360F] transition-colors"
+          >
+            Start Cooking
+          </button>
         </div>
       )}
 
@@ -537,5 +565,6 @@ export function RecipeDetail({
         </div>
       </div>
     </div>
+    </>
   );
 }
