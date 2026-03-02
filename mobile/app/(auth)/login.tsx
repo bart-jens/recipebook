@@ -69,14 +69,15 @@ export default function LoginScreen() {
         <Text style={styles.subtitle}>Sign in to your recipe collection</Text>
 
         <View style={styles.socialButtons}>
-          <TouchableOpacity
+          {/* Google sign-in hidden until custom domain is configured — re-enable by uncommenting */}
+          {/* <TouchableOpacity
             style={[styles.googleButton, loading && styles.buttonDisabled]}
             onPress={handleGoogleSignIn}
             disabled={loading}
           >
             <GoogleIcon />
             <Text style={styles.googleButtonText}>Sign in with Google</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <AppleAuthentication.AppleAuthenticationButton
             buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
             buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}

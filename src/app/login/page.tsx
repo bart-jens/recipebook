@@ -72,7 +72,8 @@ function LoginPageInner() {
                 : error}
             </p>
           )}
-          <button
+          {/* Google sign-in hidden until custom domain is configured — re-enable by uncommenting */}
+          {/* <button
             onClick={() => handleOAuth("google")}
             disabled={loading}
             className="flex w-full items-center justify-center gap-3 border border-border bg-bg px-4 py-3 text-[14px] font-normal text-ink transition-opacity hover:opacity-70 disabled:opacity-50"
@@ -84,7 +85,7 @@ function LoginPageInner() {
               <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
             </svg>
             Sign in with Google
-          </button>
+          </button> */}
           <button
             onClick={() => handleOAuth("apple")}
             disabled={loading}

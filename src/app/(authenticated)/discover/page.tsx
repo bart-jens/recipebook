@@ -7,16 +7,10 @@ import { LoadMoreButton } from "./load-more";
 import { ChefsTab } from "./chefs-tab";
 import { DiscoverSaveButton } from "./discover-save-button";
 import { formatTime } from "@/lib/format";
+import type { PublicRecipe } from "../../../../shared/types/domain";
 
-interface RecipeTag {
-  tag: string;
-}
-
-interface RecipeRating {
-  rating: number;
-}
-
-interface PublicRecipe {
+// Intermediate type for raw Supabase join result (not exported)
+interface RawPublicRecipe {
   id: string;
   title: string;
   description: string | null;
@@ -25,14 +19,8 @@ interface PublicRecipe {
   cook_time_minutes: number | null;
   published_at: string | null;
   created_by: string;
-  recipe_tags: RecipeTag[];
-  recipe_ratings: RecipeRating[];
-}
-
-interface EnrichedRecipe extends PublicRecipe {
-  avgRating: number | null;
-  ratingCount: number;
-  creator_name: string;
+  recipe_tags: { tag: string }[];
+  recipe_ratings: { rating: number }[];
 }
 
 
@@ -66,7 +54,7 @@ export default async function DiscoverPage({
 
   const { data: recipes } = await query;
 
-  let filtered = (recipes || []) as unknown as PublicRecipe[];
+  let filtered = (recipes || []) as unknown as RawPublicRecipe[];
   if (tag) {
     filtered = filtered.filter((r) => r.recipe_tags && r.recipe_tags.length > 0);
   }
@@ -88,7 +76,7 @@ export default async function DiscoverPage({
         .select("id, title, description, image_url, prep_time_minutes, cook_time_minutes, published_at, created_by, recipe_tags(tag), recipe_ratings(rating)")
         .eq("visibility", "public")
         .in("id", Array.from(extraIds));
-      const extras = (extraData || []) as unknown as PublicRecipe[];
+      const extras = (extraData || []) as unknown as RawPublicRecipe[];
       filtered = [...filtered, ...extras];
     }
   }
@@ -104,17 +92,25 @@ export default async function DiscoverPage({
   const profileMap = new Map((profiles || []).map((p) => [p.id, p.display_name]));
 
   // Enrich
-  const enriched: EnrichedRecipe[] = filtered.map((r) => {
+  const enriched: PublicRecipe[] = filtered.map((r) => {
     const ratings = r.recipe_ratings || [];
     const avg =
       ratings.length > 0
         ? ratings.reduce((sum, rt) => sum + rt.rating, 0) / ratings.length
         : null;
     return {
-      ...r,
+      id: r.id,
+      title: r.title,
+      description: r.description,
+      image_url: r.image_url,
+      prep_time_minutes: r.prep_time_minutes,
+      cook_time_minutes: r.cook_time_minutes,
+      published_at: r.published_at,
+      created_by: r.created_by,
+      creator_name: profileMap.get(r.created_by) || "Unknown",
+      tags: (r.recipe_tags || []).map((t) => t.tag),
       avgRating: avg,
       ratingCount: ratings.length,
-      creator_name: profileMap.get(r.created_by) || "Unknown",
     };
   });
 
@@ -176,7 +172,7 @@ export default async function DiscoverPage({
               {enriched.map((recipe) => {
                 const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
                 const timeStr = formatTime(totalTime);
-                const tags = (recipe.recipe_tags || []).map((t) => t.tag);
+                const tags = recipe.tags;
 
                 return (
                   <Link

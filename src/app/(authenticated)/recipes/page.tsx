@@ -8,16 +8,10 @@ import { CollectionsSection } from "./collections-section";
 import { getCollections, getUserPlan } from "./collections/actions";
 import { PublishInline } from "./publish-inline";
 import { formatTime } from "@/lib/format";
+import type { RecipeListItem } from "../../../../shared/types/domain";
 
-interface RecipeTag {
-  tag: string;
-}
-
-interface RecipeRating {
-  rating: number;
-}
-
-interface RecipeRow {
+// Intermediate type for raw Supabase join result (not exported)
+interface RawRecipeRow {
   id: string;
   title: string;
   description: string | null;
@@ -27,16 +21,8 @@ interface RecipeRow {
   updated_at: string;
   visibility: string;
   source_type: 'manual' | 'url' | 'photo' | 'telegram' | 'instagram' | 'fork';
-  recipe_tags: RecipeTag[];
-  recipe_ratings: RecipeRating[];
-}
-
-interface EnrichedRecipe extends RecipeRow {
-  avgRating: number | null;
-  ratingCount: number;
-  isFavorited: boolean;
-  hasCooked: boolean;
-  isSaved: boolean;
+  recipe_tags: { tag: string }[];
+  recipe_ratings: { rating: number }[];
 }
 
 
@@ -100,11 +86,11 @@ export default async function RecipesPage({
   const titleMatched = [
     ...(ownedRecipes || []),
     ...(savedRecipes || []),
-  ] as unknown as RecipeRow[];
+  ] as unknown as RawRecipeRow[];
   const titleMatchedIds = new Set(titleMatched.map((r) => r.id));
 
   // When searching, also find recipes matching by ingredient or tag
-  let extraRecipes: RecipeRow[] = [];
+  let extraRecipes: RawRecipeRow[] = [];
   if (q) {
     const [{ data: ingMatches }, { data: tagMatches }, { data: allOwnedIdRows }] = await Promise.all([
       supabase.from("recipe_ingredients").select("recipe_id").ilike("ingredient_name", `%${q}%`),
@@ -124,11 +110,11 @@ export default async function RecipesPage({
         .from("recipes")
         .select(selectFields)
         .in("id", Array.from(extraIds));
-      extraRecipes = (extraData || []) as unknown as RecipeRow[];
+      extraRecipes = (extraData || []) as unknown as RawRecipeRow[];
     }
   }
 
-  let merged = [...titleMatched, ...extraRecipes] as RecipeRow[];
+  let merged = [...titleMatched, ...extraRecipes] as RawRecipeRow[];
 
   // Filter by course
   if (course) {
@@ -138,14 +124,23 @@ export default async function RecipesPage({
   }
 
   // Enrich with computed fields
-  const enriched: EnrichedRecipe[] = merged.map((r) => {
+  const enriched: RecipeListItem[] = merged.map((r) => {
     const ratings = r.recipe_ratings || [];
     const avg =
       ratings.length > 0
         ? ratings.reduce((sum, rt) => sum + rt.rating, 0) / ratings.length
         : null;
     return {
-      ...r,
+      id: r.id,
+      title: r.title,
+      description: r.description,
+      image_url: r.image_url,
+      prep_time_minutes: r.prep_time_minutes,
+      cook_time_minutes: r.cook_time_minutes,
+      updated_at: r.updated_at,
+      visibility: r.visibility,
+      source_type: r.source_type,
+      tags: (r.recipe_tags || []).map((t) => t.tag),
       avgRating: avg,
       ratingCount: ratings.length,
       isFavorited: favoritedIds.has(r.id),
@@ -275,7 +270,7 @@ export default async function RecipesPage({
           {filtered.map((recipe) => {
             const totalTime = (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0);
             const timeStr = formatTime(totalTime);
-            const tags: string[] = (recipe.recipe_tags || []).map((t) => t.tag);
+            const tags = recipe.tags;
 
             return (
               <Link

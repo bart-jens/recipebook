@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import type { FeedItem } from '../../../shared/types/domain';
 import {
   View,
   Text,
@@ -21,22 +22,6 @@ import { colors, spacing, fontFamily, typography, shadows, radii } from '@/lib/t
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
 import { RecipePlaceholder } from '@/lib/recipe-placeholder';
 
-interface FeedItem {
-  event_type: string;
-  user_id: string;
-  recipe_id: string;
-  event_at: string;
-  notes: string | null;
-  display_name: string;
-  avatar_url: string | null;
-  recipe_title: string;
-  recipe_image_url: string | null;
-  source_url: string | null;
-  source_name: string | null;
-  rating: number | null;
-  recipe_visibility: string | null;
-  recipe_source_type: string | null;
-}
 
 interface SuggestionRecipe {
   id: string;

@@ -3,23 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ActivityFeed } from "./activity-feed";
 import { RecipeCard } from "./recipe-card";
 import { EmptyState } from "@/components/ui/empty-state";
-
-interface FeedItem {
-  event_type: string;
-  user_id: string;
-  recipe_id: string;
-  event_at: string;
-  notes: string | null;
-  display_name: string;
-  avatar_url: string | null;
-  recipe_title: string;
-  recipe_image_url: string | null;
-  source_url: string | null;
-  source_name: string | null;
-  rating: number | null;
-  recipe_visibility: string | null;
-  recipe_source_type: string | null;
-}
+import type { FeedItem } from "../../../../shared/types/domain";
 
 interface HomeRecipe {
   id: string;

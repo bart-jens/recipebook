@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import type { RecipeListItem } from '../../../shared/types/domain';
 import {
   View,
   Text,
@@ -51,29 +52,12 @@ const COURSE_OPTIONS = [
   { value: 'snack', label: 'Snack' },
 ];
 
-interface Recipe {
-  id: string;
-  title: string;
-  description: string | null;
-  image_url: string | null;
-  prep_time_minutes: number | null;
-  cook_time_minutes: number | null;
-  updated_at: string;
-  visibility: string;
-  source_type: 'manual' | 'url' | 'photo' | 'telegram' | 'instagram' | 'fork';
-  avgRating: number | null;
-  ratingCount: number;
-  tags: string[];
-  isFavorited: boolean;
-  hasCooked: boolean;
-  isSaved: boolean;
-}
 
 
 export default function RecipesScreen() {
   const { user } = useAuth();
   const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
-  const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
+  const [allRecipes, setAllRecipes] = useState<RecipeListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('updated');
@@ -261,7 +245,7 @@ export default function RecipesScreen() {
         }
       }
 
-      const enriched: Recipe[] = recipeList.map((r) => {
+      const enriched: RecipeListItem[] = recipeList.map((r) => {
         const ratingInfo = ratingMap.get(r.id);
         return {
           ...r,
@@ -325,7 +309,7 @@ export default function RecipesScreen() {
     return filtered;
   }, [allRecipes, sort, activeFilter, selectedCourse]);
 
-  const renderRecipeItem = useCallback(({ item, index }: { item: Recipe; index: number }) => {
+  const renderRecipeItem = useCallback(({ item, index }: { item: RecipeListItem; index: number }) => {
     const totalTime = (item.prep_time_minutes || 0) + (item.cook_time_minutes || 0);
     const timeStr = formatTime(totalTime);
     const tag = item.tags.length > 0 ? item.tags[0] : null;

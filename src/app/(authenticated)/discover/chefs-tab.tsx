@@ -5,18 +5,10 @@ import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { ChefCard } from "./chef-card";
 import { ForkDot } from "@/components/logo";
-
-interface Chef {
-  id: string;
-  display_name: string;
-  avatar_url: string | null;
-  recipe_count: number;
-  last_cooked: string | null;
-  follow_state: "not_following" | "following";
-}
+import type { ChefListItem } from "../../../../shared/types/domain";
 
 export function ChefsTab() {
-  const [chefs, setChefs] = useState<Chef[]>([]);
+  const [chefs, setChefs] = useState<ChefListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,7 +31,6 @@ export function ChefsTab() {
     const followingIds = new Set((following || []).map((f) => f.following_id));
 
     // Get all profiles except self (includes last_cooked_at — accurate across all recipes)
-    // Cast needed until migration 20240101000047 is applied and types regenerated
     type ProfileRow = { id: string; display_name: string; avatar_url: string | null; last_cooked_at: string | null };
     const { data: profilesRaw } = await supabase
       .from("user_profiles")
@@ -47,7 +38,7 @@ export function ChefsTab() {
       .neq("id", user.id)
       .eq("is_hidden", false)
       .order("display_name");
-    const profiles = profilesRaw as unknown as ProfileRow[] | null;
+    const profiles = profilesRaw as ProfileRow[] | null;
 
     if (!profiles || profiles.length === 0) {
       setChefs([]);
@@ -68,7 +59,7 @@ export function ChefsTab() {
       recipeCountMap.set(r.created_by, (recipeCountMap.get(r.created_by) || 0) + 1);
     }
 
-    const enriched: Chef[] = profiles.map((p) => ({
+    const enriched: ChefListItem[] = profiles.map((p) => ({
       id: p.id,
       display_name: p.display_name,
       avatar_url: p.avatar_url,
@@ -91,7 +82,7 @@ export function ChefsTab() {
     setLoading(false);
   }
 
-  function handleFollowChange(id: string, newState: "not_following" | "following") {
+  function handleFollowChange(id: string, newState: ChefListItem["follow_state"]) {
     setChefs((prev) =>
       prev.map((c) =>
         c.id === id ? { ...c, follow_state: newState } : c
