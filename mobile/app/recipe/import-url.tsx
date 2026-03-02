@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   buttonText: { ...typography.metaSmall, color: colors.white },
   loadingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   statusBanner: {
-    backgroundColor: colors.cardBg,
+    backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: spacing.md,

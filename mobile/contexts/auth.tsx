@@ -44,7 +44,7 @@ const AuthContext = createContext<AuthContextType>({
 
 function isNewOAuthUser(user: User): boolean {
   const identity = user.identities?.[0];
-  if (!identity) return false;
+  if (!identity || !identity.created_at) return false;
   return new Date(identity.created_at).getTime() > Date.now() - 120_000;
 }
 

@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
   subtitle: { fontFamily: fontFamily.sans, fontSize: 14, lineHeight: 21, color: colors.inkSecondary, marginBottom: spacing.xxl },
 
   statusBanner: {
-    backgroundColor: colors.cardBg,
+    backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: spacing.md,
