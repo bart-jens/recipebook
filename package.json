@@ -10,7 +10,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "typecheck": "tsc --noEmit",
-    "gen:types": "supabase gen types typescript --linked > src/types/supabase.ts",
+    "gen:types": "supabase gen types typescript --linked > src/types/database.ts",
     "prepare": "husky"
   },
   "dependencies": {

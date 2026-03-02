@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       collection_recipes: {
@@ -337,7 +362,6 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          image_type?: string
           is_primary?: boolean
           recipe_id?: string
           storage_path?: string
@@ -421,38 +445,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "recipe_ratings_recipe_id_fkey"
-            columns: ["recipe_id"]
-            isOneToOne: false
-            referencedRelation: "recipes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      recipe_shares: {
-        Row: {
-          id: string
-          notes: string | null
-          recipe_id: string
-          shared_at: string
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          notes?: string | null
-          recipe_id: string
-          shared_at?: string
-          user_id: string
-        }
-        Update: {
-          id?: string
-          notes?: string | null
-          recipe_id?: string
-          shared_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "recipe_shares_recipe_id_fkey"
             columns: ["recipe_id"]
             isOneToOne: false
             referencedRelation: "recipes"
@@ -566,6 +558,35 @@ export type Database = {
           },
         ]
       }
+      saved_recipes: {
+        Row: {
+          created_at: string
+          id: string
+          recipe_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recipe_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recipe_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_recipes_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shopping_list_items: {
         Row: {
           created_at: string
@@ -631,35 +652,6 @@ export type Database = {
         }
         Relationships: []
       }
-      saved_recipes: {
-        Row: {
-          created_at: string
-          id: string
-          recipe_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          recipe_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          recipe_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "saved_recipes_recipe_id_fkey"
-            columns: ["recipe_id"]
-            isOneToOne: false
-            referencedRelation: "recipes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_follows: {
         Row: {
           created_at: string
@@ -688,8 +680,12 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          imports_reset_at: string | null
+          is_hidden: boolean
           is_private: boolean
+          last_cooked_at: string | null
           last_seen_followers_at: string
+          monthly_imports_used: number
           onboarded_at: string | null
           plan: string
           role: string
@@ -702,8 +698,12 @@ export type Database = {
           created_at?: string
           display_name: string
           id: string
+          imports_reset_at?: string | null
+          is_hidden?: boolean
           is_private?: boolean
+          last_cooked_at?: string | null
           last_seen_followers_at?: string
+          monthly_imports_used?: number
           onboarded_at?: string | null
           plan?: string
           role?: string
@@ -716,8 +716,12 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
+          imports_reset_at?: string | null
+          is_hidden?: boolean
           is_private?: boolean
+          last_cooked_at?: string | null
           last_seen_followers_at?: string
+          monthly_imports_used?: number
           onboarded_at?: string | null
           plan?: string
           role?: string
@@ -733,35 +737,11 @@ export type Database = {
           event_at: string | null
           event_type: string | null
           notes: string | null
+          rating: number | null
           recipe_id: string | null
           user_id: string | null
         }
         Relationships: []
-      }
-      recipe_share_cards: {
-        Row: {
-          image_url: string | null
-          recipe_id: string | null
-          share_id: string | null
-          share_notes: string | null
-          shared_at: string | null
-          source_name: string | null
-          source_type: string | null
-          source_url: string | null
-          tags: string[] | null
-          title: string | null
-          user_id: string | null
-          user_rating: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "recipe_shares_recipe_id_fkey"
-            columns: ["recipe_id"]
-            isOneToOne: false
-            referencedRelation: "recipes"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Functions: {
@@ -777,14 +757,17 @@ export type Database = {
           shopping_list_id: string
           unit: string | null
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "shopping_list_items"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
+      check_and_increment_import_count: { Args: never; Returns: Json }
       clear_checked_items: {
         Args: { p_shopping_list_id: string }
         Returns: undefined
-      }
-      recipe_exists: {
-        Args: { p_recipe_id: string }
-        Returns: boolean
       }
       get_activity_feed: {
         Args: { p_before?: string; p_limit?: number; p_user_id: string }
@@ -794,13 +777,19 @@ export type Database = {
           event_at: string
           event_type: string
           notes: string
+          rating: number
           recipe_id: string
           recipe_image_url: string
+          recipe_source_type: string
           recipe_title: string
+          recipe_visibility: string
+          source_name: string
+          source_url: string
           user_id: string
         }[]
       }
       get_chef_profile: { Args: { p_chef_id: string }; Returns: Json }
+      get_import_status: { Args: never; Returns: Json }
       get_new_follower_count: { Args: { p_user_id: string }; Returns: number }
       get_new_followers: {
         Args: { p_user_id: string }
@@ -811,24 +800,33 @@ export type Database = {
           follower_id: string
         }[]
       }
-      mark_followers_seen: { Args: never; Returns: undefined }
       get_recipe_card: {
         Args: { p_recipe_id: string }
         Returns: {
-          id: string
-          title: string
-          image_url: string | null
-          source_name: string | null
-          source_url: string | null
-          source_type: string
-          visibility: string
-          prep_time_minutes: number | null
-          cook_time_minutes: number | null
-          servings: number | null
-          tags: string[]
+          cook_time_minutes: number
+          creator_avatar_url: string
           creator_display_name: string
-          creator_avatar_url: string | null
+          id: string
+          image_url: string
+          prep_time_minutes: number
+          servings: number
+          source_name: string
+          source_type: string
+          source_url: string
+          tags: string[]
+          title: string
+          visibility: string
         }[]
+      }
+      mark_followers_seen: { Args: never; Returns: undefined }
+      recipe_exists: { Args: { p_recipe_id: string }; Returns: boolean }
+      search_public_recipes_by_ingredient: {
+        Args: { query: string }
+        Returns: string[]
+      }
+      search_recipes_by_ingredient: {
+        Args: { query: string }
+        Returns: string[]
       }
     }
     Enums: {
@@ -958,6 +956,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
