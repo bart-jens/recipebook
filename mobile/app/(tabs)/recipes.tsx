@@ -19,6 +19,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 import CollectionsSection from '@/components/ui/CollectionsSection';
 import { RecipePlaceholder } from '@/lib/recipe-placeholder';
+import { formatTime } from '@/lib/format';
 
 type SortOption = 'updated' | 'alpha' | 'rating' | 'quickest';
 type FilterOption = '' | 'imported' | 'published' | 'saved' | 'favorited' | 'cooked';
@@ -68,13 +69,6 @@ interface Recipe {
   isSaved: boolean;
 }
 
-function formatTime(minutes: number | null): string | null {
-  if (!minutes) return null;
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
 
 export default function RecipesScreen() {
   const { user } = useAuth();
@@ -331,7 +325,7 @@ export default function RecipesScreen() {
     return filtered;
   }, [allRecipes, sort, activeFilter, selectedCourse]);
 
-  const renderRecipeItem = ({ item, index }: { item: Recipe; index: number }) => {
+  const renderRecipeItem = useCallback(({ item, index }: { item: Recipe; index: number }) => {
     const totalTime = (item.prep_time_minutes || 0) + (item.cook_time_minutes || 0);
     const timeStr = formatTime(totalTime);
     const tag = item.tags.length > 0 ? item.tags[0] : null;
@@ -346,7 +340,6 @@ export default function RecipesScreen() {
               source={{ uri: item.image_url }}
               style={styles.resultThumb}
               contentFit="cover"
-              transition={200}
             />
           ) : (
             <RecipePlaceholder id={item.id} size={48} />
@@ -401,7 +394,7 @@ export default function RecipesScreen() {
           </View>
         </Pressable>
     );
-  };
+  }, [publishedIds, publishingId]);
 
   const renderHeader = () => (
     <View>

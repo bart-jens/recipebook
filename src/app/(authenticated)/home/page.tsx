@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ActivityFeed } from "./activity-feed";
 import { RecipePlaceholder } from "@/lib/recipe-placeholder";
+import { formatTime } from "@/lib/format";
 
 interface FeedItem {
   event_type: string;
@@ -30,13 +31,6 @@ interface HomeRecipe {
   recipe_tags: { tag: string }[];
 }
 
-function formatTime(minutes: number | null): string | null {
-  if (!minutes) return null;
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
 
 export default async function HomePage() {
   const supabase = createClient();

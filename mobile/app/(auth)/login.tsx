@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -16,17 +16,33 @@ import { colors, spacing, fontFamily, typography } from '@/lib/theme';
 import { Logo } from '@/components/ui/Logo';
 
 export default function LoginScreen() {
-  const { signIn, signInWithApple } = useAuth();
+  const { signIn, signInWithApple, signInWithOAuth, needsInviteVerification } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (needsInviteVerification) {
+      router.replace('/(auth)/verify-invite');
+    }
+  }, [needsInviteVerification]);
 
   async function handleLogin() {
     if (!email || !password) return;
     setLoading(true);
     setError(null);
     const { error } = await signIn(email, password);
+    if (error) {
+      setError(error);
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setLoading(true);
+    setError(null);
+    const { error } = await signInWithOAuth('google');
     if (error) {
       setError(error);
       setLoading(false);
@@ -51,6 +67,30 @@ export default function LoginScreen() {
       <View style={styles.inner}>
         <Logo height={40} />
         <Text style={styles.subtitle}>Sign in to your recipe collection</Text>
+
+        <View style={styles.socialButtons}>
+          <TouchableOpacity
+            style={[styles.googleButton, loading && styles.buttonDisabled]}
+            onPress={handleGoogleSignIn}
+            disabled={loading}
+          >
+            <GoogleIcon />
+            <Text style={styles.googleButtonText}>Sign in with Google</Text>
+          </TouchableOpacity>
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            cornerRadius={0}
+            style={styles.appleButton}
+            onPress={handleAppleSignIn}
+          />
+        </View>
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.dividerLine} />
+        </View>
 
         <View style={styles.form}>
           <View style={styles.field}>
@@ -96,27 +136,23 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.dividerLine} />
-        </View>
-
-        <AppleAuthentication.AppleAuthenticationButton
-          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-          cornerRadius={0}
-          style={styles.appleButton}
-          onPress={handleAppleSignIn}
-        />
-
         <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
           <Text style={styles.linkText}>
-            Don't have an account? <Text style={styles.linkAccent}>Sign up</Text>
+            Have an invite code? <Text style={styles.linkAccent}>Sign up</Text>
           </Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
+  );
+}
+
+function GoogleIcon() {
+  // SVG rendered as inline paths via react-native-svg would be ideal,
+  // but for simplicity we use a text placeholder styled consistently
+  return (
+    <View style={styles.googleIcon}>
+      <Text style={styles.googleIconText}>G</Text>
+    </View>
   );
 }
 
@@ -138,7 +174,7 @@ const styles = StyleSheet.create({
   },
   form: {
     width: '100%',
-    marginTop: 40,
+    marginTop: spacing.xl,
     gap: spacing.xl,
   },
   field: {
@@ -190,6 +226,44 @@ const styles = StyleSheet.create({
     ...typography.metaSmall,
     color: colors.inkMuted,
   },
+  socialButtons: {
+    width: '100%',
+    marginTop: 40,
+    gap: spacing.md,
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bg,
+    paddingVertical: 12,
+    height: 44,
+  },
+  googleButtonText: {
+    ...typography.metaSmall,
+    color: colors.ink,
+  },
+  googleIcon: {
+    width: 18,
+    height: 18,
+    borderRadius: 2,
+    backgroundColor: '#4285F4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleIconText: {
+    fontSize: 11,
+    fontFamily: fontFamily.sans,
+    color: colors.white,
+    fontWeight: '700',
+  },
+  appleButton: {
+    width: '100%',
+    height: 44,
+  },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -204,10 +278,5 @@ const styles = StyleSheet.create({
   dividerText: {
     ...typography.metaSmall,
     color: colors.inkMuted,
-  },
-  appleButton: {
-    width: '100%',
-    height: 44,
-    marginTop: spacing.md,
   },
 });

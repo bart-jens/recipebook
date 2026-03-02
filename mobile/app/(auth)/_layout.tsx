@@ -4,7 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { colors } from '@/lib/theme';
 
 export default function AuthLayout() {
-  const { session, loading, isPasswordReset } = useAuth();
+  const { session, loading, isPasswordReset, needsInviteVerification } = useAuth();
 
   if (loading) {
     return (
@@ -14,7 +14,8 @@ export default function AuthLayout() {
     );
   }
 
-  if (session && !isPasswordReset) {
+  // New OAuth users must verify their invite before being sent to the main app
+  if (session && !isPasswordReset && !needsInviteVerification) {
     return <Redirect href="/(tabs)" />;
   }
 

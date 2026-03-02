@@ -12,6 +12,8 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
+  needsInviteVerification: boolean;
+  clearInviteVerification: () => void;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, inviteCode?: string) => Promise<{ error: string | null }>;
   signInWithOAuth: (provider: Provider) => Promise<{ error: string | null }>;
@@ -27,6 +29,8 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   loading: true,
+  needsInviteVerification: false,
+  clearInviteVerification: () => {},
   signIn: async () => ({ error: null }),
   signUp: async () => ({ error: null }),
   signInWithOAuth: async () => ({ error: null }),
@@ -38,10 +42,17 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
+function isNewOAuthUser(user: User): boolean {
+  const identity = user.identities?.[0];
+  if (!identity) return false;
+  return new Date(identity.created_at).getTime() > Date.now() - 120_000;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPasswordReset, setIsPasswordReset] = useState(false);
+  const [needsInviteVerification, setNeedsInviteVerification] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -69,7 +80,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signUp(email: string, password: string, inviteCode?: string) {
     const code = inviteCode?.trim().toUpperCase() || "";
 
-    // Create user via server API (handles invite validation + auto-confirms email)
     try {
       const response = await fetch(`${API_BASE}/api/auth/signup`, {
         method: 'POST',
@@ -85,12 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error: 'Could not connect to server' };
     }
 
-    // Sign in now that the account is created and confirmed
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError) return { error: signInError.message };
 
     return { error: null };
@@ -113,6 +118,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const refreshToken = params.get('refresh_token');
           if (accessToken && refreshToken) {
             await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user && isNewOAuthUser(user)) {
+              setNeedsInviteVerification(true);
+            }
             return { error: null };
           }
         }
@@ -146,10 +155,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         nonce,
       });
       if (error) return { error: error.message };
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && isNewOAuthUser(user)) {
+        setNeedsInviteVerification(true);
+      }
       return { error: null };
     } catch (e: any) {
       if (e.code === 'ERR_REQUEST_CANCELED') {
-        return { error: null }; // User cancelled — not an error
+        return { error: null };
       }
       return { error: e.message || 'Sign in with Apple failed' };
     }
@@ -171,7 +184,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsPasswordReset(false);
   }
 
+  function clearInviteVerification() {
+    setNeedsInviteVerification(false);
+  }
+
   async function signOut() {
+    setNeedsInviteVerification(false);
     await supabase.auth.signOut();
   }
 
@@ -181,6 +199,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         session,
         user: session?.user ?? null,
         loading,
+        needsInviteVerification,
+        clearInviteVerification,
         signIn,
         signUp,
         signInWithOAuth,
