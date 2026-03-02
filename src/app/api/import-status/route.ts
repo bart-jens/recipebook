@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { untypedRpc } from "@/lib/supabase/rpc";
 
 export async function GET() {
   const supabase = createClient();
@@ -11,10 +12,10 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await (supabase as any).rpc("get_import_status") as {
-    data: { used: number; limit: number; plan: string } | null;
-    error: unknown;
-  };
+  const { data, error } = await untypedRpc<{ used: number; limit: number; plan: string }>(
+    supabase,
+    "get_import_status"
+  );
 
   if (error || !data) {
     return NextResponse.json({ error: "Failed to fetch import status" }, { status: 500 });

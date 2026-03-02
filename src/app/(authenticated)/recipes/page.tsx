@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/server";
+import { untypedRpc } from "@/lib/supabase/rpc";
 import { ForkDot } from "@/components/logo";
 import { RecipePlaceholder } from "@/lib/recipe-placeholder";
 import { RecipeListControls } from "./recipe-list-controls";
@@ -93,8 +94,7 @@ export default async function RecipesPage({
   let extraRecipes: RawRecipeRow[] = [];
   if (q) {
     const [{ data: rpcIds }, { data: tagMatches }, { data: allOwnedIdRows }] = await Promise.all([
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).rpc("search_recipes_by_ingredient", { query: q }) as Promise<{ data: string[] | null }>,
+      untypedRpc<string[]>(supabase, "search_recipes_by_ingredient", { query: q }),
       supabase.from("recipe_tags").select("recipe_id").ilike("tag", `%${q}%`),
       supabase.from("recipes").select("id").eq("created_by", user!.id),
     ]);

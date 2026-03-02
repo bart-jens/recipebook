@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { untypedRpc } from "@/lib/supabase/rpc";
 import { ForkDot } from "@/components/logo";
 import { RecipePlaceholder } from "@/lib/recipe-placeholder";
 import { DiscoverControls } from "./discover-controls";
@@ -63,8 +64,7 @@ export default async function DiscoverPage({
   if (q) {
     const titleMatchedIds = new Set(filtered.map((r) => r.id));
     const [{ data: rpcIds }, { data: tagMatches }] = await Promise.all([
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).rpc("search_public_recipes_by_ingredient", { query: q }) as Promise<{ data: string[] | null }>,
+      untypedRpc<string[]>(supabase, "search_public_recipes_by_ingredient", { query: q }),
       supabase.from("recipe_tags").select("recipe_id").ilike("tag", `%${q}%`),
     ]);
     const extraIds = new Set<string>();
