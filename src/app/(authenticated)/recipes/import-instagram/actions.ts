@@ -3,6 +3,8 @@
 import { extractRecipeFromText } from "@/lib/claude-extract-text";
 import type { ExtractedRecipe } from "@/lib/claude-extract";
 import { getInstagramHandle } from "@/lib/source-name";
+import { createClient } from "@/lib/supabase/server";
+import { checkImportLimit, ImportLimitError } from "@/lib/import-limit";
 
 async function fetchInstagramCaption(url: string): Promise<string> {
   // Try oEmbed first (most reliable when it works)
@@ -75,6 +77,16 @@ export async function extractFromInstagramUrl(
 
   if (!url.includes("instagram.com/")) {
     return { error: "Please enter a valid Instagram URL" };
+  }
+
+  try {
+    const supabase = createClient();
+    await checkImportLimit(supabase);
+  } catch (e) {
+    if (e instanceof ImportLimitError) {
+      return { error: "import_limit_reached" };
+    }
+    throw e;
   }
 
   try {

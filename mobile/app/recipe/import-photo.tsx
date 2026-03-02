@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,14 @@ import {
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '@/lib/supabase';
+
+interface ImportStatus {
+  used: number;
+  limit: number;
+  plan: string;
+}
 import { useAuth } from '@/contexts/auth';
 import RecipeForm, { RecipeFormData } from '@/components/RecipeForm';
 import { colors, spacing, fontFamily, typography } from '@/lib/theme';
@@ -50,6 +57,33 @@ export default function ImportPhotoScreen() {
   const [sourceChoice, setSourceChoice] = useState<'own' | 'external' | null>(null);
   const [scanningCover, setScanningCover] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [importStatus, setImportStatus] = useState<ImportStatus | null>(null);
+
+  const fetchImportStatus = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${API_BASE}/api/import-status`, {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+          'Cookie': `sb-access-token=${session?.access_token || ''}; sb-refresh-token=${session?.refresh_token || ''}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setImportStatus(data);
+      }
+    } catch {
+      // Non-critical
+    }
+  }, []);
+
+  useFocusEffect(useCallback(() => {
+    fetchImportStatus();
+  }, [fetchImportStatus]));
+
+  const isAtLimit = importStatus !== null
+    && importStatus.plan !== 'premium'
+    && importStatus.used >= importStatus.limit;
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -139,7 +173,16 @@ export default function ImportPhotoScreen() {
       const data = await response.json();
 
       if (!response.ok) {
-        Alert.alert('Extraction Failed', data.error || 'Could not extract recipe from this image');
+        if (response.status === 429 || data.error === 'import_limit_reached') {
+          const limit = data.limit ?? importStatus?.limit ?? 10;
+          Alert.alert(
+            'Monthly limit reached',
+            `You've used all ${limit} imports for this month. Upgrade to Premium for unlimited imports.`
+          );
+          await fetchImportStatus();
+        } else {
+          Alert.alert('Extraction Failed', data.error || 'Could not extract recipe from this image');
+        }
         setExtracting(false);
         return;
       }
@@ -334,6 +377,16 @@ export default function ImportPhotoScreen() {
           Take a photo of a recipe or choose one from your library. AI will extract the recipe details.
         </Text>
 
+        {importStatus && importStatus.plan !== 'premium' && (
+          <View style={[styles.statusBanner, isAtLimit && styles.statusBannerLimit]}>
+            <Text style={[styles.statusText, isAtLimit && styles.statusTextLimit]}>
+              {isAtLimit
+                ? `You've used all ${importStatus.limit} imports for this month. Upgrade to Premium for unlimited imports.`
+                : `${importStatus.used} / ${importStatus.limit} imports used this month`}
+            </Text>
+          </View>
+        )}
+
         {imageUri ? (
           <View style={styles.previewContainer}>
             <Image source={{ uri: imageUri }} style={styles.preview} contentFit="contain" />
@@ -360,9 +413,9 @@ export default function ImportPhotoScreen() {
 
         {imageUri && (
           <TouchableOpacity
-            style={[styles.extractButton, extracting && styles.extractButtonDisabled]}
+            style={[styles.extractButton, (extracting || isAtLimit) && styles.extractButtonDisabled]}
             onPress={handleExtract}
-            disabled={extracting}
+            disabled={extracting || isAtLimit}
             activeOpacity={0.7}
           >
             {extracting ? (
@@ -393,6 +446,25 @@ const styles = StyleSheet.create({
   heading: { ...typography.heading, fontSize: 28, lineHeight: 30, color: colors.ink, marginBottom: spacing.sm },
   subtitle: { fontFamily: fontFamily.sans, fontSize: 14, lineHeight: 21, color: colors.inkSecondary, marginBottom: spacing.xxl },
 
+  statusBanner: {
+    backgroundColor: colors.cardBg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  statusBannerLimit: {
+    borderColor: colors.dangerBorder,
+    backgroundColor: colors.dangerBg,
+  },
+  statusText: {
+    ...typography.metaSmall,
+    color: colors.inkSecondary,
+  },
+  statusTextLimit: {
+    color: colors.danger,
+  },
   pickContainer: {
     flexDirection: 'row',
     gap: spacing.md,

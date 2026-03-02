@@ -2,6 +2,8 @@
 
 import { extractRecipeFromImage } from "@/lib/claude-extract";
 import type { ExtractedRecipe } from "@/lib/claude-extract";
+import { createClient } from "@/lib/supabase/server";
+import { checkImportLimit, ImportLimitError } from "@/lib/import-limit";
 
 export async function extractFromPhotoBase64(
   base64: string,
@@ -14,6 +16,16 @@ export async function extractFromPhotoBase64(
   const validTypes = ["image/jpeg", "image/png", "image/webp"];
   if (!validTypes.includes(mediaType)) {
     return { error: "Please upload an image file (JPEG, PNG, or WebP)" };
+  }
+
+  try {
+    const supabase = createClient();
+    await checkImportLimit(supabase);
+  } catch (e) {
+    if (e instanceof ImportLimitError) {
+      return { error: "import_limit_reached" };
+    }
+    throw e;
   }
 
   return extractRecipeFromImage(

@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { RecipeForm, type RecipeFormData } from "../components/recipe-form";
 import { createRecipe } from "../actions";
 import { fetchRecipeFromUrl } from "./actions";
 import { extractFromInstagramUrl } from "../import-instagram/actions";
+
+const IMPORT_LIMIT_MESSAGE = "Monthly import limit reached. Upgrade to Premium for unlimited imports.";
+
+interface ImportStatus {
+  used: number;
+  limit: number;
+  plan: string;
+}
 
 function isInstagramUrl(url: string): boolean {
   return url.includes("instagram.com/");
@@ -18,6 +26,18 @@ function ImportUrlContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sourceType, setSourceType] = useState<"url" | "instagram">("url");
+  const [importStatus, setImportStatus] = useState<ImportStatus | null>(null);
+
+  useEffect(() => {
+    fetch("/api/import-status")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.used !== undefined) setImportStatus(data);
+      })
+      .catch(() => {
+        // Non-critical: limit display fails silently
+      });
+  }, []);
   const [importedData, setImportedData] = useState<RecipeFormData & { source_url: string; source_name: string; image_url: string | null; tags?: string[]; language?: string | null } | null>(null);
 
   async function handleFetch(e: React.FormEvent) {
@@ -31,7 +51,10 @@ function ImportUrlContent() {
     if (isInsta) {
       const result = await extractFromInstagramUrl(url);
       if (result.error) {
-        setError(result.error);
+        setError(result.error === "import_limit_reached" ? IMPORT_LIMIT_MESSAGE : result.error);
+        if (result.error === "import_limit_reached") {
+          fetch("/api/import-status").then((r) => r.json()).then((d) => { if (d.used !== undefined) setImportStatus(d); }).catch(() => {});
+        }
         setLoading(false);
         return;
       }
@@ -59,7 +82,10 @@ function ImportUrlContent() {
     } else {
       const result = await fetchRecipeFromUrl(url);
       if (result.error) {
-        setError(result.error);
+        setError(result.error === "import_limit_reached" ? IMPORT_LIMIT_MESSAGE : result.error);
+        if (result.error === "import_limit_reached") {
+          fetch("/api/import-status").then((r) => r.json()).then((d) => { if (d.used !== undefined) setImportStatus(d); }).catch(() => {});
+        }
         setLoading(false);
         return;
       }
@@ -120,6 +146,18 @@ function ImportUrlContent() {
 
       {!importedData ? (
         <form onSubmit={handleFetch} className="max-w-2xl space-y-4">
+          {importStatus && importStatus.plan !== "premium" && (
+            <div className={`text-sm px-4 py-3 border ${importStatus.used >= importStatus.limit ? "border-red-200 bg-red-50 text-red-700" : "border-warm-border bg-warm-tag text-warm-gray"}`}>
+              {importStatus.used >= importStatus.limit ? (
+                <>
+                  You&apos;ve used all {importStatus.limit} imports for this month.{" "}
+                  <span className="font-normal text-ink">Upgrade to Premium</span> for unlimited imports.
+                </>
+              ) : (
+                `${importStatus.used} of ${importStatus.limit} imports used this month`
+              )}
+            </div>
+          )}
           <div>
             <label htmlFor="url" className="block text-sm font-normal text-warm-gray">
               Recipe link
@@ -140,7 +178,7 @@ function ImportUrlContent() {
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || (importStatus?.plan !== "premium" && (importStatus?.used ?? 0) >= (importStatus?.limit ?? 10))}
             className="bg-cta px-4 py-3 text-base font-normal text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
           >
             {loading ? "Extracting recipe..." : "Extract Recipe"}

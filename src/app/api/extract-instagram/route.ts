@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { extractRecipeFromText } from "@/lib/claude-extract-text";
 import { getInstagramHandle } from "@/lib/source-name";
+import { checkImportLimit, ImportLimitError } from "@/lib/import-limit";
 
 interface InstagramData {
   caption: string;
@@ -103,6 +104,18 @@ export async function POST(request: NextRequest) {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await checkImportLimit(supabase);
+  } catch (e) {
+    if (e instanceof ImportLimitError) {
+      return NextResponse.json(
+        { error: "import_limit_reached", used: e.used, limit: e.limit },
+        { status: 429 }
+      );
+    }
+    throw e;
   }
 
   const { url } = await request.json();

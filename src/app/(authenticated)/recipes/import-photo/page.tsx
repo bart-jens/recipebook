@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { RecipeForm, type RecipeFormData } from "../components/recipe-form";
 import { createRecipe } from "../actions";
 import { extractFromPhotoBase64 } from "./actions";
+
+const IMPORT_LIMIT_MESSAGE = "Monthly import limit reached. Upgrade to Premium for unlimited imports.";
+
+interface ImportStatus {
+  used: number;
+  limit: number;
+  plan: string;
+}
 
 function resizeImage(file: File, maxSize: number): Promise<{ base64: string; mediaType: string }> {
   return new Promise((resolve, reject) => {
@@ -52,6 +60,18 @@ export default function ImportPhotoPage() {
   const [scanningCover, setScanningCover] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [importStatus, setImportStatus] = useState<ImportStatus | null>(null);
+
+  useEffect(() => {
+    fetch("/api/import-status")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.used !== undefined) setImportStatus(data);
+      })
+      .catch(() => {
+        // Non-critical: limit display fails silently
+      });
+  }, []);
 
   async function handleScanBookCover(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -103,7 +123,10 @@ export default function ImportPhotoPage() {
       const result = await extractFromPhotoBase64(base64, mediaType);
 
       if (result.error) {
-        setError(result.error);
+        setError(result.error === "import_limit_reached" ? IMPORT_LIMIT_MESSAGE : result.error);
+        if (result.error === "import_limit_reached") {
+          fetch("/api/import-status").then((r) => r.json()).then((d) => { if (d.used !== undefined) setImportStatus(d); }).catch(() => {});
+        }
         setLoading(false);
         return;
       }
@@ -255,6 +278,18 @@ export default function ImportPhotoPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-4">
+        {importStatus && importStatus.plan !== "premium" && (
+          <div className={`text-sm px-4 py-3 border ${importStatus.used >= importStatus.limit ? "border-red-200 bg-red-50 text-red-700" : "border-warm-border bg-warm-tag text-warm-gray"}`}>
+            {importStatus.used >= importStatus.limit ? (
+              <>
+                You&apos;ve used all {importStatus.limit} imports for this month.{" "}
+                <span className="font-normal text-ink">Upgrade to Premium</span> for unlimited imports.
+              </>
+            ) : (
+              `${importStatus.used} of ${importStatus.limit} imports used this month`
+            )}
+          </div>
+        )}
         <div>
           <label htmlFor="image" className="block text-sm font-normal text-warm-gray">
             Recipe Photo
@@ -278,7 +313,7 @@ export default function ImportPhotoPage() {
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || (importStatus?.plan !== "premium" && (importStatus?.used ?? 0) >= (importStatus?.limit ?? 10))}
           className="bg-cta px-4 py-3 text-base font-normal text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           {loading ? "Extracting recipe..." : "Extract Recipe"}

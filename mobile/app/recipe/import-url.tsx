@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,18 @@ import {
   ScrollView,
 } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import RecipeForm, { RecipeFormData } from '@/components/RecipeForm';
 import { colors, spacing, fontFamily, typography } from '@/lib/theme';
+
+interface ImportStatus {
+  used: number;
+  limit: number;
+  plan: string;
+}
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
 
@@ -33,6 +41,33 @@ export default function ImportUrlScreen() {
   const [extractedSourceName, setExtractedSourceName] = useState<string | null>(null);
   const [sourceType, setSourceType] = useState<'url' | 'instagram'>('url');
   const [saving, setSaving] = useState(false);
+  const [importStatus, setImportStatus] = useState<ImportStatus | null>(null);
+
+  const fetchImportStatus = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${API_BASE}/api/import-status`, {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+          'Cookie': `sb-access-token=${session?.access_token || ''}; sb-refresh-token=${session?.refresh_token || ''}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setImportStatus(data);
+      }
+    } catch {
+      // Non-critical
+    }
+  }, []);
+
+  useFocusEffect(useCallback(() => {
+    fetchImportStatus();
+  }, [fetchImportStatus]));
+
+  const isAtLimit = importStatus !== null
+    && importStatus.plan !== 'premium'
+    && importStatus.used >= importStatus.limit;
 
   const handleExtract = async () => {
     const trimmed = url.trim();
@@ -62,7 +97,16 @@ export default function ImportUrlScreen() {
       const data = await response.json();
 
       if (!response.ok) {
-        Alert.alert('Extraction Failed', data.error || 'Could not extract recipe from this link');
+        if (response.status === 429 || data.error === 'import_limit_reached') {
+          const limit = data.limit ?? importStatus?.limit ?? 10;
+          Alert.alert(
+            'Monthly limit reached',
+            `You've used all ${limit} imports for this month. Upgrade to Premium for unlimited imports.`
+          );
+          await fetchImportStatus();
+        } else {
+          Alert.alert('Extraction Failed', data.error || 'Could not extract recipe from this link');
+        }
         setExtracting(false);
         return;
       }
@@ -213,6 +257,16 @@ export default function ImportUrlScreen() {
           Paste a link to any recipe website or Instagram post. We'll extract the recipe details automatically.
         </Text>
 
+        {importStatus && importStatus.plan !== 'premium' && (
+          <View style={[styles.statusBanner, isAtLimit && styles.statusBannerLimit]}>
+            <Text style={[styles.statusText, isAtLimit && styles.statusTextLimit]}>
+              {isAtLimit
+                ? `You've used all ${importStatus.limit} imports for this month. Upgrade to Premium for unlimited imports.`
+                : `${importStatus.used} / ${importStatus.limit} imports used this month`}
+            </Text>
+          </View>
+        )}
+
         <Text style={styles.label}>Recipe URL</Text>
         <TextInput
           style={styles.input}
@@ -226,9 +280,9 @@ export default function ImportUrlScreen() {
         />
 
         <TouchableOpacity
-          style={[styles.button, (!url.trim() || extracting) && styles.buttonDisabled]}
+          style={[styles.button, (!url.trim() || extracting || isAtLimit) && styles.buttonDisabled]}
           onPress={handleExtract}
-          disabled={!url.trim() || extracting}
+          disabled={!url.trim() || extracting || isAtLimit}
           activeOpacity={0.7}
         >
           {extracting ? (
@@ -275,6 +329,25 @@ const styles = StyleSheet.create({
   buttonDisabled: { opacity: 0.5 },
   buttonText: { ...typography.metaSmall, color: colors.white },
   loadingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  statusBanner: {
+    backgroundColor: colors.cardBg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  statusBannerLimit: {
+    borderColor: colors.dangerBorder,
+    backgroundColor: colors.dangerBg,
+  },
+  statusText: {
+    ...typography.metaSmall,
+    color: colors.inkSecondary,
+  },
+  statusTextLimit: {
+    color: colors.danger,
+  },
   tips: {
     marginTop: spacing.xxxl,
     borderTopWidth: 1,
