@@ -156,6 +156,21 @@ The design system SHALL include a custom SVG wordmark where the first "E" incorp
 - **WHEN** the wordmark is rendered below 20px height
 - **THEN** the fork-E mark alone MAY be used instead of the full wordmark
 
+### Requirement: Toggle and mode label naming
+Toggle controls, segmented controls, and mode switches SHALL use labels that describe the data organization or layout change they produce, not the user's context or intent.
+
+#### Scenario: Naming a new toggle
+- **GIVEN** a developer is adding a toggle or segmented control
+- **WHEN** choosing label text
+- **THEN** each label SHALL complete the sentence "Tapping this shows/sorts/groups ___"
+- **AND** the label SHALL NOT reference a feature that does not yet exist in the app
+- **AND** the label SHALL NOT describe the user's situation or activity (e.g. "Planning", "Shopping", "Browse mode")
+
+#### Scenario: Reviewing an existing toggle
+- **WHEN** the ui-reviewer agent audits a screen containing a toggle or segmented control
+- **THEN** it SHALL verify each label describes a behavior observable in the rendered UI
+- **AND** flag any label that references a missing feature or describes user intent rather than UI output
+
 ### Requirement: Staggered list entry animations
 List items (recipe cards, feed items) SHALL animate in with a staggered fade-and-slide effect when first rendered. Animation SHALL be subtle and fast.
 

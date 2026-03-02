@@ -180,17 +180,32 @@ export default function HomeScreen() {
     return <View style={styles.starsRow}>{stars}</View>;
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'Good morning';
+    if (hour >= 12 && hour < 17) return 'Good afternoon';
+    if (hour >= 17 && hour < 22) return 'Good evening';
+    return 'Good night';
+  };
+
+  const firstName = data?.displayName?.split(' ')[0] ?? null;
+
   // Sections rendered as header (carousel) and footer (activity)
   const renderHeader = () => (
     <View>
-      {/* Quick actions */}
+      {/* Greeting + Quick actions */}
       <View style={styles.quickActions}>
-        <Pressable style={styles.actionButton} onPress={() => setShowImportMenu(true)}>
-          <Text style={styles.actionButtonText}>Import</Text>
-        </Pressable>
-        <Pressable style={styles.actionButtonPrimary} onPress={() => router.push('/recipe/new')}>
-          <Text style={styles.actionButtonPrimaryText}>Create</Text>
-        </Pressable>
+        <Text style={styles.greeting}>
+          {getGreeting()}{firstName ? `, ${firstName}` : ''}
+        </Text>
+        <View style={styles.quickActionButtons}>
+          <Pressable style={styles.actionButton} onPress={() => setShowImportMenu(true)}>
+            <Text style={styles.actionButtonText}>Import</Text>
+          </Pressable>
+          <Pressable style={styles.actionButtonPrimary} onPress={() => router.push('/recipe/new')}>
+            <Text style={styles.actionButtonPrimaryText}>Create</Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* Recipe Carousel */}
@@ -407,11 +422,19 @@ const styles = StyleSheet.create({
   // Quick actions
   quickActions: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 14,
     paddingBottom: 4,
+  },
+  greeting: {
+    ...typography.meta,
+    color: colors.inkMuted,
+  },
+  quickActionButtons: {
+    flexDirection: 'row',
+    gap: 8,
   },
   actionButton: {
     borderWidth: 1,

@@ -89,17 +89,22 @@ export default async function RecipesPage({
   ] as unknown as RawRecipeRow[];
   const titleMatchedIds = new Set(titleMatched.map((r) => r.id));
 
-  // When searching, also find recipes matching by ingredient or tag
+  // When searching, also find recipes matching by ingredient (FTS) or tag
   let extraRecipes: RawRecipeRow[] = [];
   if (q) {
-    const [{ data: ingMatches }, { data: tagMatches }, { data: allOwnedIdRows }] = await Promise.all([
-      supabase.from("recipe_ingredients").select("recipe_id").ilike("ingredient_name", `%${q}%`),
+    const [{ data: rpcIds }, { data: tagMatches }, { data: allOwnedIdRows }] = await Promise.all([
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase as any).rpc("search_recipes_by_ingredient", { query: q }) as Promise<{ data: string[] | null }>,
       supabase.from("recipe_tags").select("recipe_id").ilike("tag", `%${q}%`),
       supabase.from("recipes").select("id").eq("created_by", user!.id),
     ]);
+    const ingredientMatchIds = new Set((rpcIds || []) as string[]);
     const allOwnedIds = new Set((allOwnedIdRows || []).map((r) => r.id));
     const extraIds = new Set<string>();
-    for (const m of [...(ingMatches || []), ...(tagMatches || [])]) {
+    for (const id of Array.from(ingredientMatchIds)) {
+      if (!titleMatchedIds.has(id)) extraIds.add(id);
+    }
+    for (const m of tagMatches || []) {
       const id = m.recipe_id;
       if (!titleMatchedIds.has(id) && (allOwnedIds.has(id) || savedRecipeIds.has(id))) {
         extraIds.add(id);

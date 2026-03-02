@@ -276,9 +276,8 @@ export default function RecipesScreen() {
 
   const renderHeader = () => (
     <View>
-      {/* Header: overline + serif title */}
+      {/* Header: title + action buttons */}
       <View style={styles.header}>
-        <Text style={styles.overline}>Your Library</Text>
         <View style={styles.headerRow}>
           <Text style={styles.title}>Recipes</Text>
           <View style={styles.actionButtons}>
@@ -302,7 +301,7 @@ export default function RecipesScreen() {
           <FontAwesome name="search" size={14} color={colors.inkMuted} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search recipes, ingredients, tags..."
+            placeholder="Search by name or ingredient"
             placeholderTextColor={colors.inkMuted}
             value={search}
             onChangeText={setSearch}

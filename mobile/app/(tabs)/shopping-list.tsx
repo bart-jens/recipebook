@@ -117,16 +117,19 @@ export default function ShoppingListScreen() {
   const [newItem, setNewItem] = useState('');
   const [loading, setLoading] = useState(true);
   const [checkedExpanded, setCheckedExpanded] = useState(false);
-  const [viewMode, setViewModeState] = useState<'planning' | 'shopping'>('planning');
+  const [viewMode, setViewModeState] = useState<'recipe' | 'alpha'>('recipe');
 
   // Load persisted view mode on mount
   useEffect(() => {
     AsyncStorage.getItem(VIEW_MODE_KEY).then((val) => {
-      if (val === 'planning' || val === 'shopping') setViewModeState(val);
+      if (val === 'recipe' || val === 'alpha') setViewModeState(val);
+      // Migrate legacy values
+      else if (val === 'planning') setViewModeState('recipe');
+      else if (val === 'shopping') setViewModeState('alpha');
     });
   }, []);
 
-  const setViewMode = (mode: 'planning' | 'shopping') => {
+  const setViewMode = (mode: 'recipe' | 'alpha') => {
     setViewModeState(mode);
     AsyncStorage.setItem(VIEW_MODE_KEY, mode);
   };
@@ -185,7 +188,7 @@ export default function ShoppingListScreen() {
     }, [fetchList])
   );
 
-  // Planning mode: toggle a single item
+  // Per-recipe mode: toggle a single item
   const toggleItem = async (itemId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setItems((prev) =>
@@ -200,7 +203,7 @@ export default function ShoppingListScreen() {
     }
   };
 
-  // Shopping mode: toggle all underlying rows for a merged item
+  // Alphabetical mode: toggle all underlying rows for a merged item
   const toggleMerged = async (mergedItem: MergedItem) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newChecked = !mergedItem.is_checked;
@@ -230,14 +233,14 @@ export default function ShoppingListScreen() {
     }
   };
 
-  // Planning mode: delete a single item
+  // Per-recipe mode: delete a single item
   const deleteItem = async (itemId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setItems((prev) => prev.filter((i) => i.id !== itemId));
     await supabase.from('shopping_list_items').delete().eq('id', itemId);
   };
 
-  // Shopping mode: delete all underlying rows for a merged item
+  // Alphabetical mode: delete all underlying rows for a merged item
   const deleteMerged = async (ids: string[]) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setItems((prev) => prev.filter((i) => !ids.includes(i.id)));
@@ -333,27 +336,26 @@ export default function ShoppingListScreen() {
         {/* Page header */}
         <View style={styles.pageHeader}>
           <Text style={styles.pageTitle}>Grocery List</Text>
-          <View style={styles.headerRight}>
-            {/* Planning / Shopping toggle */}
-            <View style={styles.toggle}>
-              <TouchableOpacity onPress={() => setViewMode('planning')} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
-                <Text style={[styles.toggleOption, viewMode === 'planning' && styles.toggleOptionActive]}>
-                  Planning
-                </Text>
-              </TouchableOpacity>
-              <Text style={styles.toggleSeparator}>·</Text>
-              <TouchableOpacity onPress={() => setViewMode('shopping')} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
-                <Text style={[styles.toggleOption, viewMode === 'shopping' && styles.toggleOptionActive]}>
-                  Shopping
-                </Text>
-              </TouchableOpacity>
-            </View>
-            {items.length > 0 && (
-              <TouchableOpacity onPress={clearAll}>
-                <Text style={styles.clearAllText}>Clear all</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+          {items.length > 0 && (
+            <TouchableOpacity onPress={clearAll}>
+              <Text style={styles.clearAllText}>Clear all</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* View mode toggle — below title */}
+        <View style={styles.toggleRow}>
+          <TouchableOpacity onPress={() => setViewMode('recipe')} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
+            <Text style={[styles.toggleOption, viewMode === 'recipe' && styles.toggleOptionActive]}>
+              Per recipe
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.toggleSeparator}>·</Text>
+          <TouchableOpacity onPress={() => setViewMode('alpha')} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
+            <Text style={[styles.toggleOption, viewMode === 'alpha' && styles.toggleOptionActive]}>
+              Alphabetical
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Add item input */}
@@ -378,8 +380,8 @@ export default function ShoppingListScreen() {
           </View>
         ) : (
           <>
-            {viewMode === 'shopping' ? (
-              /* Shopping view — merged by ingredient */
+            {viewMode === 'alpha' ? (
+              /* Alphabetical view — merged by ingredient */
               <View style={styles.groupContainer}>
                 {mergedUnchecked.map((mergedItem) => (
                   <Animated.View
@@ -421,15 +423,18 @@ export default function ShoppingListScreen() {
                 ))}
               </View>
             ) : (
-              /* Planning view — grouped by recipe */
+              /* Per-recipe view — grouped by recipe */
               groups.map((group, gi) => (
-                <View key={group.recipeId ?? `manual-${gi}`} style={styles.groupContainer}>
-                  {group.title && (
-                    <Text style={styles.groupTitle}>{group.title}</Text>
-                  )}
-                  {!group.title && group.recipeId === null && groups.length > 1 && (
-                    <Text style={styles.groupLabelMono}>Manual</Text>
-                  )}
+                <View key={group.recipeId ?? `manual-${gi}`}>
+                  {/* Recipe section divider */}
+                  <View style={[styles.recipeDivider, gi === 0 && styles.recipeDividerFirst]}>
+                    {(group.title || groups.length > 1) && (
+                      <Text style={styles.recipeDividerLabel}>
+                        {group.title ?? 'Manual'}
+                      </Text>
+                    )}
+                  </View>
+                <View style={styles.groupContainer}>
                   {group.items.map((item) => (
                     <Animated.View
                       key={item.id}
@@ -462,6 +467,7 @@ export default function ShoppingListScreen() {
                     </Animated.View>
                   ))}
                 </View>
+                </View>
               ))
             )}
 
@@ -481,7 +487,7 @@ export default function ShoppingListScreen() {
                   activeOpacity={0.7}
                 >
                   <Text style={styles.checkedHeaderText}>
-                    Checked ({viewMode === 'shopping' ? mergedChecked.length : checked.length})
+                    Checked ({viewMode === 'alpha' ? mergedChecked.length : checked.length})
                   </Text>
                   <FontAwesome
                     name={checkedExpanded ? 'chevron-up' : 'chevron-down'}
@@ -492,7 +498,7 @@ export default function ShoppingListScreen() {
 
                 {checkedExpanded && (
                   <View style={styles.checkedContent}>
-                    {viewMode === 'shopping' ? (
+                    {viewMode === 'alpha' ? (
                       mergedChecked.map((mergedItem) => (
                         <Pressable
                           key={mergedItem.key}
@@ -569,17 +575,13 @@ const styles = StyleSheet.create({
     ...typography.title,
     color: colors.ink,
   },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-
-  // Planning / Shopping toggle
-  toggle: {
+  // View mode toggle row — below title
+  toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    paddingHorizontal: spacing.pagePadding,
+    paddingBottom: spacing.md,
   },
   toggleOption: {
     ...typography.metaSmall,
@@ -628,10 +630,31 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  // Recipe section dividers (per-recipe view)
+  recipeDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.pagePadding,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    marginTop: spacing.sm,
+  },
+  recipeDividerFirst: {
+    borderTopWidth: 0,
+    marginTop: 0,
+    paddingTop: spacing.sm,
+  },
+  recipeDividerLabel: {
+    ...typography.meta,
+    color: colors.inkMuted,
+  },
+
   // Groups
   groupContainer: {
     paddingHorizontal: spacing.pagePadding,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.sm,
   },
   groupTitle: {
     ...typography.subheading,

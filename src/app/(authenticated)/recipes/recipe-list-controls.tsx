@@ -117,6 +117,11 @@ export function RecipeListControls() {
         </button>
       </div>
 
+      {/* Search hint */}
+      <p className="mt-1 mb-1 text-[11px] font-normal tracking-[0.02em] text-ink-muted">
+        Search by name or ingredient
+      </p>
+
       {/* Filter tabs — always visible */}
       <div className="flex items-center border-b border-border">
         {FILTER_OPTIONS.map((opt) => (

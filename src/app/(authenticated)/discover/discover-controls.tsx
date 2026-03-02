@@ -77,7 +77,7 @@ export function DiscoverControls() {
           </svg>
           <input
             type="search"
-            placeholder="Search recipes or chefs"
+            placeholder="Search by name or ingredient"
             defaultValue={q}
             onChange={(e) => handleSearch(e.target.value)}
             className="flex-1 bg-transparent border-none outline-none font-body text-[15px] font-light text-ink placeholder:text-ink-muted"

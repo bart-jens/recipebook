@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -31,8 +31,19 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
+import { fetchRecipeDetail } from '@/lib/queries/recipe-detail';
+import type {
+  RecipeData,
+  IngredientData,
+  TagData,
+  RatingEntryData,
+  CookEntryData,
+  RecipeCardData,
+} from '@/lib/queries/recipe-detail';
+import { queryKeys } from '@/lib/queries/keys';
 import { uploadRecipeImage } from '@/lib/upload-image';
 import { convertIngredient, type UnitSystem } from '@/lib/unit-conversion';
 import { colors, spacing, typography, radii, fontFamily, animation, shadows } from '@/lib/theme';
@@ -53,45 +64,11 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HERO_HEIGHT = 220;
 const HEADER_HEIGHT = 56;
 
-interface Recipe {
-  id: string;
-  title: string;
-  description: string | null;
-  instructions: string | null;
-  prep_time_minutes: number | null;
-  cook_time_minutes: number | null;
-  servings: number | null;
-  source_url: string | null;
-  source_name: string | null;
-  source_type: string;
-  forked_from_id: string | null;
-  language?: string | null;
-  image_url: string | null;
-  visibility: string;
-  created_by: string;
-}
-
-interface Ingredient {
-  id: string;
-  quantity: number | null;
-  unit: string | null;
-  ingredient_name: string;
-  notes: string | null;
-  order_index: number;
-}
-
-interface Tag {
-  id: string;
-  tag: string;
-}
-
-interface RatingEntry {
-  id: string;
-  rating: number;
-  notes: string | null;
-  cooked_date: string | null;
-  created_at: string;
-}
+// Type aliases for the imported types (keep local names for minimal diff)
+type Recipe = RecipeData;
+type Ingredient = IngredientData;
+type Tag = TagData;
+type RatingEntry = RatingEntryData;
 
 function IngredientCheckbox({ checked }: { checked: boolean }) {
   const scale = useSharedValue(1);
@@ -129,34 +106,46 @@ function IngredientCheckbox({ checked }: { checked: boolean }) {
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const queryClientHook = useQueryClient();
   const insets = useSafeAreaInsets();
+
+  const { data: queryData, isLoading, isError, refetch } = useQuery({
+    queryKey: queryKeys.recipeDetail(id!, user?.id),
+    queryFn: () => fetchRecipeDetail(id!, user?.id),
+    enabled: !!id,
+  });
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [ratings, setRatings] = useState<RatingEntry[]>([]);
   const [creatorName, setCreatorName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isPrivate, setIsPrivate] = useState(false);
-  const [recipeCard, setRecipeCard] = useState<{
-    id: string;
-    title: string;
-    image_url: string | null;
-    source_name: string | null;
-    source_url: string | null;
-    source_type: string;
-    visibility: string;
-    prep_time_minutes: number | null;
-    cook_time_minutes: number | null;
-    servings: number | null;
-    tags: string[];
-    creator_display_name: string | null;
-    creator_avatar_url: string | null;
-  } | null>(null);
+  const [recipeCard, setRecipeCard] = useState<RecipeCardData | null>(null);
 
-  const [cookEntries, setCookEntries] = useState<{ id: string; cooked_at: string; notes: string | null }[]>([]);
+  const [cookEntries, setCookEntries] = useState<CookEntryData[]>([]);
   const [isFavorited, setIsFavorited] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+
+  // Sync from query data whenever it arrives or refetches
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (queryData && !initializedRef.current) {
+      setRecipe(queryData.recipe);
+      setIngredients(queryData.ingredients);
+      setTags(queryData.tags);
+      setRatings(queryData.ratings);
+      setPhotos(queryData.photos);
+      setCreatorName(queryData.creatorName);
+      setIsPrivate(queryData.isPrivate);
+      setRecipeCard(queryData.recipeCard);
+      setCookEntries(queryData.cookEntries);
+      setIsFavorited(queryData.isFavorited);
+      setIsSaved(queryData.isSaved);
+      initializedRef.current = true;
+    }
+  }, [queryData]);
+  const [photos, setPhotos] = useState<{ id: string; url: string; imageType: string }[]>([]);
   const [showCookForm, setShowCookForm] = useState(false);
   const [cookNotes, setCookNotes] = useState('');
   const [showRatingForm, setShowRatingForm] = useState(false);
@@ -167,7 +156,6 @@ export default function RecipeDetailScreen() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [addingTag, setAddingTag] = useState(false);
-  const [photos, setPhotos] = useState<{ id: string; url: string; imageType: string }[]>([]);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [adjustedServings, setAdjustedServings] = useState<number | null>(null);
   const [unitSystem, setUnitSystem] = useState<UnitSystem>('metric');
@@ -223,97 +211,13 @@ export default function RecipeDetailScreen() {
     },
   });
 
-  const fetchRecipe = useCallback(async () => {
-    if (!id) return;
-
-    try {
-      const [{ data: recipeData }, { data: ingredientData }, { data: tagData }, { data: ratingData }, { data: imageData }] =
-        await Promise.all([
-          supabase.from('recipes').select('*').eq('id', id).single(),
-          supabase
-            .from('recipe_ingredients')
-            .select('id, quantity, unit, ingredient_name, notes, order_index')
-            .eq('recipe_id', id)
-            .order('order_index'),
-          supabase.from('recipe_tags').select('id, tag').eq('recipe_id', id).order('tag'),
-          supabase
-            .from('recipe_ratings')
-            .select('id, rating, notes, cooked_date, created_at')
-            .eq('recipe_id', id)
-            .order('cooked_date', { ascending: false }),
-          supabase
-            .from('recipe_images')
-            .select('id, storage_path, image_type')
-            .eq('recipe_id', id)
-            .order('created_at'),
-        ]);
-
-      if (!recipeData) {
-        // Fetch non-copyrightable metadata card (SECURITY DEFINER, bypasses RLS)
-        // get_recipe_card uses RETURNS TABLE so the client returns an array
-        const { data: cardData } = await supabase.rpc('get_recipe_card', { p_recipe_id: id });
-        const card = Array.isArray(cardData) ? cardData[0] ?? null : cardData ?? null;
-        if (card && card.visibility === 'private') {
-          setRecipeCard(card);
-          setIsPrivate(true);
-        }
-        return;
-      }
-
-      setRecipe(recipeData);
-      setIngredients(ingredientData || []);
-      setTags(tagData || []);
-      setRatings(ratingData || []);
-
-      // Build photo list: user uploads first, then source images
-      const photoList = (imageData || [])
-        .sort((a, b) => {
-          if (a.image_type === 'user_upload' && b.image_type !== 'user_upload') return -1;
-          if (a.image_type !== 'user_upload' && b.image_type === 'user_upload') return 1;
-          return 0;
-        })
-        .map((img) => ({
-          id: img.id,
-          url: supabase.storage.from('recipe-images').getPublicUrl(img.storage_path).data.publicUrl,
-          imageType: img.image_type,
-        }));
-      setPhotos(photoList);
-
-      if (recipeData && recipeData.created_by !== user?.id) {
-        const { data: creator } = await supabase
-          .from('user_profiles')
-          .select('display_name')
-          .eq('id', recipeData.created_by)
-          .single();
-        setCreatorName(creator?.display_name || null);
-      }
-
-      // Fetch user interaction data
-      if (user) {
-        const [{ data: cookData }, { data: favData }, { data: savedData }] = await Promise.all([
-          supabase.from('cook_log').select('id, cooked_at, notes')
-            .eq('recipe_id', id).eq('user_id', user.id)
-            .order('cooked_at', { ascending: false }),
-          supabase.from('recipe_favorites').select('id')
-            .eq('recipe_id', id).eq('user_id', user.id).maybeSingle(),
-          supabase.from('saved_recipes').select('id')
-            .eq('recipe_id', id).eq('user_id', user.id).maybeSingle(),
-        ]);
-        setCookEntries(cookData || []);
-        setIsFavorited(!!favData);
-        setIsSaved(!!savedData);
-      }
-    } catch (e) {
-      console.error('fetchRecipe failed:', e);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
   useFocusEffect(
     useCallback(() => {
-      fetchRecipe();
-    }, [fetchRecipe])
+      if (id) {
+        initializedRef.current = false;
+        queryClientHook.invalidateQueries({ queryKey: queryKeys.recipeDetail(id, user?.id) });
+      }
+    }, [id, user?.id, queryClientHook])
   );
 
   const isOwner = user?.id === recipe?.created_by;
@@ -674,12 +578,29 @@ export default function RecipeDetailScreen() {
       : 1,
   }));
 
-  if (loading) {
+  if (isLoading) {
     return (
       <>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={[styles.container, { paddingTop: insets.top }]}>
           <RecipeDetailSkeleton />
+        </View>
+      </>
+    );
+  }
+
+  if (isError) {
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={[styles.container, { paddingTop: insets.top, alignItems: 'center', justifyContent: 'center', gap: 12 }]}>
+          <Text style={{ ...typography.body, color: colors.inkMuted }}>Could not load recipe</Text>
+          <TouchableOpacity
+            onPress={() => refetch()}
+            style={{ paddingHorizontal: 20, paddingVertical: 10, borderWidth: 1, borderColor: colors.border }}
+          >
+            <Text style={{ ...typography.metaSmall, color: colors.ink }}>Retry</Text>
+          </TouchableOpacity>
         </View>
       </>
     );

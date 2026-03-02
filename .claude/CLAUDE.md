@@ -47,6 +47,7 @@ Both frontends share the same Supabase backend.
 - **Mobile-first design.** Big tap targets (44x44pt minimum), high contrast, readable fonts.
 - **Professional quality.** Every screen should look polished, not like a developer demo.
 - After any UI change, review all affected screens for visual consistency.
+- **Toggle and mode labels must describe behavior, not context.** Before naming any toggle, segmented control, or mode switch, complete this sentence: "Tapping this shows/sorts/groups ___." Use that answer as the label. Never name a mode after a future feature that doesn't exist yet or after what the user is doing (e.g. "Planning", "Shopping"). Name it after what the UI renders (e.g. "Per recipe", "Alphabetical").
 
 ### Code Quality
 - Keep changes minimal and focused. Don't refactor surrounding code unless asked.

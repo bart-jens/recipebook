@@ -59,15 +59,19 @@ export default async function DiscoverPage({
     filtered = filtered.filter((r) => r.recipe_tags && r.recipe_tags.length > 0);
   }
 
-  // When searching, also find public recipes matching by ingredient or tag
+  // When searching, also find public recipes matching by ingredient (FTS) or tag
   if (q) {
     const titleMatchedIds = new Set(filtered.map((r) => r.id));
-    const [{ data: ingMatches }, { data: tagMatches }] = await Promise.all([
-      supabase.from("recipe_ingredients").select("recipe_id").ilike("ingredient_name", `%${q}%`),
+    const [{ data: rpcIds }, { data: tagMatches }] = await Promise.all([
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase as any).rpc("search_public_recipes_by_ingredient", { query: q }) as Promise<{ data: string[] | null }>,
       supabase.from("recipe_tags").select("recipe_id").ilike("tag", `%${q}%`),
     ]);
     const extraIds = new Set<string>();
-    for (const m of [...(ingMatches || []), ...(tagMatches || [])]) {
+    for (const id of (rpcIds || []) as string[]) {
+      if (!titleMatchedIds.has(id)) extraIds.add(id);
+    }
+    for (const m of tagMatches || []) {
       if (!titleMatchedIds.has(m.recipe_id)) extraIds.add(m.recipe_id);
     }
     if (extraIds.size > 0) {

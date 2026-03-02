@@ -32,6 +32,20 @@ EefEats has two frontends:
 - Loading states, empty states, and error states should all be styled properly
 - Text should never overflow or be clipped unexpectedly
 
+### Toggle and mode label rule
+Any toggle, segmented control, or mode switch must be flagged if its labels fail this test:
+
+**"Does this label describe what the UI does, or does it describe the user's context/intent?"**
+
+Labels must describe **behavior** (what changes in the UI), not **context** (what the user is doing or planning to do).
+
+Red flags — raise as a **Violation**:
+- Labels that reference a feature not yet present in the app (e.g. "Planning" when there is no planning module)
+- Labels that describe the user's situation rather than the data organization (e.g. "Shopping" vs "Alphabetical")
+- Labels where you cannot complete the sentence: "Tapping this shows ingredients ___" with the label word alone
+
+When flagging, include: the file, the label text, what it actually does, and a suggested replacement label.
+
 ## How to review
 
 1. First, read the theme file (`mobile/lib/theme.ts`) to know the current design tokens

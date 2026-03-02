@@ -8,10 +8,12 @@ import { Stack, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Alert, Linking } from 'react-native';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 import { AuthProvider, useAuth } from '@/contexts/auth';
 import { supabase } from '@/lib/supabase';
 import { colors, fontFamily } from '@/lib/theme';
+import { queryClient } from '@/lib/query-client';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -90,6 +92,7 @@ export default function RootLayout() {
   };
 
   return (
+    <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <DeepLinkHandler />
       <Stack screenOptions={{ headerShown: false }}>
@@ -149,5 +152,6 @@ export default function RootLayout() {
         />
       </Stack>
     </AuthProvider>
+    </QueryClientProvider>
   );
 }
