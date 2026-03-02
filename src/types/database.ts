@@ -362,6 +362,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          image_type?: string
           is_primary?: boolean
           recipe_id?: string
           storage_path?: string
