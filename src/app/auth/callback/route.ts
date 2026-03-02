@@ -17,7 +17,7 @@ export async function GET(request: Request) {
         // The handle_new_user trigger creates a profile immediately, so !profile is
         // always false — instead we check if this is a first-time sign-in.
         const identity = user.identities?.[0];
-        const isNewUser = identity &&
+        const isNewUser = identity?.created_at &&
           new Date(identity.created_at).getTime() > Date.now() - 120_000;
 
         if (isNewUser) {

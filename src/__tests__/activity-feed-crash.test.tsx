@@ -9,24 +9,7 @@
  */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ActivityFeed } from '@/app/(authenticated)/home/activity-feed';
-
-type FeedItem = {
-  event_type: string;
-  user_id: string;
-  recipe_id: string;
-  event_at: string;
-  notes: string | null;
-  display_name?: string | null;
-  avatar_url: string | null;
-  recipe_title: string;
-  recipe_image_url: string | null;
-  source_url: string | null;
-  source_name: string | null;
-  rating: number | null;
-  recipe_visibility: string;
-  recipe_source_type: string;
-};
+import { ActivityFeed, FeedItem } from '@/app/(authenticated)/home/activity-feed';
 
 function makeFeedItem(overrides: Partial<FeedItem> = {}): FeedItem {
   return {

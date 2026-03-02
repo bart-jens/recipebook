@@ -5,13 +5,13 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatTimeAgo } from "@/lib/format";
 
-interface FeedItem {
+export interface FeedItem {
   event_type: string;
   user_id: string;
   recipe_id: string;
   event_at: string;
   notes: string | null;
-  display_name: string;
+  display_name: string | null;
   avatar_url: string | null;
   recipe_title: string;
   recipe_image_url: string | null;
@@ -124,7 +124,7 @@ export function ActivityFeed({
               {item.avatar_url ? (
                 <img
                   src={item.avatar_url}
-                  alt={item.display_name}
+                  alt={item.display_name ?? undefined}
                   className="w-[36px] h-[36px] rounded-full object-cover shrink-0 transition-transform duration-[250ms] group-hover:scale-110"
                 />
               ) : (
