@@ -10,14 +10,16 @@ CHANGED=$(git diff --name-only origin/main...HEAD 2>/dev/null \
 FAILED=false
 
 if echo "$CHANGED" | grep -qE "^mobile/"; then
-  echo "→ Mobile changes detected, running mobile tests..."
+  echo "→ Mobile changes detected, running typecheck + tests..."
+  (cd mobile && npm run typecheck) || FAILED=true
   (cd mobile && npm test -- --passWithNoTests) || FAILED=true
 fi
 
 if echo "$CHANGED" | grep -qE "^src/"; then
-  echo "→ Web changes detected, running web tests..."
+  echo "→ Web changes detected, running typecheck + tests..."
+  npm run typecheck || FAILED=true
   npm test -- --passWithNoTests || FAILED=true
 fi
 
-[ "$FAILED" = true ] && { echo "Tests failed. Fix before pushing."; exit 1; }
-echo "All tests passed."
+[ "$FAILED" = true ] && { echo "Typecheck or tests failed. Fix before pushing."; exit 1; }
+echo "All checks passed."
