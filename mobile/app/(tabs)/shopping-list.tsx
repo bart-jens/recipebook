@@ -335,7 +335,7 @@ export default function ShoppingListScreen() {
       >
         {/* Page header */}
         <View style={styles.pageHeader}>
-          <Text style={styles.pageTitle}>Grocery List</Text>
+          <Text style={styles.pageTitle}>Groceries</Text>
           {items.length > 0 && (
             <TouchableOpacity onPress={clearAll}>
               <Text style={styles.clearAllText}>Clear all</Text>
@@ -428,11 +428,9 @@ export default function ShoppingListScreen() {
                 <View key={group.recipeId ?? `manual-${gi}`}>
                   {/* Recipe section divider */}
                   <View style={[styles.recipeDivider, gi === 0 && styles.recipeDividerFirst]}>
-                    {(group.title || groups.length > 1) && (
-                      <Text style={styles.recipeDividerLabel}>
-                        {group.title ?? 'Manual'}
-                      </Text>
-                    )}
+                    <Text style={styles.recipeDividerLabel}>
+                      {group.title ?? 'Other'}
+                    </Text>
                   </View>
                 <View style={styles.groupContainer}>
                   {group.items.map((item) => (

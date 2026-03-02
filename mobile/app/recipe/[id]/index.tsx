@@ -64,6 +64,10 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HERO_HEIGHT = 220;
 const HEADER_HEIGHT = 56;
 
+function safeHostname(url: string): string {
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; }
+}
+
 // Type aliases for the imported types (keep local names for minimal diff)
 type Recipe = RecipeData;
 type Ingredient = IngredientData;
@@ -930,7 +934,7 @@ export default function RecipeDetailScreen() {
             {/* Mono date */}
             <Animated.Text entering={FadeInDown.delay(animation.staggerDelay * 2.5).duration(300)} style={styles.detailDate}>
               {recipe.source_type !== 'manual' && (recipe.source_name || recipe.source_url)
-                ? `From ${recipe.source_name || (recipe.source_url ? new URL(recipe.source_url).hostname.replace(/^www\./, '') : '')}`
+                ? `From ${recipe.source_name || (recipe.source_url ? safeHostname(recipe.source_url) : '')}`
                 : ''}
             </Animated.Text>
           </View>
@@ -1048,14 +1052,7 @@ export default function RecipeDetailScreen() {
             }
             return (
               <View style={styles.importedNote}>
-                {recipe.source_url ? (
-                  <Pressable onPress={() => Linking.openURL(recipe.source_url!)} style={styles.importedNoteRow}>
-                    <Text style={styles.importedNoteText}>Personal cookbook · </Text>
-                    <Text style={styles.importedNoteLink}>View original</Text>
-                  </Pressable>
-                ) : (
-                  <Text style={styles.importedNoteText}>Personal cookbook</Text>
-                )}
+                <Text style={styles.importedNoteText}>Imported recipes stay private</Text>
               </View>
             );
           })()}
@@ -1187,7 +1184,7 @@ export default function RecipeDetailScreen() {
                 style={{ marginBottom: spacing.lg }}
               >
                 <Text style={styles.sourceLink}>
-                  View original recipe
+                  View original source
                 </Text>
               </TouchableOpacity>
             )}

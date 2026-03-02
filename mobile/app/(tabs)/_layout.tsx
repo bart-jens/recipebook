@@ -177,7 +177,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="recipes"
         options={{
-          title: 'My Recipes',
+          title: 'Recipes',
           tabBarIcon: ({ color, focused }) => <AnimatedTabBarIcon name="book" color={color} focused={focused} />,
         }}
       />
