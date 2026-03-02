@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Recipe list page
-The system SHALL display a list of all recipes in the user's collection at `/recipes`, sorted by most recently updated. The collection includes both owned recipes (created_by = user) and saved public recipes (via saved_recipes table). Each list item SHALL show the recipe image (when available), title, description (truncated), prep+cook time if available, and a favorited indicator if the recipe is favorited. The page SHALL include filter options for: All, Favorited, and Want to Cook (never cooked). The page SHALL include an "Import from URL" link alongside the "New recipe" button.
+The system SHALL display a list of all recipes in the user's collection at `/recipes`, sorted by most recently updated. The collection includes both owned recipes (created_by = user) and saved public recipes (via saved_recipes table). Each list item SHALL show the recipe image (when available), title, description (truncated), prep+cook time if available, and a favorited indicator if the recipe is favorited. The page SHALL include filter options for: All, Favorited, and Want to Cook (never cooked). The page SHALL include an "Import from URL" link alongside the "New recipe" button. **When a search query is present, results SHALL include recipes whose title OR ingredient names match the query.**
 
 #### Scenario: User with recipes
 - **WHEN** an authenticated user navigates to `/recipes`
@@ -42,6 +42,10 @@ The system SHALL display a list of all recipes in the user's collection at `/rec
 #### Scenario: Saved recipe in list
 - **WHEN** user A has saved user B's public recipe
 - **THEN** user B's recipe SHALL appear in user A's recipe list alongside their own recipes
+
+#### Scenario: Search by ingredient name
+- **WHEN** a user types an ingredient name in the search box
+- **THEN** the results SHALL include recipes that contain that ingredient, even if the title does not match
 
 ### Requirement: Recipe detail page
 The system SHALL display the full recipe on a detail page. **When the recipe has an image, it SHALL be shown as a full-width hero at the top of the page.** The owner SHALL see options to edit, publish/unpublish, and delete. **Source attribution SHALL be shown when source_name or source_url is present.** For public recipes, the page SHALL additionally show the creator's display name and avatar (linked to their profile). For the owner's own public recipes, a "Published" badge and "Unpublish" option SHALL be shown. **For imported recipes, a "Share" action SHALL be shown instead of "Publish".** The detail page SHALL show interaction actions: "Cooked It" (always available), "Rate" (enabled after cooking), and "Favorite" (enabled after cooking). For public recipes not owned by the user, a "Save" / "Saved" toggle and a "Fork" action SHALL be shown. For forked recipes, fork attribution SHALL be displayed. The user's cook history for the recipe SHALL be displayed. **An "Add to Collection" action SHALL be available for both owned and saved recipes, showing a picker with the user's collections.**
