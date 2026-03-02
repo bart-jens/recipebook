@@ -9,7 +9,13 @@
  */
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+
+function wrapper({ children }: { children: React.ReactNode }) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+}
 
 // Import the screen under test
 import HomeScreen from '@/app/(tabs)/index';
@@ -93,7 +99,7 @@ describe('HomeScreen — Bug 1 (null display_name crash)', () => {
     setupMocksWithNullDisplayName(null);
 
     // render() handles its own act() wrapper — do not double-wrap
-    render(<HomeScreen />);
+    render(<HomeScreen />, { wrapper });
 
     // Wait for async loadData to settle
     await waitFor(() => {
@@ -105,7 +111,7 @@ describe('HomeScreen — Bug 1 (null display_name crash)', () => {
   it('renders without throwing when feed item has undefined display_name', async () => {
     setupMocksWithNullDisplayName(undefined);
 
-    render(<HomeScreen />);
+    render(<HomeScreen />, { wrapper });
 
     await waitFor(() => {
       expect(true).toBe(true);
@@ -115,7 +121,7 @@ describe('HomeScreen — Bug 1 (null display_name crash)', () => {
   it('shows fallback "?" in avatar when display_name is null', async () => {
     setupMocksWithNullDisplayName(null);
 
-    const { queryByText } = render(<HomeScreen />);
+    const { queryByText } = render(<HomeScreen />, { wrapper });
 
     await waitFor(() => {
       // The fixed code renders '?' as the avatar initial
@@ -126,7 +132,7 @@ describe('HomeScreen — Bug 1 (null display_name crash)', () => {
   it('shows the recipe title from the feed item when display_name is null', async () => {
     setupMocksWithNullDisplayName(null);
 
-    const { queryByText } = render(<HomeScreen />);
+    const { queryByText } = render(<HomeScreen />, { wrapper });
 
     await waitFor(() => {
       // Recipe title should still render even with null display_name
@@ -143,7 +149,7 @@ describe('HomeScreen — Bug 3 (load error handling)', () => {
     });
 
     // Should not crash — error is caught by try/catch in loadData
-    render(<HomeScreen />);
+    render(<HomeScreen />, { wrapper });
 
     await waitFor(() => {
       expect(true).toBe(true);
@@ -160,7 +166,7 @@ describe('HomeScreen — Bug 3 (load error handling)', () => {
 
     (supabase.rpc as jest.Mock).mockRejectedValue(new Error('RPC failure'));
 
-    render(<HomeScreen />);
+    render(<HomeScreen />, { wrapper });
 
     await waitFor(() => {
       expect(true).toBe(true);

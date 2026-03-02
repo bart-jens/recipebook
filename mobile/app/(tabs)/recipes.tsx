@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -21,6 +22,8 @@ import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 import CollectionsSection from '@/components/ui/CollectionsSection';
 import { RecipePlaceholder } from '@/lib/recipe-placeholder';
 import { formatTime } from '@/lib/format';
+import { fetchRecipes } from '@/lib/queries/recipes';
+import { queryKeys } from '@/lib/queries/keys';
 
 type SortOption = 'updated' | 'alpha' | 'rating' | 'quickest';
 type FilterOption = '' | 'imported' | 'published' | 'saved' | 'favorited' | 'cooked';
@@ -56,9 +59,8 @@ const COURSE_OPTIONS = [
 
 export default function RecipesScreen() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
-  const [allRecipes, setAllRecipes] = useState<RecipeListItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('updated');
   const [activeFilter, setActiveFilter] = useState<FilterOption>(
@@ -68,13 +70,18 @@ export default function RecipesScreen() {
     if (filterParam) setActiveFilter(filterParam as FilterOption);
   }, [filterParam]);
 
+  const { data: allRecipes = [], isLoading, isError, refetch } = useQuery({
+    queryKey: queryKeys.recipes(user?.id ?? '', search),
+    queryFn: () => fetchRecipes(user!.id, search),
+    enabled: !!user,
+  });
+
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [showImportMenu, setShowImportMenu] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [collections, setCollections] = useState<{ id: string; name: string; description: string | null; recipe_count: number; cover_url: string | null }[]>([]);
   const [collectionPlan, setCollectionPlan] = useState('free');
-  const hasLoadedOnce = useRef(false);
   const [publishedIds, setPublishedIds] = useState<Set<string>>(new Set());
   const [publishingId, setPublishingId] = useState<string | null>(null);
 
@@ -152,126 +159,13 @@ export default function RecipesScreen() {
     }
   };
 
-  const fetchRecipes = useCallback(async () => {
-    if (!user) return;
-    if (!hasLoadedOnce.current) setLoading(true);
-
-    try {
-      const selectFields = 'id, title, description, image_url, prep_time_minutes, cook_time_minutes, updated_at, visibility, source_type, recipe_tags(tag)';
-
-      let ownedQuery = supabase
-        .from('recipes')
-        .select(selectFields)
-        .eq('created_by', user.id);
-
-      if (search) {
-        ownedQuery = ownedQuery.ilike('title', `%${search}%`);
-      }
-
-      // Fetch owned recipes, saved IDs, favorites, and cook log in parallel
-      const [
-        { data: ownedData },
-        { data: savedEntries },
-        { data: favEntries },
-        { data: cookLogEntries },
-      ] = await Promise.all([
-        ownedQuery,
-        supabase.from('saved_recipes').select('recipe_id').eq('user_id', user.id),
-        supabase.from('recipe_favorites').select('recipe_id').eq('user_id', user.id),
-        supabase.from('cook_log').select('recipe_id').eq('user_id', user.id),
-      ]);
-
-      const savedRecipeIds = new Set((savedEntries || []).map((s) => s.recipe_id));
-      const favoritedIds = new Set((favEntries || []).map((f) => f.recipe_id));
-      const cookedIds = new Set((cookLogEntries || []).map((c) => c.recipe_id));
-
-      // Fetch saved recipe details if any
-      let savedRecipes: typeof ownedData = [];
-      if (savedRecipeIds.size > 0) {
-        let savedQuery = supabase
-          .from('recipes')
-          .select(selectFields)
-          .in('id', Array.from(savedRecipeIds));
-        if (search) {
-          savedQuery = savedQuery.ilike('title', `%${search}%`);
-        }
-        const { data } = await savedQuery;
-        savedRecipes = data;
-      }
-
-      const titleMatched = [...(ownedData || []), ...(savedRecipes || [])];
-      const titleMatchedIds = new Set(titleMatched.map((r) => r.id));
-
-      // When searching, also find recipes matching by ingredient or tag
-      let extraRecipes: typeof titleMatched = [];
-      if (search) {
-        const [{ data: ingMatches }, { data: tagMatches }, { data: allOwnedIdRows }] = await Promise.all([
-          supabase.from('recipe_ingredients').select('recipe_id').ilike('ingredient_name', `%${search}%`),
-          supabase.from('recipe_tags').select('recipe_id').ilike('tag', `%${search}%`),
-          supabase.from('recipes').select('id').eq('created_by', user.id),
-        ]);
-        const allOwnedIds = new Set((allOwnedIdRows || []).map((r) => r.id));
-        const extraIds = new Set<string>();
-        for (const m of [...(ingMatches || []), ...(tagMatches || [])]) {
-          const id = m.recipe_id;
-          if (!titleMatchedIds.has(id) && (allOwnedIds.has(id) || savedRecipeIds.has(id))) {
-            extraIds.add(id);
-          }
-        }
-        if (extraIds.size > 0) {
-          const { data: extraData } = await supabase
-            .from('recipes')
-            .select(selectFields)
-            .in('id', Array.from(extraIds));
-          extraRecipes = extraData || [];
-        }
-      }
-
-      const recipeList = [...titleMatched, ...extraRecipes];
-
-      // Batch fetch ratings for all recipes
-      const ratingMap = new Map<string, { total: number; count: number }>();
-      if (recipeList.length > 0) {
-        const { data: ratings } = await supabase
-          .from('recipe_ratings')
-          .select('recipe_id, rating')
-          .in('recipe_id', recipeList.map((r) => r.id));
-
-        for (const r of ratings || []) {
-          const existing = ratingMap.get(r.recipe_id) || { total: 0, count: 0 };
-          existing.total += r.rating;
-          existing.count += 1;
-          ratingMap.set(r.recipe_id, existing);
-        }
-      }
-
-      const enriched: RecipeListItem[] = recipeList.map((r) => {
-        const ratingInfo = ratingMap.get(r.id);
-        return {
-          ...r,
-          avgRating: ratingInfo ? ratingInfo.total / ratingInfo.count : null,
-          ratingCount: ratingInfo?.count || 0,
-          tags: ((r as any).recipe_tags || []).map((t: { tag: string }) => t.tag),
-          isFavorited: favoritedIds.has(r.id),
-          hasCooked: cookedIds.has(r.id),
-          isSaved: savedRecipeIds.has(r.id),
-        };
-      });
-
-      setAllRecipes(enriched);
-      hasLoadedOnce.current = true;
-    } catch (e) {
-      console.error('fetchRecipes failed:', e);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, search]);
-
   useFocusEffect(
     useCallback(() => {
-      fetchRecipes();
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.recipes(user.id, search) });
+      }
       fetchCollections();
-    }, [fetchRecipes, fetchCollections])
+    }, [user, search, fetchCollections, queryClient])
   );
 
   const recipes = useMemo(() => {
@@ -503,7 +397,7 @@ export default function RecipesScreen() {
       )}
 
       {/* Result count */}
-      {recipes.length > 0 && !loading && (
+      {recipes.length > 0 && !isLoading && (
         <View style={styles.countRow}>
           <Text style={styles.count}>
             {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
@@ -516,7 +410,17 @@ export default function RecipesScreen() {
 
   return (
     <View style={styles.container}>
-      {loading ? (
+      {isError ? (
+        <View style={{ flex: 1 }}>
+          {renderHeader()}
+          <View style={styles.errorState}>
+            <Text style={styles.errorText}>Could not load recipes</Text>
+            <Pressable style={styles.retryButton} onPress={() => refetch()}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : isLoading ? (
         <View style={{ flex: 1 }}>
           {renderHeader()}
           <RecipeListSkeleton />
@@ -831,6 +735,30 @@ const styles = StyleSheet.create({
   publishedLabel: {
     ...typography.metaSmall,
     color: colors.olive,
+  },
+
+  // Error state
+  errorState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  errorText: {
+    ...typography.body,
+    color: colors.inkMuted,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  retryButtonText: {
+    ...typography.metaSmall,
+    color: colors.ink,
   },
 
   // Import modal

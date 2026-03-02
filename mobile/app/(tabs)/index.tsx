@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { FeedItem } from '../../../shared/types/domain';
 import {
   View,
@@ -16,28 +16,15 @@ import { Image } from 'expo-image';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, fontFamily, typography, shadows, radii } from '@/lib/theme';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
 import { RecipePlaceholder } from '@/lib/recipe-placeholder';
-
-
-interface SuggestionRecipe {
-  id: string;
-  title: string;
-  image_url: string | null;
-  description: string | null;
-  prep_time_minutes: number | null;
-  cook_time_minutes: number | null;
-  recipe_tags?: { tag: string }[];
-}
-
-interface RecentCook {
-  id: string;
-  cooked_at: string;
-  recipes: { id: string; title: string } | null;
-}
+import { fetchFeed } from '@/lib/queries/feed';
+import { queryKeys } from '@/lib/queries/keys';
+import type { SuggestionRecipe, RecentCook } from '@/lib/queries/feed';
 
 
 type FeedLinkTarget =
@@ -58,118 +45,86 @@ function resolveLink(item: FeedItem): FeedLinkTarget {
 
 export default function HomeScreen() {
   const { user } = useAuth();
-  const [displayName, setDisplayName] = useState('');
+  const queryClient = useQueryClient();
   const [showImportMenu, setShowImportMenu] = useState(false);
-  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
-  const [suggestions, setSuggestions] = useState<SuggestionRecipe[]>([]);
-  const [recentCooks, setRecentCooks] = useState<RecentCook[]>([]);
-  const [followingCount, setFollowingCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMoreFeed, setHasMoreFeed] = useState(false);
+  const [extraFeedItems, setExtraFeedItems] = useState<FeedItem[]>([]);
   const previousFeedCount = useRef(0);
 
-  const recipeSelectFields = 'id, title, image_url, description, prep_time_minutes, cook_time_minutes, recipe_tags(tag)';
+  const { data, isLoading, isFetching, isError, refetch } = useQuery({
+    queryKey: queryKeys.feed(user?.id ?? ''),
+    queryFn: () => fetchFeed(user!.id),
+    enabled: !!user,
+  });
 
-  const loadData = useCallback(async (isRefresh = false) => {
-    if (!user) return;
+  const feedItems = [...(data?.feedItems ?? []), ...extraFeedItems];
+  const suggestions = data?.suggestions ?? [];
+  const followingCount = data?.followingCount ?? 0;
 
-    try {
-      const [
-        { data: profile },
-        { data: following },
-        { data: cooks },
-      ] = await Promise.all([
-        supabase
-          .from('user_profiles')
-          .select('display_name')
-          .eq('id', user.id)
-          .single(),
-        supabase
-          .from('user_follows')
-          .select('following_id')
-          .eq('follower_id', user.id),
-        supabase
-          .from('cook_log')
-          .select('id, cooked_at, recipes(id, title)')
-          .eq('user_id', user.id)
-          .order('cooked_at', { ascending: false })
-          .limit(3),
-      ]);
-
-      setDisplayName(profile?.display_name || '');
-      setRecentCooks((cooks || []) as unknown as RecentCook[]);
-
-      // Always show user's own recent recipes
-      const { data: recent } = await supabase
-        .from('recipes')
-        .select(recipeSelectFields)
-        .eq('created_by', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(10);
-      setSuggestions((recent || []) as SuggestionRecipe[]);
-
-      const followedIds = (following || []).map((f) => f.following_id);
-      setFollowingCount(followedIds.length);
-
-      // Activity feed via RPC
-      if (followedIds.length > 0) {
-        const { data: feed } = await supabase.rpc('get_activity_feed', {
-          p_user_id: user.id,
-          p_limit: 20,
-        });
-        const items = (feed || []) as FeedItem[];
-        setFeedItems(items);
-        setHasMoreFeed(items.length === 20);
-
-        // Haptic feedback on refresh if new items
-        if (isRefresh && items.length > previousFeedCount.current) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
-        previousFeedCount.current = items.length;
-      } else {
-        setFeedItems([]);
-        setHasMoreFeed(false);
-      }
-    } catch (e) {
-      console.error('loadData failed:', e);
-    } finally {
-      setLoading(false);
+  // Sync hasMoreFeed from initial data
+  useEffect(() => {
+    if (data) {
+      setHasMoreFeed(data.feedItems.length === 20);
+      setExtraFeedItems([]);
     }
-  }, [user]);
+  }, [data?.feedItems.length]);
+
+  // Haptic on new feed items after refresh
+  useEffect(() => {
+    if (data && previousFeedCount.current > 0 && data.feedItems.length > previousFeedCount.current) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    previousFeedCount.current = data?.feedItems.length ?? 0;
+  }, [data?.feedItems.length]);
 
   useFocusEffect(
     useCallback(() => {
-      loadData();
-    }, [loadData])
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.feed(user.id) });
+      }
+    }, [user, queryClient])
   );
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadData(true);
-    setRefreshing(false);
-  }, [loadData]);
+  const onRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  const refreshing = isFetching && !!data;
 
   const loadMoreFeed = useCallback(async () => {
     if (loadingMore || !hasMoreFeed || feedItems.length === 0 || !user) return;
     setLoadingMore(true);
     const lastItem = feedItems[feedItems.length - 1];
-    const { data } = await supabase.rpc('get_activity_feed', {
+    const { data: moreData } = await supabase.rpc('get_activity_feed', {
       p_user_id: user.id,
       p_before: lastItem.event_at,
       p_limit: 20,
     });
-    const newItems = (data || []) as FeedItem[];
-    setFeedItems((prev) => [...prev, ...newItems]);
+    const newItems = (moreData || []) as FeedItem[];
+    setExtraFeedItems((prev) => [...prev, ...newItems]);
     setHasMoreFeed(newItems.length === 20);
     setLoadingMore(false);
   }, [loadingMore, hasMoreFeed, feedItems, user]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.container}>
         <HomeSkeleton />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={[styles.container, { alignItems: 'center', justifyContent: 'center', gap: 12 }]}>
+        <Text style={{ ...typography.body, color: colors.inkMuted }}>Could not load home</Text>
+        <Pressable
+          onPress={() => refetch()}
+          style={{ paddingHorizontal: 20, paddingVertical: 10, borderWidth: 1, borderColor: colors.border }}
+        >
+          <Text style={{ ...typography.metaSmall, color: colors.ink }}>Retry</Text>
+        </Pressable>
       </View>
     );
   }
