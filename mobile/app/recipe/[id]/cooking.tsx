@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/auth';
 import { parseSteps } from '@/lib/parse-steps';
 import CookingMode from '@/components/ui/CookingMode';
 import { colors, spacing, typography } from '@/lib/theme';
@@ -24,7 +23,6 @@ interface Ingredient {
 
 export default function CookingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -53,12 +51,16 @@ export default function CookingScreen() {
     load();
   }, [id]);
 
-  function dismiss() {
-    router.back();
-  }
+  const steps = useMemo(() => parseSteps(recipe?.instructions ?? ''), [recipe?.instructions]);
 
-  async function handleRatingSubmit(rating: number, notes: string) {
-    if (!recipe || !user || rating === 0) return;
+  const dismiss = useCallback(() => {
+    router.back();
+  }, []);
+
+  const handleRatingSubmit = useCallback(async (rating: number, notes: string) => {
+    if (!recipe || rating === 0) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
     const { error } = await supabase.from('recipe_ratings').insert({
       recipe_id: recipe.id,
       user_id: user.id,
@@ -69,7 +71,7 @@ export default function CookingScreen() {
     if (error) {
       Alert.alert('Could not save rating', 'Your cook was logged but the rating could not be saved. Try adding it from the recipe detail.');
     }
-  }
+  }, [recipe]);
 
   if (loading) {
     return (
@@ -92,8 +94,6 @@ export default function CookingScreen() {
       </>
     );
   }
-
-  const steps = parseSteps(recipe.instructions ?? '');
 
   return (
     <>
