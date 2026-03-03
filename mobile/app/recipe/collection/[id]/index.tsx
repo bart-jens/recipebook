@@ -133,7 +133,7 @@ export default function CollectionDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: collectionName || 'Collection' }} />
+      <Stack.Screen options={{ headerShown: true, title: collectionName || 'Collection' }} />
 
       <View style={styles.header}>
         {collectionDesc && (

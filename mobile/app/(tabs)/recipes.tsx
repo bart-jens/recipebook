@@ -60,6 +60,7 @@ const COURSE_OPTIONS = [
 
 export default function RecipesScreen() {
   const { user } = useAuth();
+  const userId = user?.id;
   const queryClient = useQueryClient();
   const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
   const [search, setSearch] = useState('');
@@ -94,16 +95,16 @@ export default function RecipesScreen() {
   const [publishingId, setPublishingId] = useState<string | null>(null);
 
   const fetchCollections = useCallback(async () => {
-    if (!user) return;
+    if (!userId) return;
 
     try {
       const [{ data: cols }, { data: profile }] = await Promise.all([
         supabase
           .from('collections')
           .select('id, name, description, cover_image_url')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .order('updated_at', { ascending: false }),
-        supabase.from('user_profiles').select('plan').eq('id', user.id).single(),
+        supabase.from('user_profiles').select('plan').eq('id', userId).single(),
       ]);
 
       setCollectionPlan(profile?.plan || 'free');
@@ -151,7 +152,7 @@ export default function RecipesScreen() {
     } catch (e) {
       console.error('fetchCollections failed:', e);
     }
-  }, [user]);
+  }, [userId]);
 
   const handlePublishRecipe = async (recipeId: string) => {
     if (!user) return;
@@ -169,11 +170,11 @@ export default function RecipesScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.recipes(user.id, debouncedSearch) });
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.recipes(userId, debouncedSearch) });
       }
       fetchCollections();
-    }, [user, debouncedSearch, fetchCollections, queryClient])
+    }, [userId, debouncedSearch, fetchCollections, queryClient])
   );
 
   const recipes = useMemo(() => {

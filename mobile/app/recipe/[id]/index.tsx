@@ -521,6 +521,7 @@ export default function RecipeDetailScreen() {
         ingredient_name: ing.ingredient_name,
         quantity: ing.quantity,
         unit: ing.unit,
+        recipe_ids: recipe ? [recipe.id] : [],
       });
 
     setAddingIngredientId(null);
