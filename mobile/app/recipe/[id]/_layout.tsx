@@ -10,6 +10,8 @@ export default function RecipeLayout() {
         headerShadowVisible: false,
         headerBackTitle: 'Back',
       }}
-    />
+    >
+      <Stack.Screen name="cooking" options={{ presentation: 'fullScreenModal', headerShown: false }} />
+    </Stack>
   );
 }

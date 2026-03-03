@@ -11,7 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
+import { useKeepAwake } from 'expo-keep-awake';
 import { convertIngredient, formatQuantity, type UnitSystem } from '@/lib/unit-conversion';
 import StarRating from '@/components/ui/StarRating';
 import { colors, spacing, typography, radii, fontFamily } from '@/lib/theme';
@@ -57,12 +57,7 @@ export default function CookingMode({ recipe, ingredients, steps, onDismiss, onR
   const isLastStep = currentStep === totalSteps - 1;
   const progress = totalSteps > 0 ? (currentStep + 1) / totalSteps : 0;
 
-  useEffect(() => {
-    activateKeepAwakeAsync();
-    return () => {
-      deactivateKeepAwake();
-    };
-  }, []);
+  useKeepAwake();
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {

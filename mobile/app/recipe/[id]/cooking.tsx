@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
-import { useLocalSearchParams, router, Stack } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { parseSteps } from '@/lib/parse-steps';
 import CookingMode from '@/components/ui/CookingMode';
@@ -75,37 +75,28 @@ export default function CookingScreen() {
 
   if (loading) {
     return (
-      <>
-        <Stack.Screen options={{ presentation: 'fullScreenModal', headerShown: false }} />
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.accent} />
-        </View>
-      </>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.accent} />
+      </View>
     );
   }
 
   if (error || !recipe) {
     return (
-      <>
-        <Stack.Screen options={{ presentation: 'fullScreenModal', headerShown: false }} />
-        <View style={styles.centered}>
-          <Text style={styles.errorText}>{error ?? 'Recipe not found.'}</Text>
-        </View>
-      </>
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{error ?? 'Recipe not found.'}</Text>
+      </View>
     );
   }
 
   return (
-    <>
-      <Stack.Screen options={{ presentation: 'fullScreenModal', headerShown: false }} />
-      <CookingMode
-        recipe={recipe}
-        ingredients={ingredients}
-        steps={steps}
-        onDismiss={dismiss}
-        onRatingSubmit={handleRatingSubmit}
-      />
-    </>
+    <CookingMode
+      recipe={recipe}
+      ingredients={ingredients}
+      steps={steps}
+      onDismiss={dismiss}
+      onRatingSubmit={handleRatingSubmit}
+    />
   );
 }
 
