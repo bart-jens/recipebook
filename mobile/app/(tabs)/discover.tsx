@@ -60,6 +60,7 @@ export default function DiscoverScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('newest');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [pendingFollowId, setPendingFollowId] = useState<string | null>(null);
@@ -68,6 +69,11 @@ export default function DiscoverScreen() {
   const [savedRecipeIds, setSavedRecipeIds] = useState<Set<string>>(new Set());
   const hasLoadedChefs = useRef(false);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const {
     data: baseRecipes,
     isLoading: recipesLoading,
@@ -75,8 +81,8 @@ export default function DiscoverScreen() {
     isError: recipesError,
     refetch: refetchRecipes,
   } = useQuery({
-    queryKey: queryKeys.discover(search),
-    queryFn: () => fetchDiscover(search),
+    queryKey: queryKeys.discover(debouncedSearch),
+    queryFn: () => fetchDiscover(debouncedSearch),
   });
 
   // Derive allTags from query data + extra pages
@@ -101,11 +107,11 @@ export default function DiscoverScreen() {
       });
   }, [user?.id]);
 
-  // Reset extra recipes when search changes
+  // Reset extra recipes when debounced search changes
   useEffect(() => {
     setExtraRecipes([]);
     setHasMore(true);
-  }, [search]);
+  }, [debouncedSearch]);
 
   const formatTime = (minutes: number | null) => {
     if (!minutes) return null;
@@ -192,18 +198,18 @@ export default function DiscoverScreen() {
       .order('published_at', { ascending: false })
       .range(totalLoaded, totalLoaded + DISCOVER_PAGE_SIZE_LOCAL - 1);
 
-    if (search) {
-      query = query.ilike('title', `%${search}%`);
+    if (debouncedSearch) {
+      query = query.ilike('title', `%${debouncedSearch}%`);
     }
 
     const { data: recipeData } = await query;
     let moreRecipeData = recipeData || [];
 
-    if (search) {
+    if (debouncedSearch) {
       const allLoadedIds = new Set([...allRecipeData.map((r) => r.id), ...moreRecipeData.map((r: any) => r.id)]);
       const [{ data: ingMatches }, { data: tagMatches }] = await Promise.all([
-        supabase.from('recipe_ingredients').select('recipe_id').ilike('ingredient_name', `%${search}%`),
-        supabase.from('recipe_tags').select('recipe_id').ilike('tag', `%${search}%`),
+        supabase.from('recipe_ingredients').select('recipe_id').ilike('ingredient_name', `%${debouncedSearch}%`),
+        supabase.from('recipe_tags').select('recipe_id').ilike('tag', `%${debouncedSearch}%`),
       ]);
       const extraIds = new Set<string>();
       for (const m of [...(ingMatches || []), ...(tagMatches || [])]) {
@@ -229,7 +235,7 @@ export default function DiscoverScreen() {
     setExtraRecipes((prev) => [...prev, ...enriched]);
     setHasMore((recipeData || []).length >= DISCOVER_PAGE_SIZE_LOCAL);
     setLoadingMore(false);
-  }, [allRecipeData.length, search, loadingMore, hasMore]);
+  }, [allRecipeData.length, debouncedSearch, loadingMore, hasMore]);
 
   const handleFollowPress = useCallback(async (chefId: string) => {
     if (!user) return;
@@ -280,11 +286,11 @@ export default function DiscoverScreen() {
   useFocusEffect(
     useCallback(() => {
       if (activeTab === 'recipes') {
-        queryClientHook.invalidateQueries({ queryKey: queryKeys.discover(search) });
+        queryClientHook.invalidateQueries({ queryKey: queryKeys.discover(debouncedSearch) });
       } else {
         fetchChefs();
       }
-    }, [activeTab, search, fetchChefs, queryClientHook])
+    }, [activeTab, debouncedSearch, fetchChefs, queryClientHook])
   );
 
   const recipes = useMemo(() => {

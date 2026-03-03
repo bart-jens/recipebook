@@ -62,6 +62,7 @@ export default function RecipesScreen() {
   const queryClient = useQueryClient();
   const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('updated');
   const [activeFilter, setActiveFilter] = useState<FilterOption>(
     (filterParam as FilterOption) || ''
@@ -70,9 +71,14 @@ export default function RecipesScreen() {
     if (filterParam) setActiveFilter(filterParam as FilterOption);
   }, [filterParam]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const { data: allRecipes = [], isLoading, isError, refetch } = useQuery({
-    queryKey: queryKeys.recipes(user?.id ?? '', search),
-    queryFn: () => fetchRecipes(user!.id, search),
+    queryKey: queryKeys.recipes(user?.id ?? '', debouncedSearch),
+    queryFn: () => fetchRecipes(user!.id, debouncedSearch),
     enabled: !!user,
   });
 
@@ -162,10 +168,10 @@ export default function RecipesScreen() {
   useFocusEffect(
     useCallback(() => {
       if (user) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.recipes(user.id, search) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.recipes(user.id, debouncedSearch) });
       }
       fetchCollections();
-    }, [user, search, fetchCollections, queryClient])
+    }, [user, debouncedSearch, fetchCollections, queryClient])
   );
 
   const recipes = useMemo(() => {
