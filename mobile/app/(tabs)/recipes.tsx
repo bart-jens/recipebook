@@ -23,7 +23,7 @@ import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 import CollectionsSection from '@/components/ui/CollectionsSection';
 import { RecipePlaceholder } from '@/lib/recipe-placeholder';
 import { formatTime } from '@/lib/format';
-import { fetchRecipes } from '@/lib/queries/recipes';
+import { fetchAllUserRecipes, fetchIngredientMatchIds } from '@/lib/queries/recipes';
 import { queryKeys } from '@/lib/queries/keys';
 
 type SortOption = 'updated' | 'alpha' | 'rating' | 'quickest';
@@ -78,10 +78,19 @@ export default function RecipesScreen() {
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Load all user recipes once — no search filter. Title search is client-side.
   const { data: allRecipes = [], isLoading, isFetching, isError, refetch } = useQuery({
-    queryKey: queryKeys.recipes(user?.id ?? '', debouncedSearch),
-    queryFn: () => fetchRecipes(user!.id, debouncedSearch),
-    enabled: !!user,
+    queryKey: queryKeys.recipes(userId ?? ''),
+    queryFn: () => fetchAllUserRecipes(userId!),
+    enabled: !!userId,
+    placeholderData: keepPreviousData,
+  });
+
+  // Ingredient/tag match IDs — runs after debounce, supplements title results
+  const { data: ingredientMatchIds, isFetching: isIngredientFetching } = useQuery({
+    queryKey: queryKeys.ingredientSearch(userId ?? '', debouncedSearch),
+    queryFn: () => fetchIngredientMatchIds(userId!, debouncedSearch),
+    enabled: !!userId && debouncedSearch.length > 0,
     placeholderData: keepPreviousData,
   });
 
@@ -171,14 +180,34 @@ export default function RecipesScreen() {
   useFocusEffect(
     useCallback(() => {
       if (userId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.recipes(userId, debouncedSearch) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.recipes(userId) });
       }
       fetchCollections();
-    }, [userId, debouncedSearch, fetchCollections, queryClient])
+    }, [userId, fetchCollections, queryClient])
   );
 
   const recipes = useMemo(() => {
-    let filtered = [...allRecipes];
+    // Client-side title/tag filter — runs synchronously, no network
+    const trimmedSearch = search.trim().toLowerCase();
+    let filtered: RecipeListItem[];
+    if (trimmedSearch) {
+      filtered = allRecipes.filter((r) =>
+        r.title.toLowerCase().includes(trimmedSearch) ||
+        r.tags.some((t) => t.toLowerCase().includes(trimmedSearch))
+      );
+      // Merge ingredient matches that aren't already in the title results
+      if (ingredientMatchIds && ingredientMatchIds.length > 0) {
+        const filteredIds = new Set(filtered.map((r) => r.id));
+        const allRecipeMap = new Map(allRecipes.map((r) => [r.id, r]));
+        for (const id of ingredientMatchIds) {
+          if (!filteredIds.has(id) && allRecipeMap.has(id)) {
+            filtered.push(allRecipeMap.get(id)!);
+          }
+        }
+      }
+    } else {
+      filtered = [...allRecipes];
+    }
     if (selectedCourse) {
       filtered = filtered.filter((r) =>
         r.tags.some((t) => t.toLowerCase() === selectedCourse)
@@ -210,7 +239,7 @@ export default function RecipesScreen() {
       return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     });
     return filtered;
-  }, [allRecipes, sort, activeFilter, selectedCourse]);
+  }, [allRecipes, search, ingredientMatchIds, sort, activeFilter, selectedCourse]);
 
   const renderRecipeItem = useCallback(({ item, index }: { item: RecipeListItem; index: number }) => {
     const totalTime = (item.prep_time_minutes || 0) + (item.cook_time_minutes || 0);
@@ -307,7 +336,7 @@ export default function RecipesScreen() {
 
         {/* Search bar — bottom-border style */}
         <View style={[styles.searchWrap, searchFocused && styles.searchWrapFocused]}>
-          {isFetching
+          {(isFetching || isIngredientFetching)
             ? <ActivityIndicator size="small" color={colors.inkMuted} />
             : <FontAwesome name="search" size={14} color={colors.inkMuted} />
           }
