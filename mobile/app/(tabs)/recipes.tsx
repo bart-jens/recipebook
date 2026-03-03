@@ -9,10 +9,11 @@ import {
   TouchableOpacity,
   Pressable,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -80,6 +81,7 @@ export default function RecipesScreen() {
     queryKey: queryKeys.recipes(user?.id ?? '', debouncedSearch),
     queryFn: () => fetchRecipes(user!.id, debouncedSearch),
     enabled: !!user,
+    placeholderData: keepPreviousData,
   });
 
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
@@ -304,7 +306,10 @@ export default function RecipesScreen() {
 
         {/* Search bar — bottom-border style */}
         <View style={[styles.searchWrap, searchFocused && styles.searchWrapFocused]}>
-          <FontAwesome name="search" size={14} color={colors.inkMuted} />
+          {isFetching
+            ? <ActivityIndicator size="small" color={colors.inkMuted} />
+            : <FontAwesome name="search" size={14} color={colors.inkMuted} />
+          }
           <TextInput
             style={styles.searchInput}
             placeholder="Search by name or ingredient"
@@ -448,7 +453,7 @@ export default function RecipesScreen() {
           data={recipes}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          ListHeaderComponent={renderHeader}
+          ListHeaderComponent={renderHeader()}
           renderItem={renderRecipeItem}
         />
       )}

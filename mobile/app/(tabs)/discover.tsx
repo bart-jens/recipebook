@@ -15,7 +15,7 @@ import { Image } from 'expo-image';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, typography } from '@/lib/theme';
@@ -84,6 +84,7 @@ export default function DiscoverScreen() {
   } = useQuery({
     queryKey: queryKeys.discover(user?.id ?? '', debouncedSearch),
     queryFn: () => fetchDiscover(debouncedSearch),
+    placeholderData: keepPreviousData,
   });
 
   // Derive allTags from query data + extra pages
@@ -597,7 +598,10 @@ export default function DiscoverScreen() {
       <View style={styles.header}>
         <Text style={styles.pageTitle}>Discover</Text>
         <View style={[styles.searchWrap, searchFocused && styles.searchWrapFocused]}>
-          <FontAwesome name="search" size={14} color={colors.inkMuted} />
+          {recipesFetching && activeTab === 'recipes'
+            ? <ActivityIndicator size="small" color={colors.inkMuted} />
+            : <FontAwesome name="search" size={14} color={colors.inkMuted} />
+          }
           <TextInput
             style={styles.searchInput}
             placeholder="Search by name or ingredient"
@@ -674,10 +678,10 @@ export default function DiscoverScreen() {
           data={recipes}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          ListHeaderComponent={renderHeader}
+          ListHeaderComponent={renderHeader()}
           refreshControl={
             <RefreshControl
-              refreshing={recipesFetching && !!baseRecipes}
+              refreshing={recipesFetching && !!baseRecipes && !debouncedSearch}
               onRefresh={() => refetchRecipes()}
               tintColor={colors.inkMuted}
             />
