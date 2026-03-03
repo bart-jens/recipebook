@@ -76,7 +76,7 @@ export default function RecipesScreen() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data: allRecipes = [], isLoading, isError, refetch } = useQuery({
+  const { data: allRecipes = [], isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: queryKeys.recipes(user?.id ?? '', debouncedSearch),
     queryFn: () => fetchRecipes(user!.id, debouncedSearch),
     enabled: !!user,
@@ -415,7 +415,7 @@ export default function RecipesScreen() {
 
   return (
     <View style={styles.container}>
-      {isError ? (
+      {(isError && !isFetching) ? (
         <View style={{ flex: 1 }}>
           {renderHeader()}
           <View style={styles.errorState}>

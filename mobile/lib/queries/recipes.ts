@@ -8,6 +8,7 @@ export async function fetchRecipes(
   userId: string,
   search: string,
 ): Promise<RecipeListItem[]> {
+  search = search.trim();
   let ownedQuery = supabase
     .from('recipes')
     .select(SELECT_FIELDS)

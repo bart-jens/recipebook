@@ -5,6 +5,6 @@ export const queryKeys = {
     ['recipe', id, userId] as const,
   feed: (userId: string) =>
     ['feed', userId] as const,
-  discover: (search: string) =>
-    ['discover', search] as const,
+  discover: (userId: string, search: string) =>
+    ['discover', userId, search] as const,
 };

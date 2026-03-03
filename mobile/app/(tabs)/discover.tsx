@@ -68,6 +68,7 @@ export default function DiscoverScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [savedRecipeIds, setSavedRecipeIds] = useState<Set<string>>(new Set());
   const hasLoadedChefs = useRef(false);
+  const titleOffsetRef = useRef<number | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -81,7 +82,7 @@ export default function DiscoverScreen() {
     isError: recipesError,
     refetch: refetchRecipes,
   } = useQuery({
-    queryKey: queryKeys.discover(debouncedSearch),
+    queryKey: queryKeys.discover(user?.id ?? '', debouncedSearch),
     queryFn: () => fetchDiscover(debouncedSearch),
   });
 
@@ -98,19 +99,22 @@ export default function DiscoverScreen() {
   // Load saved recipe IDs for current user
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from('saved_recipes')
-      .select('recipe_id')
-      .eq('user_id', user.id)
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('saved_recipes')
+          .select('recipe_id')
+          .eq('user_id', user.id);
         setSavedRecipeIds(new Set((data || []).map((s) => s.recipe_id)));
-      });
+      } catch {}
+    })();
   }, [user?.id]);
 
   // Reset extra recipes when debounced search changes
   useEffect(() => {
     setExtraRecipes([]);
     setHasMore(true);
+    titleOffsetRef.current = null;
   }, [debouncedSearch]);
 
   const formatTime = (minutes: number | null) => {
@@ -127,114 +131,127 @@ export default function DiscoverScreen() {
     if (isRefresh) setRefreshing(true);
     else if (!hasLoadedChefs.current) setLoading(true);
 
-    const { data: following } = await supabase
-      .from('user_follows')
-      .select('following_id')
-      .eq('follower_id', user.id);
-    const followingIds = new Set((following || []).map((f) => f.following_id));
+    try {
+      const { data: following } = await supabase
+        .from('user_follows')
+        .select('following_id')
+        .eq('follower_id', user.id);
+      const followingIds = new Set((following || []).map((f) => f.following_id));
 
-    const { data: profiles } = await supabase
-      .from('user_profiles')
-      .select('id, display_name, avatar_url, last_cooked_at')
-      .neq('id', user.id)
-      .eq('is_hidden', false)
-      .order('display_name');
+      const { data: profiles } = await supabase
+        .from('user_profiles')
+        .select('id, display_name, avatar_url, last_cooked_at')
+        .neq('id', user.id)
+        .eq('is_hidden', false)
+        .order('display_name');
 
-    if (!profiles || profiles.length === 0) {
-      setChefs([]);
+      if (!profiles || profiles.length === 0) {
+        setChefs([]);
+        hasLoadedChefs.current = true;
+        return;
+      }
+
+      const profileIds = profiles.map((p) => p.id);
+
+      const { data: recipeCounts } = await supabase
+        .from('recipes')
+        .select('created_by')
+        .eq('visibility', 'public')
+        .in('created_by', profileIds);
+
+      const recipeCountMap = new Map<string, number>();
+      for (const r of recipeCounts || []) {
+        recipeCountMap.set(r.created_by, (recipeCountMap.get(r.created_by) || 0) + 1);
+      }
+
+      const enriched: Chef[] = profiles.map((p) => ({
+        id: p.id,
+        display_name: p.display_name,
+        avatar_url: p.avatar_url,
+        recipe_count: recipeCountMap.get(p.id) || 0,
+        last_cooked: (p as any).last_cooked_at || null,
+        follow_state: followingIds.has(p.id) ? 'following' as const : 'not_following' as const,
+      }));
+
+      enriched.sort((a, b) => {
+        if (a.follow_state !== b.follow_state) {
+          return a.follow_state === 'not_following' ? -1 : 1;
+        }
+        const aTime = a.last_cooked ? new Date(a.last_cooked).getTime() : 0;
+        const bTime = b.last_cooked ? new Date(b.last_cooked).getTime() : 0;
+        return bTime - aTime;
+      });
+
+      setChefs(enriched);
       hasLoadedChefs.current = true;
+    } catch {
+      // silently fail — chefs list stays in previous state
+    } finally {
       setLoading(false);
       setRefreshing(false);
-      return;
     }
-
-    const profileIds = profiles.map((p) => p.id);
-
-    const { data: recipeCounts } = await supabase
-      .from('recipes')
-      .select('created_by')
-      .eq('visibility', 'public')
-      .in('created_by', profileIds);
-
-    const recipeCountMap = new Map<string, number>();
-    for (const r of recipeCounts || []) {
-      recipeCountMap.set(r.created_by, (recipeCountMap.get(r.created_by) || 0) + 1);
-    }
-
-    const enriched: Chef[] = profiles.map((p) => ({
-      id: p.id,
-      display_name: p.display_name,
-      avatar_url: p.avatar_url,
-      recipe_count: recipeCountMap.get(p.id) || 0,
-      last_cooked: (p as any).last_cooked_at || null,
-      follow_state: followingIds.has(p.id) ? 'following' as const : 'not_following' as const,
-    }));
-
-    enriched.sort((a, b) => {
-      if (a.follow_state !== b.follow_state) {
-        return a.follow_state === 'not_following' ? -1 : 1;
-      }
-      const aTime = a.last_cooked ? new Date(a.last_cooked).getTime() : 0;
-      const bTime = b.last_cooked ? new Date(b.last_cooked).getTime() : 0;
-      return bTime - aTime;
-    });
-
-    setChefs(enriched);
-    hasLoadedChefs.current = true;
-    setLoading(false);
-    setRefreshing(false);
   }, [user]);
 
   const loadMoreRecipes = useCallback(async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
 
-    const totalLoaded = allRecipeData.length;
-
-    let query = supabase
-      .from('recipes')
-      .select(RECIPE_SELECT)
-      .eq('visibility', 'public')
-      .order('published_at', { ascending: false })
-      .range(totalLoaded, totalLoaded + DISCOVER_PAGE_SIZE_LOCAL - 1);
-
-    if (debouncedSearch) {
-      query = query.ilike('title', `%${debouncedSearch}%`);
-    }
-
-    const { data: recipeData } = await query;
-    let moreRecipeData = recipeData || [];
-
-    if (debouncedSearch) {
-      const allLoadedIds = new Set([...allRecipeData.map((r) => r.id), ...moreRecipeData.map((r: any) => r.id)]);
-      const [{ data: ingMatches }, { data: tagMatches }] = await Promise.all([
-        supabase.from('recipe_ingredients').select('recipe_id').ilike('ingredient_name', `%${debouncedSearch}%`),
-        supabase.from('recipe_tags').select('recipe_id').ilike('tag', `%${debouncedSearch}%`),
-      ]);
-      const extraIds = new Set<string>();
-      for (const m of [...(ingMatches || []), ...(tagMatches || [])]) {
-        if (!allLoadedIds.has(m.recipe_id)) extraIds.add(m.recipe_id);
+    try {
+      // Use title-only offset to avoid counting ingredient/tag extra matches
+      if (titleOffsetRef.current === null) {
+        titleOffsetRef.current = baseRecipes?.length ?? 0;
       }
-      if (extraIds.size > 0) {
-        const { data: extraData } = await supabase
-          .from('recipes')
-          .select(RECIPE_SELECT)
-          .eq('visibility', 'public')
-          .in('id', Array.from(extraIds));
-        moreRecipeData = [...moreRecipeData, ...(extraData || [])];
-      }
-    }
+      const titleOffset = titleOffsetRef.current;
 
-    if (moreRecipeData.length === 0) {
+      let query = supabase
+        .from('recipes')
+        .select(RECIPE_SELECT)
+        .eq('visibility', 'public')
+        .order('published_at', { ascending: false })
+        .range(titleOffset, titleOffset + DISCOVER_PAGE_SIZE_LOCAL - 1);
+
+      if (debouncedSearch) {
+        query = query.ilike('title', `%${debouncedSearch}%`);
+      }
+
+      const { data: recipeData } = await query;
+      let moreRecipeData = recipeData || [];
+
+      titleOffsetRef.current += (recipeData || []).length;
+
+      if (debouncedSearch) {
+        const allLoadedIds = new Set([...allRecipeData.map((r) => r.id), ...moreRecipeData.map((r: any) => r.id)]);
+        const [{ data: ingMatches }, { data: tagMatches }] = await Promise.all([
+          supabase.from('recipe_ingredients').select('recipe_id').ilike('ingredient_name', `%${debouncedSearch}%`),
+          supabase.from('recipe_tags').select('recipe_id').ilike('tag', `%${debouncedSearch}%`),
+        ]);
+        const extraIds = new Set<string>();
+        for (const m of [...(ingMatches || []), ...(tagMatches || [])]) {
+          if (!allLoadedIds.has(m.recipe_id)) extraIds.add(m.recipe_id);
+        }
+        if (extraIds.size > 0) {
+          const { data: extraData } = await supabase
+            .from('recipes')
+            .select(RECIPE_SELECT)
+            .eq('visibility', 'public')
+            .in('id', Array.from(extraIds));
+          moreRecipeData = [...moreRecipeData, ...(extraData || [])];
+        }
+      }
+
+      if (moreRecipeData.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      const enriched = await enrichRecipes(moreRecipeData);
+      setExtraRecipes((prev) => [...prev, ...enriched]);
+      setHasMore((recipeData || []).length >= DISCOVER_PAGE_SIZE_LOCAL);
+    } catch {
       setHasMore(false);
+    } finally {
       setLoadingMore(false);
-      return;
     }
-
-    const enriched = await enrichRecipes(moreRecipeData);
-    setExtraRecipes((prev) => [...prev, ...enriched]);
-    setHasMore((recipeData || []).length >= DISCOVER_PAGE_SIZE_LOCAL);
-    setLoadingMore(false);
   }, [allRecipeData.length, debouncedSearch, loadingMore, hasMore]);
 
   const handleFollowPress = useCallback(async (chefId: string) => {
@@ -286,7 +303,7 @@ export default function DiscoverScreen() {
   useFocusEffect(
     useCallback(() => {
       if (activeTab === 'recipes') {
-        queryClientHook.invalidateQueries({ queryKey: queryKeys.discover(debouncedSearch) });
+        queryClientHook.invalidateQueries({ queryKey: queryKeys.discover(user?.id ?? '', debouncedSearch) });
       } else {
         fetchChefs();
       }
@@ -621,7 +638,7 @@ export default function DiscoverScreen() {
           {renderHeader()}
           {renderChefsList()}
         </View>
-      ) : recipesError ? (
+      ) : (recipesError && !recipesFetching) ? (
         <View style={{ flex: 1 }}>
           {renderHeader()}
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>

@@ -50,6 +50,7 @@ async function enrichRecipes(recipeData: any[]): Promise<PublicRecipe[]> {
 }
 
 export async function fetchDiscover(search: string): Promise<PublicRecipe[]> {
+  search = search.trim();
   let query = supabase
     .from('recipes')
     .select(RECIPE_SELECT)
@@ -64,7 +65,7 @@ export async function fetchDiscover(search: string): Promise<PublicRecipe[]> {
   const { data: recipeData } = await query;
   let allRecipeData = recipeData || [];
 
-  if (search && allRecipeData.length >= 0) {
+  if (search) {
     const titleIds = new Set(allRecipeData.map((r: any) => r.id));
     const [{ data: rpcIds }, { data: tagMatches }] = await Promise.all([
       supabase.rpc('search_public_recipes_by_ingredient', { query: search }),
