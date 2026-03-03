@@ -2,7 +2,7 @@
   "expo": {
     "name": "EefEats",
     "slug": "eefeats",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "eefeats",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.eefeats.app",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "infoPlist": {
         "NSCameraUsageDescription": "EefEats uses the camera to scan recipes from photos.",
         "NSPhotoLibraryUsageDescription": "EefEats accesses your photo library to import recipe photos and set your profile picture.",
