@@ -288,7 +288,8 @@ export default function ShoppingListScreen() {
   const unchecked = items.filter((i) => !i.is_checked);
   const checked = items.filter((i) => i.is_checked);
 
-  // Planning view: group unchecked by recipe source
+  // Per-recipe view: group unchecked by recipe source.
+  // Items shared across recipes (merged in the DB) appear under EVERY recipe they belong to.
   function groupByRecipe(itemsList: ShoppingItem[]) {
     const groups: { recipeId: string | null; title: string | null; items: ShoppingItem[] }[] = [];
     const noRecipe: ShoppingItem[] = [];
@@ -298,9 +299,11 @@ export default function ShoppingListScreen() {
       if (!item.recipe_ids || item.recipe_ids.length === 0) {
         noRecipe.push(item);
       } else {
-        const rid = item.recipe_ids[0];
-        if (!recipeMap.has(rid)) recipeMap.set(rid, []);
-        recipeMap.get(rid)!.push(item);
+        // Add to every recipe this item belongs to (handles merged ingredients)
+        for (const rid of item.recipe_ids) {
+          if (!recipeMap.has(rid)) recipeMap.set(rid, []);
+          recipeMap.get(rid)!.push(item);
+        }
       }
     }
 
