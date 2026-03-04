@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { isTourSeen } from './tour';
 import {
   View,
@@ -47,7 +47,7 @@ export default function OnboardingScreen() {
   const checkTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Load profile on mount
-  useState(() => {
+  useEffect(() => {
     if (!user) return;
     supabase
       .from('user_profiles')
@@ -65,7 +65,7 @@ export default function OnboardingScreen() {
         setAvatarUrl(data?.avatar_url || null);
         setLoaded(true);
       });
-  });
+  }, [user?.id]);
 
   const validateFormat = (val: string) => /^[a-z0-9_]{3,30}$/.test(val);
 
@@ -176,7 +176,7 @@ export default function OnboardingScreen() {
     }
 
     const seen = await isTourSeen();
-    router.replace(seen ? '/(tabs)' : '/tour');
+    router.replace((seen ? '/(tabs)' : '/tour') as any);
   }
 
   const initial = displayName ? displayName[0].toUpperCase() : '?';
@@ -207,8 +207,8 @@ export default function OnboardingScreen() {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.title}>Welcome to EefEats</Text>
-          <Text style={styles.subtitle}>Set up your profile to get started</Text>
+          <Text style={styles.title}>One last thing</Text>
+          <Text style={styles.subtitle}>Set up your profile so friends can find you</Text>
 
           {/* Avatar */}
           <TouchableOpacity
