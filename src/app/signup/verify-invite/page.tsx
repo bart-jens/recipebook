@@ -1,12 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { Logo } from "@/components/logo";
 import { verifyOAuthInvite, cancelOAuthSignup } from "./actions";
 
 export default function VerifyInvitePage() {
+  return (
+    <Suspense>
+      <VerifyInvitePageInner />
+    </Suspense>
+  );
+}
+
+function VerifyInvitePageInner() {
+  const searchParams = useSearchParams();
+  const prefillCode = searchParams.get("code") || "";
+
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!prefillCode);
+  useEffect(() => {
+    if (prefillCode) {
+      setLoading(true);
+      setError(null);
+      const formData = new FormData();
+      formData.set("code", prefillCode);
+      verifyOAuthInvite(formData).then((result) => {
+        if (result?.error) {
+          setError(result.error);
+          setLoading(false);
+        }
+        // On success, server action redirects — no cleanup needed
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
@@ -51,7 +80,9 @@ export default function VerifyInvitePage() {
               autoCapitalize="characters"
               autoCorrect="off"
               placeholder="XXXXXXXX"
-              className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 text-[15px] font-light text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
+              defaultValue={prefillCode}
+              disabled={loading}
+              className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 text-[15px] font-light text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none disabled:opacity-50"
             />
           </div>
           {error && (

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { signup } from "./actions";
+import { createClient } from "@/lib/supabase/client";
 
 export function SignupForm() {
   const searchParams = useSearchParams();
@@ -11,6 +12,22 @@ export function SignupForm() {
   const [loading, setLoading] = useState(false);
 
   const defaultCode = searchParams.get("code") || "";
+
+  async function handleOAuth() {
+    setLoading(true);
+    setError(null);
+    const supabase = createClient();
+    const redirectTo = new URL(`${window.location.origin}/auth/callback`);
+    if (defaultCode) redirectTo.searchParams.set("invite_code", defaultCode);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "apple",
+      options: { redirectTo: redirectTo.toString() },
+    });
+    if (error) {
+      setError("Sign in failed. Please try again.");
+      setLoading(false);
+    }
+  }
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
@@ -29,6 +46,29 @@ export function SignupForm() {
           ← Back to sign in
         </Link>
       </div>
+
+      {/* Apple sign-up */}
+      <div className="animate-fade-in-up [animation-delay:150ms] [animation-fill-mode:backwards]">
+        <button
+          type="button"
+          onClick={handleOAuth}
+          disabled={loading}
+          className="flex w-full items-center justify-center gap-3 bg-ink px-4 py-3 text-[14px] font-normal text-white transition-opacity hover:opacity-80 disabled:opacity-50"
+        >
+          <svg width="17" height="20" viewBox="0 0 17 20" fill="none" aria-hidden="true">
+            <path d="M13.769 10.598c-.022-2.268 1.857-3.368 1.94-3.42-1.059-1.548-2.705-1.76-3.289-1.783-1.396-.143-2.733.827-3.443.827-.71 0-1.8-.808-2.963-.785-1.516.023-2.916.884-3.695 2.239C.612 10.252 1.766 14.56 3.55 16.928c.893 1.262 1.95 2.673 3.337 2.622 1.344-.054 1.848-.858 3.471-.858 1.623 0 2.083.858 3.497.827 1.447-.023 2.359-1.285 3.24-2.554.027-.04.054-.08.079-.12a7.7 7.7 0 0 1-2.405-3.247ZM11.337 3.574C12.074 2.682 12.566 1.455 12.43 0c-1.147.048-2.548.777-3.314 1.65-.726.798-1.37 2.076-1.198 3.293 1.28.1 2.586-.65 3.419-1.369Z" fill="currentColor"/>
+          </svg>
+          Sign up with Apple
+        </button>
+      </div>
+
+      {/* Divider */}
+      <div className="animate-fade-in-up flex items-center gap-3 [animation-delay:200ms] [animation-fill-mode:backwards]">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-[11px] font-normal text-ink-muted">or</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
       <form action={handleSubmit} className="space-y-5">
         <input type="hidden" name="code" value={defaultCode} />
         <div className="animate-fade-in-up [animation-delay:300ms] [animation-fill-mode:backwards]">

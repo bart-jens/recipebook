@@ -21,7 +21,11 @@ export async function GET(request: Request) {
           new Date(identity.created_at).getTime() > Date.now() - 120_000;
 
         if (isNewUser) {
-          return NextResponse.redirect(`${origin}/signup/verify-invite?provider=true`);
+          const inviteCode = searchParams.get("invite_code");
+          const verifyUrl = new URL(`${origin}/signup/verify-invite`);
+          verifyUrl.searchParams.set("provider", "true");
+          if (inviteCode) verifyUrl.searchParams.set("code", inviteCode);
+          return NextResponse.redirect(verifyUrl.toString());
         }
       }
 
