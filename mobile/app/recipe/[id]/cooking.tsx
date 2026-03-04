@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -10,6 +10,8 @@ interface Recipe {
   id: string;
   title: string;
   instructions: string | null;
+  visibility: string;
+  source_type: string;
 }
 
 interface Ingredient {
@@ -33,7 +35,7 @@ export default function CookingScreen() {
     if (!id) return;
     async function load() {
       const [{ data: recipeData, error: recipeError }, { data: ingData }] = await Promise.all([
-        supabase.from('recipes').select('id, title, instructions').eq('id', id).single(),
+        supabase.from('recipes').select('id, title, instructions, visibility, source_type').eq('id', id).single(),
         supabase
           .from('recipe_ingredients')
           .select('id, quantity, unit, ingredient_name, notes, order_index')
@@ -53,9 +55,42 @@ export default function CookingScreen() {
 
   const steps = useMemo(() => parseSteps(recipe?.instructions ?? ''), [recipe?.instructions]);
 
+  const nudgePending = useRef(false);
+
   const dismiss = useCallback(() => {
+    if (nudgePending.current) return;
     router.back();
   }, []);
+
+  const showPublishNudge = useCallback(() => {
+    if (!recipe) return;
+    nudgePending.current = true;
+    Alert.alert(
+      'Share with the community?',
+      'This recipe is private. Publish it so your followers can see your cooking activity.',
+      [
+        {
+          text: 'Publish',
+          onPress: async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+            await supabase
+              .from('recipes')
+              .update({ visibility: 'public', published_at: new Date().toISOString() })
+              .eq('id', recipe.id)
+              .eq('created_by', user.id);
+            nudgePending.current = false;
+            router.back();
+          },
+        },
+        {
+          text: 'Not now',
+          style: 'cancel',
+          onPress: () => { nudgePending.current = false; router.back(); },
+        },
+      ],
+    );
+  }, [recipe]);
 
   const handleRatingSubmit = useCallback(async (rating: number, notes: string) => {
     if (!recipe || rating === 0) return;
@@ -71,7 +106,12 @@ export default function CookingScreen() {
     if (error) {
       Alert.alert('Could not save rating', 'Your cook was logged but the rating could not be saved. Try adding it from the recipe detail.');
     }
-  }, [recipe]);
+    const isPrivateManual = recipe.visibility === 'private' && recipe.source_type === 'manual';
+    if (isPrivateManual) {
+      showPublishNudge();
+    }
+    // If not private+manual, CookingMode will call onDismiss after this resolves
+  }, [recipe, showPublishNudge]);
 
   if (loading) {
     return (

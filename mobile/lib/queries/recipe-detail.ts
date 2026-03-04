@@ -101,8 +101,9 @@ export async function fetchRecipeDetail(
       .order('cooked_date', { ascending: false }),
     supabase
       .from('recipe_images')
-      .select('id, storage_path, image_type')
+      .select('id, storage_path, image_type, is_primary')
       .eq('recipe_id', recipeId)
+      .order('is_primary', { ascending: false })
       .order('created_at'),
   ]);
 

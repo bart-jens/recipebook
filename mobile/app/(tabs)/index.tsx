@@ -18,6 +18,7 @@ import { router, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { formatTime, formatTimeAgo } from '@/lib/format';
 import { useAuth } from '@/contexts/auth';
 import { colors, spacing, fontFamily, typography, shadows, radii } from '@/lib/theme';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
@@ -129,17 +130,6 @@ export default function HomeScreen() {
     );
   }
 
-  const formatTimeAgo = (timestamp: string) => {
-    const diff = Date.now() - new Date(timestamp).getTime();
-    const minutes = Math.floor(diff / 60000);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `${days}d ago`;
-    return `${Math.floor(days / 7)}w ago`;
-  };
-
   const actionVerb = (type: string) => {
     switch (type) {
       case 'cooked': return ' cooked ';
@@ -149,14 +139,6 @@ export default function HomeScreen() {
       case 'rated': return ' rated ';
       default: return ' ';
     }
-  };
-
-  const formatTime = (minutes: number | null) => {
-    if (!minutes) return null;
-    if (minutes < 60) return `${minutes} min`;
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return m > 0 ? `${h}h ${m}m` : `${h}h`;
   };
 
   const getTag = (recipe: SuggestionRecipe) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   toggleItemChecked,
   addManualItem,
@@ -9,6 +9,50 @@ import {
   clearAllItems,
   updateItemQuantity,
 } from "./actions";
+
+type GroceryView = "per-recipe" | "alphabetical";
+
+interface MergedItem {
+  key: string;
+  ingredient_name: string;
+  quantity: number | null;
+  unit: string | null;
+  recipeIds: string[];
+}
+
+function normalizeKey(name: string, unit: string | null) {
+  return `${name.toLowerCase().trim()}::${(unit || "").toLowerCase().trim()}`;
+}
+
+function mergeByIngredient(
+  items: ShoppingItem[],
+  recipeTitles: Record<string, string>,
+): MergedItem[] {
+  const map = new Map<string, MergedItem>();
+  for (const item of items) {
+    const key = normalizeKey(item.ingredient_name, item.unit);
+    if (map.has(key)) {
+      const existing = map.get(key)!;
+      if (existing.quantity !== null && item.quantity !== null) {
+        existing.quantity += item.quantity;
+      }
+      for (const rid of item.recipe_ids) {
+        if (!existing.recipeIds.includes(rid)) existing.recipeIds.push(rid);
+      }
+    } else {
+      map.set(key, {
+        key,
+        ingredient_name: item.ingredient_name,
+        quantity: item.quantity,
+        unit: item.unit,
+        recipeIds: [...item.recipe_ids],
+      });
+    }
+  }
+  return Array.from(map.values()).sort((a, b) =>
+    a.ingredient_name.localeCompare(b.ingredient_name),
+  );
+}
 
 interface ShoppingItem {
   id: string;
@@ -33,7 +77,18 @@ export function ShoppingListView({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editQty, setEditQty] = useState("");
   const [checkedExpanded, setCheckedExpanded] = useState(false);
+  const [view, setView] = useState<GroceryView>("per-recipe");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("grocery_view") as GroceryView | null;
+    if (saved === "per-recipe" || saved === "alphabetical") setView(saved);
+  }, []);
+
+  function handleViewChange(v: GroceryView) {
+    setView(v);
+    localStorage.setItem("grocery_view", v);
+  }
 
   const unchecked = items.filter((i) => !i.is_checked);
   const checked = items.filter((i) => i.is_checked);
@@ -114,12 +169,6 @@ export function ShoppingListView({
       prev.map((i) => (i.id === itemId ? { ...i, quantity: qty } : i))
     );
     await updateItemQuantity(itemId, qty);
-  }
-
-  function formatQuantity(qty: number | null) {
-    if (qty === null) return "";
-    if (qty === Math.floor(qty)) return String(qty);
-    return qty.toFixed(1);
   }
 
   function renderUncheckedItem(item: ShoppingItem) {
@@ -230,6 +279,38 @@ export function ShoppingListView({
   }
 
   const groups = groupByRecipe(unchecked);
+  const merged = mergeByIngredient(unchecked, recipeTitles);
+
+  function formatQuantity(qty: number | null) {
+    if (qty === null) return "";
+    if (qty === Math.floor(qty)) return String(qty);
+    return qty.toFixed(1);
+  }
+
+  function renderMergedItem(item: MergedItem) {
+    const attribution = item.recipeIds
+      .map((rid) => recipeTitles[rid])
+      .filter(Boolean)
+      .join(" · ");
+    return (
+      <li
+        key={item.key}
+        className="flex items-start gap-2.5 py-2 border-b border-dotted border-border"
+      >
+        <div className="flex-1 min-w-0">
+          <span className="text-[14px] font-normal text-ink">{item.ingredient_name}</span>
+          {attribution && (
+            <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mt-0.5 truncate">{attribution}</p>
+          )}
+        </div>
+        {(item.quantity !== null || item.unit) && (
+          <span className="shrink-0 text-[12px] font-normal tracking-[0.02em] text-ink-secondary">
+            {formatQuantity(item.quantity)} {item.unit || ""}
+          </span>
+        )}
+      </li>
+    );
+  }
 
   return (
     <div className="max-w-2xl">
@@ -255,6 +336,25 @@ export function ShoppingListView({
         </div>
       </div>
 
+      {/* View toggle */}
+      {unchecked.length > 0 && (
+        <div className="mb-5 flex gap-0 border border-border">
+          {(["per-recipe", "alphabetical"] as GroceryView[]).map((v) => (
+            <button
+              key={v}
+              onClick={() => handleViewChange(v)}
+              className={`flex-1 py-1.5 text-[11px] font-normal tracking-[0.02em] transition-colors ${
+                view === v
+                  ? "bg-ink text-white"
+                  : "text-ink-muted hover:text-ink"
+              }`}
+            >
+              {v === "per-recipe" ? "Per recipe" : "Alphabetical"}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Add item input — bottom-border style */}
       <form onSubmit={handleAdd} className="mb-8">
         <input
@@ -277,23 +377,29 @@ export function ShoppingListView({
       ) : (
         <>
           {/* Grouped unchecked items */}
-          {groups.map((group, gi) => (
-            <div key={group.recipeId ?? `manual-${gi}`} className="mb-6">
-              {group.title && (
-                <h2 className="text-[20px] font-normal text-ink mb-1">
-                  {group.title}
-                </h2>
-              )}
-              {!group.title && group.recipeId === null && groups.length > 1 && (
-                <h2 className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-1">
-                  Manual
-                </h2>
-              )}
-              <ul className="list-none">
-                {group.items.map(renderUncheckedItem)}
-              </ul>
-            </div>
-          ))}
+          {view === "alphabetical" ? (
+            <ul className="list-none mb-6">
+              {merged.map(renderMergedItem)}
+            </ul>
+          ) : (
+            groups.map((group, gi) => (
+              <div key={group.recipeId ?? `manual-${gi}`} className="mb-6">
+                {group.title && (
+                  <h2 className="text-[20px] font-normal text-ink mb-1">
+                    {group.title}
+                  </h2>
+                )}
+                {!group.title && group.recipeId === null && groups.length > 1 && (
+                  <h2 className="text-[11px] font-normal tracking-[0.02em] text-ink-muted mb-1">
+                    Manual
+                  </h2>
+                )}
+                <ul className="list-none">
+                  {group.items.map(renderUncheckedItem)}
+                </ul>
+              </div>
+            ))
+          )}
 
           {/* All done message */}
           {unchecked.length === 0 && checked.length > 0 && (

@@ -152,6 +152,7 @@ export default function RecipeDetailScreen() {
   const [photos, setPhotos] = useState<{ id: string; url: string; imageType: string }[]>([]);
   const [showCookForm, setShowCookForm] = useState(false);
   const [cookNotes, setCookNotes] = useState('');
+  const [cookDate, setCookDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [ratingStars, setRatingStars] = useState(0);
   const [ratingNotes, setRatingNotes] = useState('');
@@ -313,7 +314,7 @@ export default function RecipeDetailScreen() {
       .insert({
         user_id: user.id,
         recipe_id: recipe.id,
-        cooked_at: new Date().toISOString(),
+        cooked_at: cookDate ? new Date(cookDate).toISOString() : new Date().toISOString(),
         notes: cookNotes.trim() || null,
       })
       .select()
@@ -325,6 +326,7 @@ export default function RecipeDetailScreen() {
       if (cookEntries.length === 0) setShowCelebration(true);
       setCookEntries([data, ...cookEntries]);
       setCookNotes('');
+      setCookDate(new Date().toISOString().split('T')[0]);
       setShowCookForm(false);
       const isPrivateManual = recipe.visibility === 'private' && (recipe.source_type === 'manual' || recipe.source_type === 'fork');
       if (isPrivateManual) setShowPublishNudge(true);
@@ -1382,7 +1384,17 @@ export default function RecipeDetailScreen() {
                 </View>
               ) : (
                 <View style={styles.cookForm}>
-                  <Text style={styles.cookFormLabel}>Notes (optional)</Text>
+                  <Text style={styles.cookFormLabel}>Date</Text>
+                  <TextInput
+                    style={styles.cookDateInput}
+                    value={cookDate}
+                    onChangeText={setCookDate}
+                    placeholder="YYYY-MM-DD"
+                    placeholderTextColor={colors.inkMuted}
+                    autoCapitalize="none"
+                    keyboardType="numbers-and-punctuation"
+                  />
+                  <Text style={[styles.cookFormLabel, { marginTop: spacing.md }]}>Notes (optional)</Text>
                   <TextInput
                     style={styles.cookNotesInput}
                     placeholder="How did it turn out?"
@@ -1399,6 +1411,7 @@ export default function RecipeDetailScreen() {
                       onPress={() => {
                         setShowCookForm(false);
                         setCookNotes('');
+                        setCookDate(new Date().toISOString().split('T')[0]);
                       }}
                     />
                     <Button
@@ -2045,6 +2058,13 @@ const styles = StyleSheet.create({
     ...typography.label,
     color: colors.ink,
     marginBottom: spacing.sm,
+  },
+  cookDateInput: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.sm,
+    padding: spacing.md,
+    ...typography.bodySmall,
+    color: colors.ink,
   },
   cookNotesInput: {
     backgroundColor: colors.surface,
