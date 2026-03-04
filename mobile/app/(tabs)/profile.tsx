@@ -217,18 +217,16 @@ export default function ProfileScreen() {
           {profile?.bio && (
             <Text style={styles.profileBio}>{profile.bio}</Text>
           )}
+          <Pressable style={styles.editProfileButton} onPress={() => router.push('/profile/edit')}>
+            <Text style={styles.editProfileButtonText}>Edit profile</Text>
+          </Pressable>
         </View>
       </View>
 
-      {/* Quick Actions */}
-      <View style={styles.quickActions}>
-        <Pressable style={styles.quickActionButton} onPress={() => router.push('/invites')}>
-          <Text style={styles.quickActionText}>Invite Friends</Text>
-        </Pressable>
-        <Pressable style={styles.quickActionButton} onPress={() => router.push('/(tabs)/shopping-list')}>
-          <Text style={styles.quickActionText}>Grocery List</Text>
-        </Pressable>
-      </View>
+      {/* Invite CTA */}
+      <Pressable style={styles.inviteButton} onPress={() => router.push('/invites')}>
+        <Text style={styles.inviteButtonText}>Invite Friends</Text>
+      </Pressable>
 
       {/* Stats */}
       <View style={styles.statsContainer}>
@@ -364,9 +362,6 @@ export default function ProfileScreen() {
 
       {/* Actions */}
       <View style={styles.actions}>
-        <Pressable style={styles.actionButton} onPress={() => router.push('/profile/edit')}>
-          <Text style={styles.actionButtonText}>Edit Profile</Text>
-        </Pressable>
         <Pressable style={styles.actionButton} onPress={() => setFeedbackVisible(true)}>
           <Text style={styles.actionButtonText}>Send Feedback</Text>
         </Pressable>
@@ -528,23 +523,32 @@ const styles = StyleSheet.create({
     color: colors.bg,
   },
 
-  // Quick Actions
-  quickActions: {
-    flexDirection: 'row',
-    gap: 8,
+  // Edit Profile (inline in header)
+  editProfileButton: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+  },
+  editProfileButtonText: {
+    ...typography.metaSmall,
+    color: colors.inkSecondary,
+  },
+
+  // Invite CTA
+  inviteButton: {
     marginHorizontal: 20,
     marginTop: 16,
-  },
-  quickActionButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.ink,
-    paddingVertical: 12,
+    backgroundColor: colors.ink,
+    paddingVertical: 14,
     alignItems: 'center',
   },
-  quickActionText: {
-    ...typography.metaSmall,
-    color: colors.ink,
+  inviteButtonText: {
+    ...typography.label,
+    color: colors.bg,
+    letterSpacing: 0.3,
   },
 
   // Nav Tabs
