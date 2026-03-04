@@ -282,7 +282,7 @@ export default function HomeScreen() {
             <Text style={styles.promptTitle}>Follow friends to see what they're cooking</Text>
             <Pressable
               style={styles.promptButton}
-              onPress={() => router.push('/(tabs)/discover')}
+              onPress={() => router.push({ pathname: '/(tabs)/discover', params: { tab: 'chefs' } })}
             >
               <Text style={styles.promptButtonText}>Find people to follow</Text>
             </Pressable>
