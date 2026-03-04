@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AuthNav } from "./components/auth-nav";
 
+const APP_STORE_URL = process.env.NEXT_PUBLIC_APP_STORE_URL || "https://apps.apple.com";
+
 export default async function AuthenticatedLayout({
   children,
 }: {
@@ -41,9 +43,19 @@ export default async function AuthenticatedLayout({
       <main className="max-w-[480px] mx-auto">{children}</main>
       <footer className="max-w-[480px] mx-auto px-5 py-8">
         <hr className="rule-thin border-0 mb-4" />
-        <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
-          EefEats
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">
+            EefEats
+          </p>
+          <a
+            href={APP_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-normal tracking-[0.02em] text-ink-muted transition-colors hover:text-ink"
+          >
+            Get the app
+          </a>
+        </div>
       </footer>
     </div>
   );

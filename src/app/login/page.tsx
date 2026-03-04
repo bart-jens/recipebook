@@ -7,6 +7,8 @@ import { login } from "./actions";
 import { Logo } from "@/components/logo";
 import { createClient } from "@/lib/supabase/client";
 
+const APP_STORE_URL = process.env.NEXT_PUBLIC_APP_STORE_URL || "https://apps.apple.com";
+
 export default function LoginPage() {
   return (
     <Suspense>
@@ -154,6 +156,21 @@ function LoginPageInner() {
             Sign up
           </Link>
         </p>
+
+        {/* App nudge */}
+        <div className="animate-fade-in-up border-t border-border pt-6 text-center [animation-delay:600ms] [animation-fill-mode:backwards]">
+          <p className="mb-2 text-[11px] font-normal tracking-[0.02em] text-ink-muted">
+            Better in the kitchen
+          </p>
+          <a
+            href={APP_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[12px] font-light text-ink-secondary transition-colors hover:text-ink"
+          >
+            Download on the App Store
+          </a>
+        </div>
       </div>
     </div>
   );
