@@ -144,8 +144,14 @@ export default function InvitesScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.subtitle}>
-            EefEats is invite-only. Share your link with friends to let them join.
+            EefEats is invite-only. You can share your personal link with anyone, or send a direct invite to a specific email address.
           </Text>
+        </View>
+
+        {/* Method 1: Share link */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Share your invite link</Text>
+          <Text style={styles.sectionHint}>Anyone with this link can create an account.</Text>
           <TouchableOpacity
             style={[styles.copyLinkButton, !inviteToken && styles.copyLinkButtonDisabled]}
             onPress={handleCopyInviteLink}
@@ -164,25 +170,30 @@ export default function InvitesScreen() {
           )}
         </View>
 
-        <View style={styles.formRow}>
-          <TextInput
-            style={styles.emailInput}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="friend@email.com"
-            placeholderTextColor={colors.inkMuted}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoCorrect={false}
-          />
-          <Button
-            title={creating ? '...' : 'Invite'}
-            variant="primary"
-            size="sm"
-            onPress={handleCreate}
-            disabled={creating || !email.trim()}
-            loading={creating}
-          />
+        {/* Method 2: Invite by email */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Invite by email</Text>
+          <Text style={styles.sectionHint}>They'll receive an email with a personal invite code.</Text>
+          <View style={styles.formRow}>
+            <TextInput
+              style={styles.emailInput}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="friend@email.com"
+              placeholderTextColor={colors.inkMuted}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoCorrect={false}
+            />
+            <Button
+              title={creating ? '...' : 'Invite'}
+              variant="primary"
+              size="sm"
+              onPress={handleCreate}
+              disabled={creating || !email.trim()}
+              loading={creating}
+            />
+          </View>
         </View>
 
         {lastCode && (
@@ -239,8 +250,28 @@ export default function InvitesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  header: { padding: spacing.xl, paddingBottom: spacing.md },
+  header: { paddingHorizontal: spacing.xl, paddingTop: spacing.xl, paddingBottom: spacing.sm },
   subtitle: { fontFamily: fontFamily.sans, fontSize: 14, lineHeight: 21, color: colors.inkSecondary },
+
+  section: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  sectionLabel: {
+    fontFamily: fontFamily.sans,
+    fontSize: 13,
+    color: colors.ink,
+    marginBottom: spacing.xs,
+  },
+  sectionHint: {
+    fontFamily: fontFamily.sans,
+    fontSize: 12,
+    color: colors.inkMuted,
+    marginBottom: spacing.lg,
+  },
 
   copyLinkButton: {
     marginTop: spacing.lg,
@@ -258,9 +289,7 @@ const styles = StyleSheet.create({
 
   formRow: {
     flexDirection: 'row',
-    paddingHorizontal: spacing.xl,
     gap: spacing.sm,
-    marginBottom: spacing.lg,
     alignItems: 'flex-end',
   },
   emailInput: {

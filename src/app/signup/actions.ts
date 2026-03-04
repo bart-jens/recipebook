@@ -13,19 +13,18 @@ export async function signup(formData: FormData) {
   const password = formData.get("password") as string;
   const code = (formData.get("code") as string)?.trim().toUpperCase() || "";
 
-  // If an invite code is provided, validate it
-  let invite: { id: string; used_at: string | null } | null = null;
-  if (code) {
-    const { data } = await adminClient
-      .from("invites")
-      .select("id, used_at")
-      .eq("code", code)
-      .single();
+  // Invite code is required — EefEats is invite-only
+  if (!code) return { error: "An invite code is required to join EefEats." };
 
-    if (!data) return { error: "Invalid invite code" };
-    if (data.used_at) return { error: "This invite code has already been used" };
-    invite = data;
-  }
+  const { data } = await adminClient
+    .from("invites")
+    .select("id, used_at")
+    .eq("code", code)
+    .single();
+
+  if (!data) return { error: "Invalid invite code" };
+  if (data.used_at) return { error: "This invite code has already been used" };
+  const invite = data;
 
   // Create user with admin API — auto-confirms email
   const { error: createError } =

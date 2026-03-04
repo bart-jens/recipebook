@@ -283,6 +283,14 @@ export default function OnboardingScreen() {
               loading={saving}
             />
           </View>
+
+          <TouchableOpacity
+            style={styles.signOutLink}
+            onPress={() => supabase.auth.signOut()}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.signOutText}>Sign out</Text>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </>
@@ -317,4 +325,6 @@ const styles = StyleSheet.create({
 
   error: { fontFamily: fontFamily.sans, fontSize: 13, color: colors.danger, marginTop: spacing.md, textAlign: 'center' },
   buttonContainer: { marginTop: spacing.xxl },
+  signOutLink: { alignSelf: 'center', marginTop: spacing.xl, paddingBottom: spacing.md },
+  signOutText: { fontFamily: fontFamily.sans, fontSize: 12, color: colors.inkMuted },
 });
