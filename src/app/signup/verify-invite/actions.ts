@@ -19,8 +19,8 @@ export async function verifyOAuthInvite(formData: FormData) {
     redirect("/login");
   }
 
-  // Validate invite code
-  const { data: invite } = await supabase
+  // Validate invite code (admin client — user client has no SELECT access to invites)
+  const { data: invite } = await adminClient
     .from("invites")
     .select("id, used_at")
     .eq("code", code)

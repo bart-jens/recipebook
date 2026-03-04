@@ -16,7 +16,7 @@ export async function signup(formData: FormData) {
   // If an invite code is provided, validate it
   let invite: { id: string; used_at: string | null } | null = null;
   if (code) {
-    const { data } = await supabase
+    const { data } = await adminClient
       .from("invites")
       .select("id, used_at")
       .eq("code", code)
