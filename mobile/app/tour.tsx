@@ -81,20 +81,20 @@ const SLIDES = [
   {
     key: 'welcome',
     Visual: SlideVisualWelcome,
-    title: 'Welcome to EefEats',
-    subtitle: 'Your personal recipe book — everything you cook, all in one place.',
+    title: 'Everything in one place',
+    subtitle: 'Your recipes, organized the way you want — always ready when you need them.',
   },
   {
     key: 'import',
     Visual: SlideVisualImport,
-    title: 'Import anything',
-    subtitle: 'Grab a recipe from any website, scan a cookbook page, or type it in. It\'s yours.',
+    title: 'Import from anywhere',
+    subtitle: 'Grab a recipe from any website, scan a cookbook page, or write one yourself.',
   },
   {
     key: 'social',
     Visual: SlideVisualSocial,
-    title: 'See what friends cook',
-    subtitle: 'Follow people, rate dishes, and share what\'s in your kitchen.',
+    title: 'Cook with friends',
+    subtitle: 'Follow people, see what they\'re making, and share what\'s in your kitchen.',
   },
 ];
 

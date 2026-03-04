@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   inviteInfo: { flex: 1 },
-  inviteEmail: { fontFamily: fontFamily.sans, fontSize: 14, fontWeight: '500', color: colors.ink },
+  inviteEmail: { ...typography.label, color: colors.ink },
   inviteCode: { ...typography.meta, color: colors.inkMuted, marginTop: 2 },
 
   statusText: {

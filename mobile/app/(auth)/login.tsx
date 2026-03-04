@@ -66,7 +66,7 @@ export default function LoginScreen() {
     >
       <View style={styles.inner}>
         <Logo height={40} />
-        <Text style={styles.subtitle}>Sign in to your recipe collection</Text>
+        <Text style={styles.subtitle}>Welcome back. Your recipes are waiting.</Text>
 
         <View style={styles.socialButtons}>
           {/* Google sign-in hidden until custom domain is configured — re-enable by uncommenting */}
@@ -139,7 +139,7 @@ export default function LoginScreen() {
 
         <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
           <Text style={styles.linkText}>
-            Have an invite code? <Text style={styles.linkAccent}>Sign up</Text>
+            New to EefEats? <Text style={styles.linkAccent}>See how to join</Text>
           </Text>
         </TouchableOpacity>
       </View>
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    ...typography.metaSmall,
+    ...typography.label,
     color: colors.white,
   },
   linkText: {

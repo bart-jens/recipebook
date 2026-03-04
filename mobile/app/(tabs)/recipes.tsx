@@ -526,28 +526,34 @@ export default function RecipesScreen() {
       {showImportMenu && (
         <Pressable style={styles.modalOverlay} onPress={() => setShowImportMenu(false)}>
           <View style={styles.importMenu}>
-            <Text style={styles.importMenuTitle}>Import Recipe</Text>
+            <Text style={styles.importMenuTitle}>Import a recipe</Text>
             <TouchableOpacity
               style={styles.importOption}
               activeOpacity={0.7}
               onPress={() => { setShowImportMenu(false); router.push('/recipe/import-url'); }}
             >
-              <FontAwesome name="link" size={18} color={colors.accent} />
-              <View style={styles.importOptionText}>
-                <Text style={styles.importOptionTitle}>From Link</Text>
-                <Text style={styles.importOptionDesc}>Paste a link from any recipe site or Instagram</Text>
+              <View style={styles.importOptionIcon}>
+                <FontAwesome name="link" size={18} color={colors.accent} />
               </View>
+              <View style={styles.importOptionText}>
+                <Text style={styles.importOptionTitle}>From a website or Instagram</Text>
+                <Text style={styles.importOptionDesc}>Paste any recipe link to import instantly</Text>
+              </View>
+              <FontAwesome name="chevron-right" size={11} color={colors.inkMuted} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.importOption}
               activeOpacity={0.7}
               onPress={() => { setShowImportMenu(false); router.push('/recipe/import-photo'); }}
             >
-              <FontAwesome name="camera" size={18} color={colors.accent} />
-              <View style={styles.importOptionText}>
-                <Text style={styles.importOptionTitle}>From Photo</Text>
-                <Text style={styles.importOptionDesc}>Scan a photo of a recipe with AI</Text>
+              <View style={styles.importOptionIcon}>
+                <FontAwesome name="camera" size={18} color={colors.accent} />
               </View>
+              <View style={styles.importOptionText}>
+                <Text style={styles.importOptionTitle}>From a photo or cookbook</Text>
+                <Text style={styles.importOptionDesc}>Scan any cookbook page — AI extracts the full recipe</Text>
+              </View>
+              <FontAwesome name="chevron-right" size={11} color={colors.inkMuted} />
             </TouchableOpacity>
           </View>
         </Pressable>
@@ -931,6 +937,16 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     marginBottom: spacing.sm,
     gap: spacing.lg,
+  },
+  importOptionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.accentWash,
+    borderWidth: 1,
+    borderColor: colors.accentWashBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   importOptionText: { flex: 1 },
   importOptionTitle: {

@@ -145,6 +145,8 @@ export default function HomeScreen() {
       case 'cooked': return ' cooked ';
       case 'created': return ' published ';
       case 'favorited': return ' favorited ';
+      case 'saved': return ' saved ';
+      case 'rated': return ' rated ';
       default: return ' ';
     }
   };
@@ -214,9 +216,9 @@ export default function HomeScreen() {
           <View style={styles.feedEmptyIconWrap}>
             <FontAwesome name="cutlery" size={28} color={colors.accentWashIcon} />
           </View>
-          <Text style={styles.feedEmptyTitle}>Nothing here yet</Text>
+          <Text style={styles.feedEmptyTitle}>Your kitchen awaits</Text>
           <Text style={styles.feedEmptySubtitle}>
-            Add your first recipe or follow friends to see what they're cooking.
+            Add your first recipe, or follow friends to see what they're cooking.
           </Text>
           <TouchableOpacity
             style={styles.feedEmptyPrimary}
@@ -295,12 +297,12 @@ export default function HomeScreen() {
         <View style={styles.promptSection}>
           <Text style={styles.tickerTitle}>Activity</Text>
           <View style={styles.promptCard}>
-            <Text style={styles.promptTitle}>Follow some chefs to see what they are cooking</Text>
+            <Text style={styles.promptTitle}>Follow friends to see what they're cooking</Text>
             <Pressable
               style={styles.promptButton}
               onPress={() => router.push('/(tabs)/discover')}
             >
-              <Text style={styles.promptButtonText}>Discover Chefs</Text>
+              <Text style={styles.promptButtonText}>Find people to follow</Text>
             </Pressable>
           </View>
         </View>
@@ -308,7 +310,7 @@ export default function HomeScreen() {
         <View style={styles.promptSection}>
           <Text style={styles.tickerTitle}>Activity</Text>
           <View style={styles.promptCard}>
-            <Text style={styles.promptTitle}>Your chefs have not been cooking lately</Text>
+            <Text style={styles.promptTitle}>Nothing new from the people you follow</Text>
             <Pressable
               style={styles.promptButton}
               onPress={() => router.push('/(tabs)/recipes')}
@@ -410,28 +412,34 @@ export default function HomeScreen() {
       {showImportMenu && (
         <Pressable style={styles.modalOverlay} onPress={() => setShowImportMenu(false)}>
           <View style={styles.importMenu}>
-            <Text style={styles.importMenuTitle}>Import Recipe</Text>
+            <Text style={styles.importMenuTitle}>Import a recipe</Text>
             <TouchableOpacity
               style={styles.importOption}
               activeOpacity={0.7}
               onPress={() => { setShowImportMenu(false); router.push('/recipe/import-url'); }}
             >
-              <FontAwesome name="link" size={18} color={colors.accent} />
-              <View style={styles.importOptionText}>
-                <Text style={styles.importOptionTitle}>From Link</Text>
-                <Text style={styles.importOptionDesc}>Paste a link from any recipe site or Instagram</Text>
+              <View style={styles.importOptionIcon}>
+                <FontAwesome name="link" size={18} color={colors.accent} />
               </View>
+              <View style={styles.importOptionText}>
+                <Text style={styles.importOptionTitle}>From a website or Instagram</Text>
+                <Text style={styles.importOptionDesc}>Paste any recipe link to import instantly</Text>
+              </View>
+              <FontAwesome name="chevron-right" size={11} color={colors.inkMuted} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.importOption}
               activeOpacity={0.7}
               onPress={() => { setShowImportMenu(false); router.push('/recipe/import-photo'); }}
             >
-              <FontAwesome name="camera" size={18} color={colors.accent} />
-              <View style={styles.importOptionText}>
-                <Text style={styles.importOptionTitle}>From Photo</Text>
-                <Text style={styles.importOptionDesc}>Scan a photo of a recipe with AI</Text>
+              <View style={styles.importOptionIcon}>
+                <FontAwesome name="camera" size={18} color={colors.accent} />
               </View>
+              <View style={styles.importOptionText}>
+                <Text style={styles.importOptionTitle}>From a photo or cookbook</Text>
+                <Text style={styles.importOptionDesc}>Scan any cookbook page — AI extracts the full recipe</Text>
+              </View>
+              <FontAwesome name="chevron-right" size={11} color={colors.inkMuted} />
             </TouchableOpacity>
           </View>
         </Pressable>
@@ -572,6 +580,16 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     marginBottom: spacing.sm,
     gap: spacing.lg,
+  },
+  importOptionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.accentWash,
+    borderWidth: 1,
+    borderColor: colors.accentWashBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   importOptionText: { flex: 1 },
   importOptionTitle: {

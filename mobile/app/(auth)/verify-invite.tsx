@@ -68,7 +68,7 @@ export default function VerifyInviteScreen() {
         <Logo height={40} />
         <Text style={styles.heading}>One more step</Text>
         <Text style={styles.subtitle}>
-          EefEats is invite-only. Enter your invite code to continue.
+          EefEats is invite-only. Enter the invite code that was shared with you to continue.
         </Text>
 
         <View style={styles.form}>
