@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { InviteForm } from "./invite-form";
+import { InviteLinkSection } from "./invite-link-section";
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://eefeats.com";
 
 export default async function InvitesPage() {
   const supabase = createClient();
@@ -9,11 +12,22 @@ export default async function InvitesPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: invites } = await supabase
-    .from("invites")
-    .select("*")
-    .eq("invited_by", user.id)
-    .order("created_at", { ascending: false });
+  const [{ data: invites }, { data: tokenRow }] = await Promise.all([
+    supabase
+      .from("invites")
+      .select("*")
+      .eq("invited_by", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("user_invite_tokens")
+      .select("invite_token")
+      .eq("user_id", user.id)
+      .single(),
+  ]);
+
+  const inviteLink = tokenRow?.invite_token
+    ? `${SITE_URL}/i/${tokenRow.invite_token}`
+    : null;
 
   return (
     <div className="max-w-2xl">
@@ -21,6 +35,8 @@ export default async function InvitesPage() {
       <p className="mb-6 text-[15px] font-light text-ink-secondary">
         EefEats is invite-only. Share codes with friends to let them join.
       </p>
+
+      {inviteLink && <InviteLinkSection inviteLink={inviteLink} />}
 
       <div className="mb-8">
         <InviteForm />
