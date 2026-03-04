@@ -149,7 +149,7 @@ function LoginPageInner() {
           </div>
         </form>
         <p className="animate-fade-in-up text-center text-[13px] font-light text-ink-secondary [animation-delay:500ms] [animation-fill-mode:backwards]">
-          New here?{" "}
+          Got an invite?{" "}
           <Link href="/signup" className="text-accent hover:underline">
             Sign up
           </Link>
