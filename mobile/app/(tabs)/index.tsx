@@ -208,6 +208,33 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {/* Brand-new user: no recipes, no feed — show rich empty state */}
+      {suggestions.length === 0 && feedItems.length === 0 && !isLoading && (
+        <View style={styles.feedEmpty}>
+          <View style={styles.feedEmptyIconWrap}>
+            <FontAwesome name="cutlery" size={28} color={colors.accentWashIcon} />
+          </View>
+          <Text style={styles.feedEmptyTitle}>Nothing here yet</Text>
+          <Text style={styles.feedEmptySubtitle}>
+            Add your first recipe or follow friends to see what they're cooking.
+          </Text>
+          <TouchableOpacity
+            style={styles.feedEmptyPrimary}
+            onPress={() => router.push('/(tabs)/recipes?import=true')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.feedEmptyPrimaryText}>Add a recipe</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.feedEmptySecondary}
+            onPress={() => router.push('/(tabs)/discover')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.feedEmptySecondaryText}>Discover recipes</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Recipe Carousel */}
       {suggestions.length > 0 && (
         <View>
@@ -417,6 +444,66 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
+  },
+
+  // Feed empty state (new user)
+  feedEmpty: {
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.xxxl,
+    marginBottom: spacing.xxl,
+    backgroundColor: colors.accentWash,
+    borderWidth: 1,
+    borderColor: colors.accentWashBorder,
+    padding: spacing.xxl,
+    alignItems: 'center',
+  },
+  feedEmptyIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.accentWashBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
+  },
+  feedEmptyTitle: {
+    ...typography.subheading,
+    fontSize: 20,
+    color: colors.ink,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  feedEmptySubtitle: {
+    ...typography.bodySmall,
+    color: colors.inkSecondary,
+    textAlign: 'center',
+    maxWidth: 260,
+    marginBottom: spacing.xxl,
+  },
+  feedEmptyPrimary: {
+    width: '100%',
+    backgroundColor: colors.ink,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  feedEmptyPrimaryText: {
+    fontFamily: fontFamily.sans,
+    fontSize: 14,
+    color: colors.white,
+    lineHeight: 20,
+    letterSpacing: 0.02 * 14,
+  },
+  feedEmptySecondary: {
+    paddingVertical: spacing.sm,
+  },
+  feedEmptySecondaryText: {
+    fontFamily: fontFamily.sans,
+    fontSize: 14,
+    color: colors.accent,
+    lineHeight: 20,
   },
 
   // Quick actions

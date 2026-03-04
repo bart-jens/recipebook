@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Share,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { Stack, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { colors, spacing, fontFamily, typography } from '@/lib/theme';
@@ -25,12 +26,16 @@ interface Invite {
   created_at: string;
 }
 
+const INVITE_BASE_URL = 'https://eefeats.com/i';
+
 export default function InvitesScreen() {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [creating, setCreating] = useState(false);
   const [lastCode, setLastCode] = useState<string | null>(null);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [inviteTokenError, setInviteTokenError] = useState(false);
 
   const fetchInvites = useCallback(async () => {
     try {
@@ -51,11 +56,37 @@ export default function InvitesScreen() {
     setLoading(false);
   }, []);
 
+  const fetchInviteToken = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('user_invite_tokens')
+        .select('invite_token')
+        .eq('user_id', user.id)
+        .single();
+      if (error) throw error;
+      if (data?.invite_token) {
+        setInviteToken(data.invite_token);
+        setInviteTokenError(false);
+      }
+    } catch {
+      setInviteTokenError(true);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       fetchInvites();
-    }, [fetchInvites])
+      fetchInviteToken();
+    }, [fetchInvites, fetchInviteToken])
   );
+
+  const handleCopyInviteLink = async () => {
+    if (!inviteToken) return;
+    await Clipboard.setStringAsync(`${INVITE_BASE_URL}/${inviteToken}`);
+    Alert.alert('Link copied', 'Share it with anyone you want to invite.');
+  };
 
   const handleCreate = async () => {
     const trimmed = email.trim().toLowerCase();
@@ -113,8 +144,24 @@ export default function InvitesScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.subtitle}>
-            EefEats is invite-only. Share codes with friends to let them join.
+            EefEats is invite-only. Share your link with friends to let them join.
           </Text>
+          <TouchableOpacity
+            style={[styles.copyLinkButton, !inviteToken && styles.copyLinkButtonDisabled]}
+            onPress={handleCopyInviteLink}
+            disabled={!inviteToken}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.copyLinkText}>Copy invite link</Text>
+          </TouchableOpacity>
+          {inviteTokenError && !inviteToken && (
+            <View style={styles.tokenErrorRow}>
+              <Text style={styles.tokenErrorText}>Couldn't load your invite link.</Text>
+              <TouchableOpacity onPress={fetchInviteToken} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={styles.tokenRetryText}> Retry</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         <View style={styles.formRow}>
@@ -195,6 +242,20 @@ const styles = StyleSheet.create({
   header: { padding: spacing.xl, paddingBottom: spacing.md },
   subtitle: { fontFamily: fontFamily.sans, fontSize: 14, lineHeight: 21, color: colors.inkSecondary },
 
+  copyLinkButton: {
+    marginTop: spacing.lg,
+    backgroundColor: colors.ink,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  copyLinkButtonDisabled: {
+    backgroundColor: colors.border,
+  },
+  copyLinkText: {
+    ...typography.label,
+    color: colors.white,
+  },
+
   formRow: {
     flexDirection: 'row',
     paddingHorizontal: spacing.xl,
@@ -268,6 +329,22 @@ const styles = StyleSheet.create({
   },
   statusTextPending: {
     color: colors.inkMuted,
+  },
+
+  tokenErrorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
+  tokenErrorText: {
+    fontFamily: fontFamily.sans,
+    fontSize: 12,
+    color: colors.danger,
+  },
+  tokenRetryText: {
+    fontFamily: fontFamily.sans,
+    fontSize: 12,
+    color: colors.accent,
   },
 
   emptyText: {

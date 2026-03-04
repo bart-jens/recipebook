@@ -258,7 +258,7 @@ export type Database = {
         Row: {
           code: string
           created_at: string
-          email: string
+          email: string | null
           id: string
           invited_by: string
           used_at: string | null
@@ -266,7 +266,7 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
-          email: string
+          email?: string | null
           id?: string
           invited_by: string
           used_at?: string | null
@@ -274,7 +274,7 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string
-          email?: string
+          email?: string | null
           id?: string
           invited_by?: string
           used_at?: string | null
@@ -671,6 +671,21 @@ export type Database = {
           follower_id?: string
           following_id?: string
           id?: string
+        }
+        Relationships: []
+      }
+      user_invite_tokens: {
+        Row: {
+          invite_token: string
+          user_id: string
+        }
+        Insert: {
+          invite_token?: string
+          user_id: string
+        }
+        Update: {
+          invite_token?: string
+          user_id?: string
         }
         Relationships: []
       }

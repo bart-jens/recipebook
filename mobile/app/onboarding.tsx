@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { isTourSeen } from './tour';
 import {
   View,
   Text,
@@ -174,7 +175,8 @@ export default function OnboardingScreen() {
       return;
     }
 
-    router.replace('/(tabs)');
+    const seen = await isTourSeen();
+    router.replace(seen ? '/(tabs)' : '/tour');
   }
 
   const initial = displayName ? displayName[0].toUpperCase() : '?';

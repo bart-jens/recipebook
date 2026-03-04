@@ -6,7 +6,7 @@ import { revokeInvite } from "../actions";
 interface Invite {
   id: string;
   inviterName: string;
-  email: string;
+  email: string | null;
   code: string;
   usedAt: string | null;
   createdAt: string;
@@ -35,7 +35,7 @@ export function InviteList({ invites }: { invites: Invite[] }) {
         >
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <p className="truncate text-[15px] font-light text-ink">{inv.email}</p>
+              <p className="truncate text-[15px] font-light text-ink">{inv.email ?? <span className="text-ink-muted">via link</span>}</p>
               <span
                 className={`shrink-0 text-[11px] font-normal tracking-[0.02em] ${
                   inv.usedAt

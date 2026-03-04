@@ -35,7 +35,7 @@ The system SHALL maintain user sessions using Supabase Auth cookies. Sessions SH
 - **THEN** the user SHALL be redirected to the login page
 
 ### Requirement: Protected routes
-All routes except `/login` and `/auth/callback` SHALL require authentication. Unauthenticated requests to protected routes SHALL redirect to `/login`. The `/auth/callback` route SHALL handle OAuth redirect processing.
+All routes except `/login`, `/auth/callback`, and `/i/[token]` SHALL require authentication. Unauthenticated requests to protected routes SHALL redirect to `/login`. The `/auth/callback` route SHALL handle OAuth redirect processing. The `/i/[token]` route SHALL be publicly accessible without authentication.
 
 #### Scenario: Unauthenticated access to protected route
 - **WHEN** an unauthenticated user navigates to `/recipes`
@@ -49,6 +49,10 @@ All routes except `/login` and `/auth/callback` SHALL require authentication. Un
 #### Scenario: Authenticated access to protected route
 - **WHEN** an authenticated user navigates to `/recipes`
 - **THEN** the page SHALL render normally
+
+#### Scenario: Invite link route is publicly accessible
+- **WHEN** an unauthenticated visitor navigates to `/i/<token>`
+- **THEN** the route SHALL process the invite token and redirect to `/signup?code=<code>` without requiring login
 
 ### Requirement: Logout
 The system SHALL provide a logout mechanism that clears the session and redirects to the login page.

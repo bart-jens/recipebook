@@ -17,7 +17,7 @@ import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-quer
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { colors, spacing, typography } from '@/lib/theme';
+import { colors, spacing, typography, fontFamily } from '@/lib/theme';
 import EmptyState from '@/components/ui/EmptyState';
 import RecipeListSkeleton from '@/components/skeletons/RecipeListSkeleton';
 import CollectionsSection from '@/components/ui/CollectionsSection';
@@ -62,7 +62,7 @@ export default function RecipesScreen() {
   const { user } = useAuth();
   const userId = user?.id;
   const queryClient = useQueryClient();
-  const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
+  const { filter: filterParam, import: importParam } = useLocalSearchParams<{ filter?: string; import?: string }>();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('updated');
@@ -72,6 +72,10 @@ export default function RecipesScreen() {
   useEffect(() => {
     if (filterParam) setActiveFilter(filterParam as FilterOption);
   }, [filterParam]);
+
+  useEffect(() => {
+    if (importParam === 'true') setShowImportMenu(true);
+  }, [importParam]);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -468,15 +472,46 @@ export default function RecipesScreen() {
       ) : recipes.length === 0 ? (
         <View style={{ flex: 1 }}>
           {renderHeader()}
-          <EmptyState
-            icon="book"
-            title={search ? 'No results' : 'No recipes yet'}
-            subtitle={
-              search
-                ? `No recipes match "${search}"`
-                : 'Import a recipe or create your first one!'
-            }
-          />
+          {search ? (
+            <EmptyState
+              icon="search"
+              title="No results"
+              subtitle={`No recipes match "${search}"`}
+            />
+          ) : (
+            <View style={styles.richEmpty}>
+              <View style={styles.richEmptyIconWrap}>
+                <FontAwesome name="book" size={32} color={colors.accentWashIcon} />
+              </View>
+              <Text style={styles.richEmptyTitle}>Your recipe book is empty</Text>
+              <Text style={styles.richEmptySubtitle}>
+                Import from a website, scan a cookbook photo, or add a recipe manually.
+              </Text>
+              <View style={styles.richEmptyActions}>
+                {[
+                  { icon: 'link' as const, label: 'Import from a website', route: '/recipe/import-url' },
+                  { icon: 'camera' as const, label: 'Scan a cookbook photo', route: '/recipe/import-photo' },
+                  { icon: 'pencil' as const, label: 'Add manually', route: '/recipe/new' },
+                ].map((action, i, arr) => (
+                  <TouchableOpacity
+                    key={action.route}
+                    style={[
+                      styles.richEmptyRow,
+                      i < arr.length - 1 && styles.richEmptyRowBorder,
+                    ]}
+                    onPress={() => router.push(action.route as any)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.richEmptyRowIcon}>
+                      <FontAwesome name={action.icon} size={16} color={colors.accent} />
+                    </View>
+                    <Text style={styles.richEmptyRowLabel}>{action.label}</Text>
+                    <FontAwesome name="chevron-right" size={11} color={colors.inkMuted} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
         </View>
       ) : (
         <FlatList
@@ -525,6 +560,74 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
+  },
+
+  // Rich empty state (no recipes yet)
+  richEmpty: {
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.xxxl,
+    backgroundColor: colors.accentWash,
+    borderWidth: 1,
+    borderColor: colors.accentWashBorder,
+    padding: spacing.xxl,
+    alignItems: 'center',
+  },
+  richEmptyIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.accentWashBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
+  },
+  richEmptyTitle: {
+    ...typography.subheading,
+    fontSize: 20,
+    color: colors.ink,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  richEmptySubtitle: {
+    ...typography.bodySmall,
+    color: colors.inkSecondary,
+    textAlign: 'center',
+    maxWidth: 260,
+    marginBottom: spacing.xxl,
+  },
+  richEmptyActions: {
+    width: '100%',
+    borderTopWidth: 1,
+    borderTopColor: colors.accentWashBorder,
+  },
+  richEmptyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    gap: spacing.md,
+  },
+  richEmptyRowBorder: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
+  richEmptyRowIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.accentWashBorder,
+  },
+  richEmptyRowLabel: {
+    flex: 1,
+    fontFamily: fontFamily.sans,
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.ink,
   },
   listContent: {
     paddingBottom: 100,
