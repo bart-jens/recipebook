@@ -17,7 +17,8 @@ export function SignupForm() {
     setLoading(true);
     setError(null);
     const supabase = createClient();
-    const redirectTo = new URL(`${window.location.origin}/auth/callback`);
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const redirectTo = new URL(`${siteUrl}/auth/callback`);
     if (defaultCode) redirectTo.searchParams.set("invite_code", defaultCode);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "apple",
