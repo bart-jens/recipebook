@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -22,7 +23,9 @@ export async function GET(request: Request) {
             new Date(identity.created_at).getTime() > Date.now() - 120_000;
 
           if (isNewUser) {
-            const inviteCode = searchParams.get("invite_code");
+            const cookieStore = cookies();
+            const rawInviteCode = cookieStore.get("oauth_invite_code")?.value;
+            const inviteCode = rawInviteCode ? decodeURIComponent(rawInviteCode) : null;
             const verifyUrl = new URL(`${origin}/signup/verify-invite`);
             verifyUrl.searchParams.set("provider", "true");
             if (inviteCode) verifyUrl.searchParams.set("code", inviteCode);

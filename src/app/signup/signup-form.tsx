@@ -16,13 +16,17 @@ export function SignupForm() {
   async function handleOAuth() {
     setLoading(true);
     setError(null);
+    // Store invite code in a cookie before the OAuth redirect so it survives
+    // the round-trip through Apple → Supabase → /auth/callback without needing
+    // query params on redirectTo (Supabase can 500 on redirectTo with query params).
+    if (defaultCode) {
+      document.cookie = `oauth_invite_code=${encodeURIComponent(defaultCode)}; path=/; max-age=300; SameSite=Lax`;
+    }
     const supabase = createClient();
     const siteUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-    const redirectTo = new URL(`${siteUrl}/auth/callback`);
-    if (defaultCode) redirectTo.searchParams.set("invite_code", defaultCode);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "apple",
-      options: { redirectTo: redirectTo.toString() },
+      options: { redirectTo: `${siteUrl}/auth/callback` },
     });
     if (error) {
       setError("Sign in failed. Please try again.");
