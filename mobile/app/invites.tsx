@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   Share,
 } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
 import { Stack, useFocusEffect } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { colors, spacing, fontFamily, typography } from '@/lib/theme';
@@ -84,8 +83,11 @@ export default function InvitesScreen() {
 
   const handleCopyInviteLink = async () => {
     if (!inviteToken) return;
-    await Clipboard.setStringAsync(`${INVITE_BASE_URL}/${inviteToken}`);
-    Alert.alert('Link copied', 'Share it with anyone you want to invite.');
+    try {
+      await Share.share({ message: `${INVITE_BASE_URL}/${inviteToken}` });
+    } catch {
+      // User cancelled
+    }
   };
 
   const handleCreate = async () => {
@@ -150,7 +152,7 @@ export default function InvitesScreen() {
 
         {/* Method 1: Share link */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Share your invite link</Text>
+          <Text style={styles.sectionLabel}>Your invite link</Text>
           <Text style={styles.sectionHint}>Anyone with this link can create an account.</Text>
           <TouchableOpacity
             style={[styles.copyLinkButton, !inviteToken && styles.copyLinkButtonDisabled]}
@@ -158,7 +160,7 @@ export default function InvitesScreen() {
             disabled={!inviteToken}
             activeOpacity={0.7}
           >
-            <Text style={styles.copyLinkText}>Copy invite link</Text>
+            <Text style={styles.copyLinkText}>Share invite link</Text>
           </TouchableOpacity>
           {inviteTokenError && !inviteToken && (
             <View style={styles.tokenErrorRow}>
