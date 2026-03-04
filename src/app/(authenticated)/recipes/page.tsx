@@ -249,7 +249,7 @@ export default async function RecipesPage({
         <div className="mx-5 mt-4 border-t border-border py-8 text-center animate-fade-in-up opacity-0 anim-delay-5">
           <ForkDot size={24} color="rgba(139,69,19,0.2)" />
           <p className="mt-3 text-[13px] font-light text-ink-secondary">
-            {q ? "No recipes match your search." : "No recipes yet."}
+            {q ? "No recipes match your search." : "Your recipe book is empty"}
           </p>
           {!q && (
             <div className="mt-2 flex gap-3 justify-center">

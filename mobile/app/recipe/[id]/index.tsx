@@ -1313,8 +1313,8 @@ export default function RecipeDetailScreen() {
                       />
                       <Text style={[styles.addToListText, addedToList && styles.addToListTextDone]}>
                         {addedToList
-                          ? `Added all ${ingredients.length}`
-                          : 'Add all to list'}
+                          ? `Added all ${ingredients.length} items`
+                          : 'Add all to grocery list'}
                       </Text>
                     </>
                   )}
@@ -1384,7 +1384,7 @@ export default function RecipeDetailScreen() {
                 </View>
               ) : (
                 <View style={styles.cookForm}>
-                  <Text style={styles.cookFormLabel}>Date</Text>
+                  <Text style={styles.cookFormLabel}>Date cooked</Text>
                   <TextInput
                     style={styles.cookDateInput}
                     value={cookDate}

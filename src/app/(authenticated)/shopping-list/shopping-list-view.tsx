@@ -24,10 +24,7 @@ function normalizeKey(name: string, unit: string | null) {
   return `${name.toLowerCase().trim()}::${(unit || "").toLowerCase().trim()}`;
 }
 
-function mergeByIngredient(
-  items: ShoppingItem[],
-  recipeTitles: Record<string, string>,
-): MergedItem[] {
+function mergeByIngredient(items: ShoppingItem[]): MergedItem[] {
   const map = new Map<string, MergedItem>();
   for (const item of items) {
     const key = normalizeKey(item.ingredient_name, item.unit);
@@ -279,7 +276,7 @@ export function ShoppingListView({
   }
 
   const groups = groupByRecipe(unchecked);
-  const merged = mergeByIngredient(unchecked, recipeTitles);
+  const merged = mergeByIngredient(unchecked);
 
   function formatQuantity(qty: number | null) {
     if (qty === null) return "";

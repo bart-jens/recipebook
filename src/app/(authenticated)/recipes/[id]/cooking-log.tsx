@@ -86,7 +86,7 @@ export function CookingLog({
   return (
     <div>
       <div className="flex items-center justify-between text-[11px] font-normal tracking-[0.02em] mb-2.5 pb-1.5 border-b border-border">
-        <span>Cooking Log</span>
+        <span>Cooking log</span>
         <div className="flex items-center gap-3">
           {cookEntries.length > 0 && (
             <span className="text-[11px] font-normal tracking-[0.02em] text-ink-muted">

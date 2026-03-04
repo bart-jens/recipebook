@@ -181,7 +181,7 @@ function ImportUrlContent() {
             disabled={loading || (importStatus?.plan !== "premium" && (importStatus?.used ?? 0) >= (importStatus?.limit ?? 10))}
             className="bg-cta px-4 py-3 text-base font-normal text-white hover:bg-cta-hover active:scale-[0.98] transition-transform disabled:opacity-50"
           >
-            {loading ? "Extracting recipe..." : "Extract Recipe"}
+            {loading ? "Extracting recipe..." : "Extract recipe"}
           </button>
         </form>
       ) : (

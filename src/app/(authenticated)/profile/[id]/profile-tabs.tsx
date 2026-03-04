@@ -217,7 +217,7 @@ export function ProfileTabs({
         {activeTab === "favorites" && (
           <div>
             {favorites.length === 0 ? (
-              <EmptyTab message="No favorite recipes yet" />
+              <EmptyTab message="No favorites yet" />
             ) : (
               <div>
                 {favorites.map((item) => (

@@ -25,7 +25,7 @@ export default function ImportPage() {
               </svg>
             </div>
             <div>
-              <h2 className="text-base font-normal group-hover:text-accent">From Link</h2>
+              <h2 className="text-base font-normal group-hover:text-accent">From a URL</h2>
               <p className="mt-0.5 text-sm text-warm-gray">
                 Paste a URL from any recipe website or Instagram post
               </p>
@@ -45,7 +45,7 @@ export default function ImportPage() {
               </svg>
             </div>
             <div>
-              <h2 className="text-base font-normal group-hover:text-accent">From Photo</h2>
+              <h2 className="text-base font-normal group-hover:text-accent">From a photo</h2>
               <p className="mt-0.5 text-sm text-warm-gray">
                 Upload a photo of a recipe from a cookbook or printout
               </p>
