@@ -88,7 +88,7 @@ const SLIDES = [
     key: 'import',
     Visual: SlideVisualImport,
     title: 'Import from anywhere',
-    subtitle: 'Grab a recipe from any website, scan a cookbook page, or write one yourself.',
+    subtitle: 'Paste a link, snap a cookbook page, or write your own — AI pulls out the full recipe instantly.',
   },
   {
     key: 'social',

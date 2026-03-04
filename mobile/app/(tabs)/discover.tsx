@@ -53,6 +53,10 @@ export default function DiscoverScreen() {
   const queryClientHook = useQueryClient();
   const params = useLocalSearchParams<{ tab?: string }>();
   const [activeTab, setActiveTab] = useState<Tab>((params.tab as Tab) || 'recipes');
+
+  useEffect(() => {
+    if (params.tab) setActiveTab(params.tab as Tab);
+  }, [params.tab]);
   const [chefs, setChefs] = useState<Chef[]>([]);
   const [extraRecipes, setExtraRecipes] = useState<PublicRecipe[]>([]);
   const [loading, setLoading] = useState(false); // chefs loading only
