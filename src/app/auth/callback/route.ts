@@ -7,32 +7,36 @@ export async function GET(request: Request) {
   const next = searchParams.get("next") ?? "/recipes";
 
   if (code) {
-    const supabase = createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Detect new OAuth users by checking if their identity was just created.
-        // The handle_new_user trigger creates a profile immediately, so !profile is
-        // always false — instead we check if this is a first-time sign-in.
-        const identity = user.identities?.[0];
-        const isNewUser = identity?.created_at &&
-          new Date(identity.created_at).getTime() > Date.now() - 120_000;
+      if (!error) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          // Detect new OAuth users by checking if their identity was just created.
+          // The handle_new_user trigger creates a profile immediately, so !profile is
+          // always false — instead we check if this is a first-time sign-in.
+          const identity = user.identities?.[0];
+          const isNewUser = identity?.created_at &&
+            new Date(identity.created_at).getTime() > Date.now() - 120_000;
 
-        if (isNewUser) {
-          const inviteCode = searchParams.get("invite_code");
-          const verifyUrl = new URL(`${origin}/signup/verify-invite`);
-          verifyUrl.searchParams.set("provider", "true");
-          if (inviteCode) verifyUrl.searchParams.set("code", inviteCode);
-          return NextResponse.redirect(verifyUrl.toString());
+          if (isNewUser) {
+            const inviteCode = searchParams.get("invite_code");
+            const verifyUrl = new URL(`${origin}/signup/verify-invite`);
+            verifyUrl.searchParams.set("provider", "true");
+            if (inviteCode) verifyUrl.searchParams.set("code", inviteCode);
+            return NextResponse.redirect(verifyUrl.toString());
+          }
         }
-      }
 
-      return NextResponse.redirect(`${origin}${next}`);
+        return NextResponse.redirect(`${origin}${next}`);
+      }
+    } catch (err) {
+      console.error("[auth/callback] unexpected error:", err);
     }
   }
 
-  // OAuth error — redirect to login with error
+  // OAuth error or exception — redirect to login with error
   return NextResponse.redirect(`${origin}/login?error=auth`);
 }
