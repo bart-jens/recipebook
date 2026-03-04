@@ -24,20 +24,13 @@ export function SignupForm() {
 
   return (
     <>
+      <div className="animate-fade-in-up [animation-delay:100ms] [animation-fill-mode:backwards]">
+        <Link href="/login" className="text-[12px] font-light text-ink-muted hover:text-accent">
+          ← Back to sign in
+        </Link>
+      </div>
       <form action={handleSubmit} className="space-y-5">
-        <div className="animate-fade-in-up [animation-delay:200ms] [animation-fill-mode:backwards]">
-          <label htmlFor="code" className="mb-2 block text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
-            Invite code (optional)
-          </label>
-          <input
-            id="code"
-            name="code"
-            type="text"
-            defaultValue={defaultCode}
-            placeholder="ABCD1234"
-            className="block w-full border-b-2 border-ink bg-transparent px-0 py-3 text-[15px] font-light text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none"
-          />
-        </div>
+        <input type="hidden" name="code" value={defaultCode} />
         <div className="animate-fade-in-up [animation-delay:300ms] [animation-fill-mode:backwards]">
           <label htmlFor="email" className="mb-2 block text-[11px] font-normal tracking-[0.02em] text-ink-secondary">
             Email
@@ -85,12 +78,6 @@ export function SignupForm() {
           </button>
         </div>
       </form>
-      <p className="animate-fade-in-up text-center text-[13px] font-light text-ink-secondary [animation-delay:600ms] [animation-fill-mode:backwards]">
-        Already have an account?{" "}
-        <Link href="/login" className="text-accent hover:underline">
-          Sign in
-        </Link>
-      </p>
     </>
   );
 }
