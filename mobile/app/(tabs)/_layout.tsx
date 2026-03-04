@@ -3,6 +3,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Redirect, Tabs } from 'expo-router';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/lib/supabase';
+import { isTourSeen } from '../tour';
 import { ActivityIndicator, View, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -115,12 +116,28 @@ function useOnboardingCheck(userId: string | undefined) {
   return { checked, needsOnboarding };
 }
 
+function useTourCheck(ready: boolean) {
+  const [tourChecked, setTourChecked] = useState(false);
+  const [needsTour, setNeedsTour] = useState(false);
+
+  useEffect(() => {
+    if (!ready) return;
+    isTourSeen().then((seen) => {
+      setNeedsTour(!seen);
+      setTourChecked(true);
+    });
+  }, [ready]);
+
+  return { tourChecked, needsTour };
+}
+
 export default function TabLayout() {
   const { session, loading } = useAuth();
   const newFollowerCount = useNewFollowerCount(session?.user?.id);
   const { checked, needsOnboarding } = useOnboardingCheck(session?.user?.id);
+  const { tourChecked, needsTour } = useTourCheck(checked && !needsOnboarding);
 
-  if (loading || (session && !checked)) {
+  if (loading || (session && (!checked || (checked && !needsOnboarding && !tourChecked)))) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg }}>
         <ActivityIndicator size="large" color={colors.accent} />
@@ -134,6 +151,10 @@ export default function TabLayout() {
 
   if (needsOnboarding) {
     return <Redirect href="/onboarding" />;
+  }
+
+  if (needsTour) {
+    return <Redirect href={'/tour' as any} />;
   }
 
   return (

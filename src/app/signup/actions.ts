@@ -54,5 +54,5 @@ export async function signup(formData: FormData) {
   if (signInError) return { error: signInError.message };
 
   revalidatePath("/", "layout");
-  redirect("/recipes");
+  redirect("/onboarding");
 }

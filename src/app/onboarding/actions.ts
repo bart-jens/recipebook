@@ -41,7 +41,7 @@ export async function completeOnboarding(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/recipes");
+  redirect("/onboarding/get-the-app");
 }
 
 export async function checkUsername(username: string) {
